@@ -114,6 +114,9 @@ class SLOMapping(BaseModel):
 class LessonPlan(BaseModel):
     id: Optional[str] = None
     teacherId: str
+    teacherName: str
+    schoolName: str
+    duration: int  # 40 or 80 minutes
     gradeId: str
     gradeName: str
     subjectId: str
@@ -125,11 +128,22 @@ class LessonPlan(BaseModel):
     sloId: str
     sloName: str
     sloDescription: str
-    activities: List[str] = []
+    # SLOs classified by domain
+    knowledge: List[str] = []
+    skills: List[str] = []
+    attitudes: List[str] = []
+    # Learning resources
+    learningResources: List[str] = []
+    # Core components
     competencies: List[Dict[str, str]] = []
     values: List[Dict[str, str]] = []
     pcis: List[Dict[str, str]] = []
-    assessments: List[Dict[str, str]] = []
+    # Lesson body structure
+    introduction: str = ""
+    lessonDevelopment: str = ""
+    extendedActivity: str = ""  # Only for 80 minutes
+    conclusion: str = ""
+    assessment: str = ""
     createdAt: datetime = Field(default_factory=datetime.utcnow)
 
 # Request models
