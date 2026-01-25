@@ -33,6 +33,37 @@ export default function Profile() {
     );
   };
 
+  const handleSetAsAdmin = async () => {
+    Alert.alert(
+      'Set as Admin',
+      'This will grant you admin privileges. Continue?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Confirm',
+          onPress: async () => {
+            try {
+              if (firebaseUser) {
+                const token = await firebaseUser.getIdToken();
+                const response = await axios.post(
+                  `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/auth/set-admin`,
+                  {},
+                  { headers: { Authorization: `Bearer ${token}` } }
+                );
+                
+                if (response.data.success) {
+                  Alert.alert('Success', 'You are now an admin. Please restart the app.');
+                }
+              }
+            } catch (error: any) {
+              Alert.alert('Error', error.response?.data?.detail || 'Failed to set as admin');
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
