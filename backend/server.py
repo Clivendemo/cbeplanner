@@ -330,18 +330,14 @@ async def get_slos(substrandId: str, user: dict = Depends(verify_token)):
 async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depends(verify_token)):
     # Check if user has free lesson or wallet balance
     if not user["freeLessonUsed"]:
-        # Use free lesson
         await db.users.update_one(
             {"_id": ObjectId(user["id"])},
             {"$set": {"freeLessonUsed": True}}
         )
     else:
-        # Check wallet balance (price per lesson = 10 KES, will be configurable)
         lesson_price = 10.0
         if user["walletBalance"] < lesson_price:
             raise HTTPException(status_code=402, detail="Insufficient wallet balance")
-        
-        # Deduct from wallet
         await db.users.update_one(
             {"_id": ObjectId(user["id"])},
             {"$inc": {"walletBalance": -lesson_price}}
@@ -357,7 +353,7 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
     if not all([grade, subject, strand, substrand, slo]):
         raise HTTPException(status_code=404, detail="Invalid selection")
     
-    # Get activities for this strand/substrand
+    # Get activities
     activities = await db.activities.find({
         "strandId": request.strandId,
         "substrandId": request.substrandId
@@ -372,37 +368,53 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
     assessments = []
     
     if mapping:
-        # Fetch competencies
         if mapping.get("competencyIds"):
             comp_docs = await db.competencies.find({
                 "_id": {"$in": [ObjectId(cid) for cid in mapping["competencyIds"]]}
             }).to_list(100)
             competencies = [{"name": c["name"], "description": c["description"]} for c in comp_docs]
         
-        # Fetch values
         if mapping.get("valueIds"):
             val_docs = await db.values.find({
                 "_id": {"$in": [ObjectId(vid) for vid in mapping["valueIds"]]}
             }).to_list(100)
             values = [{"name": v["name"], "description": v["description"]} for v in val_docs]
         
-        # Fetch PCIs
         if mapping.get("pciIds"):
             pci_docs = await db.pcis.find({
                 "_id": {"$in": [ObjectId(pid) for pid in mapping["pciIds"]]}
             }).to_list(100)
             pcis = [{"name": p["name"], "description": p["description"]} for p in pci_docs]
         
-        # Fetch assessments
         if mapping.get("assessmentIds"):
             assess_docs = await db.assessments.find({
                 "_id": {"$in": [ObjectId(aid) for aid in mapping["assessmentIds"]]}
             }).to_list(100)
             assessments = [{"name": a["name"], "description": a["description"]} for a in assess_docs]
     
+    # Classify SLOs into Knowledge, Skills, Attitudes
+    knowledge = [f"Understand {slo['name']}"]
+    skills = [f"Apply concepts of {substrand['name']}"]
+    attitudes = ["Show interest and curiosity in learning"]
+    
+    # Learning resources
+    learning_resources = ["Textbooks", "Charts", "Real objects", "Digital resources"]
+    
+    # Generate lesson body based on duration
+    introduction = f"Teacher introduces {substrand['name']} concepts. Learners share prior knowledge."
+    lesson_development = f"Teacher explains {slo['name']}. Learners participate in guided activities: {', '.join([a['description'] for a in activities[:2]])}."
+    extended_activity = ""
+    if request.duration == 80:
+        extended_activity = "Learners work in groups on advanced tasks related to the topic. Teacher provides individualized support."
+    conclusion = "Teacher summarizes key points. Learners ask questions and reflect on what they learned."
+    assessment_text = "; ".join([f"{a['name']}: {a['description']}" for a in assessments]) if assessments else "Oral questions and written tasks"
+    
     # Create lesson plan
     lesson_plan = {
         "teacherId": user["id"],
+        "teacherName": request.teacherName,
+        "schoolName": request.schoolName,
+        "duration": request.duration,
         "gradeId": request.gradeId,
         "gradeName": grade["name"],
         "subjectId": request.subjectId,
@@ -414,11 +426,18 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
         "sloId": request.sloId,
         "sloName": slo["name"],
         "sloDescription": slo["description"],
-        "activities": [a["description"] for a in activities],
+        "knowledge": knowledge,
+        "skills": skills,
+        "attitudes": attitudes,
+        "learningResources": learning_resources,
         "competencies": competencies,
         "values": values,
         "pcis": pcis,
-        "assessments": assessments,
+        "introduction": introduction,
+        "lessonDevelopment": lesson_development,
+        "extendedActivity": extended_activity,
+        "conclusion": conclusion,
+        "assessment": assessment_text,
         "createdAt": datetime.utcnow()
     }
     
