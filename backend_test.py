@@ -317,6 +317,27 @@ class CBEBackendTester:
             self.log_test("Cascading Data Relationships", False, "Cascading relationships test failed", str(e))
             return False
     
+    def test_firebase_auth_integration(self):
+        """Test Firebase authentication integration"""
+        try:
+            # Test auth verify endpoint with invalid token
+            invalid_token_data = {"idToken": "invalid_token_12345"}
+            response = self.session.post(f"{self.base_url}/auth/verify", json=invalid_token_data)
+            
+            if response.status_code == 401:
+                self.log_test("Firebase Auth Integration", True, "Firebase auth is properly rejecting invalid tokens")
+                return True
+            elif response.status_code == 422:
+                self.log_test("Firebase Auth Integration", True, "Firebase auth endpoint exists (validation error)")
+                return True
+            else:
+                self.log_test("Firebase Auth Integration", False, f"Unexpected auth response: {response.status_code}", response.text)
+                return False
+                
+        except requests.exceptions.RequestException as e:
+            self.log_test("Firebase Auth Integration", False, "Firebase auth test failed", str(e))
+            return False
+    
     def run_all_tests(self):
         """Run all backend tests"""
         print("=" * 60)
@@ -345,6 +366,13 @@ class CBEBackendTester:
         print("🛡️ ADMIN ENDPOINT SECURITY TESTS")
         print("-" * 30)
         self.test_admin_endpoints_without_auth()
+        
+        print()
+        print("📊 DATA FUNCTIONALITY TESTS")
+        print("-" * 30)
+        self.test_seed_data_functionality()
+        self.test_database_structure()
+        self.test_cascading_data_relationships()
         
         print()
         print("📊 TEST SUMMARY")
