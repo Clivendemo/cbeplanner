@@ -43,9 +43,12 @@ class User(BaseModel):
     id: Optional[str] = None
     firebaseUid: str
     email: EmailStr
+    firstName: str
+    lastName: str
     role: str = "teacher"  # teacher or admin
     walletBalance: float = 0.0
     freeLessonUsed: bool = False
+    freeNotesUsed: bool = False
     createdAt: datetime = Field(default_factory=datetime.utcnow)
 
 class Grade(BaseModel):
