@@ -135,6 +135,8 @@ class LessonPlan(BaseModel):
 # Request models
 class TokenVerifyRequest(BaseModel):
     idToken: str
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
 
 class GenerateLessonRequest(BaseModel):
     gradeId: str
@@ -143,9 +145,30 @@ class GenerateLessonRequest(BaseModel):
     substrandId: str
     sloId: str
 
+class GenerateNotesRequest(BaseModel):
+    gradeId: str
+    subjectId: str
+    strandId: str
+    substrandId: str
+
 class CreateAdminRequest(BaseModel):
     email: EmailStr
     password: str
+
+class Notes(BaseModel):
+    id: Optional[str] = None
+    teacherId: str
+    gradeId: str
+    gradeName: str
+    subjectId: str
+    subjectName: str
+    strandId: str
+    strandName: str
+    substrandId: str
+    substrandName: str
+    content: str
+    activities: List[str] = []
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
 
 # ==================== AUTHENTICATION ====================
 
