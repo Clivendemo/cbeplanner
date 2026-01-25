@@ -16,55 +16,18 @@ import { Ionicons } from '@expo/vector-icons';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
-interface Grade {
-  id: string;
-  name: string;
-}
-
-interface Subject {
-  id: string;
-  name: string;
-}
-
-interface Strand {
-  id: string;
-  name: string;
-}
-
-interface SubStrand {
-  id: string;
-  name: string;
-}
-
-interface SLO {
-  id: string;
-  name: string;
-  description: string;
-}
-
-interface LessonPlan {
-  gradeName: string;
-  subjectName: string;
-  strandName: string;
-  substrandName: string;
-  sloName: string;
-  sloDescription: string;
-  activities: string[];
-  competencies: Array<{ name: string; description: string }>;
-  values: Array<{ name: string; description: string }>;
-  pcis: Array<{ name: string; description: string }>;
-  assessments: Array<{ name: string; description: string }>;
-}
+const DURATIONS = [25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80];
 
 export default function Home() {
   const { firebaseUser, user, refreshProfile } = useAuth();
   
-  const [grades, setGrades] = useState<Grade[]>([]);
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [strands, setStrands] = useState<Strand[]>([]);
-  const [substrands, setSubstrands] = useState<SubStrand[]>([]);
-  const [slos, setSlos] = useState<SLO[]>([]);
+  const [grades, setGrades] = useState<any[]>([]);
+  const [subjects, setSubjects] = useState<any[]>([]);
+  const [strands, setStrands] = useState<any[]>([]);
+  const [substrands, setSubstrands] = useState<any[]>([]);
+  const [slos, setSlos] = useState<any[]>([]);
   
+  const [selectedDuration, setSelectedDuration] = useState<number>(40);
   const [selectedGrade, setSelectedGrade] = useState<string>('');
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [selectedStrand, setSelectedStrand] = useState<string>('');
@@ -73,7 +36,7 @@ export default function Home() {
   
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [lessonPlan, setLessonPlan] = useState<LessonPlan | null>(null);
+  const [lessonPlan, setLessonPlan] = useState<any>(null);
   const [showPlan, setShowPlan] = useState(false);
 
   useEffect(() => {
@@ -95,8 +58,9 @@ export default function Home() {
       if (response.data.success) {
         setGrades(response.data.grades);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading grades:', error);
+      Alert.alert('Error', 'Failed to load grades');
     }
   };
 
@@ -113,6 +77,7 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Error loading subjects:', error);
+      Alert.alert('Error', 'Failed to load subjects');
     } finally {
       setLoading(false);
     }
@@ -130,6 +95,7 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Error loading strands:', error);
+      Alert.alert('Error', 'Failed to load strands');
     } finally {
       setLoading(false);
     }
@@ -146,6 +112,7 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Error loading substrands:', error);
+      Alert.alert('Error', 'Failed to load sub-strands');
     } finally {
       setLoading(false);
     }
@@ -161,6 +128,7 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Error loading SLOs:', error);
+      Alert.alert('Error', 'Failed to load learning outcomes');
     } finally {
       setLoading(false);
     }
@@ -172,6 +140,10 @@ export default function Home() {
     setSelectedStrand('');
     setSelectedSubstrand('');
     setSelectedSLO('');
+    setSubjects([]);
+    setStrands([]);
+    setSubstrands([]);
+    setSlos([]);
     if (gradeId) loadSubjects(gradeId);
   };
 
@@ -180,6 +152,9 @@ export default function Home() {
     setSelectedStrand('');
     setSelectedSubstrand('');
     setSelectedSLO('');
+    setStrands([]);
+    setSubstrands([]);
+    setSlos([]);
     if (subjectId) loadStrands(subjectId);
   };
 
@@ -187,18 +162,21 @@ export default function Home() {
     setSelectedStrand(strandId);
     setSelectedSubstrand('');
     setSelectedSLO('');
+    setSubstrands([]);
+    setSlos([]);
     if (strandId) loadSubstrands(strandId);
   };
 
   const handleSubstrandChange = (substrandId: string) => {
     setSelectedSubstrand(substrandId);
     setSelectedSLO('');
+    setSlos([]);
     if (substrandId) loadSLOs(substrandId);
   };
 
   const generateLessonPlan = async () => {
     if (!selectedGrade || !selectedSubject || !selectedStrand || !selectedSubstrand || !selectedSLO) {
-      Alert.alert('Error', 'Please select all options');
+      Alert.alert('Error', 'Please select all required fields');
       return;
     }
 
@@ -208,6 +186,7 @@ export default function Home() {
       const response = await axios.post(
         `${BACKEND_URL}/api/lesson-plans/generate`,
         {
+          duration: selectedDuration,
           gradeId: selectedGrade,
           subjectId: selectedSubject,
           strandId: selectedStrand,
@@ -239,6 +218,10 @@ export default function Home() {
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Create Lesson Plan</Text>
+          <View style={styles.infoCard}>
+            <Text style={styles.infoLabel}>Teacher: {user?.firstName} {user?.lastName}</Text>
+            <Text style={styles.infoLabel}>School: {user?.schoolName}</Text>
+          </View>
           <View style={styles.balanceCard}>
             <Ionicons name="wallet-outline" size={20} color="#6366F1" />
             <Text style={styles.balanceText}>
@@ -249,7 +232,22 @@ export default function Home() {
 
         <View style={styles.form}>
           <View style={styles.pickerContainer}>
-            <Text style={styles.label}>Grade</Text>
+            <Text style={styles.label}>Duration (minutes) *</Text>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={selectedDuration}
+                onValueChange={setSelectedDuration}
+                style={styles.picker}
+              >
+                {DURATIONS.map((duration) => (
+                  <Picker.Item key={duration} label={`${duration} minutes`} value={duration} />
+                ))}
+              </Picker>
+            </View>
+          </View>
+
+          <View style={styles.pickerContainer}>
+            <Text style={styles.label}>Grade *</Text>
             <View style={styles.pickerWrapper}>
               <Picker
                 selectedValue={selectedGrade}
@@ -266,7 +264,7 @@ export default function Home() {
 
           {selectedGrade && (
             <View style={styles.pickerContainer}>
-              <Text style={styles.label}>Subject / Learning Area</Text>
+              <Text style={styles.label}>Learning Area / Subject *</Text>
               <View style={styles.pickerWrapper}>
                 <Picker
                   selectedValue={selectedSubject}
@@ -284,7 +282,7 @@ export default function Home() {
 
           {selectedSubject && (
             <View style={styles.pickerContainer}>
-              <Text style={styles.label}>Strand</Text>
+              <Text style={styles.label}>Strand *</Text>
               <View style={styles.pickerWrapper}>
                 <Picker
                   selectedValue={selectedStrand}
@@ -302,7 +300,7 @@ export default function Home() {
 
           {selectedStrand && (
             <View style={styles.pickerContainer}>
-              <Text style={styles.label}>Sub-Strand</Text>
+              <Text style={styles.label}>Sub-Strand *</Text>
               <View style={styles.pickerWrapper}>
                 <Picker
                   selectedValue={selectedSubstrand}
@@ -320,7 +318,7 @@ export default function Home() {
 
           {selectedSubstrand && (
             <View style={styles.pickerContainer}>
-              <Text style={styles.label}>Specific Learning Outcome (SLO)</Text>
+              <Text style={styles.label}>Specific Learning Outcome (SLO) *</Text>
               <View style={styles.pickerWrapper}>
                 <Picker
                   selectedValue={selectedSLO}
@@ -373,18 +371,17 @@ export default function Home() {
             {lessonPlan && (
               <>
                 <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Grade & Subject</Text>
-                  <Text style={styles.sectionText}>{lessonPlan.gradeName} - {lessonPlan.subjectName}</Text>
+                  <Text style={styles.sectionTitle}>Lesson Information</Text>
+                  <Text style={styles.sectionText}>Teacher: {lessonPlan.teacherName}</Text>
+                  <Text style={styles.sectionText}>School: {lessonPlan.schoolName}</Text>
+                  <Text style={styles.sectionText}>Duration: {lessonPlan.duration} minutes</Text>
+                  <Text style={styles.sectionText}>Grade: {lessonPlan.gradeName}</Text>
+                  <Text style={styles.sectionText}>Subject: {lessonPlan.subjectName}</Text>
                 </View>
 
                 <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Strand</Text>
-                  <Text style={styles.sectionText}>{lessonPlan.strandName}</Text>
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Sub-Strand</Text>
-                  <Text style={styles.sectionText}>{lessonPlan.substrandName}</Text>
+                  <Text style={styles.sectionTitle}>Topic</Text>
+                  <Text style={styles.sectionText}>{lessonPlan.strandName} / {lessonPlan.substrandName}</Text>
                 </View>
 
                 <View style={styles.section}>
@@ -394,19 +391,32 @@ export default function Home() {
                 </View>
 
                 <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Learning Activities</Text>
-                  {lessonPlan.activities.map((activity, index) => (
-                    <View key={index} style={styles.listItem}>
-                      <Text style={styles.bullet}>•</Text>
-                      <Text style={styles.listText}>{activity}</Text>
-                    </View>
+                  <Text style={styles.sectionTitle}>SLOs by Domain</Text>
+                  <Text style={styles.domainTitle}>Knowledge:</Text>
+                  {lessonPlan.knowledge?.map((k: string, i: number) => (
+                    <Text key={i} style={styles.listText}>• {k}</Text>
+                  ))}
+                  <Text style={styles.domainTitle}>Skills:</Text>
+                  {lessonPlan.skills?.map((s: string, i: number) => (
+                    <Text key={i} style={styles.listText}>• {s}</Text>
+                  ))}
+                  <Text style={styles.domainTitle}>Attitudes:</Text>
+                  {lessonPlan.attitudes?.map((a: string, i: number) => (
+                    <Text key={i} style={styles.listText}>• {a}</Text>
+                  ))}
+                </View>
+
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Learning Resources</Text>
+                  {lessonPlan.learningResources?.map((resource: string, i: number) => (
+                    <Text key={i} style={styles.listText}>• {resource}</Text>
                   ))}
                 </View>
 
                 <View style={styles.section}>
                   <Text style={styles.sectionTitle}>Core Competencies</Text>
-                  {lessonPlan.competencies.map((comp, index) => (
-                    <View key={index} style={styles.itemCard}>
+                  {lessonPlan.competencies?.map((comp: any, i: number) => (
+                    <View key={i} style={styles.itemCard}>
                       <Text style={styles.itemName}>{comp.name}</Text>
                       <Text style={styles.itemDescription}>{comp.description}</Text>
                     </View>
@@ -415,8 +425,8 @@ export default function Home() {
 
                 <View style={styles.section}>
                   <Text style={styles.sectionTitle}>Core Values</Text>
-                  {lessonPlan.values.map((value, index) => (
-                    <View key={index} style={styles.itemCard}>
+                  {lessonPlan.values?.map((value: any, i: number) => (
+                    <View key={i} style={styles.itemCard}>
                       <Text style={styles.itemName}>{value.name}</Text>
                       <Text style={styles.itemDescription}>{value.description}</Text>
                     </View>
@@ -424,23 +434,30 @@ export default function Home() {
                 </View>
 
                 <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Pertinent & Contemporary Issues</Text>
-                  {lessonPlan.pcis.map((pci, index) => (
-                    <View key={index} style={styles.itemCard}>
-                      <Text style={styles.itemName}>{pci.name}</Text>
-                      <Text style={styles.itemDescription}>{pci.description}</Text>
+                  <Text style={styles.sectionTitle}>Lesson Body</Text>
+                  <View style={styles.lessonStep}>
+                    <Text style={styles.stepTitle}>1. Introduction</Text>
+                    <Text style={styles.stepText}>{lessonPlan.introduction}</Text>
+                  </View>
+                  <View style={styles.lessonStep}>
+                    <Text style={styles.stepTitle}>2. Lesson Development</Text>
+                    <Text style={styles.stepText}>{lessonPlan.lessonDevelopment}</Text>
+                  </View>
+                  {lessonPlan.extendedActivity && (
+                    <View style={styles.lessonStep}>
+                      <Text style={styles.stepTitle}>3. Extended Activity</Text>
+                      <Text style={styles.stepText}>{lessonPlan.extendedActivity}</Text>
                     </View>
-                  ))}
+                  )}
+                  <View style={styles.lessonStep}>
+                    <Text style={styles.stepTitle}>{lessonPlan.extendedActivity ? '4' : '3'}. Conclusion</Text>
+                    <Text style={styles.stepText}>{lessonPlan.conclusion}</Text>
+                  </View>
                 </View>
 
                 <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Assessment Methods</Text>
-                  {lessonPlan.assessments.map((assessment, index) => (
-                    <View key={index} style={styles.itemCard}>
-                      <Text style={styles.itemName}>{assessment.name}</Text>
-                      <Text style={styles.itemDescription}>{assessment.description}</Text>
-                    </View>
-                  ))}
+                  <Text style={styles.sectionTitle}>Assessment</Text>
+                  <Text style={styles.sectionText}>{lessonPlan.assessment}</Text>
                 </View>
               </>
             )}
@@ -470,6 +487,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 12
+  },
+  infoCard: {
+    backgroundColor: '#F3F4F6',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: '#374151',
+    marginBottom: 4
   },
   balanceCard: {
     flexDirection: 'row',
@@ -557,26 +585,26 @@ const styles = StyleSheet.create({
   sectionText: {
     fontSize: 14,
     color: '#374151',
-    fontWeight: '500'
+    marginBottom: 4
   },
   sectionDescription: {
     fontSize: 14,
     color: '#6B7280',
-    marginTop: 4
+    marginTop: 4,
+    fontStyle: 'italic'
   },
-  listItem: {
-    flexDirection: 'row',
-    marginBottom: 8
-  },
-  bullet: {
+  domainTitle: {
     fontSize: 14,
-    color: '#6B7280',
-    marginRight: 8
+    fontWeight: '600',
+    color: '#111827',
+    marginTop: 8,
+    marginBottom: 4
   },
   listText: {
-    flex: 1,
     fontSize: 14,
-    color: '#374151'
+    color: '#374151',
+    marginBottom: 4,
+    marginLeft: 8
   },
   itemCard: {
     backgroundColor: '#F3F4F6',
@@ -593,5 +621,24 @@ const styles = StyleSheet.create({
   itemDescription: {
     fontSize: 13,
     color: '#6B7280'
+  },
+  lessonStep: {
+    backgroundColor: '#FFFBEB',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#F59E0B'
+  },
+  stepTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#92400E',
+    marginBottom: 8
+  },
+  stepText: {
+    fontSize: 14,
+    color: '#78350F',
+    lineHeight: 20
   }
 });
