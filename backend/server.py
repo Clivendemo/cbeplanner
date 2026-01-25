@@ -198,17 +198,18 @@ async def verify_token(authorization: Optional[str] = Header(None)):
     try:
         # Verify token using Google's public keys
         async with httpx.AsyncClient() as client:
-            response = await client.get(
+            response = await client.post(
                 f"https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key={FIREBASE_API_KEY}",
-                params={"idToken": token}
+                json={"idToken": token}
             )
             
             if response.status_code != 200:
-                raise HTTPException(status_code=401, detail="Invalid token")
+                error_detail = response.json() if response.text else "Invalid token"
+                raise HTTPException(status_code=401, detail=f"Token validation failed: {error_detail}")
             
             data = response.json()
             if "users" not in data or len(data["users"]) == 0:
-                raise HTTPException(status_code=401, detail="Invalid token")
+                raise HTTPException(status_code=401, detail="No user found for token")
             
             user_data = data["users"][0]
             uid = user_data["localId"]
@@ -234,9 +235,11 @@ async def verify_token(authorization: Optional[str] = Header(None)):
         
         return serialize_doc(user)
     except httpx.HTTPError as e:
-        raise HTTPException(status_code=401, detail=f"Token verification failed: {str(e)}")
+        raise HTTPException(status_code=401, detail=f"Network error during token verification: {str(e)}")
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
+        raise HTTPException(status_code=401, detail=f"Token verification error: {str(e)}")
 
 async def verify_admin(authorization: Optional[str] = Header(None)):
     user = await verify_token(authorization)
