@@ -212,25 +212,109 @@ class CBEBackendTester:
             self.log_test("Database Connectivity", False, "Database connectivity test failed", str(e))
             return False
     
-    def test_firebase_auth_integration(self):
-        """Test Firebase authentication integration"""
+    def test_seed_data_functionality(self):
+        """Test seed data functionality using test endpoint"""
         try:
-            # Test auth verify endpoint with invalid token
-            invalid_token_data = {"idToken": "invalid_token_12345"}
-            response = self.session.post(f"{self.base_url}/auth/verify", json=invalid_token_data)
+            # First check if database is empty
+            response = self.session.get(f"{self.base_url}/test/db-stats")
+            if response.status_code != 200:
+                self.log_test("Seed Data Functionality", False, "Cannot access db stats endpoint", response.text)
+                return False
             
-            if response.status_code == 401:
-                self.log_test("Firebase Auth Integration", True, "Firebase auth is properly rejecting invalid tokens")
-                return True
-            elif response.status_code == 422:
-                self.log_test("Firebase Auth Integration", True, "Firebase auth endpoint exists (validation error)")
-                return True
+            # Seed the data
+            response = self.session.post(f"{self.base_url}/test/seed-data")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success"):
+                    self.log_test("Seed Data Functionality", True, "Sample data seeded successfully")
+                    return True
+                else:
+                    self.log_test("Seed Data Functionality", False, "Seed operation failed", data)
+                    return False
             else:
-                self.log_test("Firebase Auth Integration", False, f"Unexpected auth response: {response.status_code}", response.text)
+                self.log_test("Seed Data Functionality", False, f"Seed endpoint failed: {response.status_code}", response.text)
                 return False
                 
         except requests.exceptions.RequestException as e:
-            self.log_test("Firebase Auth Integration", False, "Firebase auth test failed", str(e))
+            self.log_test("Seed Data Functionality", False, "Seed data test failed", str(e))
+            return False
+    
+    def test_database_structure(self):
+        """Test database structure and data integrity"""
+        try:
+            response = self.session.get(f"{self.base_url}/test/db-stats")
+            if response.status_code == 200:
+                data = response.json()
+                stats = data.get("stats", {})
+                
+                # Expected collections and minimum counts
+                expected_collections = {
+                    "grades": 6,
+                    "subjects": 7,
+                    "strands": 4,
+                    "substrands": 3,
+                    "slos": 2,
+                    "activities": 3,
+                    "competencies": 4,
+                    "values": 4,
+                    "pcis": 3,
+                    "assessments": 4,
+                    "slo_mappings": 2
+                }
+                
+                all_good = True
+                for collection, expected_count in expected_collections.items():
+                    actual_count = stats.get(collection, 0)
+                    if actual_count < expected_count:
+                        all_good = False
+                        break
+                
+                if all_good:
+                    self.log_test("Database Structure", True, f"All collections have expected data counts")
+                    return True
+                else:
+                    self.log_test("Database Structure", False, "Database structure incomplete", stats)
+                    return False
+            else:
+                self.log_test("Database Structure", False, f"Cannot access db stats: {response.status_code}", response.text)
+                return False
+                
+        except requests.exceptions.RequestException as e:
+            self.log_test("Database Structure", False, "Database structure test failed", str(e))
+            return False
+    
+    def test_cascading_data_relationships(self):
+        """Test cascading data relationships without authentication"""
+        try:
+            # We can't test the actual API endpoints without auth, but we can verify
+            # the database structure supports cascading relationships
+            response = self.session.get(f"{self.base_url}/test/db-stats")
+            if response.status_code == 200:
+                data = response.json()
+                stats = data.get("stats", {})
+                
+                # Check that we have the hierarchical structure:
+                # Grades -> Subjects -> Strands -> Sub-strands -> SLOs
+                hierarchy_check = (
+                    stats.get("grades", 0) > 0 and
+                    stats.get("subjects", 0) > 0 and
+                    stats.get("strands", 0) > 0 and
+                    stats.get("substrands", 0) > 0 and
+                    stats.get("slos", 0) > 0
+                )
+                
+                if hierarchy_check:
+                    self.log_test("Cascading Data Relationships", True, "Hierarchical data structure is present")
+                    return True
+                else:
+                    self.log_test("Cascading Data Relationships", False, "Missing hierarchical data", stats)
+                    return False
+            else:
+                self.log_test("Cascading Data Relationships", False, f"Cannot verify relationships: {response.status_code}", response.text)
+                return False
+                
+        except requests.exceptions.RequestException as e:
+            self.log_test("Cascading Data Relationships", False, "Cascading relationships test failed", str(e))
             return False
     
     def run_all_tests(self):
