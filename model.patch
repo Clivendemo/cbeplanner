@@ -1,0 +1,19 @@
+diff --git a/frontend/app/(teacher)/profile.tsx b/frontend/app/(teacher)/profile.tsx
+index 5d7c834..6cff1f2 100644
+--- a/frontend/app/(teacher)/profile.tsx
++++ b/frontend/app/(teacher)/profile.tsx
+@@ -109,6 +109,14 @@ export default function Profile() {
+       <View style={styles.section}>
+         <Text style={styles.sectionTitle}>Account</Text>
+         
++        {user?.role !== 'admin' && (
++          <TouchableOpacity style={styles.menuItem} onPress={handleSetAsAdmin}>
++            <Ionicons name="shield-outline" size={24} color="#6B7280" />
++            <Text style={styles.menuText}>Set as Admin</Text>
++            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
++          </TouchableOpacity>
++        )}
++        
+         <TouchableOpacity style={styles.menuItem}>
+           <Ionicons name="information-circle-outline" size={24} color="#6B7280" />
+           <Text style={styles.menuText}>About CBE Planner</Text>
