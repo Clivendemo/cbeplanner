@@ -10,9 +10,10 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import axios from 'axios';
 
 export default function Profile() {
-  const { user, signOut } = useAuth();
+  const { user, firebaseUser, signOut } = useAuth();
   const router = useRouter();
 
   const handleSignOut = async () => {
