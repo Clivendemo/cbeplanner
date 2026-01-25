@@ -93,6 +93,18 @@ export default function SignUp() {
           </View>
 
           <View style={styles.inputContainer}>
+            <Ionicons name="business-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="School Name"
+              value={schoolName}
+              onChangeText={setSchoolName}
+              autoCapitalize="words"
+              placeholderTextColor="#9CA3AF"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
             <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
