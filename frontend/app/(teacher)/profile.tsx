@@ -109,6 +109,14 @@ export default function Profile() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Account</Text>
         
+        {user?.role !== 'admin' && (
+          <TouchableOpacity style={styles.menuItem} onPress={handleSetAsAdmin}>
+            <Ionicons name="shield-outline" size={24} color="#6B7280" />
+            <Text style={styles.menuText}>Set as Admin</Text>
+            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+          </TouchableOpacity>
+        )}
+        
         <TouchableOpacity style={styles.menuItem}>
           <Ionicons name="information-circle-outline" size={24} color="#6B7280" />
           <Text style={styles.menuText}>About CBE Planner</Text>
