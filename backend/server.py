@@ -174,6 +174,9 @@ class CreateAdminRequest(BaseModel):
 class Notes(BaseModel):
     id: Optional[str] = None
     teacherId: str
+    teacherName: str
+    schoolName: str
+    duration: int
     gradeId: str
     gradeName: str
     subjectId: str
