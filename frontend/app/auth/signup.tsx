@@ -15,6 +15,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SignUp() {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -23,7 +25,7 @@ export default function SignUp() {
   const router = useRouter();
 
   const handleSignUp = async () => {
-    if (!email || !password || !confirmPassword) {
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
@@ -41,10 +43,13 @@ export default function SignUp() {
     setLoading(true);
     try {
       await signUp(email, password);
-      Alert.alert('Success', 'Account created successfully!');
+      Alert.alert(
+        'Success', 
+        'Account created successfully! Please login with your credentials.',
+        [{ text: 'OK', onPress: () => router.replace('/auth/login') }]
+      );
     } catch (error: any) {
       Alert.alert('Sign Up Failed', error.message);
-    } finally {
       setLoading(false);
     }
   };
