@@ -206,33 +206,15 @@ async def verify_user_token(request: TokenVerifyRequest):
     except Exception as e:
         raise HTTPException(status_code=401, detail=str(e))
 
-@api_router.post("/auth/create-admin")
-async def create_admin_account(request: CreateAdminRequest):
-    """Create default admin account - should be called once during setup"""
+@api_router.post("/auth/set-admin")
+async def set_user_as_admin(user: dict = Depends(verify_token)):
+    """Set the current user as admin - for initial setup only"""
     try:
-        # Check if admin already exists
-        existing = await db.users.find_one({"email": request.email, "role": "admin"})
-        if existing:
-            return {"success": True, "message": "Admin already exists"}
-        
-        # Create Firebase user
-        user_record = firebase_auth.create_user(
-            email=request.email,
-            password=request.password
+        await db.users.update_one(
+            {"_id": ObjectId(user["id"])},
+            {"$set": {"role": "admin"}}
         )
-        
-        # Create admin in database
-        admin_user = {
-            "firebaseUid": user_record.uid,
-            "email": request.email,
-            "role": "admin",
-            "walletBalance": 0.0,
-            "freeLessonUsed": False,
-            "createdAt": datetime.utcnow()
-        }
-        await db.users.insert_one(admin_user)
-        
-        return {"success": True, "message": "Admin created successfully"}
+        return {"success": True, "message": "User set as admin successfully"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
