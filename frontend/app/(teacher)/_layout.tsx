@@ -32,11 +32,20 @@ export default function TeacherLayout() {
         }}
       />
       <Tabs.Screen
+        name="notes"
+        options={{
+          title: 'Generate Notes',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="document-outline" size={size} color={color} />
+          )
+        }}
+      />
+      <Tabs.Screen
         name="lessons"
         options={{
           title: 'My Lessons',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="document-text-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size}) => (
+            <Ionicons name="folder-outline" size={size} color={color} />
           )
         }}
       />

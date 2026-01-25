@@ -10,10 +10,9 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import axios from 'axios';
 
 export default function Profile() {
-  const { user, firebaseUser, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -34,43 +33,13 @@ export default function Profile() {
     );
   };
 
-  const handleSetAsAdmin = async () => {
-    Alert.alert(
-      'Set as Admin',
-      'This will grant you admin privileges. Continue?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Confirm',
-          onPress: async () => {
-            try {
-              if (firebaseUser) {
-                const token = await firebaseUser.getIdToken();
-                const response = await axios.post(
-                  `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/auth/set-admin`,
-                  {},
-                  { headers: { Authorization: `Bearer ${token}` } }
-                );
-                
-                if (response.data.success) {
-                  Alert.alert('Success', 'You are now an admin. Please restart the app.');
-                }
-              }
-            } catch (error: any) {
-              Alert.alert('Error', error.response?.data?.detail || 'Failed to set as admin');
-            }
-          }
-        }
-      ]
-    );
-  };
-
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
           <Ionicons name="person" size={48} color="#FFFFFF" />
         </View>
+        <Text style={styles.name}>{user?.firstName} {user?.lastName}</Text>
         <Text style={styles.email}>{user?.email}</Text>
         <View style={styles.roleBadge}>
           <Text style={styles.roleText}>{user?.role?.toUpperCase()}</Text>
@@ -104,18 +73,22 @@ export default function Profile() {
             </View>
           </View>
         </View>
+
+        <View style={styles.freeNotesCard}>
+          <View style={styles.freeLessonRow}>
+            <Ionicons name="gift" size={24} color="#3B82F6" />
+            <View style={styles.freeLessonInfo}>
+              <Text style={styles.freeLessonLabel}>Free Notes</Text>
+              <Text style={styles.freeNotesStatus}>
+                {user?.freeNotesUsed ? 'Used' : 'Available'}
+              </Text>
+            </View>
+          </View>
+        </View>
       </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Account</Text>
-        
-        {user?.role !== 'admin' && (
-          <TouchableOpacity style={styles.menuItem} onPress={handleSetAsAdmin}>
-            <Ionicons name="shield-outline" size={24} color="#6B7280" />
-            <Text style={styles.menuText}>Set as Admin</Text>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-          </TouchableOpacity>
-        )}
         
         <TouchableOpacity style={styles.menuItem}>
           <Ionicons name="information-circle-outline" size={24} color="#6B7280" />
@@ -162,10 +135,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16
   },
-  email: {
-    fontSize: 18,
-    fontWeight: '600',
+  name: {
+    fontSize: 20,
+    fontWeight: 'bold',
     color: '#111827',
+    marginBottom: 4
+  },
+  email: {
+    fontSize: 14,
+    color: '#6B7280',
     marginBottom: 8
   },
   roleBadge: {
@@ -234,6 +212,12 @@ const styles = StyleSheet.create({
   freeLessonCard: {
     backgroundColor: '#ECFDF5',
     borderRadius: 12,
+    padding: 16,
+    marginBottom: 12
+  },
+  freeNotesCard: {
+    backgroundColor: '#DBEAFE',
+    borderRadius: 12,
     padding: 16
   },
   freeLessonRow: {
@@ -253,6 +237,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#10B981'
+  },
+  freeNotesStatus: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#3B82F6'
   },
   menuItem: {
     flexDirection: 'row',
