@@ -89,14 +89,12 @@ export default function Login() {
             style={styles.linkButton}
             onPress={() => router.push('/auth/signup')}
           >
-            <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
-          </TouchableOpacity>
+            <Text style={styles.linkText}>Don't have an account? Sign Up</Text>\n          </TouchableOpacity>
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Default Admin Credentials:</Text>
-          <Text style={styles.footerText}>Email: admin@cbeplanner.com</Text>
-          <Text style={styles.footerText}>Password: admin123</Text>
+          <Text style={styles.footerText}>First user can set themselves as admin</Text>
+          <Text style={styles.footerText}>after signing up via the profile menu</Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
