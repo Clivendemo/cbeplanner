@@ -217,12 +217,16 @@ async def verify_user_token(request: TokenVerifyRequest):
         
         user = await db.users.find_one({"firebaseUid": uid})
         if not user:
+            # Create new user with firstName and lastName
             new_user = {
                 "firebaseUid": uid,
                 "email": email,
+                "firstName": request.firstName or "",
+                "lastName": request.lastName or "",
                 "role": "teacher",
                 "walletBalance": 0.0,
                 "freeLessonUsed": False,
+                "freeNotesUsed": False,
                 "createdAt": datetime.utcnow()
             }
             result = await db.users.insert_one(new_user)
@@ -232,15 +236,45 @@ async def verify_user_token(request: TokenVerifyRequest):
     except Exception as e:
         raise HTTPException(status_code=401, detail=str(e))
 
-@api_router.post("/auth/set-admin")
-async def set_user_as_admin(user: dict = Depends(verify_token)):
-    """Set the current user as admin - for initial setup only"""
+@api_router.post("/auth/initialize-admin")
+async def initialize_default_admin():
+    """Initialize default admin account - called on first app startup"""
     try:
-        await db.users.update_one(
-            {"_id": ObjectId(user["id"])},
-            {"$set": {"role": "admin"}}
-        )
-        return {"success": True, "message": "User set as admin successfully"}
+        # Check if admin already exists
+        existing_admin = await db.users.find_one({"role": "admin"})
+        if existing_admin:
+            return {"success": True, "message": "Admin already exists", "exists": True}
+        
+        # Check if the default admin Firebase user exists
+        default_email = "admin@cbeplanner.com"
+        
+        # Try to get the Firebase user
+        try:
+            user_record = firebase_auth.get_user_by_email(default_email)
+            firebase_uid = user_record.uid
+        except:
+            # Firebase user doesn't exist, return instruction
+            return {
+                "success": False, 
+                "message": "Please create Firebase user with email: admin@cbeplanner.com",
+                "exists": False
+            }
+        
+        # Create admin in database
+        admin_user = {
+            "firebaseUid": firebase_uid,
+            "email": default_email,
+            "firstName": "Admin",
+            "lastName": "User",
+            "role": "admin",
+            "walletBalance": 0.0,
+            "freeLessonUsed": True,
+            "freeNotesUsed": True,
+            "createdAt": datetime.utcnow()
+        }
+        await db.users.insert_one(admin_user)
+        
+        return {"success": True, "message": "Default admin initialized", "exists": False}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
