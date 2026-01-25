@@ -196,9 +196,23 @@ async def verify_token(authorization: Optional[str] = Header(None)):
     
     token = authorization.split("Bearer ")[1]
     try:
-        decoded_token = firebase_auth.verify_id_token(token)
-        uid = decoded_token['uid']
-        email = decoded_token.get('email', '')
+        # Verify token using Google's public keys
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key={FIREBASE_API_KEY}",
+                params={"idToken": token}
+            )
+            
+            if response.status_code != 200:
+                raise HTTPException(status_code=401, detail="Invalid token")
+            
+            data = response.json()
+            if "users" not in data or len(data["users"]) == 0:
+                raise HTTPException(status_code=401, detail="Invalid token")
+            
+            user_data = data["users"][0]
+            uid = user_data["localId"]
+            email = user_data.get("email", "")
         
         # Get or create user
         user = await db.users.find_one({"firebaseUid": uid})
@@ -206,15 +220,21 @@ async def verify_token(authorization: Optional[str] = Header(None)):
             new_user = {
                 "firebaseUid": uid,
                 "email": email,
+                "firstName": "",
+                "lastName": "",
+                "schoolName": "",
                 "role": "teacher",
                 "walletBalance": 0.0,
                 "freeLessonUsed": False,
+                "freeNotesUsed": False,
                 "createdAt": datetime.utcnow()
             }
             result = await db.users.insert_one(new_user)
             user = await db.users.find_one({"_id": result.inserted_id})
         
         return serialize_doc(user)
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=401, detail=f"Token verification failed: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
 
