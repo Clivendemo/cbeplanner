@@ -76,9 +76,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, firstName?: string, lastName?: string, schoolName?: string) => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Send profile data to backend
+      if (firstName && lastName) {
+        const idToken = await userCredential.user.getIdToken();
+        await axios.post(`${BACKEND_URL}/api/auth/verify`, {
+          idToken,
+          firstName,
+          lastName,
+          schoolName: schoolName || ''
+        });
+      }
     } catch (error: any) {
       throw new Error(error.message);
     }
