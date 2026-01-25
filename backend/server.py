@@ -153,9 +153,7 @@ class TokenVerifyRequest(BaseModel):
     lastName: Optional[str] = None
 
 class GenerateLessonRequest(BaseModel):
-    teacherName: str
-    schoolName: str
-    duration: int  # 40 or 80
+    duration: int  # 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80
     gradeId: str
     subjectId: str
     strandId: str
@@ -163,6 +161,7 @@ class GenerateLessonRequest(BaseModel):
     sloId: str
 
 class GenerateNotesRequest(BaseModel):
+    duration: int  # 25-80 minutes
     gradeId: str
     subjectId: str
     strandId: str
