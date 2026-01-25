@@ -15,9 +15,13 @@ const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 interface User {
   id: string;
   email: string;
+  firstName: string;
+  lastName: string;
+  schoolName: string;
   role: string;
   walletBalance: number;
   freeLessonUsed: boolean;
+  freeNotesUsed: boolean;
 }
 
 interface AuthContextType {
@@ -25,7 +29,7 @@ interface AuthContextType {
   firebaseUser: FirebaseUser | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, firstName: string, lastName: string, schoolName: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -39,11 +43,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log('Auth state changed:', firebaseUser?.email);
       setFirebaseUser(firebaseUser);
       
       if (firebaseUser) {
         try {
-          const idToken = await firebaseUser.getIdToken();
+          const idToken = await firebaseUser.getIdToken(true); // Force refresh
           await AsyncStorage.setItem('userToken', idToken);
           
           // Verify token with backend
@@ -52,10 +57,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
           
           if (response.data.success) {
+            console.log('User verified:', response.data.user.email);
             setUser(response.data.user);
           }
-        } catch (error) {
-          console.error('Error verifying token:', error);
+        } catch (error: any) {
+          console.error('Error verifying token:', error.response?.data || error.message);
+          // Clear invalid token
+          await AsyncStorage.removeItem('userToken');
+          await firebaseSignOut(auth);
+          setUser(null);
         }
       } else {
         await AsyncStorage.removeItem('userToken');
@@ -76,20 +86,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signUp = async (email: string, password: string, firstName?: string, lastName?: string, schoolName?: string) => {
+  const signUp = async (email: string, password: string, firstName: string, lastName: string, schoolName: string) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
       // Send profile data to backend
-      if (firstName && lastName) {
-        const idToken = await userCredential.user.getIdToken();
-        await axios.post(`${BACKEND_URL}/api/auth/verify`, {
-          idToken,
-          firstName,
-          lastName,
-          schoolName: schoolName || ''
-        });
-      }
+      const idToken = await userCredential.user.getIdToken();
+      await axios.post(`${BACKEND_URL}/api/auth/verify`, {
+        idToken,
+        firstName,
+        lastName,
+        schoolName
+      });
     } catch (error: any) {
       throw new Error(error.message);
     }
@@ -109,7 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshProfile = async () => {
     if (firebaseUser) {
       try {
-        const idToken = await firebaseUser.getIdToken();
+        const idToken = await firebaseUser.getIdToken(true);
         const response = await axios.get(`${BACKEND_URL}/api/profile`, {
           headers: { Authorization: `Bearer ${idToken}` }
         });
