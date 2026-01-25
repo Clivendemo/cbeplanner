@@ -501,18 +501,14 @@ async def get_lesson_plans(user: dict = Depends(verify_token)):
 async def generate_notes(request: GenerateNotesRequest, user: dict = Depends(verify_token)):
     # Check if user has free notes or wallet balance
     if not user["freeNotesUsed"]:
-        # Use free notes
         await db.users.update_one(
             {"_id": ObjectId(user["id"])},
             {"$set": {"freeNotesUsed": True}}
         )
     else:
-        # Check wallet balance (price per notes = 5 KES)
         notes_price = 5.0
         if user["walletBalance"] < notes_price:
             raise HTTPException(status_code=402, detail="Insufficient wallet balance")
-        
-        # Deduct from wallet
         await db.users.update_one(
             {"_id": ObjectId(user["id"])},
             {"$inc": {"walletBalance": -notes_price}}
@@ -527,18 +523,58 @@ async def generate_notes(request: GenerateNotesRequest, user: dict = Depends(ver
     if not all([grade, subject, strand, substrand]):
         raise HTTPException(status_code=404, detail="Invalid selection")
     
-    # Get activities for this strand/substrand
+    # Get activities
     activities = await db.activities.find({
         "strandId": request.strandId,
         "substrandId": request.substrandId
     }).to_list(100)
     
-    # Generate notes content summary
-    notes_content = f"Short notes for {strand['name']} - {substrand['name']} in {subject['name']} ({grade['name']})"
+    # Duration-aware content generation
+    duration = request.duration
+    
+    if duration <= 40:
+        # Short notes: Brief, bullet points
+        content = f"# {substrand['name']}\n\n" + \
+                 f"## Key Points\n" + \
+                 f"- Understanding {substrand['name']} concepts\n" + \
+                 f"- Basic principles and applications\n" + \
+                 f"- Real-world examples\n\n" + \
+                 f"## Summary\n" + \
+                 f"Brief explanation of {substrand['name']} within {strand['name']}."
+    elif duration <= 60:
+        # Medium notes: Moderate detail
+        content = f"# {substrand['name']}\n\n" + \
+                 f"## Introduction\n" + \
+                 f"{substrand['name']} is an important concept in {strand['name']}.\n\n" + \
+                 f"## Key Concepts\n" + \
+                 f"- Definition and explanation\n" + \
+                 f"- Core principles\n" + \
+                 f"- Practical applications\n" + \
+                 f"- Examples and illustrations\n\n" + \
+                 f"## Important Points\n" + \
+                 f"Detailed explanation of concepts with examples."
+    else:
+        # Comprehensive notes: Full detail
+        content = f"# {substrand['name']}\n\n" + \
+                 f"## Introduction\n" + \
+                 f"{substrand['name']} is a fundamental topic in {strand['name']} that forms the basis for further learning.\n\n" + \
+                 f"## Detailed Explanation\n" + \
+                 f"- Comprehensive overview of concepts\n" + \
+                 f"- Theoretical foundations\n" + \
+                 f"- Practical applications and real-world relevance\n" + \
+                 f"- Multiple examples and case studies\n" + \
+                 f"- Common misconceptions and clarifications\n\n" + \
+                 f"## Learning Activities\n" + \
+                 f"Students can engage in various activities to deepen understanding.\n\n" + \
+                 f"## Review Questions\n" + \
+                 f"Key questions for self-assessment and revision."
     
     # Create notes
     notes = {
         "teacherId": user["id"],
+        "teacherName": f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
+        "schoolName": user.get("schoolName", ""),
+        "duration": duration,
         "gradeId": request.gradeId,
         "gradeName": grade["name"],
         "subjectId": request.subjectId,
@@ -547,7 +583,7 @@ async def generate_notes(request: GenerateNotesRequest, user: dict = Depends(ver
         "strandName": strand["name"],
         "substrandId": request.substrandId,
         "substrandName": substrand["name"],
-        "content": notes_content,
+        "content": content,
         "activities": [a["description"] for a in activities],
         "createdAt": datetime.utcnow()
     }
