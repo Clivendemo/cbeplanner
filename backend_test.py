@@ -167,19 +167,20 @@ class CBEBackendTester:
     def test_cors_headers(self):
         """Test CORS configuration"""
         try:
-            response = self.session.options(f"{self.base_url}/grades")
+            # Test with Origin header to trigger CORS
+            headers = {"Origin": "https://example.com"}
+            response = self.session.get(f"{self.base_url}/", headers=headers)
             
             # Check for CORS headers
             cors_headers = [
-                'Access-Control-Allow-Origin',
-                'Access-Control-Allow-Methods',
-                'Access-Control-Allow-Headers'
+                'access-control-allow-origin',
+                'access-control-allow-credentials'
             ]
             
             found_cors = any(header in response.headers for header in cors_headers)
             
-            if found_cors or response.status_code in [200, 401, 404]:
-                self.log_test("CORS Configuration", True, "CORS appears to be configured")
+            if found_cors:
+                self.log_test("CORS Configuration", True, "CORS is properly configured")
                 return True
             else:
                 self.log_test("CORS Configuration", False, "CORS headers not found", dict(response.headers))
