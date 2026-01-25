@@ -238,12 +238,13 @@ async def verify_user_token(request: TokenVerifyRequest):
         
         user = await db.users.find_one({"firebaseUid": uid})
         if not user:
-            # Create new user with firstName and lastName
+            # Create new user with firstName, lastName, and schoolName
             new_user = {
                 "firebaseUid": uid,
                 "email": email,
                 "firstName": request.firstName or "",
                 "lastName": request.lastName or "",
+                "schoolName": request.schoolName or "",
                 "role": "teacher",
                 "walletBalance": 0.0,
                 "freeLessonUsed": False,
