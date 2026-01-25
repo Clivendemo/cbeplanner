@@ -68,6 +68,30 @@ export default function SignUp() {
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
+            <Ionicons name="person-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="First Name"
+              value={firstName}
+              onChangeText={setFirstName}
+              autoCapitalize="words"
+              placeholderTextColor="#9CA3AF"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons name="person-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Last Name"
+              value={lastName}
+              onChangeText={setLastName}
+              autoCapitalize="words"
+              placeholderTextColor="#9CA3AF"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
             <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
