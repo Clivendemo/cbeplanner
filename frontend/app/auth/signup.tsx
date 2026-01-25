@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 export default function SignUp() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [schoolName, setSchoolName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,7 +26,7 @@ export default function SignUp() {
   const router = useRouter();
 
   const handleSignUp = async () => {
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+    if (!firstName || !lastName || !schoolName || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
@@ -42,7 +43,7 @@ export default function SignUp() {
 
     setLoading(true);
     try {
-      await signUp(email, password);
+      await signUp(email, password, firstName, lastName, schoolName);
       Alert.alert(
         'Success', 
         'Account created successfully! Please login with your credentials.',
