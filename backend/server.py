@@ -9,8 +9,7 @@ from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from bson import ObjectId
-import firebase_admin
-from firebase_admin import credentials, auth as firebase_auth
+import httpx
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -20,11 +19,9 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Initialize Firebase Admin (for token verification)
-# Note: Firebase Admin SDK doesn't need explicit credentials for token verification
-# It only needs the project ID which is extracted from the token
-if not firebase_admin._apps:
-    firebase_admin.initialize_app()
+# Firebase project configuration
+FIREBASE_PROJECT_ID = "cbeplanner"
+FIREBASE_API_KEY = "AIzaSyBalkTy90NBRs7Qky_VPTlikVP6UD69-p8"
 
 # Create the main app
 app = FastAPI()
