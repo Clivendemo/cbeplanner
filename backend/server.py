@@ -249,9 +249,23 @@ async def verify_admin(authorization: Optional[str] = Header(None)):
 @api_router.post("/auth/verify")
 async def verify_user_token(request: TokenVerifyRequest):
     try:
-        decoded_token = firebase_auth.verify_id_token(request.idToken)
-        uid = decoded_token['uid']
-        email = decoded_token.get('email', '')
+        # Verify token using Google's Identity Toolkit API
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key={FIREBASE_API_KEY}",
+                json={"idToken": request.idToken}
+            )
+            
+            if response.status_code != 200:
+                raise HTTPException(status_code=401, detail="Invalid token")
+            
+            data = response.json()
+            if "users" not in data or len(data["users"]) == 0:
+                raise HTTPException(status_code=401, detail="Invalid token")
+            
+            user_data = data["users"][0]
+            uid = user_data["localId"]
+            email = user_data.get("email", "")
         
         user = await db.users.find_one({"firebaseUid": uid})
         if not user:
@@ -272,48 +286,37 @@ async def verify_user_token(request: TokenVerifyRequest):
             user = await db.users.find_one({"_id": result.inserted_id})
         
         return {"success": True, "user": serialize_doc(user)}
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=401, detail=f"Token verification failed: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=401, detail=str(e))
 
 @api_router.post("/auth/initialize-admin")
 async def initialize_default_admin():
-    """Initialize default admin account - called on first app startup"""
+    """Initialize default admin account - requires manual Firebase user creation"""
     try:
         # Check if admin already exists
         existing_admin = await db.users.find_one({"role": "admin"})
         if existing_admin:
             return {"success": True, "message": "Admin already exists", "exists": True}
         
-        # Check if the default admin Firebase user exists
+        # Check if user with admin email exists in database
         default_email = "admin@cbeplanner.com"
+        admin_user = await db.users.find_one({"email": default_email})
         
-        # Try to get the Firebase user
-        try:
-            user_record = firebase_auth.get_user_by_email(default_email)
-            firebase_uid = user_record.uid
-        except:
-            # Firebase user doesn't exist, return instruction
-            return {
-                "success": False, 
-                "message": "Please create Firebase user with email: admin@cbeplanner.com",
-                "exists": False
-            }
+        if admin_user:
+            # Update role to admin
+            await db.users.update_one(
+                {"_id": admin_user["_id"]},
+                {"$set": {"role": "admin"}}
+            )
+            return {"success": True, "message": "User promoted to admin"}
         
-        # Create admin in database
-        admin_user = {
-            "firebaseUid": firebase_uid,
-            "email": default_email,
-            "firstName": "Admin",
-            "lastName": "User",
-            "role": "admin",
-            "walletBalance": 0.0,
-            "freeLessonUsed": True,
-            "freeNotesUsed": True,
-            "createdAt": datetime.utcnow()
+        return {
+            "success": False,
+            "message": "Please create Firebase user with email: admin@cbeplanner.com and login first",
+            "exists": False
         }
-        await db.users.insert_one(admin_user)
-        
-        return {"success": True, "message": "Default admin initialized", "exists": False}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
