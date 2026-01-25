@@ -713,6 +713,11 @@ async def seed_sample_data(user: dict = Depends(verify_admin)):
     
     return {"success": True, "message": "Sample data seeded successfully"}
 
+# Health check endpoint
+@app.get("/api/")
+async def health_check():
+    return {"message": "CBE Lesson Planning System API is running", "status": "healthy"}
+
 # Include router
 app.include_router(api_router)
 
