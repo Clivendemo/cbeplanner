@@ -415,6 +415,71 @@ async def get_lesson_plans(user: dict = Depends(verify_token)):
     plans = await db.lesson_plans.find({"teacherId": user["id"]}).sort("createdAt", -1).to_list(100)
     return {"success": True, "lessonPlans": [serialize_doc(p) for p in plans]}
 
+@api_router.post("/notes/generate")
+async def generate_notes(request: GenerateNotesRequest, user: dict = Depends(verify_token)):
+    # Check if user has free notes or wallet balance
+    if not user["freeNotesUsed"]:
+        # Use free notes
+        await db.users.update_one(
+            {"_id": ObjectId(user["id"])},
+            {"$set": {"freeNotesUsed": True}}
+        )
+    else:
+        # Check wallet balance (price per notes = 5 KES)
+        notes_price = 5.0
+        if user["walletBalance"] < notes_price:
+            raise HTTPException(status_code=402, detail="Insufficient wallet balance")
+        
+        # Deduct from wallet
+        await db.users.update_one(
+            {"_id": ObjectId(user["id"])},
+            {"$inc": {"walletBalance": -notes_price}}
+        )
+    
+    # Fetch all related data
+    grade = await db.grades.find_one({"_id": ObjectId(request.gradeId)})
+    subject = await db.subjects.find_one({"_id": ObjectId(request.subjectId)})
+    strand = await db.strands.find_one({"_id": ObjectId(request.strandId)})
+    substrand = await db.substrands.find_one({"_id": ObjectId(request.substrandId)})
+    
+    if not all([grade, subject, strand, substrand]):
+        raise HTTPException(status_code=404, detail="Invalid selection")
+    
+    # Get activities for this strand/substrand
+    activities = await db.activities.find({
+        "strandId": request.strandId,
+        "substrandId": request.substrandId
+    }).to_list(100)
+    
+    # Generate notes content summary
+    notes_content = f"Short notes for {strand['name']} - {substrand['name']} in {subject['name']} ({grade['name']})"
+    
+    # Create notes
+    notes = {
+        "teacherId": user["id"],
+        "gradeId": request.gradeId,
+        "gradeName": grade["name"],
+        "subjectId": request.subjectId,
+        "subjectName": subject["name"],
+        "strandId": request.strandId,
+        "strandName": strand["name"],
+        "substrandId": request.substrandId,
+        "substrandName": substrand["name"],
+        "content": notes_content,
+        "activities": [a["description"] for a in activities],
+        "createdAt": datetime.utcnow()
+    }
+    
+    result = await db.notes.insert_one(notes)
+    notes["id"] = str(result.inserted_id)
+    
+    return {"success": True, "notes": notes}
+
+@api_router.get("/notes")
+async def get_notes(user: dict = Depends(verify_token)):
+    notes = await db.notes.find({"teacherId": user["id"]}).sort("createdAt", -1).to_list(100)
+    return {"success": True, "notes": [serialize_doc(n) for n in notes]}
+
 # ==================== ADMIN ENDPOINTS ====================
 
 # Grades
