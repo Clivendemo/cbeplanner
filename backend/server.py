@@ -152,6 +152,7 @@ class TokenVerifyRequest(BaseModel):
     idToken: str
     firstName: Optional[str] = None
     lastName: Optional[str] = None
+    schoolName: Optional[str] = None
 
 class GenerateLessonRequest(BaseModel):
     duration: int  # 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80
