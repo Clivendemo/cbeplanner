@@ -45,6 +45,7 @@ class User(BaseModel):
     email: EmailStr
     firstName: str
     lastName: str
+    schoolName: str = ""  # Default empty if not provided
     role: str = "teacher"  # teacher or admin
     walletBalance: float = 0.0
     freeLessonUsed: bool = False
