@@ -352,7 +352,7 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
     if not all([grade, subject, strand, substrand, slo]):
         raise HTTPException(status_code=404, detail="Invalid selection")
     
-    # Get activities
+    # Get activities for this strand/substrand
     activities = await db.activities.find({
         "strandId": request.strandId,
         "substrandId": request.substrandId
@@ -391,29 +391,76 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
             }).to_list(100)
             assessments = [{"name": a["name"], "description": a["description"]} for a in assess_docs]
     
-    # Classify SLOs into Knowledge, Skills, Attitudes
-    knowledge = [f"Understand {slo['name']}"]
-    skills = [f"Apply concepts of {substrand['name']}"]
-    attitudes = ["Show interest and curiosity in learning"]
+    # Duration-aware content generation
+    duration = request.duration
+    
+    # Classify SLOs by domain
+    knowledge = [f"Understand {slo['name']}", f"Recall key concepts of {substrand['name']}"]
+    skills = [f"Apply {substrand['name']} concepts", f"Demonstrate understanding of {slo['name']}"]
+    attitudes = ["Show curiosity and interest", "Develop positive learning habits"]
     
     # Learning resources
-    learning_resources = ["Textbooks", "Charts", "Real objects", "Digital resources"]
+    learning_resources = ["Textbooks", "Charts and diagrams", "Real objects/models", "Digital resources"]
     
-    # Generate lesson body based on duration
-    introduction = f"Teacher introduces {substrand['name']} concepts. Learners share prior knowledge."
-    lesson_development = f"Teacher explains {slo['name']}. Learners participate in guided activities: {', '.join([a['description'] for a in activities[:2]])}."
-    extended_activity = ""
-    if request.duration == 80:
-        extended_activity = "Learners work in groups on advanced tasks related to the topic. Teacher provides individualized support."
-    conclusion = "Teacher summarizes key points. Learners ask questions and reflect on what they learned."
-    assessment_text = "; ".join([f"{a['name']}: {a['description']}" for a in assessments]) if assessments else "Oral questions and written tasks"
+    # Duration-based content depth
+    if duration <= 40:
+        # Short lesson (25-40 min): Brief, focused
+        intro_time = 5
+        dev_time = duration - 15
+        conclusion_time = 5
+        assessment_time = 5
+        
+        introduction = f"Teacher introduces {substrand['name']} ({intro_time} min). Learners share what they know about the topic."
+        lesson_development = f"Teacher explains {slo['name']} with examples ({dev_time} min). " + \
+                           f"Learners participate in: {activities[0]['description'] if activities else 'guided practice'}."
+        extended_activity = ""
+        conclusion = f"Teacher summarizes key points ({conclusion_time} min). Learners reflect on learning."
+        assessment_text = f"Quick assessment ({assessment_time} min): " + \
+                        (assessments[0]['description'] if assessments else "Oral questions and observation")
     
-    # Create lesson plan
+    elif duration <= 60:
+        # Medium lesson (45-60 min): Moderate depth
+        intro_time = 7
+        dev_time = int((duration - 20) * 0.6)
+        ext_time = int((duration - 20) * 0.4)
+        conclusion_time = 8
+        assessment_time = 5
+        
+        introduction = f"Teacher introduces {substrand['name']} with real-life examples ({intro_time} min). " + \
+                      "Learners brainstorm and share prior knowledge."
+        lesson_development = f"Teacher explains {slo['name']} in detail ({dev_time} min). " + \
+                           f"Learners engage in: {', '.join([a['description'] for a in activities[:2]]) if activities else 'guided activities'}."
+        extended_activity = f"Group work ({ext_time} min): Learners work in small groups on practical tasks related to {substrand['name']}."
+        conclusion = f"Class discussion and summary ({conclusion_time} min). Learners present findings and reflect."
+        assessment_text = f"Assessment ({assessment_time} min): " + \
+                        ('; '.join([a['description'] for a in assessments[:2]]) if assessments else "Oral questions, written tasks, and observation")
+    
+    else:
+        # Long lesson (65-80 min): Comprehensive
+        intro_time = 10
+        dev_time = int((duration - 25) * 0.45)
+        ext_time = int((duration - 25) * 0.35)
+        conclusion_time = 10
+        assessment_time = int((duration - 25) * 0.20)
+        
+        introduction = f"Comprehensive introduction to {substrand['name']} ({intro_time} min). " + \
+                      "Teacher uses multimedia/real objects. Learners engage in discussion and pre-assessment."
+        lesson_development = f"Detailed explanation of {slo['name']} with multiple examples ({dev_time} min). " + \
+                           f"Learners participate in: {', '.join([a['description'] for a in activities[:3]]) if activities else 'various guided activities'}."
+        extended_activity = f"Extended group work and differentiated activities ({ext_time} min): " + \
+                          f"Learners explore {substrand['name']} through projects, experiments, or research. Teacher provides individualized support."
+        conclusion = f"Comprehensive review and reflection ({conclusion_time} min). " + \
+                    "Group presentations, peer feedback, and teacher summary."
+        assessment_text = f"Comprehensive assessment ({assessment_time} min): " + \
+                        ('; '.join([a['description'] for a in assessments]) if assessments else \
+                         "Multiple methods - oral questions, written tasks, practical demonstrations, peer assessment")
+    
+    # Create lesson plan with teacher info from profile
     lesson_plan = {
         "teacherId": user["id"],
-        "teacherName": request.teacherName,
-        "schoolName": request.schoolName,
-        "duration": request.duration,
+        "teacherName": f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
+        "schoolName": user.get("schoolName", ""),
+        "duration": duration,
         "gradeId": request.gradeId,
         "gradeName": grade["name"],
         "subjectId": request.subjectId,
