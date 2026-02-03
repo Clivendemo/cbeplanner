@@ -623,7 +623,12 @@ async def generate_notes(request: GenerateNotesRequest, user: dict = Depends(ver
     }
     
     result = await db.notes.insert_one(notes)
+    # Remove MongoDB _id and add string id
+    if "_id" in notes:
+        del notes["_id"]
     notes["id"] = str(result.inserted_id)
+    # Convert datetime to ISO string for JSON serialization
+    notes["createdAt"] = notes["createdAt"].isoformat()
     
     return {"success": True, "notes": notes}
 
