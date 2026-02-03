@@ -1,19 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 export default function Profile() {
-  const { user, signOut } = useAuth();
+  const { user, firebaseUser, signOut, refreshProfile } = useAuth();
   const router = useRouter();
+  const [resetting, setResetting] = useState(false);
+
+  const handleResetTrial = async () => {
+    setResetting(true);
+    try {
+      const token = await firebaseUser?.getIdToken();
+      await axios.post(
+        `${BACKEND_URL}/api/profile/reset-free-trial`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      await refreshProfile();
+      Alert.alert('Success', 'Free trial reset and 100 KES added to wallet!');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to reset trial');
+    } finally {
+      setResetting(false);
+    }
+  };
 
   const handleSignOut = async () => {
     Alert.alert(
