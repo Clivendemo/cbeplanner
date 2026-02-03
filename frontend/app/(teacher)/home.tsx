@@ -87,15 +87,21 @@ export default function Home() {
     try {
       setLoading(true);
       const headers = await getHeaders();
+      console.log('Loading strands for subject:', subjectId);
       const response = await axios.get(`${BACKEND_URL}/api/strands?subjectId=${subjectId}`, { headers });
+      console.log('Strands response:', response.data);
       if (response.data.success) {
+        console.log('Strands loaded:', response.data.strands.length);
         setStrands(response.data.strands);
         setSubstrands([]);
         setSlos([]);
+        if (response.data.strands.length === 0) {
+          Alert.alert('No Data', 'No strands found for this subject. Please ask admin to seed sample data.');
+        }
       }
-    } catch (error) {
-      console.error('Error loading strands:', error);
-      Alert.alert('Error', 'Failed to load strands');
+    } catch (error: any) {
+      console.error('Error loading strands:', error.response?.data || error.message);
+      Alert.alert('Error', 'Failed to load strands. Please ensure sample data is loaded.');
     } finally {
       setLoading(false);
     }
