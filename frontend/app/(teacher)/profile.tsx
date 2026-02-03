@@ -300,5 +300,12 @@ const styles = StyleSheet.create({
   },
   signOutText: {
     color: '#EF4444'
+  },
+  resetButton: {
+    marginTop: 8,
+    backgroundColor: '#EEF2FF'
+  },
+  resetText: {
+    color: '#6366F1'
   }
 });
