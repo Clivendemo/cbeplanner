@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the CBE Lesson Planning System backend APIs"
+user_problem_statement: "Fix cascading dropdowns for lesson plan creation and test backend APIs"
 
 backend:
   - task: "Health Check Endpoint"
