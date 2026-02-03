@@ -13,6 +13,7 @@ import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
+import { LessonPlanDisplay } from '../../components/LessonPlanDisplay';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
