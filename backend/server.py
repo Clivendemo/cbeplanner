@@ -823,9 +823,18 @@ async def admin_create_slo_mapping(mapping: SLOMapping, user: dict = Depends(ver
 
 # ==================== SEED DATA ENDPOINT ====================
 
+@api_router.post("/admin/seed")
+async def seed_public():
+    """Public endpoint to seed sample data for testing"""
+    return await seed_sample_data_internal()
+
 @api_router.post("/admin/seed-data")
 async def seed_sample_data(user: dict = Depends(verify_admin)):
-    """Seed comprehensive sample curriculum data"""
+    """Seed comprehensive sample curriculum data (admin only)"""
+    return await seed_sample_data_internal()
+
+async def seed_sample_data_internal():
+    """Internal function to seed comprehensive sample curriculum data"""
     
     # Clear existing data
     await db.grades.delete_many({})
