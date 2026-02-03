@@ -129,6 +129,21 @@ export default function Profile() {
           <Ionicons name="log-out-outline" size={24} color="#EF4444" />
           <Text style={[styles.menuText, styles.signOutText]}>Sign Out</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.menuItem, styles.resetButton]} 
+          onPress={handleResetTrial}
+          disabled={resetting}
+        >
+          {resetting ? (
+            <ActivityIndicator size="small" color="#6366F1" />
+          ) : (
+            <Ionicons name="refresh-outline" size={24} color="#6366F1" />
+          )}
+          <Text style={[styles.menuText, styles.resetText]}>
+            {resetting ? 'Resetting...' : 'Reset Free Trial (Test)'}
+          </Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
