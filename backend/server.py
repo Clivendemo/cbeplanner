@@ -517,6 +517,9 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
     }
     
     result = await db.lesson_plans.insert_one(lesson_plan)
+    # Remove MongoDB _id and add string id
+    if "_id" in lesson_plan:
+        del lesson_plan["_id"]
     lesson_plan["id"] = str(result.inserted_id)
     # Convert datetime to ISO string for JSON serialization
     lesson_plan["createdAt"] = lesson_plan["createdAt"].isoformat()
