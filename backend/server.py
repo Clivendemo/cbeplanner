@@ -825,7 +825,7 @@ async def admin_create_slo_mapping(mapping: SLOMapping, user: dict = Depends(ver
 
 @api_router.post("/admin/seed-data")
 async def seed_sample_data(user: dict = Depends(verify_admin)):
-    """Seed sample curriculum data"""
+    """Seed comprehensive sample curriculum data"""
     
     # Clear existing data
     await db.grades.delete_many({})
@@ -840,7 +840,7 @@ async def seed_sample_data(user: dict = Depends(verify_admin)):
     await db.assessments.delete_many({})
     await db.slo_mappings.delete_many({})
     
-    # Create Grades
+    # ==================== CREATE GRADES ====================
     grades_data = [
         {"name": "Grade 1", "order": 1},
         {"name": "Grade 2", "order": 2},
@@ -852,7 +852,7 @@ async def seed_sample_data(user: dict = Depends(verify_admin)):
     grades_result = await db.grades.insert_many(grades_data)
     grade_ids = [str(id) for id in grades_result.inserted_ids]
     
-    # Create Subjects (grade-specific)
+    # ==================== CREATE SUBJECTS ====================
     subjects_data = [
         # Lower Primary (Grades 1-3)
         {"name": "Literacy Activities", "gradeIds": grade_ids[0:3]},
@@ -867,123 +867,258 @@ async def seed_sample_data(user: dict = Depends(verify_admin)):
     subjects_result = await db.subjects.insert_many(subjects_data)
     subject_ids = [str(id) for id in subjects_result.inserted_ids]
     
-    # Create Strands for Mathematics (Grade 4-6)
-    math_subject_id = subject_ids[4]
-    strands_data = [
+    # Extract subject IDs for easier reference
+    math_subject_id = subject_ids[4]  # Mathematics for Grade 4-6
+    english_subject_id = subject_ids[3]  # English for Grade 4-6
+    science_subject_id = subject_ids[5]  # Science for Grade 4-6
+    
+    # ==================== CREATE STRANDS ====================
+    
+    # Mathematics Strands
+    math_strands = [
         {"name": "Numbers", "subjectId": math_subject_id},
         {"name": "Algebra", "subjectId": math_subject_id},
         {"name": "Geometry", "subjectId": math_subject_id},
         {"name": "Measurement", "subjectId": math_subject_id}
     ]
-    strands_result = await db.strands.insert_many(strands_data)
-    strand_ids = [str(id) for id in strands_result.inserted_ids]
+    math_strands_result = await db.strands.insert_many(math_strands)
+    math_strand_ids = [str(id) for id in math_strands_result.inserted_ids]
     
-    # Create Sub-strands for Numbers
-    numbers_strand_id = strand_ids[0]
-    substrands_data = [
-        {"name": "Whole Numbers", "strandId": numbers_strand_id},
-        {"name": "Fractions", "strandId": numbers_strand_id},
-        {"name": "Decimals", "strandId": numbers_strand_id}
+    # English Strands
+    english_strands = [
+        {"name": "Listening and Speaking", "subjectId": english_subject_id},
+        {"name": "Reading", "subjectId": english_subject_id},
+        {"name": "Writing", "subjectId": english_subject_id},
+        {"name": "Language Structure", "subjectId": english_subject_id}
     ]
-    substrands_result = await db.substrands.insert_many(substrands_data)
-    substrand_ids = [str(id) for id in substrands_result.inserted_ids]
+    english_strands_result = await db.strands.insert_many(english_strands)
+    english_strand_ids = [str(id) for id in english_strands_result.inserted_ids]
     
-    # Create SLOs for Whole Numbers
-    whole_numbers_substrand_id = substrand_ids[0]
-    slos_data = [
+    # Science Strands
+    science_strands = [
+        {"name": "Living Things", "subjectId": science_subject_id},
+        {"name": "Energy", "subjectId": science_subject_id},
+        {"name": "Materials", "subjectId": science_subject_id}
+    ]
+    science_strands_result = await db.strands.insert_many(science_strands)
+    science_strand_ids = [str(id) for id in science_strands_result.inserted_ids]
+    
+    # ==================== CREATE SUB-STRANDS ====================
+    
+    # Math - Numbers sub-strands
+    numbers_substrands = [
+        {"name": "Whole Numbers", "strandId": math_strand_ids[0]},
+        {"name": "Fractions", "strandId": math_strand_ids[0]},
+        {"name": "Decimals", "strandId": math_strand_ids[0]},
+        {"name": "Percentages", "strandId": math_strand_ids[0]}
+    ]
+    numbers_substrands_result = await db.substrands.insert_many(numbers_substrands)
+    numbers_substrand_ids = [str(id) for id in numbers_substrands_result.inserted_ids]
+    
+    # Math - Geometry sub-strands
+    geometry_substrands = [
+        {"name": "2D Shapes", "strandId": math_strand_ids[2]},
+        {"name": "3D Shapes", "strandId": math_strand_ids[2]},
+        {"name": "Angles", "strandId": math_strand_ids[2]}
+    ]
+    geometry_substrands_result = await db.substrands.insert_many(geometry_substrands)
+    geometry_substrand_ids = [str(id) for id in geometry_substrands_result.inserted_ids]
+    
+    # English - Reading sub-strands
+    reading_substrands = [
+        {"name": "Comprehension", "strandId": english_strand_ids[1]},
+        {"name": "Vocabulary", "strandId": english_strand_ids[1]},
+        {"name": "Fluency", "strandId": english_strand_ids[1]}
+    ]
+    reading_substrands_result = await db.substrands.insert_many(reading_substrands)
+    reading_substrand_ids = [str(id) for id in reading_substrands_result.inserted_ids]
+    
+    # Science - Living Things sub-strands
+    living_things_substrands = [
+        {"name": "Plants", "strandId": science_strand_ids[0]},
+        {"name": "Animals", "strandId": science_strand_ids[0]},
+        {"name": "Human Body", "strandId": science_strand_ids[0]}
+    ]
+    living_things_substrands_result = await db.substrands.insert_many(living_things_substrands)
+    living_things_substrand_ids = [str(id) for id in living_things_substrands_result.inserted_ids]
+    
+    # ==================== CREATE SLOs ====================
+    
+    # Math - Whole Numbers SLOs
+    whole_numbers_slos = [
         {
             "name": "Read and write numbers up to 10,000",
             "description": "By the end of the sub-strand, the learner should be able to read and write numbers up to 10,000 in numerals and words",
-            "substrandId": whole_numbers_substrand_id
+            "substrandId": numbers_substrand_ids[0]
         },
         {
-            "name": "Compare and order numbers",
-            "description": "By the end of the sub-strand, the learner should be able to compare and order numbers up to 10,000",
-            "substrandId": whole_numbers_substrand_id
+            "name": "Compare and order numbers up to 10,000",
+            "description": "By the end of the sub-strand, the learner should be able to compare and order numbers up to 10,000 using greater than, less than and equal to",
+            "substrandId": numbers_substrand_ids[0]
+        },
+        {
+            "name": "Add and subtract numbers up to 10,000",
+            "description": "By the end of the sub-strand, the learner should be able to add and subtract whole numbers up to 10,000",
+            "substrandId": numbers_substrand_ids[0]
         }
     ]
-    slos_result = await db.slos.insert_many(slos_data)
-    slo_ids = [str(id) for id in slos_result.inserted_ids]
+    whole_numbers_slos_result = await db.slos.insert_many(whole_numbers_slos)
+    whole_numbers_slo_ids = [str(id) for id in whole_numbers_slos_result.inserted_ids]
     
-    # Create Activities
-    activities_data = [
+    # Math - 2D Shapes SLOs
+    shapes_slos = [
         {
-            "description": "Use number cards to practice reading and writing numbers",
-            "strandId": numbers_strand_id,
-            "substrandId": whole_numbers_substrand_id
+            "name": "Identify and name 2D shapes",
+            "description": "By the end of the sub-strand, the learner should be able to identify and name common 2D shapes including triangles, squares, rectangles, and circles",
+            "substrandId": geometry_substrand_ids[0]
         },
         {
-            "description": "Play number ordering games using place value charts",
-            "strandId": numbers_strand_id,
-            "substrandId": whole_numbers_substrand_id
-        },
-        {
-            "description": "Count objects in groups and write the corresponding numerals",
-            "strandId": numbers_strand_id,
-            "substrandId": whole_numbers_substrand_id
+            "name": "Draw 2D shapes",
+            "description": "By the end of the sub-strand, the learner should be able to draw and construct basic 2D shapes using appropriate tools",
+            "substrandId": geometry_substrand_ids[0]
         }
+    ]
+    shapes_slos_result = await db.slos.insert_many(shapes_slos)
+    shapes_slo_ids = [str(id) for id in shapes_slos_result.inserted_ids]
+    
+    # English - Reading Comprehension SLOs
+    reading_slos = [
+        {
+            "name": "Read and understand short stories",
+            "description": "By the end of the sub-strand, the learner should be able to read and comprehend short stories, identifying main ideas and characters",
+            "substrandId": reading_substrand_ids[0]
+        },
+        {
+            "name": "Answer questions about texts",
+            "description": "By the end of the sub-strand, the learner should be able to answer literal and inferential questions about texts read",
+            "substrandId": reading_substrand_ids[0]
+        }
+    ]
+    reading_slos_result = await db.slos.insert_many(reading_slos)
+    reading_slo_ids = [str(id) for id in reading_slos_result.inserted_ids]
+    
+    # Science - Plants SLOs
+    plants_slos = [
+        {
+            "name": "Identify parts of a plant",
+            "description": "By the end of the sub-strand, the learner should be able to identify and name the main parts of a flowering plant",
+            "substrandId": living_things_substrand_ids[0]
+        },
+        {
+            "name": "Describe plant growth",
+            "description": "By the end of the sub-strand, the learner should be able to describe the life cycle and growth process of plants",
+            "substrandId": living_things_substrand_ids[0]
+        }
+    ]
+    plants_slos_result = await db.slos.insert_many(plants_slos)
+    plants_slo_ids = [str(id) for id in plants_slos_result.inserted_ids]
+    
+    # ==================== CREATE ACTIVITIES ====================
+    activities_data = [
+        # Math - Whole Numbers
+        {"description": "Use number cards to practice reading and writing numbers", "strandId": math_strand_ids[0], "substrandId": numbers_substrand_ids[0]},
+        {"description": "Play number ordering games using place value charts", "strandId": math_strand_ids[0], "substrandId": numbers_substrand_ids[0]},
+        {"description": "Count objects in groups and write the corresponding numerals", "strandId": math_strand_ids[0], "substrandId": numbers_substrand_ids[0]},
+        {"description": "Practice addition and subtraction using counters and number lines", "strandId": math_strand_ids[0], "substrandId": numbers_substrand_ids[0]},
+        # Math - Shapes
+        {"description": "Identify 2D shapes in the classroom environment", "strandId": math_strand_ids[2], "substrandId": geometry_substrand_ids[0]},
+        {"description": "Draw shapes using rulers and geometric tools", "strandId": math_strand_ids[2], "substrandId": geometry_substrand_ids[0]},
+        {"description": "Create shape patterns and designs", "strandId": math_strand_ids[2], "substrandId": geometry_substrand_ids[0]},
+        # English - Reading
+        {"description": "Read short passages aloud and discuss main ideas", "strandId": english_strand_ids[1], "substrandId": reading_substrand_ids[0]},
+        {"description": "Answer comprehension questions in pairs", "strandId": english_strand_ids[1], "substrandId": reading_substrand_ids[0]},
+        {"description": "Identify and list new vocabulary from texts", "strandId": english_strand_ids[1], "substrandId": reading_substrand_ids[0]},
+        # Science - Plants
+        {"description": "Observe and label parts of real plants", "strandId": science_strand_ids[0], "substrandId": living_things_substrand_ids[0]},
+        {"description": "Plant seeds and observe their growth over time", "strandId": science_strand_ids[0], "substrandId": living_things_substrand_ids[0]},
+        {"description": "Draw and label the life cycle of a plant", "strandId": science_strand_ids[0], "substrandId": living_things_substrand_ids[0]}
     ]
     await db.activities.insert_many(activities_data)
     
-    # Create Core Competencies
+    # ==================== CREATE CORE COMPETENCIES ====================
     competencies_data = [
-        {"name": "Communication and Collaboration", "description": "Learners work together and share ideas"},
-        {"name": "Critical Thinking and Problem Solving", "description": "Learners analyze and solve mathematical problems"},
-        {"name": "Creativity and Imagination", "description": "Learners explore different ways to solve problems"},
-        {"name": "Digital Literacy", "description": "Learners use digital tools for learning"}
+        {"name": "Communication and Collaboration", "description": "Learners work together effectively and share ideas clearly"},
+        {"name": "Critical Thinking and Problem Solving", "description": "Learners analyze situations and develop creative solutions"},
+        {"name": "Creativity and Imagination", "description": "Learners explore different approaches and think innovatively"},
+        {"name": "Digital Literacy", "description": "Learners use digital tools and resources effectively"},
+        {"name": "Learning to Learn", "description": "Learners take responsibility for their own learning"},
+        {"name": "Self-Efficacy", "description": "Learners develop confidence in their abilities"}
     ]
     competencies_result = await db.competencies.insert_many(competencies_data)
     competency_ids = [str(id) for id in competencies_result.inserted_ids]
     
-    # Create Core Values
+    # ==================== CREATE CORE VALUES ====================
     values_data = [
-        {"name": "Respect", "description": "Learners show respect for others' ideas and contributions"},
-        {"name": "Integrity", "description": "Learners demonstrate honesty in their work"},
-        {"name": "Responsibility", "description": "Learners take responsibility for their learning"},
-        {"name": "Unity", "description": "Learners work together harmoniously"}
+        {"name": "Respect", "description": "Learners show respect for others, ideas, and diversity"},
+        {"name": "Integrity", "description": "Learners demonstrate honesty and ethical behavior"},
+        {"name": "Responsibility", "description": "Learners take ownership of their actions and learning"},
+        {"name": "Unity", "description": "Learners work together harmoniously and support each other"},
+        {"name": "Peace", "description": "Learners promote peaceful coexistence and conflict resolution"},
+        {"name": "Love", "description": "Learners show care and compassion for others"},
+        {"name": "Patriotism", "description": "Learners appreciate and contribute to their nation"}
     ]
     values_result = await db.values.insert_many(values_data)
     value_ids = [str(id) for id in values_result.inserted_ids]
     
-    # Create PCIs
+    # ==================== CREATE PCIs ====================
     pcis_data = [
-        {"name": "Financial Literacy", "description": "Understanding the value and use of money"},
-        {"name": "Education for Sustainable Development", "description": "Learning about conservation and sustainability"},
-        {"name": "Safety and Security", "description": "Understanding safety in various contexts"}
+        {"name": "Financial Literacy", "description": "Understanding the value and responsible use of money"},
+        {"name": "Education for Sustainable Development", "description": "Learning about environmental conservation and sustainability"},
+        {"name": "Safety and Security", "description": "Understanding personal and community safety"},
+        {"name": "Health Education", "description": "Promoting healthy lifestyles and wellbeing"},
+        {"name": "Citizenship", "description": "Understanding rights, responsibilities, and civic engagement"},
+        {"name": "Social Cohesion", "description": "Promoting unity and harmony in diverse communities"}
     ]
     pcis_result = await db.pcis.insert_many(pcis_data)
     pci_ids = [str(id) for id in pcis_result.inserted_ids]
     
-    # Create Assessments
+    # ==================== CREATE ASSESSMENTS ====================
     assessments_data = [
-        {"name": "Oral Questions", "description": "Ask learners to read numbers aloud"},
-        {"name": "Written Exercise", "description": "Provide worksheets with number writing tasks"},
-        {"name": "Group Activity", "description": "Observe learners working in groups"},
-        {"name": "Practical Task", "description": "Give real-world number problems to solve"}
+        {"name": "Oral Questions", "description": "Ask learners questions to assess understanding verbally"},
+        {"name": "Written Exercise", "description": "Provide written tasks and worksheets to complete"},
+        {"name": "Group Activity Observation", "description": "Observe learners working collaboratively in groups"},
+        {"name": "Practical Task", "description": "Give hands-on activities to demonstrate understanding"},
+        {"name": "Peer Assessment", "description": "Learners assess each other's work and provide feedback"},
+        {"name": "Self-Assessment", "description": "Learners reflect on their own learning and progress"},
+        {"name": "Projects and Presentations", "description": "Learners create and present work on topics learned"}
     ]
     assessments_result = await db.assessments.insert_many(assessments_data)
     assessment_ids = [str(id) for id in assessments_result.inserted_ids]
     
-    # Create SLO Mappings
-    mappings_data = [
-        {
-            "sloId": slo_ids[0],
-            "competencyIds": [competency_ids[0], competency_ids[1]],
-            "valueIds": [value_ids[1], value_ids[2]],
-            "pciIds": [pci_ids[0]],
-            "assessmentIds": [assessment_ids[0], assessment_ids[1]]
-        },
-        {
-            "sloId": slo_ids[1],
-            "competencyIds": [competency_ids[1], competency_ids[2]],
-            "valueIds": [value_ids[0], value_ids[3]],
-            "pciIds": [pci_ids[0]],
-            "assessmentIds": [assessment_ids[2], assessment_ids[3]]
+    # ==================== CREATE SLO MAPPINGS ====================
+    all_slo_ids = whole_numbers_slo_ids + shapes_slo_ids + reading_slo_ids + plants_slo_ids
+    
+    # Create mappings for each SLO
+    mappings_data = []
+    for idx, slo_id in enumerate(all_slo_ids):
+        mapping = {
+            "sloId": slo_id,
+            "competencyIds": [competency_ids[idx % len(competency_ids)], competency_ids[(idx + 1) % len(competency_ids)]],
+            "valueIds": [value_ids[idx % len(value_ids)], value_ids[(idx + 2) % len(value_ids)]],
+            "pciIds": [pci_ids[idx % len(pci_ids)]],
+            "assessmentIds": [assessment_ids[idx % len(assessment_ids)], assessment_ids[(idx + 1) % len(assessment_ids)]]
         }
-    ]
+        mappings_data.append(mapping)
+    
     await db.slo_mappings.insert_many(mappings_data)
     
-    return {"success": True, "message": "Sample data seeded successfully"}
+    return {
+        "success": True, 
+        "message": "Comprehensive sample data seeded successfully",
+        "summary": {
+            "grades": len(grade_ids),
+            "subjects": len(subject_ids),
+            "strands": len(math_strand_ids) + len(english_strand_ids) + len(science_strand_ids),
+            "substrands": len(numbers_substrand_ids) + len(geometry_substrand_ids) + len(reading_substrand_ids) + len(living_things_substrand_ids),
+            "slos": len(all_slo_ids),
+            "activities": len(activities_data),
+            "competencies": len(competency_ids),
+            "values": len(value_ids),
+            "pcis": len(pci_ids),
+            "assessments": len(assessment_ids),
+            "slo_mappings": len(mappings_data)
+        }
+    }
 
 # Health check endpoint
 @app.get("/api/")
