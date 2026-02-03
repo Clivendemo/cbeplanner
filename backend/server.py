@@ -518,6 +518,8 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
     
     result = await db.lesson_plans.insert_one(lesson_plan)
     lesson_plan["id"] = str(result.inserted_id)
+    # Convert datetime to ISO string for JSON serialization
+    lesson_plan["createdAt"] = lesson_plan["createdAt"].isoformat()
     
     return {"success": True, "lessonPlan": lesson_plan}
 
