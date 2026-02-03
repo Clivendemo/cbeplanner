@@ -329,6 +329,15 @@ async def initialize_default_admin():
 async def get_profile(user: dict = Depends(verify_token)):
     return {"success": True, "user": user}
 
+@api_router.post("/profile/reset-free-trial")
+async def reset_free_trial(user: dict = Depends(verify_token)):
+    """Reset user's free lesson/notes trial for testing"""
+    await db.users.update_one(
+        {"_id": ObjectId(user["id"])},
+        {"$set": {"freeLessonUsed": False, "freeNotesUsed": False, "walletBalance": 100.0}}
+    )
+    return {"success": True, "message": "Free trial reset and 100 KES added to wallet"}
+
 @api_router.get("/grades")
 async def get_grades(user: dict = Depends(verify_token)):
     grades = await db.grades.find().sort("order", 1).to_list(100)
