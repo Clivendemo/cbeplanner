@@ -34,9 +34,9 @@ export default function Login() {
     setLoading(true);
     try {
       await signIn(email, password);
+      // Navigation is handled in AuthContext
     } catch (error: any) {
       Alert.alert('Login Failed', error.message);
-    } finally {
       setLoading(false);
     }
   };
