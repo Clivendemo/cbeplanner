@@ -865,6 +865,8 @@ async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Dep
                         "strand": content["strand"],
                         "substrand": content["substrand"],
                         "slo": content["slo"],
+                        "coreCompetencies": content["coreCompetencies"],
+                        "coreValues": content["coreValues"],
                         "keyInquiryQuestions": content["keyInquiryQuestions"],
                         "learningExperiences": content["learningExperiences"],
                         "learningResources": content["learningResources"],
