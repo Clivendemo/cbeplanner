@@ -182,6 +182,21 @@ export default function Profile() {
             {resetting ? 'Resetting...' : 'Reset Free Trial (Test)'}
           </Text>
         </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.menuItem, styles.adminButton]} 
+          onPress={handleBecomeAdmin}
+          disabled={becomingAdmin}
+        >
+          {becomingAdmin ? (
+            <ActivityIndicator size="small" color="#F59E0B" />
+          ) : (
+            <Ionicons name="shield-checkmark-outline" size={24} color="#F59E0B" />
+          )}
+          <Text style={[styles.menuText, styles.adminText]}>
+            {becomingAdmin ? 'Processing...' : 'Access Admin Panel'}
+          </Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
