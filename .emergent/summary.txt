@@ -1,0 +1,154 @@
+<analysis>
+
+**original_problem_statement**: The user wants to build a production-ready Competency-Based Education (CBE) lesson planning system for Kenyan teachers.
+
+**PRODUCT REQUIREMENTS:**
+
+- **Core Tools:** Lesson Plan Generator, Short Notes Generator, and Schemes of Work Generator.
+- **Authentication:** Teachers sign up with Full Name, School Name, and Email. This information is stored and used in generated documents. Password reset functionality is required.
+- **Curriculum Logic (Shared):** Tools use cascading dropdowns: Grade/Class -> Learning Area -> Strand -> Sub-strand -> Specific Learning Outcomes (SLO).
+- **Data Model (KICD Aligned):** A strict hierarchy of curriculum data, including mappings for Core Competencies, Core Values, and Pertinent & Contemporary Issues (PCIs).
+- **Lesson Plan Output:** Professional, KICD-compliant tabular format. Must include teacher's details, competencies, values, etc.
+- **Short Notes Output:** Concise, learner-friendly notes with PDF download capability.
+- **Schemes of Work Output:** A comprehensive, multi-week plan based on a provided DOCX template, with the ability to insert flexible breaks (holidays, exams) and download as a PDF.
+- **Teacher Dashboard:** A tile-based interface for easy access to all features (Create Lesson, Generate Notes, Schemes of Work, Profile, etc.).
+- **Admin Capabilities:** An in-app admin panel to view, add, and edit all curriculum data (grades, subjects, strands, etc.).
+- **Monetization:** A wallet system for users to top up their accounts, with M-Pesa STK push integration.
+- **Database:** The user has requested migrating from the current MongoDB to Neon PostgreSQL for the M-Pesa feature.
+
+**User's preferred language**: English
+
+**what currently exists?**
+A full-stack application with an Expo (React Native) frontend and a FastAPI/MongoDB backend. Firebase is used for authentication.
+
+- **Frontend:**
+  - A seamless authentication flow (Signup, Login, Password Reset) is in place.
+  - After login, teachers are directed to a tile-based dashboard providing access to all features.
+  - Implemented screens for:
+    - Lesson Plan Generation () with working cascading dropdowns.
+    - Notes Generation () with PDF download functionality.
+    - Schemes of Work Generation () with complex break-insertion logic and PDF download.
+    - User Profile () with buttons to reset the trial and access the admin panel.
+  - A comprehensive Admin Panel () has been built for data management.
+
+- **Backend:**
+  - Robust APIs for user management, authentication, and all curriculum CRUD operations.
+  - Endpoints for generating lesson plans, notes (with PDF), and schemes of work (with PDF).
+  - A public  endpoint for populating initial data.
+  - The database is populated with extensive data for Grades 1-6 and a comprehensive set of Grade 10 data, including subjects, strands, SLOs, and their mappings to competencies, values, and PCIs.
+
+**Last working item**:
+- **Last item agent was working:** The user uploaded five PDF documents containing KICD curriculum designs for 'Chemistry', 'Computer Science', 'CSL', 'English', and 'Fasihi ya Kiswahili'. The user requested that the app's data be updated to align with these documents. The agent successfully extracted the curriculum structure (strands, sub-strands, SLOs) from all five PDFs into a JSON-like text format. The process was stopped before this extracted text was parsed and inserted into the MongoDB database.
+    - Status: IN PROGRESS
+    - Agent Testing Done: N
+    - Which testing method agent to use? backend testing agent
+    - User Testing Done: N
+
+**All Pending/In progress Issue list**:
+- There are no outstanding bugs or issues. The work is focused on implementing new features and data updates as requested by the user.
+
+**In progress Task List**:
+- **Task 1: Populate Database with Extracted Curriculum Data (P0)**
+  - **Description:** The curriculum data extracted from the five user-provided PDFs needs to be parsed and inserted into the MongoDB database. This involves creating new subjects, strands, sub-strands, and SLOs while ensuring correct relationships (e.g., , ).
+  - **Where to resume:** Create a Python script or use  to process the JSON-like text data (available in the chat history from messages 295-301) and use  to perform the database insertions. The script must handle checking for existing data to avoid duplicates.
+  - **What will be achieved with this?** The application's database will be fully aligned with the curriculum designs provided by the user, making the lesson and scheme generation tools more accurate and complete.
+  - **Status:** IN PROGRESS
+  - **Should Test frontend/backend/both after fix?** backend
+  - **Blocked on something:** None.
+
+**Upcoming and Future Tasks**
+- **Upcoming Tasks:**
+  - **P0: M-Pesa Integration & Database Migration:**
+    - The user explicitly requested to add an M-Pesa STK push for wallet top-ups and to use Neon PostgreSQL for this functionality.
+    - This is a major architectural change requiring:
+      1.  Setting up a Neon PostgreSQL database.
+      2.  Migrating the existing MongoDB schemas and data to PostgreSQL.
+      3.  Refactoring the entire backend in  to use a PostgreSQL client (e.g.,  or ) instead of .
+      4.  Implementing the M-Pesa Daraja API integration for STK push.
+  - **P1: Build Revision Papers Feature:**
+    - The user requested a placeholder for a Revision Papers feature on the teacher dashboard. The placeholder exists, but the backend and frontend for generating or managing revision papers need to be built.
+- **Future Tasks:**
+  - **P2: Implement Admin Import/Export API:**
+    - During the admin panel discussion, the agent proposed creating  and  endpoints to allow the user to back up and restore curriculum data using JSON files. This feature was agreed upon but not implemented.
+
+**Completed work in this session**
+- **Recently completed:**
+  - **Schemes of Work Generation:** Built a feature to generate detailed Schemes of Work from a DOCX template, including complex logic for adding flexible breaks (holidays, exams) and PDF export. (DONE)
+  - **Notes Generation with PDF:** Implemented a feature to generate short notes and download them as a PDF. (DONE)
+  - **Teacher Dashboard UI:** Replaced the bottom tab navigation with a modern, tile-based dashboard for a better user experience. (DONE)
+  - **Full Auth Flow Rework:** Overhauled the entire authentication system (signup, login, session management, password reset) to be seamless and robust. (DONE)
+  - **Comprehensive Admin Panel:** Created a functional UI for admins to manage all curriculum data directly within the app. (DONE)
+  - **Grade 10 Data Population:** Added extensive KICD-aligned curriculum data for Grade 10, including all subjects, strands, SLOs, and their mappings to competencies, values, and PCIs. (DONE)
+  - **Lesson/Scheme Content Enhancement:** Updated generation logic to dynamically include Core Competencies, Values, and PCIs in the final documents. (DONE)
+  - **Critical Bug Fixes:** Resolved the core cascading dropdown issue by fixing data seeding, and fixed a  in the lesson plan generation endpoint. (DONE)
+
+**Earlier issues found/mentioned but not fixed**
+- None. All previously mentioned issues have been resolved or superseded by larger architectural changes.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+- **Frontend:** Expo (React Native), Expo Router, React Context (), Axios.
+- **Backend:** FastAPI, MongoDB (with ), Pydantic.
+- **Authentication:** Firebase Authentication.
+- **PDF Generation:**  on the backend,  and  on the frontend.
+
+**key DB schema**
+- **users:** , , , , , , , , .
+- **grades, subjects, strands, substrands, slos:** Core curriculum hierarchy.
+- **competencies, values, pcis:** Mapped to SLOs.
+- **slo_mappings:** Joins SLOs with competencies, values, and PCIs.
+- **lesson_plans:** Stores generated lesson plan data.
+- **notes:** Stores generated notes data.
+- **schemes_of_work:** , , ,  (array of structured lesson/break data).
+
+**changes in tech stack**
+- **Added:**  for backend PDF generation.  and  for frontend PDF handling.
+- **Pending Major Change:** User has requested migrating the database from **MongoDB to Neon PostgreSQL** for the upcoming M-Pesa integration. This will require a full backend refactor.
+
+**All files of reference**
+- ****: The monolithic backend file containing all APIs, data models, and business logic. It has been extensively modified.
+- ****: The new main entry point for logged-in teachers.
+- ****: Contains the complex UI and logic for generating Schemes of Work.
+- ****: Contains the completely refactored authentication logic.
+- **Chat History (Messages 295-301):** Contains the raw extracted curriculum data from the user's PDFs, which is needed for the next step.
+
+**Critical Info for New Agent**
+- **Immediate Task:** Your first priority is to parse the curriculum data extracted from the 5 PDFs (found in the previous agent's tool output in messages 295-301) and write a script to insert it into the MongoDB database.
+- **Upcoming Major Task:** The user has requested a migration from **MongoDB to Neon PostgreSQL** to support M-Pesa integration. This is a significant architectural decision and should be the next major feature to tackle after the data import is complete. Plan this migration carefully, as it will involve changing almost all data access logic in .
+- **UI Has Changed:** The teacher's main navigation is no longer a bottom tab bar. It is a tile-based dashboard located at . All navigation flows from there.
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User (LATEST):** Uploaded 5 PDF files (, , etc.) and asked to align the app's curriculum data with them. **Status: IN PROGRESS**.
+2.  **User:** Asked to add M-Pesa STK push and use Neon Postgres. **Status: PENDING**. This was paused to handle the curriculum update.
+3.  **User:** Requested Core Competencies and Values be included in Grade 10 **lesson plans**. **Status: DONE**.
+4.  **User:** Clarified that competencies/values should be in lesson plans, not just schemes. **Status: DONE**.
+5.  **User:** Requested Core Competencies and Values be added for Grade 10 data. **Status: DONE**.
+6.  **User:** Provided a  file as a model for the Schemes of Work output. **Status: DONE**.
+7.  **User:** Requested the ability to generate notes (with PDF download) and schemes of work (with flexible breaks). **Status: DONE**.
+8.  **User:** Asked about hosting services and deployment. **Status: HANDLED** by the support agent.
+9.  **User:** Requested to change the teacher home screen from bottom tabs to clickable tiles. **Status: DONE**.
+10. **User:** Reported a login issue and asked for the auth flow to be made seamless. **Status: DONE**.
+
+**Project Health Check:**
+- **Broken:** No features are broken. The application is stable. The immediate task is a data-incompleteness problem, as the user's latest curriculum data is pending insertion.
+
+**3rd Party Integrations**
+- **Firebase Authentication:** For user identity.
+- **MongoDB:** Current primary database.
+- **ReportLab:** For backend PDF generation.
+- **Pending:** M-Pesa (Daraja API) and Neon PostgreSQL.
+
+**Testing status**
+  - Testing agent used after significant changes: NO
+  - Troubleshoot agent used after agent stuck in loop: NO
+  - Test files created: []
+  - Known regressions: None.
+
+**What agent forgot to execute**
+- The agent did not complete the final step of the user's last request. It successfully extracted curriculum data from five PDFs but did not proceed to parse and insert that data into the database. The task was left half-finished.
+
+</analysis>
+<SYS_PROMPT_SEPARATOR>
+
