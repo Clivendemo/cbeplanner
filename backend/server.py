@@ -711,6 +711,201 @@ async def get_notes(user: dict = Depends(verify_token)):
     notes = await db.notes.find({"teacherId": user["id"]}).sort("createdAt", -1).to_list(100)
     return {"success": True, "notes": [serialize_doc(n) for n in notes]}
 
+@api_router.get("/notes/{note_id}")
+async def get_note(note_id: str, user: dict = Depends(verify_token)):
+    note = await db.notes.find_one({"_id": ObjectId(note_id), "teacherId": user["id"]})
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return {"success": True, "note": serialize_doc(note)}
+
+# ==================== SCHEMES OF WORK ====================
+
+@api_router.post("/schemes/generate")
+async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Depends(verify_token)):
+    """Generate a comprehensive Scheme of Work with break handling"""
+    
+    # Fetch curriculum data
+    grade = await db.grades.find_one({"_id": ObjectId(request.gradeId)})
+    subject = await db.subjects.find_one({"_id": ObjectId(request.subjectId)})
+    
+    if not grade or not subject:
+        raise HTTPException(status_code=404, detail="Invalid grade or subject")
+    
+    # Get all strands for this subject
+    strands = await db.strands.find({"subjectId": request.subjectId}).to_list(100)
+    
+    # Get all substrands and SLOs
+    all_curriculum_content = []
+    for strand in strands:
+        strand_id = str(strand["_id"])
+        substrands = await db.substrands.find({"strandId": strand_id}).to_list(100)
+        for substrand in substrands:
+            substrand_id = str(substrand["_id"])
+            slos = await db.slos.find({"substrandId": substrand_id}).to_list(100)
+            for slo in slos:
+                all_curriculum_content.append({
+                    "strand": strand["name"],
+                    "substrand": substrand["name"],
+                    "slo": slo["name"]
+                })
+    
+    # Get resources and assessments
+    resources = await db.activities.find({}).to_list(100)
+    assessments = await db.assessments.find({}).to_list(100)
+    
+    resource_list = ["Textbooks", "Charts", "Digital devices", "Writing materials"]
+    assessment_list = [a["name"] for a in assessments] if assessments else ["Observation", "Oral Questions", "Written Tests"]
+    
+    # Calculate total lessons
+    total_lessons = request.totalWeeks * request.lessonsPerWeek
+    
+    # Process breaks and create schedule
+    breaks_map = {}  # {(week, lesson): break_info}
+    lessons_lost_to_breaks = 0
+    
+    for brk in request.breaks:
+        if brk.durationType == "lessons":
+            num_lessons = int(brk.durationValue)
+        elif brk.durationType == "fraction":
+            num_lessons = int(brk.durationValue * request.lessonsPerWeek)
+        else:  # weeks
+            num_lessons = int(brk.durationValue * request.lessonsPerWeek)
+        
+        start_week = brk.startWeek
+        start_lesson = brk.startLesson if brk.startLesson else 1
+        
+        # Mark lessons as breaks
+        current_week = start_week
+        current_lesson = start_lesson
+        lessons_marked = 0
+        
+        while lessons_marked < num_lessons:
+            breaks_map[(current_week, current_lesson)] = {
+                "type": brk.breakType,
+                "description": brk.description or f"{brk.breakType} Period",
+                "duration": num_lessons
+            }
+            lessons_lost_to_breaks += 1
+            lessons_marked += 1
+            
+            current_lesson += 1
+            if current_lesson > request.lessonsPerWeek:
+                current_lesson = 1
+                current_week += 1
+    
+    # Generate lesson schedule
+    lessons = []
+    curriculum_index = 0
+    
+    for week in range(1, request.totalWeeks + 1):
+        for lesson_num in range(1, request.lessonsPerWeek + 1):
+            # Check if this is a break
+            if (week, lesson_num) in breaks_map:
+                brk_info = breaks_map[(week, lesson_num)]
+                lessons.append({
+                    "week": week,
+                    "lessonNumber": lesson_num,
+                    "isBreak": True,
+                    "breakType": brk_info["type"],
+                    "breakDescription": brk_info["description"],
+                    "strand": None,
+                    "substrand": None,
+                    "slo": None,
+                    "keyInquiryQuestions": [],
+                    "learningExperiences": [],
+                    "learningResources": [],
+                    "assessmentMethods": [],
+                    "reflection": ""
+                })
+            else:
+                # Add revision before assessment/examination breaks
+                next_key = (week, lesson_num + 1) if lesson_num < request.lessonsPerWeek else (week + 1, 1)
+                is_before_exam = next_key in breaks_map and breaks_map[next_key]["type"] in ["Assessment", "Examination"]
+                
+                if curriculum_index < len(all_curriculum_content):
+                    content = all_curriculum_content[curriculum_index]
+                    curriculum_index += 1
+                    
+                    lessons.append({
+                        "week": week,
+                        "lessonNumber": lesson_num,
+                        "isBreak": False,
+                        "breakType": None,
+                        "breakDescription": None,
+                        "strand": content["strand"],
+                        "substrand": content["substrand"],
+                        "slo": content["slo"],
+                        "keyInquiryQuestions": [
+                            f"What is {content['substrand']}?",
+                            f"How do we apply {content['substrand']} in daily life?",
+                            f"Why is {content['substrand']} important?"
+                        ],
+                        "learningExperiences": [
+                            "Group discussions",
+                            "Practical demonstrations",
+                            "Problem-solving activities",
+                            "Research and presentations"
+                        ],
+                        "learningResources": resource_list,
+                        "assessmentMethods": assessment_list[:3],
+                        "reflection": "Revision lesson" if is_before_exam else ""
+                    })
+                else:
+                    # Revision lessons when curriculum is exhausted
+                    lessons.append({
+                        "week": week,
+                        "lessonNumber": lesson_num,
+                        "isBreak": False,
+                        "breakType": None,
+                        "breakDescription": None,
+                        "strand": "Revision",
+                        "substrand": "Term Revision",
+                        "slo": "Review and consolidate learning",
+                        "keyInquiryQuestions": ["What have we learned?", "What areas need more practice?"],
+                        "learningExperiences": ["Review exercises", "Practice tests", "Q&A sessions"],
+                        "learningResources": resource_list,
+                        "assessmentMethods": assessment_list[:3],
+                        "reflection": "Consolidation and revision"
+                    })
+    
+    # Create scheme document
+    scheme = {
+        "teacherId": user["id"],
+        "teacherName": request.teacherName or f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
+        "school": request.school,
+        "subjectId": request.subjectId,
+        "subjectName": subject["name"],
+        "gradeId": request.gradeId,
+        "gradeName": grade["name"],
+        "term": request.term,
+        "year": request.year,
+        "curriculumStandard": request.curriculumStandard,
+        "totalWeeks": request.totalWeeks,
+        "lessonsPerWeek": request.lessonsPerWeek,
+        "lessons": lessons,
+        "createdAt": datetime.utcnow()
+    }
+    
+    result = await db.schemes.insert_one(scheme)
+    if "_id" in scheme:
+        del scheme["_id"]
+    scheme["id"] = str(result.inserted_id)
+    scheme["createdAt"] = scheme["createdAt"].isoformat()
+    
+    return {"success": True, "scheme": scheme}
+
+@api_router.get("/schemes")
+async def get_schemes(user: dict = Depends(verify_token)):
+    schemes = await db.schemes.find({"teacherId": user["id"]}).sort("createdAt", -1).to_list(100)
+    return {"success": True, "schemes": [serialize_doc(s) for s in schemes]}
+
+@api_router.get("/schemes/{scheme_id}")
+async def get_scheme(scheme_id: str, user: dict = Depends(verify_token)):
+    scheme = await db.schemes.find_one({"_id": ObjectId(scheme_id), "teacherId": user["id"]})
+    if not scheme:
+        raise HTTPException(status_code=404, detail="Scheme not found")
+    return {"success": True, "scheme": serialize_doc(scheme)}
+
 # ==================== ADMIN ENDPOINTS ====================
 
 # Grades
