@@ -122,6 +122,13 @@ export default function Login() {
           </TouchableOpacity>
 
           <TouchableOpacity
+            style={styles.forgotPasswordButton}
+            onPress={handleForgotPassword}
+          >
+            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={styles.linkButton}
             onPress={() => router.push('/auth/signup')}
           >
@@ -130,10 +137,55 @@ export default function Login() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Admin Account:</Text>
-          <Text style={styles.footerText}>Email: admin@cbeplanner.com</Text>
-          <Text style={styles.footerText}>Password: (Set via Firebase Console)</Text>
+          <Text style={styles.footerText}>KICD-Aligned Lesson Planning</Text>
+          <Text style={styles.footerText}>For Kenyan Teachers</Text>
         </View>
+
+        {/* Password Reset Modal */}
+        <Modal
+          visible={resetModalVisible}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setResetModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Reset Password</Text>
+                <TouchableOpacity onPress={() => setResetModalVisible(false)}>
+                  <Ionicons name="close" size={24} color="#6B7280" />
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.modalDescription}>
+                Enter your email address and we'll send you a link to reset your password.
+              </Text>
+
+              <View style={styles.modalInputContainer}>
+                <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Email address"
+                  value={resetEmail}
+                  onChangeText={setResetEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  placeholderTextColor="#9CA3AF"
+                />
+              </View>
+
+              <TouchableOpacity
+                style={[styles.resetButton, resetting && styles.buttonDisabled]}
+                onPress={handleResetPassword}
+                disabled={resetting}
+              >
+                <Text style={styles.resetButtonText}>
+                  {resetting ? 'Sending...' : 'Send Reset Link'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </KeyboardAvoidingView>
   );
