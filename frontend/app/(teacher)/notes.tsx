@@ -7,69 +7,44 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
-  Modal
+  Share,
+  Platform
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../../contexts/AuthContext';
-import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import axios from 'axios';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
-interface Grade {
-  id: string;
-  name: string;
-}
+interface Grade { id: string; name: string; }
+interface Subject { id: string; name: string; }
+interface Strand { id: string; name: string; }
+interface SubStrand { id: string; name: string; }
 
-interface Subject {
-  id: string;
-  name: string;
-}
-
-interface Strand {
-  id: string;
-  name: string;
-}
-
-interface SubStrand {
-  id: string;
-  name: string;
-}
-
-interface Notes {
-  gradeName: string;
-  subjectName: string;
-  strandName: string;
-  substrandName: string;
-  content: string;
-  activities: string[];
-  createdAt: string;
-}
-
-export default function NotesGeneration() {
-  const { firebaseUser, user, refreshProfile } = useAuth();
+export default function Notes() {
+  const { user, firebaseUser } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
   
+  // Form state
+  const [duration, setDuration] = useState(40);
   const [grades, setGrades] = useState<Grade[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [strands, setStrands] = useState<Strand[]>([]);
   const [substrands, setSubstrands] = useState<SubStrand[]>([]);
-  const [myNotes, setMyNotes] = useState<Notes[]>([]);
   
-  const [selectedGrade, setSelectedGrade] = useState<string>('');
-  const [selectedSubject, setSelectedSubject] = useState<string>('');
-  const [selectedStrand, setSelectedStrand] = useState<string>('');
-  const [selectedSubstrand, setSelectedSubstrand] = useState<string>('');
+  const [selectedGrade, setSelectedGrade] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedStrand, setSelectedStrand] = useState('');
+  const [selectedSubstrand, setSelectedSubstrand] = useState('');
   
-  const [loading, setLoading] = useState(false);
-  const [generating, setGenerating] = useState(false);
-  const [generatedNotes, setGeneratedNotes] = useState<Notes | null>(null);
-  const [showNotes, setShowNotes] = useState(false);
-
-  useEffect(() => {
-    loadGrades();
-    loadMyNotes();
-  }, []);
-
+  // Generated notes
+  const [generatedNotes, setGeneratedNotes] = useState<any>(null);
+  
   const getHeaders = async () => {
     if (firebaseUser) {
       const token = await firebaseUser.getIdToken();
@@ -77,6 +52,11 @@ export default function NotesGeneration() {
     }
     return {};
   };
+
+  // Load grades
+  useEffect(() => {
+    loadGrades();
+  }, []);
 
   const loadGrades = async () => {
     try {
@@ -90,90 +70,75 @@ export default function NotesGeneration() {
     }
   };
 
-  const loadSubjects = async (gradeId: string) => {
+  // Load subjects when grade changes
+  useEffect(() => {
+    if (selectedGrade) {
+      loadSubjects();
+    } else {
+      setSubjects([]);
+      setSelectedSubject('');
+    }
+  }, [selectedGrade]);
+
+  const loadSubjects = async () => {
     try {
-      setLoading(true);
       const headers = await getHeaders();
-      const response = await axios.get(`${BACKEND_URL}/api/subjects?gradeId=${gradeId}`, { headers });
+      const response = await axios.get(`${BACKEND_URL}/api/subjects?gradeId=${selectedGrade}`, { headers });
       if (response.data.success) {
         setSubjects(response.data.subjects);
-        setStrands([]);
-        setSubstrands([]);
       }
     } catch (error) {
       console.error('Error loading subjects:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const loadStrands = async (subjectId: string) => {
+  // Load strands when subject changes
+  useEffect(() => {
+    if (selectedSubject) {
+      loadStrands();
+    } else {
+      setStrands([]);
+      setSelectedStrand('');
+    }
+  }, [selectedSubject]);
+
+  const loadStrands = async () => {
     try {
-      setLoading(true);
       const headers = await getHeaders();
-      const response = await axios.get(`${BACKEND_URL}/api/strands?subjectId=${subjectId}`, { headers });
+      const response = await axios.get(`${BACKEND_URL}/api/strands?subjectId=${selectedSubject}`, { headers });
       if (response.data.success) {
         setStrands(response.data.strands);
-        setSubstrands([]);
       }
     } catch (error) {
       console.error('Error loading strands:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const loadSubstrands = async (strandId: string) => {
+  // Load substrands when strand changes
+  useEffect(() => {
+    if (selectedStrand) {
+      loadSubstrands();
+    } else {
+      setSubstrands([]);
+      setSelectedSubstrand('');
+    }
+  }, [selectedStrand]);
+
+  const loadSubstrands = async () => {
     try {
-      setLoading(true);
       const headers = await getHeaders();
-      const response = await axios.get(`${BACKEND_URL}/api/substrands?strandId=${strandId}`, { headers });
+      const response = await axios.get(`${BACKEND_URL}/api/substrands?strandId=${selectedStrand}`, { headers });
       if (response.data.success) {
         setSubstrands(response.data.substrands);
       }
     } catch (error) {
       console.error('Error loading substrands:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const loadMyNotes = async () => {
-    try {
-      const headers = await getHeaders();
-      const response = await axios.get(`${BACKEND_URL}/api/notes`, { headers });
-      if (response.data.success) {
-        setMyNotes(response.data.notes);
-      }
-    } catch (error) {
-      console.error('Error loading notes:', error);
-    }
-  };
-
-  const handleGradeChange = (gradeId: string) => {
-    setSelectedGrade(gradeId);
-    setSelectedSubject('');
-    setSelectedStrand('');
-    setSelectedSubstrand('');
-    if (gradeId) loadSubjects(gradeId);
-  };
-
-  const handleSubjectChange = (subjectId: string) => {
-    setSelectedSubject(subjectId);
-    setSelectedStrand('');
-    setSelectedSubstrand('');
-    if (subjectId) loadStrands(subjectId);
-  };
-
-  const handleStrandChange = (strandId: string) => {
-    setSelectedStrand(strandId);
-    setSelectedSubstrand('');
-    if (strandId) loadSubstrands(strandId);
-  };
-
-  const generateNotes = async () => {
+  const handleGenerate = async () => {
     if (!selectedGrade || !selectedSubject || !selectedStrand || !selectedSubstrand) {
-      Alert.alert('Error', 'Please select all options');
+      Alert.alert('Error', 'Please select all fields');
       return;
     }
 
@@ -183,6 +148,7 @@ export default function NotesGeneration() {
       const response = await axios.post(
         `${BACKEND_URL}/api/notes/generate`,
         {
+          duration,
           gradeId: selectedGrade,
           subjectId: selectedSubject,
           strandId: selectedStrand,
@@ -193,14 +159,10 @@ export default function NotesGeneration() {
 
       if (response.data.success) {
         setGeneratedNotes(response.data.notes);
-        setShowNotes(true);
-        await refreshProfile();
-        await loadMyNotes();
-        Alert.alert('Success', 'Notes generated successfully!');
       }
     } catch (error: any) {
       if (error.response?.status === 402) {
-        Alert.alert('Insufficient Balance', 'Please top up your wallet to generate more notes');
+        Alert.alert('Insufficient Balance', 'Please top up your wallet to generate notes');
       } else {
         Alert.alert('Error', error.response?.data?.detail || 'Failed to generate notes');
       }
@@ -209,231 +171,307 @@ export default function NotesGeneration() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
+  const generatePDF = async () => {
+    if (!generatedNotes) return;
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Study Notes</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+          .header { text-align: center; border-bottom: 2px solid #6366F1; padding-bottom: 20px; margin-bottom: 20px; }
+          .header h1 { color: #6366F1; margin: 0; }
+          .meta { display: flex; justify-content: space-between; margin-bottom: 20px; background: #F3F4F6; padding: 10px; border-radius: 8px; }
+          .meta-item { text-align: center; }
+          .meta-label { font-size: 12px; color: #6B7280; }
+          .meta-value { font-weight: bold; color: #111827; }
+          .content { margin-top: 20px; }
+          .content h2 { color: #4F46E5; border-bottom: 1px solid #E5E7EB; padding-bottom: 8px; }
+          .content ul { padding-left: 20px; }
+          .content li { margin-bottom: 8px; }
+          .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #9CA3AF; border-top: 1px solid #E5E7EB; padding-top: 20px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>STUDY NOTES</h1>
+          <p>${generatedNotes.subjectName} - ${generatedNotes.gradeName}</p>
+        </div>
+        
+        <div class="meta">
+          <div class="meta-item">
+            <div class="meta-label">School</div>
+            <div class="meta-value">${generatedNotes.schoolName || 'N/A'}</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Teacher</div>
+            <div class="meta-value">${generatedNotes.teacherName}</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Duration</div>
+            <div class="meta-value">${generatedNotes.duration} min</div>
+          </div>
+        </div>
+        
+        <div class="content">
+          <h2>Topic: ${generatedNotes.strandName}</h2>
+          <h3>Sub-topic: ${generatedNotes.substrandName}</h3>
+          
+          ${generatedNotes.content.replace(/\n/g, '<br>').replace(/# /g, '<h2>').replace(/## /g, '<h3>').replace(/- /g, '• ')}
+        </div>
+        
+        ${generatedNotes.activities && generatedNotes.activities.length > 0 ? `
+        <div class="content">
+          <h2>Learning Activities</h2>
+          <ul>
+            ${generatedNotes.activities.map((a: string) => `<li>${a}</li>`).join('')}
+          </ul>
+        </div>
+        ` : ''}
+        
+        <div class="footer">
+          <p>Generated by CBE Planner | KICD-Aligned Curriculum</p>
+          <p>Date: ${new Date().toLocaleDateString()}</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    try {
+      const { uri } = await Print.printToFileAsync({ html: htmlContent });
+      
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri);
+      } else {
+        Alert.alert('Success', `PDF saved to ${uri}`);
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      Alert.alert('Error', 'Failed to generate PDF');
+    }
   };
 
+  const durations = [25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80];
+
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Generate Short Notes</Text>
-          <View style={styles.balanceCard}>
-            <Ionicons name="wallet-outline" size={20} color="#3B82F6" />
-            <Text style={styles.balanceText}>
-              {user?.freeNotesUsed ? `Balance: ${user?.walletBalance} KES (5 KES per notes)` : '1 Free Notes Available'}
-            </Text>
-          </View>
-        </View>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {!generatedNotes ? (
+          <>
+            {/* Form */}
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Generate Study Notes</Text>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Duration (minutes)</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={duration}
+                    onValueChange={setDuration}
+                    style={styles.picker}
+                  >
+                    {durations.map((d) => (
+                      <Picker.Item key={d} label={`${d} minutes`} value={d} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
 
-        <View style={styles.form}>
-          <View style={styles.pickerContainer}>
-            <Text style={styles.label}>Grade</Text>
-            <View style={styles.pickerWrapper}>
-              <Picker
-                selectedValue={selectedGrade}
-                onValueChange={handleGradeChange}
-                style={styles.picker}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Grade</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={selectedGrade}
+                    onValueChange={setSelectedGrade}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="Select Grade" value="" />
+                    {grades.map((g) => (
+                      <Picker.Item key={g.id} label={g.name} value={g.id} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Subject</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={selectedSubject}
+                    onValueChange={setSelectedSubject}
+                    style={styles.picker}
+                    enabled={subjects.length > 0}
+                  >
+                    <Picker.Item label={subjects.length > 0 ? "Select Subject" : "Select Grade first"} value="" />
+                    {subjects.map((s) => (
+                      <Picker.Item key={s.id} label={s.name} value={s.id} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Strand</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={selectedStrand}
+                    onValueChange={setSelectedStrand}
+                    style={styles.picker}
+                    enabled={strands.length > 0}
+                  >
+                    <Picker.Item label={strands.length > 0 ? "Select Strand" : "Select Subject first"} value="" />
+                    {strands.map((s) => (
+                      <Picker.Item key={s.id} label={s.name} value={s.id} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Sub-strand</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={selectedSubstrand}
+                    onValueChange={setSelectedSubstrand}
+                    style={styles.picker}
+                    enabled={substrands.length > 0}
+                  >
+                    <Picker.Item label={substrands.length > 0 ? "Select Sub-strand" : "Select Strand first"} value="" />
+                    {substrands.map((s) => (
+                      <Picker.Item key={s.id} label={s.name} value={s.id} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={[styles.generateButton, generating && styles.buttonDisabled]}
+                onPress={handleGenerate}
+                disabled={generating}
               >
-                <Picker.Item label="Select Grade" value="" />
-                {grades.map((grade) => (
-                  <Picker.Item key={grade.id} label={grade.name} value={grade.id} />
-                ))}
-              </Picker>
+                {generating ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <>
+                    <Ionicons name="create" size={20} color="#FFFFFF" />
+                    <Text style={styles.generateButtonText}>Generate Notes</Text>
+                  </>
+                )}
+              </TouchableOpacity>
             </View>
-          </View>
 
-          {selectedGrade && (
-            <View style={styles.pickerContainer}>
-              <Text style={styles.label}>Subject / Learning Area</Text>
-              <View style={styles.pickerWrapper}>
-                <Picker
-                  selectedValue={selectedSubject}
-                  onValueChange={handleSubjectChange}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Select Subject" value="" />
-                  {subjects.map((subject) => (
-                    <Picker.Item key={subject.id} label={subject.name} value={subject.id} />
-                  ))}
-                </Picker>
+            {/* Info Card */}
+            <View style={styles.infoCard}>
+              <Ionicons name="information-circle" size={24} color="#6366F1" />
+              <View style={styles.infoContent}>
+                <Text style={styles.infoTitle}>About Notes Generation</Text>
+                <Text style={styles.infoText}>
+                  Notes are generated based on duration:{'\n'}
+                  • Short (25-40 min): Brief bullet points{'\n'}
+                  • Medium (45-60 min): Moderate detail{'\n'}
+                  • Long (65-80 min): Comprehensive coverage
+                </Text>
               </View>
             </View>
-          )}
-
-          {selectedSubject && (
-            <View style={styles.pickerContainer}>
-              <Text style={styles.label}>Strand</Text>
-              <View style={styles.pickerWrapper}>
-                <Picker
-                  selectedValue={selectedStrand}
-                  onValueChange={handleStrandChange}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Select Strand" value="" />
-                  {strands.map((strand) => (
-                    <Picker.Item key={strand.id} label={strand.name} value={strand.id} />
-                  ))}
-                </Picker>
+          </>
+        ) : (
+          <>
+            {/* Generated Notes Display */}
+            <View style={styles.notesCard}>
+              <View style={styles.notesHeader}>
+                <Text style={styles.notesTitle}>{generatedNotes.substrandName}</Text>
+                <Text style={styles.notesSubtitle}>{generatedNotes.strandName} • {generatedNotes.subjectName}</Text>
               </View>
-            </View>
-          )}
 
-          {selectedStrand && (
-            <View style={styles.pickerContainer}>
-              <Text style={styles.label}>Sub-Strand</Text>
-              <View style={styles.pickerWrapper}>
-                <Picker
-                  selectedValue={selectedSubstrand}
-                  onValueChange={setSelectedSubstrand}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Select Sub-Strand" value="" />
-                  {substrands.map((substrand) => (
-                    <Picker.Item key={substrand.id} label={substrand.name} value={substrand.id} />
-                  ))}
-                </Picker>
+              <View style={styles.notesMeta}>
+                <View style={styles.metaItem}>
+                  <Text style={styles.metaLabel}>Grade</Text>
+                  <Text style={styles.metaValue}>{generatedNotes.gradeName}</Text>
+                </View>
+                <View style={styles.metaItem}>
+                  <Text style={styles.metaLabel}>Duration</Text>
+                  <Text style={styles.metaValue}>{generatedNotes.duration} min</Text>
+                </View>
+                <View style={styles.metaItem}>
+                  <Text style={styles.metaLabel}>Teacher</Text>
+                  <Text style={styles.metaValue}>{generatedNotes.teacherName}</Text>
+                </View>
               </View>
-            </View>
-          )}
 
-          {selectedSubstrand && (
-            <TouchableOpacity
-              style={[styles.generateButton, generating && styles.buttonDisabled]}
-              onPress={generateNotes}
-              disabled={generating}
-            >
-              {generating ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <>
-                  <Ionicons name="create-outline" size={20} color="#FFFFFF" />
-                  <Text style={styles.generateButtonText}>Generate Notes</Text>
-                </>
+              <View style={styles.notesContent}>
+                <Text style={styles.notesText}>{generatedNotes.content}</Text>
+              </View>
+
+              {generatedNotes.activities && generatedNotes.activities.length > 0 && (
+                <View style={styles.activitiesSection}>
+                  <Text style={styles.sectionTitle}>Learning Activities</Text>
+                  {generatedNotes.activities.map((activity: string, index: number) => (
+                    <View key={index} style={styles.activityItem}>
+                      <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                      <Text style={styles.activityText}>{activity}</Text>
+                    </View>
+                  ))}
+                </View>
               )}
-            </TouchableOpacity>
-          )}
-        </View>
+            </View>
 
-        {myNotes.length > 0 && (
-          <View style={styles.notesSection}>
-            <Text style={styles.notesSectionTitle}>My Generated Notes ({myNotes.length})</Text>
-            {myNotes.map((note, index) => (
-              <View key={index} style={styles.noteCard}>
-                <Text style={styles.noteTitle}>{note.gradeName} - {note.subjectName}</Text>
-                <Text style={styles.noteSubtitle}>{note.strandName} / {note.substrandName}</Text>
-                <Text style={styles.noteDate}>{formatDate(note.createdAt)}</Text>
-              </View>
-            ))}
-          </View>
+            {/* Action Buttons */}
+            <View style={styles.actionButtons}>
+              <TouchableOpacity style={styles.downloadButton} onPress={generatePDF}>
+                <Ionicons name="download" size={20} color="#FFFFFF" />
+                <Text style={styles.downloadButtonText}>Download PDF</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.newButton} 
+                onPress={() => setGeneratedNotes(null)}
+              >
+                <Ionicons name="add" size={20} color="#6366F1" />
+                <Text style={styles.newButtonText}>Generate New</Text>
+              </TouchableOpacity>
+            </View>
+          </>
         )}
       </ScrollView>
-
-      <Modal
-        visible={showNotes}
-        animationType="slide"
-        onRequestClose={() => setShowNotes(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Generated Notes</Text>
-            <TouchableOpacity onPress={() => setShowNotes(false)}>
-              <Ionicons name="close" size={24} color="#6B7280" />
-            </TouchableOpacity>
-          </View>
-          
-          <ScrollView style={styles.modalContent}>
-            {generatedNotes && (
-              <>
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Subject & Topic</Text>
-                  <Text style={styles.sectionText}>
-                    {generatedNotes.gradeName} - {generatedNotes.subjectName}
-                  </Text>
-                  <Text style={styles.sectionText}>
-                    {generatedNotes.strandName} / {generatedNotes.substrandName}
-                  </Text>
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Notes Content</Text>
-                  <Text style={styles.notesContent}>{generatedNotes.content}</Text>
-                </View>
-
-                {generatedNotes.activities.length > 0 && (
-                  <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Learning Activities</Text>
-                    {generatedNotes.activities.map((activity, index) => (
-                      <View key={index} style={styles.listItem}>
-                        <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.listText}>{activity}</Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </>
-            )}
-          </ScrollView>
-        </View>
-      </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB'
-  },
-  scrollView: {
-    flex: 1
+    backgroundColor: '#F3F4F6'
   },
   scrollContent: {
     padding: 16
   },
-  header: {
-    marginBottom: 24
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16
   },
-  headerTitle: {
-    fontSize: 24,
+  cardTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#111827',
-    marginBottom: 12
+    marginBottom: 20
   },
-  balanceCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#DBEAFE',
-    padding: 12,
-    borderRadius: 8
-  },
-  balanceText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: '#1E40AF',
-    fontWeight: '500'
-  },
-  form: {
-    gap: 16,
-    marginBottom: 24
-  },
-  pickerContainer: {
-    marginBottom: 8
+  inputGroup: {
+    marginBottom: 16
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#374151',
     marginBottom: 8
   },
-  pickerWrapper: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
+  pickerContainer: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
     overflow: 'hidden'
@@ -442,108 +480,144 @@ const styles = StyleSheet.create({
     height: 50
   },
   generateButton: {
+    backgroundColor: '#10B981',
     flexDirection: 'row',
-    backgroundColor: '#3B82F6',
-    borderRadius: 8,
-    paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    marginTop: 16
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 8
   },
   buttonDisabled: {
-    opacity: 0.6
+    opacity: 0.7
   },
   generateButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600'
-  },
-  notesSection: {
-    marginTop: 24
-  },
-  notesSectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 12
-  },
-  noteCard: {
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB'
-  },
-  noteTitle: {
-    fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
+    marginLeft: 8
+  },
+  infoCard: {
+    backgroundColor: '#EEF2FF',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row'
+  },
+  infoContent: {
+    marginLeft: 12,
+    flex: 1
+  },
+  infoTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4F46E5',
     marginBottom: 4
   },
-  noteSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 8
-  },
-  noteDate: {
+  infoText: {
     fontSize: 12,
-    color: '#9CA3AF'
+    color: '#6366F1',
+    lineHeight: 18
   },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#FFFFFF'
+  notesCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 16
   },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+  notesHeader: {
+    backgroundColor: '#10B981',
+    padding: 20
   },
-  modalTitle: {
-    fontSize: 20,
+  notesTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#111827'
+    color: '#FFFFFF'
   },
-  modalContent: {
+  notesSubtitle: {
+    fontSize: 14,
+    color: '#D1FAE5',
+    marginTop: 4
+  },
+  notesMeta: {
+    flexDirection: 'row',
+    backgroundColor: '#F0FDF4',
+    padding: 12
+  },
+  metaItem: {
     flex: 1,
-    padding: 16
+    alignItems: 'center'
   },
-  section: {
-    marginBottom: 24
+  metaLabel: {
+    fontSize: 11,
+    color: '#6B7280'
+  },
+  metaValue: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#111827',
+    marginTop: 2
+  },
+  notesContent: {
+    padding: 20
+  },
+  notesText: {
+    fontSize: 15,
+    color: '#374151',
+    lineHeight: 24
+  },
+  activitiesSection: {
+    padding: 20,
+    paddingTop: 0
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#3B82F6',
-    marginBottom: 8
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 12
   },
-  sectionText: {
-    fontSize: 14,
-    color: '#374151',
-    fontWeight: '500',
-    marginBottom: 4
-  },
-  notesContent: {
-    fontSize: 14,
-    color: '#374151',
-    lineHeight: 22
-  },
-  listItem: {
+  activityItem: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
     marginBottom: 8
   },
-  bullet: {
+  activityText: {
     fontSize: 14,
-    color: '#6B7280',
-    marginRight: 8
+    color: '#374151',
+    marginLeft: 8,
+    flex: 1
   },
-  listText: {
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 12
+  },
+  downloadButton: {
     flex: 1,
-    fontSize: 14,
-    color: '#374151'
+    backgroundColor: '#6366F1',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12
+  },
+  downloadButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8
+  },
+  newButton: {
+    flex: 1,
+    backgroundColor: '#EEF2FF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12
+  },
+  newButtonText: {
+    color: '#6366F1',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8
   }
 });
