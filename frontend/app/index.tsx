@@ -1,59 +1,36 @@
 import { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { useRouter, useSegments } from 'expo-router';
+import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Index() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const segments = useSegments();
 
   useEffect(() => {
     if (loading) return;
 
-    console.log('Auth state:', { user: user?.email, role: user?.role, loading });
+    // Small delay to ensure auth state is fully settled
+    const timeout = setTimeout(() => {
+      if (!user) {
+        console.log('No user, going to login');
+        router.replace('/auth/login');
+      } else if (user.role === 'admin') {
+        console.log('Admin user, going to dashboard');
+        router.replace('/(admin)/dashboard');
+      } else {
+        console.log('Teacher user, going to home');
+        router.replace('/(teacher)/home');
+      }
+    }, 100);
 
-    // If no user, go to login
-    if (!user) {
-      console.log('No user found, redirecting to login');
-      router.replace('/auth/login');
-      return;
-    }
-
-    // If user exists, redirect based on role
-    if (user.role === 'admin') {
-      console.log('Admin user, redirecting to dashboard');
-      router.replace('/(admin)/dashboard');
-    } else {
-      console.log('Teacher user, redirecting to home');
-      router.replace('/(teacher)/home');
-    }
+    return () => clearTimeout(timeout);
   }, [user, loading]);
-
-  const handleClearAndLogout = async () => {
-    console.log('Clearing session...');
-    await AsyncStorage.clear();
-    await signOut();
-    router.replace('/auth/login');
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#6366F1" />
-        <Text style={styles.text}>Loading...</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color="#6366F1" />
-      <Text style={styles.text}>Redirecting...</Text>
-      <TouchableOpacity style={styles.button} onPress={handleClearAndLogout}>
-        <Text style={styles.buttonText}>Clear Session & Logout</Text>
-      </TouchableOpacity>
+      <Text style={styles.text}>Loading CBE Planner...</Text>
     </View>
   );
 }
@@ -69,16 +46,5 @@ const styles = StyleSheet.create({
     marginTop: 16,
     color: '#6B7280',
     fontSize: 14
-  },
-  button: {
-    marginTop: 24,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: '#EF4444',
-    borderRadius: 8
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontWeight: '600'
   }
 });
