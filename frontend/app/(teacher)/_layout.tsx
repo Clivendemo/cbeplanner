@@ -1,18 +1,9 @@
-import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Stack } from 'expo-router';
 
 export default function TeacherLayout() {
   return (
-    <Tabs
+    <Stack
       screenOptions={{
-        tabBarActiveTintColor: '#6366F1',
-        tabBarInactiveTintColor: '#9CA3AF',
-        tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopColor: '#E5E7EB',
-          height: 60,
-          paddingBottom: 8
-        },
         headerStyle: {
           backgroundColor: '#6366F1'
         },
@@ -22,42 +13,49 @@ export default function TeacherLayout() {
         }
       }}
     >
-      <Tabs.Screen
+      <Stack.Screen
+        name="dashboard"
+        options={{
+          title: 'CBE Planner',
+          headerShown: true
+        }}
+      />
+      <Stack.Screen
         name="home"
         options={{
-          title: 'Create Lesson',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle-outline" size={size} color={color} />
-          )
+          title: 'Create Lesson Plan'
         }}
       />
-      <Tabs.Screen
+      <Stack.Screen
         name="notes"
         options={{
-          title: 'Generate Notes',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="document-outline" size={size} color={color} />
-          )
+          title: 'Generate Notes'
         }}
       />
-      <Tabs.Screen
+      <Stack.Screen
         name="lessons"
         options={{
-          title: 'My Lessons',
-          tabBarIcon: ({ color, size}) => (
-            <Ionicons name="folder-outline" size={size} color={color} />
-          )
+          title: 'My Lesson Plans'
         }}
       />
-      <Tabs.Screen
+      <Stack.Screen
         name="profile"
         options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
-          )
+          title: 'Profile'
         }}
       />
-    </Tabs>
+      <Stack.Screen
+        name="schemes"
+        options={{
+          title: 'Schemes of Work'
+        }}
+      />
+      <Stack.Screen
+        name="revision"
+        options={{
+          title: 'Revision Papers'
+        }}
+      />
+    </Stack>
   );
 }
