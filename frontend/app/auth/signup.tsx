@@ -44,11 +44,7 @@ export default function SignUp() {
     setLoading(true);
     try {
       await signUp(email, password, firstName, lastName, schoolName);
-      Alert.alert(
-        'Success', 
-        'Account created successfully! Please login with your credentials.',
-        [{ text: 'OK', onPress: () => router.replace('/auth/login') }]
-      );
+      // Navigation is handled in AuthContext after successful signup
     } catch (error: any) {
       Alert.alert('Sign Up Failed', error.message);
       setLoading(false);
