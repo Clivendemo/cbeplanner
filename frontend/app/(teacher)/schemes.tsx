@@ -187,7 +187,7 @@ export default function SchemesOfWork() {
       if (lesson.isBreak) {
         return `
           <tr class="break-row">
-            <td colspan="10" class="break-cell">
+            <td colspan="12" class="break-cell">
               <strong>${lesson.breakType?.toUpperCase()} — WEEK ${lesson.week}</strong><br/>
               ${lesson.breakDescription || ''}
             </td>
@@ -201,6 +201,8 @@ export default function SchemesOfWork() {
           <td>${lesson.strand || ''}</td>
           <td>${lesson.substrand || ''}</td>
           <td>${lesson.slo || ''}</td>
+          <td class="small-text">${lesson.coreCompetencies || ''}</td>
+          <td class="small-text">${lesson.coreValues || ''}</td>
           <td>${lesson.keyInquiryQuestions || ''}</td>
           <td>${lesson.learningExperiences || ''}</td>
           <td>${lesson.learningResources || ''}</td>
@@ -217,32 +219,35 @@ export default function SchemesOfWork() {
         <meta charset="utf-8">
         <title>Scheme of Work</title>
         <style>
-          @page { size: A4 landscape; margin: 8mm; }
-          body { font-family: Arial, sans-serif; font-size: 9px; margin: 0; padding: 10px; }
-          .title { text-align: center; margin-bottom: 10px; }
-          .title h1 { font-size: 16px; margin: 0 0 5px 0; text-transform: uppercase; }
-          .title h2 { font-size: 14px; margin: 0; font-weight: normal; }
-          .header-info { margin-bottom: 10px; }
-          .header-row { display: flex; margin-bottom: 5px; }
+          @page { size: A4 landscape; margin: 6mm; }
+          body { font-family: Arial, sans-serif; font-size: 8px; margin: 0; padding: 8px; }
+          .title { text-align: center; margin-bottom: 8px; }
+          .title h1 { font-size: 14px; margin: 0 0 4px 0; text-transform: uppercase; }
+          .title h2 { font-size: 12px; margin: 0; font-weight: normal; }
+          .header-info { margin-bottom: 8px; font-size: 9px; }
+          .header-row { display: flex; margin-bottom: 4px; }
           .header-item { flex: 1; }
           .header-label { font-weight: bold; display: inline; }
-          .header-dots { border-bottom: 1px dotted #000; display: inline-block; min-width: 200px; }
-          table { width: 100%; border-collapse: collapse; font-size: 8px; margin-top: 10px; }
-          th, td { border: 1px solid #000; padding: 4px; text-align: left; vertical-align: top; }
-          th { background: #f0f0f0; font-weight: bold; text-align: center; }
+          .header-dots { border-bottom: 1px dotted #000; display: inline-block; min-width: 150px; }
+          table { width: 100%; border-collapse: collapse; font-size: 7px; margin-top: 8px; }
+          th, td { border: 1px solid #000; padding: 3px; text-align: left; vertical-align: top; }
+          th { background: #f0f0f0; font-weight: bold; text-align: center; font-size: 7px; }
           .break-row { background: #fff3cd !important; }
-          .break-cell { text-align: center; padding: 8px; font-weight: bold; }
-          .footer { margin-top: 10px; text-align: center; font-size: 8px; color: #666; }
-          .col-week { width: 4%; }
-          .col-lsn { width: 3%; }
-          .col-strand { width: 10%; }
-          .col-substrand { width: 10%; }
-          .col-slo { width: 18%; }
-          .col-inquiry { width: 15%; }
-          .col-exp { width: 15%; }
-          .col-res { width: 10%; }
-          .col-assess { width: 8%; }
-          .col-refl { width: 7%; }
+          .break-cell { text-align: center; padding: 6px; font-weight: bold; }
+          .footer { margin-top: 8px; text-align: center; font-size: 7px; color: #666; }
+          .small-text { font-size: 6px; }
+          .col-week { width: 3%; }
+          .col-lsn { width: 2%; }
+          .col-strand { width: 8%; }
+          .col-substrand { width: 8%; }
+          .col-slo { width: 14%; }
+          .col-comp { width: 8%; }
+          .col-val { width: 7%; }
+          .col-inquiry { width: 12%; }
+          .col-exp { width: 14%; }
+          .col-res { width: 8%; }
+          .col-assess { width: 6%; }
+          .col-refl { width: 5%; }
         </style>
       </head>
       <body>
@@ -261,10 +266,8 @@ export default function SchemesOfWork() {
               <span class="header-label">YEAR:</span> 
               <span class="header-dots">${generatedScheme.year}</span>
             </div>
-          </div>
-          <div class="header-row">
             <div class="header-item">
-              <span class="header-label">NAME OF THE TEACHER:</span> 
+              <span class="header-label">TEACHER:</span> 
               <span class="header-dots">${generatedScheme.teacherName}</span>
             </div>
           </div>
@@ -273,15 +276,17 @@ export default function SchemesOfWork() {
         <table>
           <thead>
             <tr>
-              <th class="col-week">Week</th>
-              <th class="col-lsn">LSN</th>
+              <th class="col-week">Wk</th>
+              <th class="col-lsn">Ls</th>
               <th class="col-strand">Strand</th>
               <th class="col-substrand">Sub-strand</th>
               <th class="col-slo">Specific Learning Outcomes</th>
+              <th class="col-comp">Core Competencies</th>
+              <th class="col-val">Core Values</th>
               <th class="col-inquiry">Key Inquiry Question(s)</th>
               <th class="col-exp">Learning Experiences</th>
               <th class="col-res">Learning Resources</th>
-              <th class="col-assess">Assessment Methods</th>
+              <th class="col-assess">Assessment</th>
               <th class="col-refl">Refl</th>
             </tr>
           </thead>
