@@ -185,7 +185,63 @@ class Notes(BaseModel):
     substrandId: str
     substrandName: str
     content: str
+    keyPoints: List[str] = []
+    examples: List[str] = []
     activities: List[str] = []
+    summary: str = ""
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+
+# Schemes of Work Models
+class BreakInput(BaseModel):
+    breakType: str  # Assessment, Half-Term, Examination, Holiday, Custom
+    startWeek: int
+    startLesson: Optional[int] = None  # Optional, for mid-week breaks
+    durationType: str  # lessons, fraction, weeks
+    durationValue: float
+    description: Optional[str] = None
+
+class SchemeOfWorkRequest(BaseModel):
+    subjectId: str
+    gradeId: str
+    term: int  # 1, 2, or 3
+    year: int
+    school: str
+    teacherName: str
+    curriculumStandard: str = "KICD CBC"
+    totalWeeks: int
+    lessonsPerWeek: int
+    breaks: List[BreakInput] = []
+
+class SchemeLesson(BaseModel):
+    week: int
+    lessonNumber: int
+    isBreak: bool = False
+    breakType: Optional[str] = None
+    breakDescription: Optional[str] = None
+    strand: Optional[str] = None
+    substrand: Optional[str] = None
+    slo: Optional[str] = None
+    keyInquiryQuestions: List[str] = []
+    learningExperiences: List[str] = []
+    learningResources: List[str] = []
+    assessmentMethods: List[str] = []
+    reflection: str = ""
+
+class SchemeOfWork(BaseModel):
+    id: Optional[str] = None
+    teacherId: str
+    teacherName: str
+    school: str
+    subjectId: str
+    subjectName: str
+    gradeId: str
+    gradeName: str
+    term: int
+    year: int
+    curriculumStandard: str
+    totalWeeks: int
+    lessonsPerWeek: int
+    lessons: List[Dict[str, Any]] = []
     createdAt: datetime = Field(default_factory=datetime.utcnow)
 
 # ==================== AUTHENTICATION ====================
