@@ -8,7 +8,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert
+  Alert,
+  Modal
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
@@ -18,7 +19,10 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [resetModalVisible, setResetModalVisible] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetting, setResetting] = useState(false);
+  const { signIn, resetPassword } = useAuth();
   const router = useRouter();
 
   const handleLogin = async () => {
@@ -34,6 +38,38 @@ export default function Login() {
       Alert.alert('Login Failed', error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = () => {
+    setResetEmail(email); // Pre-fill with login email if available
+    setResetModalVisible(true);
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetEmail) {
+      Alert.alert('Error', 'Please enter your email address');
+      return;
+    }
+
+    setResetting(true);
+    try {
+      await resetPassword(resetEmail);
+      Alert.alert(
+        'Password Reset Email Sent',
+        `We've sent a password reset link to ${resetEmail}. Please check your inbox and spam folder.`,
+        [{ text: 'OK', onPress: () => setResetModalVisible(false) }]
+      );
+    } catch (error: any) {
+      let message = 'Failed to send reset email';
+      if (error.message.includes('user-not-found')) {
+        message = 'No account found with this email address';
+      } else if (error.message.includes('invalid-email')) {
+        message = 'Please enter a valid email address';
+      }
+      Alert.alert('Error', message);
+    } finally {
+      setResetting(false);
     }
   };
 
