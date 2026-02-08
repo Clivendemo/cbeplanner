@@ -722,7 +722,7 @@ async def get_note(note_id: str, user: dict = Depends(verify_token)):
 
 @api_router.post("/schemes/generate")
 async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Depends(verify_token)):
-    """Generate a comprehensive Scheme of Work with break handling"""
+    """Generate a comprehensive Scheme of Work matching KICD format"""
     
     # Fetch curriculum data
     grade = await db.grades.find_one({"_id": ObjectId(request.gradeId)})
@@ -731,37 +731,38 @@ async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Dep
     if not grade or not subject:
         raise HTTPException(status_code=404, detail="Invalid grade or subject")
     
-    # Get all strands for this subject
+    # Get all strands for this subject with numbering
     strands = await db.strands.find({"subjectId": request.subjectId}).to_list(100)
     
-    # Get all substrands and SLOs
+    # Get all substrands and SLOs with proper numbering
     all_curriculum_content = []
+    strand_number = 0
     for strand in strands:
+        strand_number += 1
         strand_id = str(strand["_id"])
         substrands = await db.substrands.find({"strandId": strand_id}).to_list(100)
+        substrand_number = 0
         for substrand in substrands:
+            substrand_number += 1
             substrand_id = str(substrand["_id"])
             slos = await db.slos.find({"substrandId": substrand_id}).to_list(100)
             for slo in slos:
                 all_curriculum_content.append({
-                    "strand": strand["name"],
-                    "substrand": substrand["name"],
-                    "slo": slo["name"]
+                    "strand": f"{strand_number}.0 {strand['name']}",
+                    "substrand": f"{strand_number}.{substrand_number} {substrand['name']}",
+                    "slo": f"By the end of the lesson, the learner should be able to {slo['name'].lower()}.",
+                    "sloRaw": slo['name'],
+                    "keyInquiryQuestions": generate_inquiry_questions(strand['name'], substrand['name'], slo['name']),
+                    "learningExperiences": generate_learning_experiences(strand['name'], substrand['name'], slo['name']),
+                    "learningResources": generate_learning_resources(strand['name'], substrand['name']),
+                    "assessmentMethods": generate_assessment_methods(slo['name'])
                 })
-    
-    # Get resources and assessments
-    resources = await db.activities.find({}).to_list(100)
-    assessments = await db.assessments.find({}).to_list(100)
-    
-    resource_list = ["Textbooks", "Charts", "Digital devices", "Writing materials"]
-    assessment_list = [a["name"] for a in assessments] if assessments else ["Observation", "Oral Questions", "Written Tests"]
     
     # Calculate total lessons
     total_lessons = request.totalWeeks * request.lessonsPerWeek
     
     # Process breaks and create schedule
     breaks_map = {}  # {(week, lesson): break_info}
-    lessons_lost_to_breaks = 0
     
     for brk in request.breaks:
         if brk.durationType == "lessons":
@@ -782,10 +783,11 @@ async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Dep
         while lessons_marked < num_lessons:
             breaks_map[(current_week, current_lesson)] = {
                 "type": brk.breakType,
-                "description": brk.description or f"{brk.breakType} Period",
-                "duration": num_lessons
+                "description": brk.description or f"{brk.breakType}",
+                "duration": num_lessons,
+                "startWeek": brk.startWeek,
+                "endWeek": current_week
             }
-            lessons_lost_to_breaks += 1
             lessons_marked += 1
             
             current_lesson += 1
@@ -796,32 +798,38 @@ async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Dep
     # Generate lesson schedule
     lessons = []
     curriculum_index = 0
+    lesson_counter = 0  # Overall lesson counter
     
     for week in range(1, request.totalWeeks + 1):
+        week_has_break = any((week, l) in breaks_map for l in range(1, request.lessonsPerWeek + 1))
+        
         for lesson_num in range(1, request.lessonsPerWeek + 1):
+            lesson_counter += 1
+            
             # Check if this is a break
             if (week, lesson_num) in breaks_map:
                 brk_info = breaks_map[(week, lesson_num)]
-                lessons.append({
-                    "week": week,
-                    "lessonNumber": lesson_num,
-                    "isBreak": True,
-                    "breakType": brk_info["type"],
-                    "breakDescription": brk_info["description"],
-                    "strand": None,
-                    "substrand": None,
-                    "slo": None,
-                    "keyInquiryQuestions": [],
-                    "learningExperiences": [],
-                    "learningResources": [],
-                    "assessmentMethods": [],
-                    "reflection": ""
-                })
+                # Only add break entry once per break period
+                existing_break = next((l for l in lessons if l.get("isBreak") and l.get("breakType") == brk_info["type"] and l.get("week") == brk_info["startWeek"]), None)
+                if not existing_break:
+                    lessons.append({
+                        "week": week,
+                        "lessonNumber": lesson_num,
+                        "isBreak": True,
+                        "breakType": brk_info["type"],
+                        "breakDescription": brk_info["description"],
+                        "breakDuration": brk_info["duration"],
+                        "strand": "",
+                        "substrand": "",
+                        "slo": "",
+                        "keyInquiryQuestions": "",
+                        "learningExperiences": "",
+                        "learningResources": "",
+                        "assessmentMethods": "",
+                        "reflection": ""
+                    })
             else:
-                # Add revision before assessment/examination breaks
-                next_key = (week, lesson_num + 1) if lesson_num < request.lessonsPerWeek else (week + 1, 1)
-                is_before_exam = next_key in breaks_map and breaks_map[next_key]["type"] in ["Assessment", "Examination"]
-                
+                # Regular lesson
                 if curriculum_index < len(all_curriculum_content):
                     content = all_curriculum_content[curriculum_index]
                     curriculum_index += 1
@@ -835,19 +843,135 @@ async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Dep
                         "strand": content["strand"],
                         "substrand": content["substrand"],
                         "slo": content["slo"],
-                        "keyInquiryQuestions": [
-                            f"What is {content['substrand']}?",
-                            f"How do we apply {content['substrand']} in daily life?",
-                            f"Why is {content['substrand']} important?"
-                        ],
-                        "learningExperiences": [
-                            "Group discussions",
-                            "Practical demonstrations",
-                            "Problem-solving activities",
-                            "Research and presentations"
-                        ],
-                        "learningResources": resource_list,
-                        "assessmentMethods": assessment_list[:3],
+                        "keyInquiryQuestions": content["keyInquiryQuestions"],
+                        "learningExperiences": content["learningExperiences"],
+                        "learningResources": content["learningResources"],
+                        "assessmentMethods": content["assessmentMethods"],
+                        "reflection": ""
+                    })
+                else:
+                    # Revision/Consolidation lessons when curriculum exhausted
+                    lessons.append({
+                        "week": week,
+                        "lessonNumber": lesson_num,
+                        "isBreak": False,
+                        "breakType": None,
+                        "breakDescription": None,
+                        "strand": "Revision",
+                        "substrand": "Term Revision",
+                        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+                        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+                        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+                        "learningResources": "Revision notes, Past papers, Reference materials",
+                        "assessmentMethods": "Oral questions, Written tests",
+                        "reflection": ""
+                    })
+    
+    # Create scheme document
+    scheme = {
+        "teacherId": user["id"],
+        "teacherName": request.teacherName or f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
+        "school": request.school,
+        "subjectId": request.subjectId,
+        "subjectName": subject["name"],
+        "gradeId": request.gradeId,
+        "gradeName": grade["name"],
+        "term": request.term,
+        "year": request.year,
+        "curriculumStandard": request.curriculumStandard,
+        "totalWeeks": request.totalWeeks,
+        "lessonsPerWeek": request.lessonsPerWeek,
+        "lessons": lessons,
+        "createdAt": datetime.utcnow()
+    }
+    
+    result = await db.schemes.insert_one(scheme)
+    if "_id" in scheme:
+        del scheme["_id"]
+    scheme["id"] = str(result.inserted_id)
+    scheme["createdAt"] = scheme["createdAt"].isoformat()
+    
+    return {"success": True, "scheme": scheme}
+
+# Helper functions for generating scheme content
+def generate_inquiry_questions(strand: str, substrand: str, slo: str) -> str:
+    """Generate relevant key inquiry questions based on the topic"""
+    questions = []
+    
+    # Generic patterns based on topic
+    if "evolution" in substrand.lower() or "history" in substrand.lower():
+        questions.append(f"How has {substrand} developed over time?")
+        questions.append(f"What are the key milestones in the development of {substrand}?")
+    elif "architecture" in substrand.lower() or "structure" in substrand.lower():
+        questions.append(f"What are the main components of {substrand}?")
+        questions.append(f"How do the different parts of {substrand} work together?")
+    elif "network" in substrand.lower() or "communication" in substrand.lower():
+        questions.append(f"How is data transmitted in {substrand}?")
+        questions.append(f"What factors affect {substrand} performance?")
+    elif "programming" in substrand.lower() or "code" in substrand.lower():
+        questions.append(f"How do we implement {substrand} in programming?")
+        questions.append(f"What are the best practices for {substrand}?")
+    else:
+        questions.append(f"What is the importance of {substrand}?")
+        questions.append(f"How do we apply {substrand} in real-world situations?")
+    
+    return " ".join([f"{i+1}. {q}" for i, q in enumerate(questions)])
+
+def generate_learning_experiences(strand: str, substrand: str, slo: str) -> str:
+    """Generate appropriate learning experiences"""
+    slo_lower = slo.lower()
+    
+    if "identify" in slo_lower or "describe" in slo_lower:
+        return f"The learner is guided to search for information on {substrand} using reference materials and digital resources."
+    elif "create" in slo_lower or "make" in slo_lower or "design" in slo_lower:
+        return f"The learner is guided to create/design a model or project demonstrating {substrand} using locally available materials."
+    elif "compare" in slo_lower or "differentiate" in slo_lower:
+        return f"The learner is guided to compare and contrast different aspects of {substrand} through group discussions and research."
+    elif "explain" in slo_lower or "discuss" in slo_lower:
+        return f"The learner is guided to discuss and explain concepts related to {substrand} through collaborative learning."
+    elif "apply" in slo_lower or "use" in slo_lower:
+        return f"The learner is guided to apply {substrand} concepts through practical exercises and problem-solving activities."
+    elif "analyze" in slo_lower or "evaluate" in slo_lower:
+        return f"The learner is guided to analyze case studies and evaluate different approaches to {substrand}."
+    else:
+        return f"The learner is guided to explore and understand {substrand} through interactive learning activities."
+
+def generate_learning_resources(strand: str, substrand: str) -> str:
+    """Generate appropriate learning resources"""
+    resources = ["Reference materials"]
+    
+    strand_lower = strand.lower()
+    substrand_lower = substrand.lower()
+    
+    if "computer" in strand_lower or "technology" in strand_lower:
+        resources.extend(["Computers", "Digital devices", "Internet"])
+    if "network" in strand_lower or "communication" in substrand_lower:
+        resources.extend(["Network cables", "Networking equipment diagrams"])
+    if "programming" in strand_lower or "code" in substrand_lower:
+        resources.extend(["Programming IDE", "Code samples"])
+    if "model" in substrand_lower or "architecture" in substrand_lower:
+        resources.extend(["Modeling materials", "Charts", "Diagrams"])
+    
+    resources.append("Textbooks")
+    
+    return ", ".join(resources[:5])
+
+def generate_assessment_methods(slo: str) -> str:
+    """Generate appropriate assessment methods based on SLO"""
+    slo_lower = slo.lower()
+    
+    if "identify" in slo_lower or "describe" in slo_lower or "explain" in slo_lower:
+        return "Oral questions"
+    elif "create" in slo_lower or "make" in slo_lower or "design" in slo_lower:
+        return "Project"
+    elif "compare" in slo_lower or "analyze" in slo_lower:
+        return "Written assignment"
+    elif "discuss" in slo_lower:
+        return "Discussion"
+    elif "demonstrate" in slo_lower or "apply" in slo_lower:
+        return "Practical assessment"
+    else:
+        return "Oral questions"
                         "reflection": "Revision lesson" if is_before_exam else ""
                     })
                 else:
