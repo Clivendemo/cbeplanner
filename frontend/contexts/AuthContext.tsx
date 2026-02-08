@@ -103,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (verifiedUser.role === 'admin') {
           router.replace('/(admin)/dashboard');
         } else {
-          router.replace('/(teacher)/home');
+          router.replace('/(teacher)/dashboard');
         }
       }
     } catch (error: any) {
