@@ -188,7 +188,7 @@ export default function SchemesOfWork() {
         return `
           <tr class="break-row">
             <td colspan="10" class="break-cell">
-              <strong>WEEK ${lesson.week} — ${lesson.breakType?.toUpperCase()} BREAK</strong><br/>
+              <strong>${lesson.breakType?.toUpperCase()} — WEEK ${lesson.week}</strong><br/>
               ${lesson.breakDescription || ''}
             </td>
           </tr>
@@ -198,14 +198,14 @@ export default function SchemesOfWork() {
         <tr>
           <td>${lesson.week}</td>
           <td>${lesson.lessonNumber}</td>
-          <td>${lesson.strand || '-'}</td>
-          <td>${lesson.substrand || '-'}</td>
-          <td>${lesson.slo || '-'}</td>
-          <td>${lesson.keyInquiryQuestions?.join(', ') || '-'}</td>
-          <td>${lesson.learningExperiences?.join(', ') || '-'}</td>
-          <td>${lesson.learningResources?.join(', ') || '-'}</td>
-          <td>${lesson.assessmentMethods?.join(', ') || '-'}</td>
-          <td>${lesson.reflection || '-'}</td>
+          <td>${lesson.strand || ''}</td>
+          <td>${lesson.substrand || ''}</td>
+          <td>${lesson.slo || ''}</td>
+          <td>${lesson.keyInquiryQuestions || ''}</td>
+          <td>${lesson.learningExperiences || ''}</td>
+          <td>${lesson.learningResources || ''}</td>
+          <td>${lesson.assessmentMethods || ''}</td>
+          <td>${lesson.reflection || ''}</td>
         </tr>
       `;
     }).join('');
@@ -217,65 +217,72 @@ export default function SchemesOfWork() {
         <meta charset="utf-8">
         <title>Scheme of Work</title>
         <style>
-          @page { size: A4 landscape; margin: 10mm; }
-          body { font-family: Arial, sans-serif; font-size: 9px; }
-          .header { text-align: center; margin-bottom: 15px; }
-          .header h1 { color: #6366F1; margin: 0; font-size: 18px; }
-          .meta { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; background: #F3F4F6; padding: 10px; border-radius: 4px; }
-          .meta-item { flex: 1; min-width: 120px; }
-          .meta-label { font-size: 8px; color: #6B7280; }
-          .meta-value { font-weight: bold; }
-          table { width: 100%; border-collapse: collapse; font-size: 8px; }
-          th, td { border: 1px solid #E5E7EB; padding: 4px; text-align: left; vertical-align: top; }
-          th { background: #6366F1; color: white; font-weight: bold; }
-          tr:nth-child(even) { background: #F9FAFB; }
-          .break-row { background: #FEF3C7 !important; }
-          .break-cell { text-align: center; padding: 10px; color: #92400E; }
-          .footer { margin-top: 15px; text-align: center; font-size: 8px; color: #9CA3AF; }
+          @page { size: A4 landscape; margin: 8mm; }
+          body { font-family: Arial, sans-serif; font-size: 9px; margin: 0; padding: 10px; }
+          .title { text-align: center; margin-bottom: 10px; }
+          .title h1 { font-size: 16px; margin: 0 0 5px 0; text-transform: uppercase; }
+          .title h2 { font-size: 14px; margin: 0; font-weight: normal; }
+          .header-info { margin-bottom: 10px; }
+          .header-row { display: flex; margin-bottom: 5px; }
+          .header-item { flex: 1; }
+          .header-label { font-weight: bold; display: inline; }
+          .header-dots { border-bottom: 1px dotted #000; display: inline-block; min-width: 200px; }
+          table { width: 100%; border-collapse: collapse; font-size: 8px; margin-top: 10px; }
+          th, td { border: 1px solid #000; padding: 4px; text-align: left; vertical-align: top; }
+          th { background: #f0f0f0; font-weight: bold; text-align: center; }
+          .break-row { background: #fff3cd !important; }
+          .break-cell { text-align: center; padding: 8px; font-weight: bold; }
+          .footer { margin-top: 10px; text-align: center; font-size: 8px; color: #666; }
+          .col-week { width: 4%; }
+          .col-lsn { width: 3%; }
+          .col-strand { width: 10%; }
+          .col-substrand { width: 10%; }
+          .col-slo { width: 18%; }
+          .col-inquiry { width: 15%; }
+          .col-exp { width: 15%; }
+          .col-res { width: 10%; }
+          .col-assess { width: 8%; }
+          .col-refl { width: 7%; }
         </style>
       </head>
       <body>
-        <div class="header">
-          <h1>SCHEME OF WORK</h1>
-          <p>${generatedScheme.subjectName} - ${generatedScheme.gradeName} - Term ${generatedScheme.term}, ${generatedScheme.year}</p>
+        <div class="title">
+          <h1>SCHEMES OF WORK FOR TERM ${generatedScheme.term}</h1>
+          <h2>${generatedScheme.gradeName.toUpperCase()} ${generatedScheme.subjectName.toUpperCase()}</h2>
         </div>
         
-        <div class="meta">
-          <div class="meta-item">
-            <div class="meta-label">School</div>
-            <div class="meta-value">${generatedScheme.school}</div>
+        <div class="header-info">
+          <div class="header-row">
+            <div class="header-item">
+              <span class="header-label">SCHOOL:</span> 
+              <span class="header-dots">${generatedScheme.school}</span>
+            </div>
+            <div class="header-item">
+              <span class="header-label">YEAR:</span> 
+              <span class="header-dots">${generatedScheme.year}</span>
+            </div>
           </div>
-          <div class="meta-item">
-            <div class="meta-label">Teacher</div>
-            <div class="meta-value">${generatedScheme.teacherName}</div>
-          </div>
-          <div class="meta-item">
-            <div class="meta-label">Total Weeks</div>
-            <div class="meta-value">${generatedScheme.totalWeeks}</div>
-          </div>
-          <div class="meta-item">
-            <div class="meta-label">Lessons/Week</div>
-            <div class="meta-value">${generatedScheme.lessonsPerWeek}</div>
-          </div>
-          <div class="meta-item">
-            <div class="meta-label">Curriculum</div>
-            <div class="meta-value">${generatedScheme.curriculumStandard}</div>
+          <div class="header-row">
+            <div class="header-item">
+              <span class="header-label">NAME OF THE TEACHER:</span> 
+              <span class="header-dots">${generatedScheme.teacherName}</span>
+            </div>
           </div>
         </div>
         
         <table>
           <thead>
             <tr>
-              <th>Wk</th>
-              <th>Ls</th>
-              <th>Strand</th>
-              <th>Sub-strand</th>
-              <th>Specific Learning Outcomes</th>
-              <th>Key Inquiry Questions</th>
-              <th>Learning Experiences</th>
-              <th>Resources</th>
-              <th>Assessment</th>
-              <th>Reflection</th>
+              <th class="col-week">Week</th>
+              <th class="col-lsn">LSN</th>
+              <th class="col-strand">Strand</th>
+              <th class="col-substrand">Sub-strand</th>
+              <th class="col-slo">Specific Learning Outcomes</th>
+              <th class="col-inquiry">Key Inquiry Question(s)</th>
+              <th class="col-exp">Learning Experiences</th>
+              <th class="col-res">Learning Resources</th>
+              <th class="col-assess">Assessment Methods</th>
+              <th class="col-refl">Refl</th>
             </tr>
           </thead>
           <tbody>
@@ -284,7 +291,7 @@ export default function SchemesOfWork() {
         </table>
         
         <div class="footer">
-          <p>Generated by CBE Planner | KICD-Aligned Curriculum | ${new Date().toLocaleDateString()}</p>
+          <p>Generated by CBE Planner | KICD-Aligned CBC Curriculum | ${new Date().toLocaleDateString()}</p>
         </div>
       </body>
       </html>
