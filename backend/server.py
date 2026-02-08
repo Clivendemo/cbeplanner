@@ -338,6 +338,15 @@ async def reset_free_trial(user: dict = Depends(verify_token)):
     )
     return {"success": True, "message": "Free trial reset and 100 KES added to wallet"}
 
+@api_router.post("/profile/become-admin")
+async def become_admin(user: dict = Depends(verify_token)):
+    """Promote current user to admin (for testing only)"""
+    await db.users.update_one(
+        {"_id": ObjectId(user["id"])},
+        {"$set": {"role": "admin"}}
+    )
+    return {"success": True, "message": "You are now an admin. Please refresh the app."}
+
 @api_router.get("/grades")
 async def get_grades(user: dict = Depends(verify_token)):
     grades = await db.grades.find().sort("order", 1).to_list(100)
