@@ -19,8 +19,8 @@ export default function Index() {
         console.log('Admin user, going to dashboard');
         router.replace('/(admin)/dashboard');
       } else {
-        console.log('Teacher user, going to home');
-        router.replace('/(teacher)/home');
+        console.log('Teacher user, going to dashboard');
+        router.replace('/(teacher)/dashboard');
       }
     }, 100);
 
