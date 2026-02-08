@@ -91,7 +91,7 @@ export default function Dashboard() {
       icon: 'calendar',
       color: '#8B5CF6',
       route: '/(teacher)/schemes',
-      disabled: true
+      disabled: false
     },
     {
       title: 'Revision Papers',
