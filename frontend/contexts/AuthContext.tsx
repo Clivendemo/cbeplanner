@@ -145,8 +145,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('User profile created:', response.data.user.email);
         setUser(response.data.user);
         
-        // Navigate to teacher home after signup
-        router.replace('/(teacher)/home');
+        // Navigate to teacher dashboard after signup
+        router.replace('/(teacher)/dashboard');
       }
     } catch (error: any) {
       console.error('Sign up error:', error.code, error.message);
