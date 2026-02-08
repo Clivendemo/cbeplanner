@@ -360,5 +360,12 @@ const styles = StyleSheet.create({
   },
   resetText: {
     color: '#6366F1'
+  },
+  adminButton: {
+    marginTop: 8,
+    backgroundColor: '#FEF3C7'
+  },
+  adminText: {
+    color: '#F59E0B'
   }
 });
