@@ -972,51 +972,6 @@ def generate_assessment_methods(slo: str) -> str:
         return "Practical assessment"
     else:
         return "Oral questions"
-                        "reflection": "Revision lesson" if is_before_exam else ""
-                    })
-                else:
-                    # Revision lessons when curriculum is exhausted
-                    lessons.append({
-                        "week": week,
-                        "lessonNumber": lesson_num,
-                        "isBreak": False,
-                        "breakType": None,
-                        "breakDescription": None,
-                        "strand": "Revision",
-                        "substrand": "Term Revision",
-                        "slo": "Review and consolidate learning",
-                        "keyInquiryQuestions": ["What have we learned?", "What areas need more practice?"],
-                        "learningExperiences": ["Review exercises", "Practice tests", "Q&A sessions"],
-                        "learningResources": resource_list,
-                        "assessmentMethods": assessment_list[:3],
-                        "reflection": "Consolidation and revision"
-                    })
-    
-    # Create scheme document
-    scheme = {
-        "teacherId": user["id"],
-        "teacherName": request.teacherName or f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
-        "school": request.school,
-        "subjectId": request.subjectId,
-        "subjectName": subject["name"],
-        "gradeId": request.gradeId,
-        "gradeName": grade["name"],
-        "term": request.term,
-        "year": request.year,
-        "curriculumStandard": request.curriculumStandard,
-        "totalWeeks": request.totalWeeks,
-        "lessonsPerWeek": request.lessonsPerWeek,
-        "lessons": lessons,
-        "createdAt": datetime.utcnow()
-    }
-    
-    result = await db.schemes.insert_one(scheme)
-    if "_id" in scheme:
-        del scheme["_id"]
-    scheme["id"] = str(result.inserted_id)
-    scheme["createdAt"] = scheme["createdAt"].isoformat()
-    
-    return {"success": True, "scheme": scheme}
 
 @api_router.get("/schemes")
 async def get_schemes(user: dict = Depends(verify_token)):
