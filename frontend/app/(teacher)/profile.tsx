@@ -19,6 +19,7 @@ export default function Profile() {
   const { user, firebaseUser, signOut, refreshProfile } = useAuth();
   const router = useRouter();
   const [resetting, setResetting] = useState(false);
+  const [becomingAdmin, setBecomingAdmin] = useState(false);
 
   const handleResetTrial = async () => {
     setResetting(true);
@@ -36,6 +37,43 @@ export default function Profile() {
     } finally {
       setResetting(false);
     }
+  };
+
+  const handleBecomeAdmin = async () => {
+    Alert.alert(
+      'Become Admin',
+      'This will give you admin access to manage curriculum data. Continue?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Continue',
+          onPress: async () => {
+            setBecomingAdmin(true);
+            try {
+              const token = await firebaseUser?.getIdToken();
+              await axios.post(
+                `${BACKEND_URL}/api/profile/become-admin`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
+              Alert.alert('Success', 'You are now an admin! The app will redirect you to the admin panel.', [
+                {
+                  text: 'OK',
+                  onPress: () => {
+                    refreshProfile();
+                    router.replace('/(admin)/dashboard');
+                  }
+                }
+              ]);
+            } catch (error) {
+              Alert.alert('Error', 'Failed to become admin');
+            } finally {
+              setBecomingAdmin(false);
+            }
+          }
+        }
+      ]
+    );
   };
 
   const handleSignOut = async () => {
