@@ -133,8 +133,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, firebaseUser, loading, signIn, signUp, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, firebaseUser, loading, signIn, signUp, signOut, refreshProfile, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );
