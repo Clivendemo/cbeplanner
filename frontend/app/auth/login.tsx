@@ -262,16 +262,79 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500'
   },
+  forgotPasswordButton: {
+    marginTop: 16,
+    alignItems: 'center'
+  },
+  forgotPasswordText: {
+    color: '#6B7280',
+    fontSize: 14
+  },
   footer: {
     marginTop: 48,
     padding: 16,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: '#EEF2FF',
     borderRadius: 12
   },
   footerText: {
     fontSize: 12,
-    color: '#92400E',
+    color: '#4F46E5',
     textAlign: 'center',
     marginBottom: 4
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    padding: 24
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#111827'
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 24,
+    lineHeight: 20
+  },
+  modalInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB'
+  },
+  modalInput: {
+    flex: 1,
+    height: 48,
+    fontSize: 16,
+    color: '#111827'
+  },
+  resetButton: {
+    backgroundColor: '#6366F1',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center'
+  },
+  resetButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600'
   }
 });
