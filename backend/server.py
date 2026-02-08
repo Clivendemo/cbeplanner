@@ -747,11 +747,33 @@ async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Dep
             substrand_id = str(substrand["_id"])
             slos = await db.slos.find({"substrandId": substrand_id}).to_list(100)
             for slo in slos:
+                slo_id = str(slo["_id"])
+                
+                # Get competencies and values from mapping
+                mapping = await db.slo_mappings.find_one({"sloId": slo_id})
+                competencies_list = []
+                values_list = []
+                
+                if mapping:
+                    # Get competency names
+                    for comp_id in mapping.get("competencyIds", []):
+                        comp = await db.competencies.find_one({"_id": ObjectId(comp_id)})
+                        if comp:
+                            competencies_list.append(comp["name"])
+                    
+                    # Get value names
+                    for val_id in mapping.get("valueIds", []):
+                        val = await db.values.find_one({"_id": ObjectId(val_id)})
+                        if val:
+                            values_list.append(val["name"])
+                
                 all_curriculum_content.append({
                     "strand": f"{strand_number}.0 {strand['name']}",
                     "substrand": f"{strand_number}.{substrand_number} {substrand['name']}",
                     "slo": f"By the end of the lesson, the learner should be able to {slo['name'].lower()}.",
                     "sloRaw": slo['name'],
+                    "coreCompetencies": ", ".join(competencies_list) if competencies_list else "Critical Thinking, Communication",
+                    "coreValues": ", ".join(values_list) if values_list else "Responsibility, Respect",
                     "keyInquiryQuestions": generate_inquiry_questions(strand['name'], substrand['name'], slo['name']),
                     "learningExperiences": generate_learning_experiences(strand['name'], substrand['name'], slo['name']),
                     "learningResources": generate_learning_resources(strand['name'], substrand['name']),
