@@ -79,3 +79,7 @@ temp/
 *.tmp
 *.temp
 .metro-cache/
+-e 
+# Environment files
+*.env
+*.env.*
