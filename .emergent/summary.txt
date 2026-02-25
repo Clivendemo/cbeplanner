@@ -1,154 +1,187 @@
 <analysis>
+<original_problem_statement>
+The user's initial goal was to build a production-ready Competency-Based Education (CBE) lesson planning system for Kenyan teachers.
 
-**original_problem_statement**: The user wants to build a production-ready Competency-Based Education (CBE) lesson planning system for Kenyan teachers.
+However, the user's latest and most critical request has completely changed the project's direction. The new primary objective is to **migrate the project off the Emergent platform and prepare it for full, independent external deployment.**
 
-**PRODUCT REQUIREMENTS:**
+This involves:
+- Removing all Emergent-specific dependencies, SDKs, and internal service references.
+- Restructuring the repository into a clean  and  structure.
+- Dockerizing the FastAPI backend for deployment on services like Render or Railway.
+- Standardizing the use of environment variables for all secrets (e.g., , ).
+- Ensuring the backend is compatible with MongoDB Atlas.
+- Configuring the Expo frontend to be built for the web (env: load .env
+env: export EXPO_TUNNEL_SUBDOMAIN EXPO_PACKAGER_HOSTNAME EXPO_PUBLIC_BACKEND_URL EXPO_USE_FAST_RESOLVER METRO_CACHE_ROOT
+Fast resolver is enabled.
+Starting Metro Bundler
+Static rendering is enabled. Learn more: https://docs.expo.dev/router/reference/static-rendering/
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 42.5% (16/35)
+λ node_modules/expo-router/node/render.js ▓░░░░░░░░░░░░░░░  7.4% (14/64)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 42.5% ( 33/158)
+λ node_modules/expo-router/node/render.js ▓░░░░░░░░░░░░░░░  8.5% ( 50/206)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 42.5% (105/245)
+λ node_modules/expo-router/node/render.js ▓▓░░░░░░░░░░░░░░ 16.9% (125/304)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 42.5% (159/315)
+λ node_modules/expo-router/node/render.js ▓▓▓▓░░░░░░░░░░░░ 31.0% (207/376)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 44.1% (307/470)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓░░░░░░░░░░ 43.7% (296/448)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 45.6% (333/493)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 65.0% (461/572)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.0% (481/616)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 65.2% (483/617)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 84.1% (640/698)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 84.2% (666/726)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.2% (707/747)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 88.8% (811/930)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 97.3% (812/827)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 88.8% (1028/1092)
+λ Bundled 34781ms node_modules/expo-router/node/render.js (1115 modules)
+Web Bundled 35064ms node_modules/expo-router/entry.js (829 modules)
 
-- **Core Tools:** Lesson Plan Generator, Short Notes Generator, and Schemes of Work Generator.
-- **Authentication:** Teachers sign up with Full Name, School Name, and Email. This information is stored and used in generated documents. Password reset functionality is required.
-- **Curriculum Logic (Shared):** Tools use cascading dropdowns: Grade/Class -> Learning Area -> Strand -> Sub-strand -> Specific Learning Outcomes (SLO).
-- **Data Model (KICD Aligned):** A strict hierarchy of curriculum data, including mappings for Core Competencies, Core Values, and Pertinent & Contemporary Issues (PCIs).
-- **Lesson Plan Output:** Professional, KICD-compliant tabular format. Must include teacher's details, competencies, values, etc.
-- **Short Notes Output:** Concise, learner-friendly notes with PDF download capability.
-- **Schemes of Work Output:** A comprehensive, multi-week plan based on a provided DOCX template, with the ability to insert flexible breaks (holidays, exams) and download as a PDF.
-- **Teacher Dashboard:** A tile-based interface for easy access to all features (Create Lesson, Generate Notes, Schemes of Work, Profile, etc.).
-- **Admin Capabilities:** An in-app admin panel to view, add, and edit all curriculum data (grades, subjects, strands, etc.).
-- **Monetization:** A wallet system for users to top up their accounts, with M-Pesa STK push integration.
-- **Database:** The user has requested migrating from the current MongoDB to Neon PostgreSQL for the M-Pesa feature.
+› web bundles (1):
+_expo/static/js/web/entry-39783d3dd73480d523342465ccfae48a.js (1.86 MB)
+
+› Static routes (23):
+/home (26.2 kB)
+/ (index) (23.2 kB)
+/notes (27.7 kB)
+/profile (31.1 kB)
+/lessons (24.7 kB)
+/schemes (28.7 kB)
+/_sitemap (28.4 kB)
+/revision (25.6 kB)
+/dashboard (32.8 kB)
+/+not-found (23.8 kB)
+/curriculum (32.9 kB)
+/auth/login (25 kB)
+/auth/signup (26.2 kB)
+/(teacher)/home (26.2 kB)
+/(admin)/profile (31.1 kB)
+/(teacher)/notes (27.7 kB)
+/(admin)/dashboard (32.8 kB)
+/(teacher)/lessons (24.7 kB)
+/(teacher)/profile (28.2 kB)
+/(teacher)/schemes (28.7 kB)
+/(admin)/curriculum (32.9 kB)
+/(teacher)/revision (25.6 kB)
+/(teacher)/dashboard (30.4 kB)
+
+Exported: dist) and mobile (EAS), using  for API calls.
+- Creating a root-level  with comprehensive deployment instructions.
+- The final deliverable should be a completely portable, production-ready project with no vendor lock-in.
+</original_problem_statement>
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application with an Expo (React Native) frontend and a FastAPI/MongoDB backend. Firebase is used for authentication.
-
-- **Frontend:**
-  - A seamless authentication flow (Signup, Login, Password Reset) is in place.
-  - After login, teachers are directed to a tile-based dashboard providing access to all features.
-  - Implemented screens for:
-    - Lesson Plan Generation () with working cascading dropdowns.
-    - Notes Generation () with PDF download functionality.
-    - Schemes of Work Generation () with complex break-insertion logic and PDF download.
-    - User Profile () with buttons to reset the trial and access the admin panel.
-  - A comprehensive Admin Panel () has been built for data management.
-
-- **Backend:**
-  - Robust APIs for user management, authentication, and all curriculum CRUD operations.
-  - Endpoints for generating lesson plans, notes (with PDF), and schemes of work (with PDF).
-  - A public  endpoint for populating initial data.
-  - The database is populated with extensive data for Grades 1-6 and a comprehensive set of Grade 10 data, including subjects, strands, SLOs, and their mappings to competencies, values, and PCIs.
+A full-stack application with a FastAPI backend and an Expo (React Native) frontend. The database is MongoDB. All core features (Lesson Plan Generator, Notes Generator, Schemes of Work Generator, Authentication, Admin Panel) are implemented. The application is functional but is still tightly coupled with the Emergent development environment. In the last session, the curriculum database was successfully updated with new data provided by the user via PDF files.
 
 **Last working item**:
-- **Last item agent was working:** The user uploaded five PDF documents containing KICD curriculum designs for 'Chemistry', 'Computer Science', 'CSL', 'English', and 'Fasihi ya Kiswahili'. The user requested that the app's data be updated to align with these documents. The agent successfully extracted the curriculum structure (strands, sub-strands, SLOs) from all five PDFs into a JSON-like text format. The process was stopped before this extracted text was parsed and inserted into the MongoDB database.
-    - Status: IN PROGRESS
-    - Agent Testing Done: N
-    - Which testing method agent to use? backend testing agent
-    - User Testing Done: N
+- **Last item agent was working:** The agent had just acknowledged the user's new, major request to refactor the entire project for independent deployment and remove all Emergent platform dependencies. The agent was in the initial information-gathering phase, reviewing  and other frontend files to assess the scope of the required changes before formulating a plan.
+- **Status:** NOT STARTED
+- **Agent Testing Done:** N/A
+- **Which testing method agent to use?** both. This is a significant refactoring task. The backend will require testing its new Docker container, environment variable configuration, and CORS setup. The frontend will require testing to ensure it can communicate correctly with the newly independent backend.
+- **User Testing Done:** N/A
 
 **All Pending/In progress Issue list**:
-- There are no outstanding bugs or issues. The work is focused on implementing new features and data updates as requested by the user.
+There are no outstanding bugs. The work is now focused entirely on the refactoring task.
 
 **In progress Task List**:
-- **Task 1: Populate Database with Extracted Curriculum Data (P0)**
-  - **Description:** The curriculum data extracted from the five user-provided PDFs needs to be parsed and inserted into the MongoDB database. This involves creating new subjects, strands, sub-strands, and SLOs while ensuring correct relationships (e.g., , ).
-  - **Where to resume:** Create a Python script or use  to process the JSON-like text data (available in the chat history from messages 295-301) and use  to perform the database insertions. The script must handle checking for existing data to avoid duplicates.
-  - **What will be achieved with this?** The application's database will be fully aligned with the curriculum designs provided by the user, making the lesson and scheme generation tools more accurate and complete.
-  - **Status:** IN PROGRESS
-  - **Should Test frontend/backend/both after fix?** backend
+- **Task 1: Project Decoupling and Refactoring for Independent Deployment (P0)**
+  - **Where to resume:** The agent has only just begun to assess the codebase. The immediate next step is to formulate a detailed, step-by-step plan based on the user's explicit requirements from message #42. This plan should be presented to the user for confirmation before any code is modified. The plan should cover:
+    1.  Creating the new directory structure and moving files.
+    2.  Creating a  for the backend.
+    3.  Modifying  to use environment variables for  and , and to add a proper CORS middleware.
+    4.  Creating a  file.
+    5.  Refactoring all frontend API calls to use a single  environment variable.
+    6.  Creating a root-level  with detailed deployment instructions for backend (Render/Railway) and frontend (static hosting).
+  - **What will be achieved with this?** A fully portable, production-ready project that the user can deploy and maintain on any standard hosting platform, completely free of Emergent-specific dependencies.
+  - **Status:** NOT STARTED
+  - **Should Test frontend/backend/both after fix?** both
   - **Blocked on something:** None.
 
 **Upcoming and Future Tasks**
-- **Upcoming Tasks:**
-  - **P0: M-Pesa Integration & Database Migration:**
-    - The user explicitly requested to add an M-Pesa STK push for wallet top-ups and to use Neon PostgreSQL for this functionality.
-    - This is a major architectural change requiring:
-      1.  Setting up a Neon PostgreSQL database.
-      2.  Migrating the existing MongoDB schemas and data to PostgreSQL.
-      3.  Refactoring the entire backend in  to use a PostgreSQL client (e.g.,  or ) instead of .
-      4.  Implementing the M-Pesa Daraja API integration for STK push.
-  - **P1: Build Revision Papers Feature:**
-    - The user requested a placeholder for a Revision Papers feature on the teacher dashboard. The placeholder exists, but the backend and frontend for generating or managing revision papers need to be built.
-- **Future Tasks:**
-  - **P2: Implement Admin Import/Export API:**
-    - During the admin panel discussion, the agent proposed creating  and  endpoints to allow the user to back up and restore curriculum data using JSON files. This feature was agreed upon but not implemented.
+The decoupling task has superseded all previous plans. The following are now future tasks to be re-evaluated *after* the refactoring is complete and verified by the user:
+- **P1: M-Pesa Integration & Database Migration:** The original request to add M-Pesa and migrate to PostgreSQL is on hold. The user may prefer to use MongoDB Atlas after the refactoring. This needs to be re-confirmed with the user later.
+- **P2: Build Revision Papers Feature:** The placeholder UI exists, but the feature is not built.
+- **P3: Implement Admin Import/Export API:** An agreed-upon feature for backing up and restoring curriculum data.
 
 **Completed work in this session**
 - **Recently completed:**
-  - **Schemes of Work Generation:** Built a feature to generate detailed Schemes of Work from a DOCX template, including complex logic for adding flexible breaks (holidays, exams) and PDF export. (DONE)
-  - **Notes Generation with PDF:** Implemented a feature to generate short notes and download them as a PDF. (DONE)
-  - **Teacher Dashboard UI:** Replaced the bottom tab navigation with a modern, tile-based dashboard for a better user experience. (DONE)
-  - **Full Auth Flow Rework:** Overhauled the entire authentication system (signup, login, session management, password reset) to be seamless and robust. (DONE)
-  - **Comprehensive Admin Panel:** Created a functional UI for admins to manage all curriculum data directly within the app. (DONE)
-  - **Grade 10 Data Population:** Added extensive KICD-aligned curriculum data for Grade 10, including all subjects, strands, SLOs, and their mappings to competencies, values, and PCIs. (DONE)
-  - **Lesson/Scheme Content Enhancement:** Updated generation logic to dynamically include Core Competencies, Values, and PCIs in the final documents. (DONE)
-  - **Critical Bug Fixes:** Resolved the core cascading dropdown issue by fixing data seeding, and fixed a  in the lesson plan generation endpoint. (DONE)
+  - Curriculum Data Seeding: Successfully extracted curriculum data from user-provided PDFs for Chemistry, Computer Science, CSL, and Fasihi ya Kiswahili. A new script () was created to parse and insert this data into the MongoDB database. (DONE)
+  - Verification: Confirmed the new data was correctly inserted and linked in the database via a verification script. (DONE)
+  - Tech Stack Clarification: Provided the user with a detailed summary of the current technology stack. (DONE)
 
 **Earlier issues found/mentioned but not fixed**
-- None. All previously mentioned issues have been resolved or superseded by larger architectural changes.
+- **Issue 1: English PDF Data Extraction Failure**
+  - **Description:** During the data seeding task, the text extraction from the  file produced garbled and repetitive content. The agent correctly decided to skip importing this data to avoid corrupting the database.
+  - **Why to solve this issue and what will be achieved with this?** The English curriculum data is missing. If the user still requires it, a different approach to parse the PDF will be needed. This is a data issue, not a code bug.
+  - **Status:** NOT STARTED (Data was skipped, not fixed).
 
 **Code Architecture**
+Current Structure:
+
+Target Structure (as per user request):
 
 
 **Key Technical Concepts**
-- **Frontend:** Expo (React Native), Expo Router, React Context (), Axios.
-- **Backend:** FastAPI, MongoDB (with ), Pydantic.
-- **Authentication:** Firebase Authentication.
-- **PDF Generation:**  on the backend,  and  on the frontend.
+- **Frontend:** Expo (React Native), Expo Router, React Context
+- **Backend:** FastAPI, Pydantic
+- **Database:** MongoDB (using  driver)
+- **Authentication:** Firebase Authentication
+- **Upcoming additions:** Docker, Standardized Environment Variable Management, CORS
 
 **key DB schema**
-- **users:** , , , , , , , , .
-- **grades, subjects, strands, substrands, slos:** Core curriculum hierarchy.
-- **competencies, values, pcis:** Mapped to SLOs.
-- **slo_mappings:** Joins SLOs with competencies, values, and PCIs.
-- **lesson_plans:** Stores generated lesson plan data.
-- **notes:** Stores generated notes data.
-- **schemes_of_work:** , , ,  (array of structured lesson/break data).
+- **users:** , , , , , , , etc.
+- **grades, subjects, strands, substrands, slos:** The core hierarchical curriculum data.
+- **slo_mappings, competencies, values, pcis:** Data mapped to learning outcomes.
+- **lesson_plans, notes, schemes_of_work:** Stores user-generated documents.
 
 **changes in tech stack**
-- **Added:**  for backend PDF generation.  and  for frontend PDF handling.
-- **Pending Major Change:** User has requested migrating the database from **MongoDB to Neon PostgreSQL** for the upcoming M-Pesa integration. This will require a full backend refactor.
+No changes have been implemented yet. However, a major architectural refactoring is requested to remove all Emergent-specific tooling and prepare for standard Docker and static web hosting.
 
 **All files of reference**
-- ****: The monolithic backend file containing all APIs, data models, and business logic. It has been extensively modified.
-- ****: The new main entry point for logged-in teachers.
-- ****: Contains the complex UI and logic for generating Schemes of Work.
-- ****: Contains the completely refactored authentication logic.
-- **Chat History (Messages 295-301):** Contains the raw extracted curriculum data from the user's PDFs, which is needed for the next step.
+- : Will be the main target for backend refactoring (CORS, env vars).
+- : To be reviewed and cleaned for production.
+- : All files making API calls will need to be updated to use .
+- **Files to be created:**  (in backend),  (in backend), and a root-level .
 
 **Critical Info for New Agent**
-- **Immediate Task:** Your first priority is to parse the curriculum data extracted from the 5 PDFs (found in the previous agent's tool output in messages 295-301) and write a script to insert it into the MongoDB database.
-- **Upcoming Major Task:** The user has requested a migration from **MongoDB to Neon PostgreSQL** to support M-Pesa integration. This is a significant architectural decision and should be the next major feature to tackle after the data import is complete. Plan this migration carefully, as it will involve changing almost all data access logic in .
-- **UI Has Changed:** The teacher's main navigation is no longer a bottom tab bar. It is a tile-based dashboard located at . All navigation flows from there.
+- **Your absolute priority is the refactoring task.** The user's request in message #42 is now the primary goal. Do not work on any other features (M-Pesa, PostgreSQL, Revision Papers) until the project is fully decoupled from the Emergent platform.
+- **Create a detailed plan first.** Before making any changes, create a step-by-step plan for the refactoring based on the user's explicit requirements and present it using the  tool for confirmation.
+- **Follow the user's requirements precisely.** The user has provided a clear checklist for the backend, frontend, and deployment documentation. Adhere to it closely.
+- The PostgreSQL migration is on hold. The user might want to stick with MongoDB (Atlas), so do not proceed with any database migration until the decoupling is complete and the user re-confirms their preference.
+
+**documents created in this job**
+- 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User (LATEST):** Uploaded 5 PDF files (, , etc.) and asked to align the app's curriculum data with them. **Status: IN PROGRESS**.
-2.  **User:** Asked to add M-Pesa STK push and use Neon Postgres. **Status: PENDING**. This was paused to handle the curriculum update.
-3.  **User:** Requested Core Competencies and Values be included in Grade 10 **lesson plans**. **Status: DONE**.
-4.  **User:** Clarified that competencies/values should be in lesson plans, not just schemes. **Status: DONE**.
-5.  **User:** Requested Core Competencies and Values be added for Grade 10 data. **Status: DONE**.
-6.  **User:** Provided a  file as a model for the Schemes of Work output. **Status: DONE**.
-7.  **User:** Requested the ability to generate notes (with PDF download) and schemes of work (with flexible breaks). **Status: DONE**.
-8.  **User:** Asked about hosting services and deployment. **Status: HANDLED** by the support agent.
-9.  **User:** Requested to change the teacher home screen from bottom tabs to clickable tiles. **Status: DONE**.
-10. **User:** Reported a login issue and asked for the auth flow to be made seamless. **Status: DONE**.
+1.  **User (LATEST):** Gave a detailed request to refactor the entire project, remove all Emergent dependencies, and prepare it for independent deployment. **Status: NOT STARTED**.
+2.  **Agent:** Responded to the user's tech stack query and asked for clarification on the M-Pesa/PostgreSQL migration. **Status: COMPLETE**.
+3.  **User:** Asked about the database, framework, and dependencies. **Status: COMPLETE**.
+4.  **Agent:** Summarized the completed data seeding work and asked for next steps. **Status: COMPLETE**.
+5.  **Agent:** Took a screenshot to verify the app is running. **Status: COMPLETE**.
+6.  **Agent:** Restarted frontend services. **Status: COMPLETE**.
+7.  **Agent:** Verified the backend API and data linking after seeding. **Status: COMPLETE**.
+8.  **Agent:** Restarted all services. **Status: COMPLETE**.
+9.  **Agent:** Verified the seeded data in the database. **Status: COMPLETE**.
+10. **Agent:** Ran the data seeding script. **Status: COMPLETE**.
 
 **Project Health Check:**
-- **Broken:** No features are broken. The application is stable. The immediate task is a data-incompleteness problem, as the user's latest curriculum data is pending insertion.
+- **Functional:** The application is currently working as expected within the Emergent environment.
+- **Pending Refactor:** The project's architecture is about to undergo a major overhaul as per the user's request. No features are broken, but the entire deployment and environment configuration is set to change.
 
 **3rd Party Integrations**
-- **Firebase Authentication:** For user identity.
-- **MongoDB:** Current primary database.
-- **ReportLab:** For backend PDF generation.
-- **Pending:** M-Pesa (Daraja API) and Neon PostgreSQL.
+- Firebase Authentication
+- MongoDB (current database)
+- ReportLab (for PDF generation)
 
 **Testing status**
-  - Testing agent used after significant changes: NO
-  - Troubleshoot agent used after agent stuck in loop: NO
-  - Test files created: []
-  - Known regressions: None.
+- Testing agent used after significant changes: NO
+- Troubleshoot agent used after agent stuck in loop: NO
+- Test files created: []
+- Known regressions: None.
 
 **What agent forgot to execute**
-- The agent did not complete the final step of the user's last request. It successfully extracted curriculum data from five PDFs but did not proceed to parse and insert that data into the database. The task was left half-finished.
-
+- The agent did not forget to execute any tasks. It successfully completed the data seeding request and was awaiting new instructions when the user provided the major refactoring request. The agent was just beginning to process this new task when the session ended.
 </analysis>
-<SYS_PROMPT_SEPARATOR>
-
