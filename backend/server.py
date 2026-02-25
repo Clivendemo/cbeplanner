@@ -11,21 +11,98 @@ from datetime import datetime
 from bson import ObjectId
 import httpx
 
+# ===========================================
+# ENVIRONMENT CONFIGURATION
+# ===========================================
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+# Configure logging
+log_level = os.getenv('LOG_LEVEL', 'INFO')
+logging.basicConfig(level=getattr(logging, log_level))
+logger = logging.getLogger(__name__)
+
+# MongoDB connection - Support both naming conventions for flexibility
+# MONGODB_URI is the standard name for external deployment (Railway, Render)
+# MONGO_URL is the legacy name for local development
+mongo_url = os.getenv('MONGODB_URI') or os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+db_name = os.getenv('DB_NAME', 'cbeplanner')
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[db_name]
 
-# Firebase project configuration
-FIREBASE_PROJECT_ID = "cbeplanner"
-FIREBASE_API_KEY = "AIzaSyBalkTy90NBRs7Qky_VPTlikVP6UD69-p8"
+# Firebase project configuration from environment variables
+# Falls back to defaults for backward compatibility
+FIREBASE_PROJECT_ID = os.getenv('FIREBASE_PROJECT_ID', 'cbeplanner')
+FIREBASE_API_KEY = os.getenv('FIREBASE_API_KEY', 'AIzaSyBalkTy90NBRs7Qky_VPTlikVP6UD69-p8')
 
-# Create the main app
-app = FastAPI()
+# JWT Secret for additional security (optional)
+JWT_SECRET = os.getenv('JWT_SECRET', 'default-secret-change-in-production')
+
+# Environment
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
+
+# ===========================================
+# CORS CONFIGURATION
+# ===========================================
+# Get allowed origins from environment variable
+cors_origins_str = os.getenv('CORS_ORIGINS', '')
+if cors_origins_str:
+    CORS_ORIGINS = [origin.strip() for origin in cors_origins_str.split(',') if origin.strip()]
+else:
+    # Default origins for development
+    CORS_ORIGINS = [
+        "http://localhost:3000",
+        "http://localhost:8081",
+        "http://localhost:19006",
+        "http://localhost:19000",
+        "https://*.vercel.app",
+        "https://*.preview.emergentagent.com"
+    ]
+
+# ===========================================
+# FASTAPI APPLICATION SETUP
+# ===========================================
+app = FastAPI(
+    title="CBE Lesson Planner API",
+    description="Competency-Based Education Lesson Planning System for Kenyan Teachers",
+    version="1.0.0",
+    docs_url="/api/docs" if ENVIRONMENT != "production" else None,
+    redoc_url="/api/redoc" if ENVIRONMENT != "production" else None
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ORIGINS if ENVIRONMENT == "production" else ["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 api_router = APIRouter(prefix="/api")
+
+# ===========================================
+# HEALTH CHECK ENDPOINT
+# ===========================================
+@app.get("/api/health")
+async def health_check():
+    """Health check endpoint for deployment platforms"""
+    try:
+        # Test database connection
+        await client.admin.command('ping')
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+    
+    return {
+        "status": "healthy",
+        "environment": ENVIRONMENT,
+        "database": db_status,
+        "version": "1.0.0"
+    }
+
+logger.info(f"Server starting in {ENVIRONMENT} mode")
+logger.info(f"CORS origins: {CORS_ORIGINS if ENVIRONMENT == 'production' else 'All origins (development)'}")
 
 # Helper to convert ObjectId to string
 def serialize_doc(doc):
