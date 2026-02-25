@@ -1,0 +1,45 @@
+{
+  "cli": {
+    "version": ">= 5.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "http://localhost:8001",
+        "EXPO_PUBLIC_BACKEND_URL": "http://localhost:8001"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://your-backend.up.railway.app",
+        "EXPO_PUBLIC_BACKEND_URL": "https://your-backend.up.railway.app"
+      }
+    },
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://your-backend.up.railway.app",
+        "EXPO_PUBLIC_BACKEND_URL": "https://your-backend.up.railway.app"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "resourceClass": "m1-medium"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "your-apple-id@email.com",
+        "ascAppId": "your-app-store-connect-app-id"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./path-to-google-play-service-account.json"
+      }
+    }
+  }
+}
