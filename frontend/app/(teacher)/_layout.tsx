@@ -4,34 +4,33 @@ import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 
-// Profile button component for header
-const ProfileButton = () => {
+// Header Right component - defined outside to prevent re-renders
+function HeaderRight() {
   const router = useRouter();
   const { user } = useAuth();
   
   return (
-    <TouchableOpacity 
-      style={styles.profileButton}
-      onPress={() => router.push('/(teacher)/profile')}
-    >
-      <View style={styles.profileIconContainer}>
-        <Ionicons name="person-circle" size={28} color="#FFFFFF" />
+    <View style={styles.headerRight}>
+      <View style={styles.walletBadge}>
+        <Ionicons name="wallet-outline" size={14} color="#FFFFFF" />
+        <Text style={styles.walletText}>{user?.walletBalance || 0} KES</Text>
       </View>
-    </TouchableOpacity>
-  );
-};
-
-// Wallet badge for header
-const WalletBadge = () => {
-  const { user } = useAuth();
-  
-  return (
-    <View style={styles.walletBadge}>
-      <Ionicons name="wallet-outline" size={14} color="#FFFFFF" />
-      <Text style={styles.walletText}>{user?.walletBalance || 0} KES</Text>
+      <TouchableOpacity 
+        style={styles.profileButton}
+        onPress={() => router.push('/(teacher)/profile')}
+      >
+        <View style={styles.profileIconContainer}>
+          <Ionicons name="person-circle" size={28} color="#FFFFFF" />
+        </View>
+      </TouchableOpacity>
     </View>
   );
-};
+}
+
+// Empty header for profile page
+function EmptyHeader() {
+  return null;
+}
 
 export default function TeacherLayout() {
   return (
@@ -44,12 +43,7 @@ export default function TeacherLayout() {
         headerTitleStyle: {
           fontWeight: 'bold'
         },
-        headerRight: () => (
-          <View style={styles.headerRight}>
-            <WalletBadge />
-            <ProfileButton />
-          </View>
-        )
+        headerRight: HeaderRight
       }}
     >
       <Stack.Screen
@@ -81,7 +75,7 @@ export default function TeacherLayout() {
         name="profile"
         options={{
           title: 'My Profile',
-          headerRight: () => null // Hide profile button on profile page
+          headerRight: EmptyHeader
         }}
       />
       <Stack.Screen
