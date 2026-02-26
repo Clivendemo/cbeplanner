@@ -86,8 +86,17 @@ export default function Profile() {
           text: 'Sign Out',
           style: 'destructive',
           onPress: async () => {
-            await signOut();
-            router.replace('/auth/login');
+            try {
+              await signOut();
+              // Use setTimeout to ensure state is cleared before navigation
+              setTimeout(() => {
+                router.replace('/auth/login');
+              }, 100);
+            } catch (error) {
+              console.error('Sign out error:', error);
+              // Still try to navigate even if signOut fails
+              router.replace('/auth/login');
+            }
           }
         }
       ]
