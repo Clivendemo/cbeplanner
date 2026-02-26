@@ -1036,5 +1036,20 @@ const styles = StyleSheet.create({
   secureText: {
     fontSize: 12,
     color: '#6B7280'
+  },
+  developerCredit: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    marginTop: 8
+  },
+  developerText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6366F1'
+  },
+  versionText: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginTop: 4
   }
 });
