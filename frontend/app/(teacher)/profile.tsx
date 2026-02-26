@@ -500,6 +500,12 @@ export default function Profile() {
             {becomingAdmin ? 'Processing...' : 'Access Admin Panel'}
           </Text>
         </TouchableOpacity>
+
+        {/* Developer Credit */}
+        <View style={styles.developerCredit}>
+          <Text style={styles.developerText}>Developed by LEGIT LAB</Text>
+          <Text style={styles.versionText}>Version 1.0.0</Text>
+        </View>
       </View>
 
       {/* M-Pesa Top-up Modal */}
