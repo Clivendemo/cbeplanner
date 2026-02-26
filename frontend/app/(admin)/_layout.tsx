@@ -4,8 +4,8 @@ import { Tabs, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 
-// Logout button for admin header
-const LogoutButton = () => {
+// Header right component with logout button - defined outside to prevent re-renders
+function AdminHeaderRight() {
   const router = useRouter();
   const { signOut } = useAuth();
 
@@ -35,11 +35,31 @@ const LogoutButton = () => {
   };
 
   return (
-    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-      <Ionicons name="log-out-outline" size={24} color="#FFFFFF" />
-    </TouchableOpacity>
+    <View style={styles.headerRight}>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Ionicons name="log-out-outline" size={24} color="#FFFFFF" />
+      </TouchableOpacity>
+    </View>
   );
-};
+}
+
+// Empty header for profile page
+function EmptyHeader() {
+  return null;
+}
+
+// Tab bar icon components - defined outside to prevent re-renders
+function DashboardIcon({ color, size }: { color: string; size: number }) {
+  return <Ionicons name="grid-outline" size={size} color={color} />;
+}
+
+function CurriculumIcon({ color, size }: { color: string; size: number }) {
+  return <Ionicons name="school-outline" size={size} color={color} />;
+}
+
+function ProfileIcon({ color, size }: { color: string; size: number }) {
+  return <Ionicons name="person-outline" size={size} color={color} />;
+}
 
 export default function AdminLayout() {
   return (
@@ -60,39 +80,29 @@ export default function AdminLayout() {
         headerTitleStyle: {
           fontWeight: 'bold'
         },
-        headerRight: () => (
-          <View style={styles.headerRight}>
-            <LogoutButton />
-          </View>
-        )
+        headerRight: AdminHeaderRight
       }}
     >
       <Tabs.Screen
         name="dashboard"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="grid-outline" size={size} color={color} />
-          )
+          tabBarIcon: DashboardIcon
         }}
       />
       <Tabs.Screen
         name="curriculum"
         options={{
           title: 'Curriculum',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="school-outline" size={size} color={color} />
-          )
+          tabBarIcon: CurriculumIcon
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
-          ),
-          headerRight: () => null // Hide logout button on profile page since it has its own
+          tabBarIcon: ProfileIcon,
+          headerRight: EmptyHeader
         }}
       />
     </Tabs>
