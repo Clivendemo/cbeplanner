@@ -985,6 +985,7 @@ async def admin_reconciliation(
     }
 
 
+@api_router.get("/grades")
 async def get_grades(user: dict = Depends(verify_token)):
     grades = await db.grades.find().sort("order", 1).to_list(100)
     return {"success": True, "grades": [serialize_doc(g) for g in grades]}
