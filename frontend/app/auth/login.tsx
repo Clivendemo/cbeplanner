@@ -344,5 +344,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600'
+  },
+  developerText: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginTop: 8,
+    fontWeight: '500'
   }
 });
