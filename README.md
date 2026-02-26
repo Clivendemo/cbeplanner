@@ -243,4 +243,8 @@ MIT License - Feel free to use and modify for educational purposes.
 
 For issues or questions, please open a GitHub issue or contact the development team.
 
-**Built with ❤️ for Kenyan Teachers**
+---
+
+**Developed with ❤️ by LEGIT LAB for Kenyan Teachers**
+
+© 2025 LEGIT LAB. All rights reserved.
