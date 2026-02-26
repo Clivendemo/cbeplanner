@@ -1,4 +1,37 @@
-import { Stack } from 'expo-router';
+import React from 'react';
+import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../../contexts/AuthContext';
+
+// Profile button component for header
+const ProfileButton = () => {
+  const router = useRouter();
+  const { user } = useAuth();
+  
+  return (
+    <TouchableOpacity 
+      style={styles.profileButton}
+      onPress={() => router.push('/(teacher)/profile')}
+    >
+      <View style={styles.profileIconContainer}>
+        <Ionicons name="person-circle" size={28} color="#FFFFFF" />
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+// Wallet badge for header
+const WalletBadge = () => {
+  const { user } = useAuth();
+  
+  return (
+    <View style={styles.walletBadge}>
+      <Ionicons name="wallet-outline" size={14} color="#FFFFFF" />
+      <Text style={styles.walletText}>{user?.walletBalance || 0} KES</Text>
+    </View>
+  );
+};
 
 export default function TeacherLayout() {
   return (
@@ -10,7 +43,13 @@ export default function TeacherLayout() {
         headerTintColor: '#FFFFFF',
         headerTitleStyle: {
           fontWeight: 'bold'
-        }
+        },
+        headerRight: () => (
+          <View style={styles.headerRight}>
+            <WalletBadge />
+            <ProfileButton />
+          </View>
+        )
       }}
     >
       <Stack.Screen
@@ -41,7 +80,8 @@ export default function TeacherLayout() {
       <Stack.Screen
         name="profile"
         options={{
-          title: 'Profile'
+          title: 'My Profile',
+          headerRight: () => null // Hide profile button on profile page
         }}
       />
       <Stack.Screen
@@ -59,3 +99,37 @@ export default function TeacherLayout() {
     </Stack>
   );
 }
+
+const styles = StyleSheet.create({
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8
+  },
+  profileButton: {
+    padding: 4
+  },
+  profileIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  walletBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 10
+  },
+  walletText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4
+  }
+});
