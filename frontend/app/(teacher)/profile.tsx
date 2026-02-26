@@ -1022,8 +1022,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 8
   },
+  secureTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
   secureText: {
-    textAlign: 'center',
     fontSize: 12,
     color: '#6B7280'
   }
