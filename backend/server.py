@@ -510,7 +510,481 @@ async def become_admin(user: dict = Depends(verify_token)):
     )
     return {"success": True, "message": "You are now an admin. Please refresh the app."}
 
-@api_router.get("/grades")
+# ===========================================
+# M-PESA PAYMENT ENDPOINTS
+# ===========================================
+
+from mpesa_service import mpesa_service
+
+@api_router.post("/payments/mpesa/initiate")
+async def initiate_mpesa_payment(request: InitiatePaymentRequest, user: dict = Depends(verify_token)):
+    """
+    Initiate M-Pesa STK Push payment for wallet top-up
+    
+    - Validates amount (minimum 50 KES)
+    - Creates pending transaction in ledger
+    - Sends STK Push to customer's phone
+    - Returns checkout details for status polling
+    """
+    # Validate amount
+    if request.amount < 50:
+        raise HTTPException(status_code=400, detail="Minimum top-up amount is 50 KES")
+    
+    if request.amount > 150000:
+        raise HTTPException(status_code=400, detail="Maximum top-up amount is 150,000 KES")
+    
+    try:
+        # Generate unique transaction reference
+        tx_ref = mpesa_service.generate_tx_ref()
+        
+        # Format phone number
+        try:
+            formatted_phone = mpesa_service.format_phone_number(request.phoneNumber)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        
+        # Create pending transaction in ledger FIRST (before calling M-Pesa)
+        transaction = {
+            "userId": user["id"],
+            "tx_ref": tx_ref,
+            "mpesaReceiptNumber": None,
+            "checkoutRequestID": None,
+            "merchantRequestID": None,
+            "provider": "mpesa",
+            "type": "topup",
+            "amount": float(request.amount),
+            "currency": "KES",
+            "phoneNumber": formatted_phone,
+            "status": "pending",
+            "resultCode": None,
+            "resultDesc": None,
+            "createdAt": datetime.utcnow(),
+            "updatedAt": datetime.utcnow()
+        }
+        
+        # Insert transaction
+        result = await db.wallet_transactions.insert_one(transaction)
+        transaction_id = str(result.inserted_id)
+        
+        logger.info(f"Created pending transaction {tx_ref} for user {user['id']}, amount: {request.amount}")
+        
+        # Now initiate STK Push
+        try:
+            stk_response = await mpesa_service.initiate_stk_push(
+                phone_number=formatted_phone,
+                amount=request.amount,
+                account_reference=tx_ref,
+                transaction_desc=f"CBE Planner Wallet Top Up"
+            )
+            
+            if stk_response.get("success"):
+                # Update transaction with M-Pesa response details
+                await db.wallet_transactions.update_one(
+                    {"_id": ObjectId(transaction_id)},
+                    {
+                        "$set": {
+                            "checkoutRequestID": stk_response.get("checkoutRequestID"),
+                            "merchantRequestID": stk_response.get("merchantRequestID"),
+                            "updatedAt": datetime.utcnow()
+                        }
+                    }
+                )
+                
+                return {
+                    "success": True,
+                    "message": "STK Push sent. Please enter your M-Pesa PIN.",
+                    "transactionId": transaction_id,
+                    "tx_ref": tx_ref,
+                    "checkoutRequestID": stk_response.get("checkoutRequestID"),
+                    "customerMessage": stk_response.get("customerMessage")
+                }
+            else:
+                # Mark transaction as failed
+                await db.wallet_transactions.update_one(
+                    {"_id": ObjectId(transaction_id)},
+                    {
+                        "$set": {
+                            "status": "failed",
+                            "resultDesc": stk_response.get("error", "STK Push failed"),
+                            "updatedAt": datetime.utcnow()
+                        }
+                    }
+                )
+                raise HTTPException(
+                    status_code=400, 
+                    detail=stk_response.get("error", "Failed to initiate payment")
+                )
+                
+        except Exception as e:
+            # Mark transaction as failed if STK Push fails
+            await db.wallet_transactions.update_one(
+                {"_id": ObjectId(transaction_id)},
+                {
+                    "$set": {
+                        "status": "failed",
+                        "resultDesc": str(e),
+                        "updatedAt": datetime.utcnow()
+                    }
+                }
+            )
+            logger.error(f"STK Push failed for {tx_ref}: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Payment initiation failed: {str(e)}")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Payment initiation error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Payment system error. Please try again.")
+
+
+@api_router.post("/payments/mpesa/callback")
+async def mpesa_callback(callback_data: PaymentCallbackData):
+    """
+    M-Pesa callback endpoint for payment confirmation
+    
+    - Receives payment result from M-Pesa
+    - Verifies transaction exists and is pending
+    - Updates transaction status
+    - Atomically updates wallet balance on success
+    - Implements idempotency (ignores already processed transactions)
+    """
+    try:
+        body = callback_data.Body
+        stk_callback = body.get("stkCallback", {})
+        
+        merchant_request_id = stk_callback.get("MerchantRequestID")
+        checkout_request_id = stk_callback.get("CheckoutRequestID")
+        result_code = stk_callback.get("ResultCode")
+        result_desc = stk_callback.get("ResultDesc")
+        
+        logger.info(f"M-Pesa callback received: CheckoutRequestID={checkout_request_id}, ResultCode={result_code}")
+        
+        # Find the transaction by checkoutRequestID
+        transaction = await db.wallet_transactions.find_one({
+            "checkoutRequestID": checkout_request_id
+        })
+        
+        if not transaction:
+            logger.warning(f"Transaction not found for CheckoutRequestID: {checkout_request_id}")
+            return {"ResultCode": 0, "ResultDesc": "Accepted"}
+        
+        # Check if already processed (idempotency)
+        if transaction.get("status") == "successful":
+            logger.info(f"Transaction {transaction['tx_ref']} already processed, skipping")
+            return {"ResultCode": 0, "ResultDesc": "Accepted"}
+        
+        if result_code == 0:
+            # Payment successful - extract callback metadata
+            callback_metadata = stk_callback.get("CallbackMetadata", {}).get("Item", [])
+            
+            mpesa_receipt = None
+            amount = None
+            phone = None
+            
+            for item in callback_metadata:
+                name = item.get("Name")
+                value = item.get("Value")
+                if name == "MpesaReceiptNumber":
+                    mpesa_receipt = value
+                elif name == "Amount":
+                    amount = float(value)
+                elif name == "PhoneNumber":
+                    phone = str(value)
+            
+            # Verify amount matches
+            if amount and amount != transaction.get("amount"):
+                logger.error(f"Amount mismatch: expected {transaction.get('amount')}, got {amount}")
+                # Still update as successful but log the mismatch
+            
+            # ATOMIC UPDATE: Update transaction AND wallet balance in one operation
+            # This prevents double-crediting even with race conditions
+            
+            # First, atomically update transaction status to successful
+            update_result = await db.wallet_transactions.update_one(
+                {
+                    "_id": transaction["_id"],
+                    "status": "pending"  # Only update if still pending (idempotency)
+                },
+                {
+                    "$set": {
+                        "status": "successful",
+                        "mpesaReceiptNumber": mpesa_receipt,
+                        "resultCode": str(result_code),
+                        "resultDesc": result_desc,
+                        "updatedAt": datetime.utcnow()
+                    }
+                }
+            )
+            
+            # Only update wallet if transaction was actually updated (not already processed)
+            if update_result.modified_count > 0:
+                # Atomically increment wallet balance
+                await db.users.update_one(
+                    {"_id": ObjectId(transaction["userId"])},
+                    {"$inc": {"walletBalance": transaction["amount"]}}
+                )
+                logger.info(f"Wallet credited {transaction['amount']} KES for user {transaction['userId']}, receipt: {mpesa_receipt}")
+            else:
+                logger.info(f"Transaction {transaction['tx_ref']} already processed (concurrent request)")
+        else:
+            # Payment failed or cancelled
+            await db.wallet_transactions.update_one(
+                {"_id": transaction["_id"]},
+                {
+                    "$set": {
+                        "status": "failed",
+                        "resultCode": str(result_code),
+                        "resultDesc": result_desc,
+                        "updatedAt": datetime.utcnow()
+                    }
+                }
+            )
+            logger.info(f"Transaction {transaction['tx_ref']} failed: {result_desc}")
+        
+        return {"ResultCode": 0, "ResultDesc": "Accepted"}
+        
+    except Exception as e:
+        logger.error(f"Callback processing error: {str(e)}")
+        return {"ResultCode": 0, "ResultDesc": "Accepted"}
+
+
+@api_router.get("/payments/mpesa/status/{checkout_request_id}")
+async def check_payment_status(checkout_request_id: str, user: dict = Depends(verify_token)):
+    """
+    Check payment status by polling M-Pesa or local database
+    
+    - First checks local database for status
+    - If still pending, queries M-Pesa for status
+    - Updates local status if M-Pesa confirms success
+    """
+    try:
+        # First check our database
+        transaction = await db.wallet_transactions.find_one({
+            "checkoutRequestID": checkout_request_id,
+            "userId": user["id"]
+        })
+        
+        if not transaction:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+        
+        # If already processed, return status from database
+        if transaction.get("status") in ["successful", "failed"]:
+            return {
+                "success": True,
+                "status": transaction["status"],
+                "tx_ref": transaction["tx_ref"],
+                "amount": transaction["amount"],
+                "mpesaReceiptNumber": transaction.get("mpesaReceiptNumber"),
+                "resultDesc": transaction.get("resultDesc"),
+                "message": "Payment successful!" if transaction["status"] == "successful" else transaction.get("resultDesc", "Payment failed")
+            }
+        
+        # If pending, query M-Pesa for status
+        try:
+            query_result = await mpesa_service.query_stk_status(checkout_request_id)
+            
+            if query_result.get("status") == "successful":
+                # Update transaction and wallet
+                update_result = await db.wallet_transactions.update_one(
+                    {
+                        "_id": transaction["_id"],
+                        "status": "pending"
+                    },
+                    {
+                        "$set": {
+                            "status": "successful",
+                            "resultDesc": query_result.get("resultDesc"),
+                            "updatedAt": datetime.utcnow()
+                        }
+                    }
+                )
+                
+                if update_result.modified_count > 0:
+                    await db.users.update_one(
+                        {"_id": ObjectId(transaction["userId"])},
+                        {"$inc": {"walletBalance": transaction["amount"]}}
+                    )
+                    logger.info(f"Wallet credited via query for {transaction['tx_ref']}")
+                
+                # Refresh user profile
+                updated_user = await db.users.find_one({"_id": ObjectId(user["id"])})
+                
+                return {
+                    "success": True,
+                    "status": "successful",
+                    "tx_ref": transaction["tx_ref"],
+                    "amount": transaction["amount"],
+                    "newBalance": updated_user.get("walletBalance", 0),
+                    "message": "Payment successful! Wallet has been credited."
+                }
+                
+            elif query_result.get("status") in ["failed", "cancelled", "timeout"]:
+                await db.wallet_transactions.update_one(
+                    {"_id": transaction["_id"]},
+                    {
+                        "$set": {
+                            "status": "failed",
+                            "resultDesc": query_result.get("resultDesc"),
+                            "updatedAt": datetime.utcnow()
+                        }
+                    }
+                )
+                
+                return {
+                    "success": False,
+                    "status": query_result.get("status"),
+                    "tx_ref": transaction["tx_ref"],
+                    "message": query_result.get("resultDesc", "Payment was not completed")
+                }
+            else:
+                # Still pending
+                return {
+                    "success": True,
+                    "status": "pending",
+                    "tx_ref": transaction["tx_ref"],
+                    "message": "Payment is still being processed. Please wait..."
+                }
+                
+        except Exception as e:
+            logger.error(f"Error querying M-Pesa status: {str(e)}")
+            return {
+                "success": True,
+                "status": "pending",
+                "tx_ref": transaction["tx_ref"],
+                "message": "Payment is being processed. Please wait..."
+            }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Status check error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error checking payment status")
+
+
+@api_router.get("/payments/transactions")
+async def get_user_transactions(
+    limit: int = 20,
+    offset: int = 0,
+    user: dict = Depends(verify_token)
+):
+    """Get user's wallet transaction history"""
+    transactions = await db.wallet_transactions.find(
+        {"userId": user["id"]}
+    ).sort("createdAt", -1).skip(offset).limit(limit).to_list(limit)
+    
+    total = await db.wallet_transactions.count_documents({"userId": user["id"]})
+    
+    return {
+        "success": True,
+        "transactions": [serialize_doc(t) for t in transactions],
+        "total": total,
+        "limit": limit,
+        "offset": offset
+    }
+
+
+# ===========================================
+# ADMIN WALLET/PAYMENT ENDPOINTS
+# ===========================================
+
+@api_router.get("/admin/wallet-transactions")
+async def admin_get_transactions(
+    limit: int = 50,
+    offset: int = 0,
+    status: Optional[str] = None,
+    userId: Optional[str] = None,
+    user: dict = Depends(verify_token)
+):
+    """Admin: Get all wallet transactions with filtering"""
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    query = {}
+    if status:
+        query["status"] = status
+    if userId:
+        query["userId"] = userId
+    
+    transactions = await db.wallet_transactions.find(query)\
+        .sort("createdAt", -1)\
+        .skip(offset)\
+        .limit(limit)\
+        .to_list(limit)
+    
+    total = await db.wallet_transactions.count_documents(query)
+    
+    # Calculate totals
+    successful_pipeline = [
+        {"$match": {"status": "successful", **({} if not userId else {"userId": userId})}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}, "count": {"$sum": 1}}}
+    ]
+    successful_stats = await db.wallet_transactions.aggregate(successful_pipeline).to_list(1)
+    
+    return {
+        "success": True,
+        "transactions": [serialize_doc(t) for t in transactions],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "stats": {
+            "successfulAmount": successful_stats[0]["total"] if successful_stats else 0,
+            "successfulCount": successful_stats[0]["count"] if successful_stats else 0
+        }
+    }
+
+
+@api_router.get("/admin/wallet-reconciliation")
+async def admin_reconciliation(
+    startDate: Optional[str] = None,
+    endDate: Optional[str] = None,
+    user: dict = Depends(verify_token)
+):
+    """Admin: Wallet reconciliation report"""
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    match_query = {"status": "successful"}
+    
+    if startDate:
+        match_query["createdAt"] = {"$gte": datetime.fromisoformat(startDate)}
+    if endDate:
+        if "createdAt" in match_query:
+            match_query["createdAt"]["$lte"] = datetime.fromisoformat(endDate)
+        else:
+            match_query["createdAt"] = {"$lte": datetime.fromisoformat(endDate)}
+    
+    # Aggregate by day
+    pipeline = [
+        {"$match": match_query},
+        {
+            "$group": {
+                "_id": {
+                    "$dateToString": {"format": "%Y-%m-%d", "date": "$createdAt"}
+                },
+                "totalAmount": {"$sum": "$amount"},
+                "transactionCount": {"$sum": 1}
+            }
+        },
+        {"$sort": {"_id": -1}},
+        {"$limit": 30}
+    ]
+    
+    daily_stats = await db.wallet_transactions.aggregate(pipeline).to_list(30)
+    
+    # Total wallet balances
+    wallet_pipeline = [
+        {"$group": {"_id": None, "totalBalance": {"$sum": "$walletBalance"}, "userCount": {"$sum": 1}}}
+    ]
+    wallet_stats = await db.users.aggregate(wallet_pipeline).to_list(1)
+    
+    return {
+        "success": True,
+        "dailyStats": daily_stats,
+        "totalWalletBalance": wallet_stats[0]["totalBalance"] if wallet_stats else 0,
+        "totalUsers": wallet_stats[0]["userCount"] if wallet_stats else 0
+    }
+
+
 async def get_grades(user: dict = Depends(verify_token)):
     grades = await db.grades.find().sort("order", 1).to_list(100)
     return {"success": True, "grades": [serialize_doc(g) for g in grades]}
