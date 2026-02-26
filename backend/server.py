@@ -321,6 +321,36 @@ class SchemeOfWork(BaseModel):
     lessons: List[Dict[str, Any]] = []
     createdAt: datetime = Field(default_factory=datetime.utcnow)
 
+# ==================== WALLET & M-PESA MODELS ====================
+
+class WalletTransaction(BaseModel):
+    """Wallet transaction ledger entry"""
+    id: Optional[str] = None
+    userId: str
+    tx_ref: str  # Unique transaction reference
+    mpesaReceiptNumber: Optional[str] = None
+    checkoutRequestID: Optional[str] = None
+    merchantRequestID: Optional[str] = None
+    provider: str = "mpesa"
+    type: str = "topup"  # topup, purchase, refund
+    amount: float
+    currency: str = "KES"
+    phoneNumber: str
+    status: str = "pending"  # pending, successful, failed
+    resultCode: Optional[str] = None
+    resultDesc: Optional[str] = None
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+    updatedAt: datetime = Field(default_factory=datetime.utcnow)
+
+class InitiatePaymentRequest(BaseModel):
+    """Request to initiate M-Pesa STK Push"""
+    phoneNumber: str
+    amount: int  # Amount in KES (minimum 50)
+
+class PaymentCallbackData(BaseModel):
+    """M-Pesa callback data structure"""
+    Body: Dict[str, Any]
+
 # ==================== AUTHENTICATION ====================
 
 async def verify_token(authorization: Optional[str] = Header(None)):
