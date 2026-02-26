@@ -146,6 +146,7 @@ export default function Login() {
         <View style={styles.footer}>
           <Text style={styles.footerText}>KICD-Aligned Lesson Planning</Text>
           <Text style={styles.footerText}>For Kenyan Teachers</Text>
+          <Text style={styles.developerText}>Developed by LEGIT LAB</Text>
         </View>
 
         {/* Password Reset Modal */}
