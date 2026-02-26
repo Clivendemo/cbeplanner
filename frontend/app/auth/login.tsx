@@ -33,8 +33,15 @@ export default function Login() {
 
     setLoading(true);
     try {
-      await signIn(email, password);
-      // Navigation is handled in AuthContext
+      const verifiedUser = await signIn(email, password);
+      if (verifiedUser) {
+        // Navigate based on role
+        if (verifiedUser.role === 'admin') {
+          router.replace('/(admin)/dashboard');
+        } else {
+          router.replace('/(teacher)/dashboard');
+        }
+      }
     } catch (error: any) {
       Alert.alert('Login Failed', error.message);
       setLoading(false);
