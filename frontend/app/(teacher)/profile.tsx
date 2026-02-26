@@ -603,9 +603,10 @@ export default function Profile() {
               )}
             </TouchableOpacity>
 
-            <Text style={styles.secureText}>
-              <Ionicons name="shield-checkmark" size={14} color="#10B981" /> Secure payment via Safaricom M-Pesa
-            </Text>
+            <View style={styles.secureTextContainer}>
+              <Ionicons name="shield-checkmark" size={14} color="#10B981" />
+              <Text style={styles.secureText}> Secure payment via Safaricom M-Pesa</Text>
+            </View>
           </View>
         </KeyboardAvoidingView>
       </Modal>
