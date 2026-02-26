@@ -10,7 +10,6 @@ import {
 } from 'firebase/auth';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -30,8 +29,8 @@ interface AuthContextType {
   user: User | null;
   firebaseUser: FirebaseUser | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, firstName: string, lastName: string, schoolName: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<User | null>;
+  signUp: (email: string, password: string, firstName: string, lastName: string, schoolName: string) => Promise<User | null>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -87,7 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, [verifyAndSetUser]);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<User | null> => {
     console.log('Attempting sign in for:', email);
     setLoading(true);
     try {
@@ -96,15 +95,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Manually verify and set user since onAuthStateChanged might be delayed
       const verifiedUser = await verifyAndSetUser(userCredential.user);
-      
-      if (verifiedUser) {
-        // Navigate based on role
-        if (verifiedUser.role === 'admin') {
-          router.replace('/(admin)/dashboard');
-        } else {
-          router.replace('/(teacher)/dashboard');
-        }
-      }
+      setLoading(false);
+      return verifiedUser;
     } catch (error: any) {
       console.error('Sign in error:', error.code, error.message);
       setLoading(false);
@@ -119,12 +111,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         message = 'Network error. Please check your connection.';
       }
       throw new Error(message);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const signUp = async (email: string, password: string, firstName: string, lastName: string, schoolName: string) => {
+  const signUp = async (email: string, password: string, firstName: string, lastName: string, schoolName: string): Promise<User | null> => {
     console.log('Attempting sign up for:', email);
     setLoading(true);
     try {
@@ -143,10 +133,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (response.data.success) {
         console.log('User profile created:', response.data.user.email);
         setUser(response.data.user);
-        
-        // Navigate to teacher dashboard after signup
-        router.replace('/(teacher)/dashboard');
+        setLoading(false);
+        return response.data.user;
       }
+      setLoading(false);
+      return null;
     } catch (error: any) {
       console.error('Sign up error:', error.code, error.message);
       setLoading(false);
@@ -160,8 +151,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         message = 'Please enter a valid email address';
       }
       throw new Error(message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -172,7 +161,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await AsyncStorage.removeItem('userToken');
       setUser(null);
       setFirebaseUser(null);
-      router.replace('/auth/login');
     } catch (error: any) {
       console.error('Sign out error:', error);
       throw new Error(error.message);
