@@ -2,6 +2,8 @@
 
 **Competency-Based Education (CBE) Lesson Planning System for Kenyan Teachers**
 
+> Developed by **LEGIT LAB**
+
 A production-ready, full-stack application that helps Kenyan teachers create KICD-aligned lesson plans, study notes, and schemes of work following the Competency-Based Curriculum (CBC).
 
 ## 🚀 Tech Stack
