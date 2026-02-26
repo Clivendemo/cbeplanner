@@ -43,8 +43,11 @@ export default function SignUp() {
 
     setLoading(true);
     try {
-      await signUp(email, password, firstName, lastName, schoolName);
-      // Navigation is handled in AuthContext after successful signup
+      const verifiedUser = await signUp(email, password, firstName, lastName, schoolName);
+      if (verifiedUser) {
+        // Navigate to teacher dashboard after successful signup
+        router.replace('/(teacher)/dashboard');
+      }
     } catch (error: any) {
       Alert.alert('Sign Up Failed', error.message);
       setLoading(false);
