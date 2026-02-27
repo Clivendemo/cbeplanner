@@ -425,14 +425,18 @@ export default function Profile() {
         )}
 
         {/* Free Trial Cards */}
+        {/* Free Lessons Card - Shows remaining count */}
         <View style={styles.freeLessonCard}>
           <View style={styles.freeLessonRow}>
             <Ionicons name="gift" size={24} color="#10B981" />
             <View style={styles.freeLessonInfo}>
-              <Text style={styles.freeLessonLabel}>Free Lesson</Text>
+              <Text style={styles.freeLessonLabel}>Free Lessons</Text>
               <Text style={styles.freeLessonStatus}>
-                {user?.freeLessonUsed ? 'Used' : 'Available'}
+                {user?.freeLessonsRemaining ?? 0} remaining
               </Text>
+            </View>
+            <View style={styles.priceBadge}>
+              <Text style={styles.priceText}>KES 2/plan</Text>
             </View>
           </View>
         </View>
