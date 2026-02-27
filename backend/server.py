@@ -2268,3 +2268,35 @@ logger = logging.getLogger(__name__)
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+@app.on_event("startup")
+async def startup_event():
+    """
+    Initialize database indexes on startup.
+    Safe to call multiple times (createIndex is idempotent).
+    """
+    try:
+        # Create required indexes for production
+        # wallet_ledger - UNIQUE reference to prevent duplicate credits
+        await db.wallet_ledger.create_index("reference", unique=True)
+        await db.wallet_ledger.create_index("userId")
+        await db.wallet_ledger.create_index("createdAt")
+        
+        # payments - Index on provider reference
+        await db.payments.create_index("providerRef")
+        await db.payments.create_index("userId")
+        await db.payments.create_index("status")
+        
+        # wallets - Index on userId
+        await db.wallets.create_index("userId", unique=True)
+        
+        # users - Index on role for admin queries
+        await db.users.create_index("role")
+        
+        # wallet_transactions - Index on checkoutRequestID and tx_ref
+        await db.wallet_transactions.create_index("checkoutRequestID")
+        await db.wallet_transactions.create_index("tx_ref", unique=True)
+        
+        logger.info("Database indexes created/verified successfully")
+    except Exception as e:
+        logger.error(f"Error creating indexes: {str(e)}")
