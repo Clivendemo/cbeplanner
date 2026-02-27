@@ -684,5 +684,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#78350F',
     lineHeight: 20
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8
+  },
+  loadingText: {
+    marginLeft: 12,
+    fontSize: 14,
+    color: '#6B7280'
+  },
+  emptyContainer: {
+    padding: 16,
+    backgroundColor: '#FEF3C7',
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#92400E'
   }
 });
