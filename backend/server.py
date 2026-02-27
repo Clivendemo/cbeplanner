@@ -700,8 +700,10 @@ async def mpesa_callback(callback_data: PaymentCallbackData):
     M-Pesa callback endpoint for payment confirmation
     
     - Receives payment result from M-Pesa
+    - Stores raw callback payload for auditing
     - Verifies transaction exists and is pending
     - Updates transaction status
+    - Creates wallet_ledger entry (source of truth)
     - Atomically updates wallet balance on success
     - Implements idempotency (ignores already processed transactions)
     """
@@ -724,6 +726,19 @@ async def mpesa_callback(callback_data: PaymentCallbackData):
         if not transaction:
             logger.warning(f"Transaction not found for CheckoutRequestID: {checkout_request_id}")
             return {"ResultCode": 0, "ResultDesc": "Accepted"}
+        
+        # Store raw callback for auditing
+        await db.payments.insert_one({
+            "userId": transaction["userId"],
+            "provider": "MPESA",
+            "providerRef": checkout_request_id,
+            "amount": transaction["amount"],
+            "currency": "KES",
+            "status": "SUCCESS" if result_code == 0 else "FAILED",
+            "rawCallback": body,  # Store full payload
+            "createdAt": datetime.utcnow(),
+            "updatedAt": datetime.utcnow()
+        })
         
         # Check if already processed (idempotency)
         if transaction.get("status") == "successful":
@@ -748,19 +763,20 @@ async def mpesa_callback(callback_data: PaymentCallbackData):
                 elif name == "PhoneNumber":
                     phone = str(value)
             
-            # Verify amount matches
-            if amount and amount != transaction.get("amount"):
-                logger.error(f"Amount mismatch: expected {transaction.get('amount')}, got {amount}")
-                # Still update as successful but log the mismatch
+            # Create UNIQUE ledger reference
+            ledger_ref = f"MPESA-{mpesa_receipt or checkout_request_id}"
             
-            # ATOMIC UPDATE: Update transaction AND wallet balance in one operation
-            # This prevents double-crediting even with race conditions
+            # Check if ledger entry already exists (idempotency)
+            existing_ledger = await db.wallet_ledger.find_one({"reference": ledger_ref})
+            if existing_ledger:
+                logger.info(f"Ledger entry {ledger_ref} already exists, skipping")
+                return {"ResultCode": 0, "ResultDesc": "Accepted"}
             
-            # First, atomically update transaction status to successful
+            # ATOMIC: Update transaction status to successful FIRST
             update_result = await db.wallet_transactions.update_one(
                 {
                     "_id": transaction["_id"],
-                    "status": "pending"  # Only update if still pending (idempotency)
+                    "status": "pending"
                 },
                 {
                     "$set": {
@@ -773,13 +789,40 @@ async def mpesa_callback(callback_data: PaymentCallbackData):
                 }
             )
             
-            # Only update wallet if transaction was actually updated (not already processed)
+            # Only create ledger entry and update wallet if transaction was updated
             if update_result.modified_count > 0:
+                # Create wallet_ledger entry (SOURCE OF TRUTH)
+                try:
+                    await db.wallet_ledger.insert_one({
+                        "userId": transaction["userId"],
+                        "type": "CREDIT",
+                        "amount": transaction["amount"],
+                        "reference": ledger_ref,
+                        "source": "MPESA",
+                        "description": f"M-Pesa top-up. Receipt: {mpesa_receipt}",
+                        "createdAt": datetime.utcnow()
+                    })
+                except Exception as e:
+                    # Duplicate reference - already processed
+                    logger.warning(f"Ledger entry already exists: {ledger_ref}")
+                    return {"ResultCode": 0, "ResultDesc": "Accepted"}
+                
                 # Atomically increment wallet balance
                 await db.users.update_one(
                     {"_id": ObjectId(transaction["userId"])},
                     {"$inc": {"walletBalance": transaction["amount"]}}
                 )
+                
+                # Also update wallets collection
+                await db.wallets.update_one(
+                    {"userId": transaction["userId"]},
+                    {
+                        "$inc": {"balance": transaction["amount"]},
+                        "$set": {"updatedAt": datetime.utcnow()}
+                    },
+                    upsert=True
+                )
+                
                 logger.info(f"Wallet credited {transaction['amount']} KES for user {transaction['userId']}, receipt: {mpesa_receipt}")
             else:
                 logger.info(f"Transaction {transaction['tx_ref']} already processed (concurrent request)")
