@@ -84,6 +84,11 @@ api_router = APIRouter(prefix="/api")
 # ===========================================
 # HEALTH CHECK ENDPOINT
 # ===========================================
+@app.get("/health")
+async def root_health_check():
+    """Simple health check endpoint for Render"""
+    return {"status": "ok"}
+
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint for deployment platforms"""
