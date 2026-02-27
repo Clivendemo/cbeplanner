@@ -109,16 +109,20 @@ export default function Home() {
   };
 
   const loadSubstrands = async (strandId: string) => {
+    console.log('[DEBUG] loadSubstrands called with strandId:', strandId);
     try {
       setLoading(true);
       const headers = await getHeaders();
+      console.log('[DEBUG] Making substrand request to:', `${BACKEND_URL}/api/substrands?strandId=${strandId}`);
       const response = await axios.get(`${BACKEND_URL}/api/substrands?strandId=${strandId}`, { headers });
+      console.log('[DEBUG] Substrand response:', response.data);
       if (response.data.success) {
+        console.log('[DEBUG] Setting substrands:', response.data.substrands.length, 'items');
         setSubstrands(response.data.substrands);
         setSlos([]);
       }
     } catch (error) {
-      console.error('Error loading substrands:', error);
+      console.error('[DEBUG] Error loading substrands:', error);
       Alert.alert('Error', 'Failed to load sub-strands');
     } finally {
       setLoading(false);
