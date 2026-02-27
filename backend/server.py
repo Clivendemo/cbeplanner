@@ -472,7 +472,7 @@ async def verify_user_token(request: TokenVerifyRequest):
         
         user = await db.users.find_one({"firebaseUid": uid})
         if not user:
-            # Create new user with firstName, lastName, and schoolName
+            # Create new user with 5 FREE lessons on signup
             new_user = {
                 "firebaseUid": uid,
                 "email": email,
@@ -481,12 +481,32 @@ async def verify_user_token(request: TokenVerifyRequest):
                 "schoolName": request.schoolName or "",
                 "role": "teacher",
                 "walletBalance": 0.0,
+                "freeLessonsRemaining": FREE_LESSONS_ON_SIGNUP,
                 "freeLessonUsed": False,
                 "freeNotesUsed": False,
                 "createdAt": datetime.utcnow()
             }
             result = await db.users.insert_one(new_user)
             user = await db.users.find_one({"_id": result.inserted_id})
+            
+            # Create wallet for new user
+            wallet = {
+                "userId": str(result.inserted_id),
+                "balance": 0.0,
+                "currency": "KES",
+                "updatedAt": datetime.utcnow()
+            }
+            await db.wallets.insert_one(wallet)
+            logger.info(f"New user created with {FREE_LESSONS_ON_SIGNUP} free lessons: {email}")
+        else:
+            # Ensure existing users have freeLessonsRemaining field
+            if "freeLessonsRemaining" not in user:
+                free_remaining = 0 if user.get("freeLessonUsed", True) else FREE_LESSONS_ON_SIGNUP
+                await db.users.update_one(
+                    {"_id": user["_id"]},
+                    {"$set": {"freeLessonsRemaining": free_remaining}}
+                )
+                user["freeLessonsRemaining"] = free_remaining
         
         return {"success": True, "user": serialize_doc(user)}
     except httpx.HTTPError as e:
