@@ -170,12 +170,16 @@ export default function Home() {
   };
 
   const handleStrandChange = (strandId: string) => {
+    console.log('[DEBUG] handleStrandChange called with strandId:', strandId);
     setSelectedStrand(strandId);
     setSelectedSubstrand('');
     setSelectedSLO('');
     setSubstrands([]);
     setSlos([]);
-    if (strandId) loadSubstrands(strandId);
+    if (strandId) {
+      console.log('[DEBUG] Calling loadSubstrands with:', strandId);
+      loadSubstrands(strandId);
+    }
   };
 
   const handleSubstrandChange = (substrandId: string) => {
