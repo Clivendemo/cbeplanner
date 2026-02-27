@@ -26,13 +26,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Default port (Railway overrides via $PORT)
-ENV PORT=8001
+# Default port (Render overrides via $PORT)
+ENV PORT=10000
 EXPOSE $PORT
 
 # Health check (uses $PORT env variable)
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; import os; urllib.request.urlopen(f'http://localhost:{os.environ.get(\"PORT\", 8001)}/api/health')" || exit 1
+    CMD python -c "import urllib.request; import os; urllib.request.urlopen(f'http://localhost:{os.environ.get(\"PORT\", 10000)}/api/health')" || exit 1
 
-# Run the application (Railway sets $PORT automatically)
+# Run the application (Render sets $PORT automatically)
 CMD uvicorn server:app --host 0.0.0.0 --port $PORT
