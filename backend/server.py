@@ -113,18 +113,55 @@ def serialize_doc(doc):
 
 # ==================== MODELS ====================
 
+# Lesson plan pricing constants
+LESSON_PLAN_COST_KES = 2
+FREE_LESSONS_ON_SIGNUP = 5
+
 class User(BaseModel):
     id: Optional[str] = None
     firebaseUid: str
     email: EmailStr
     firstName: str
     lastName: str
-    schoolName: str = ""  # Default empty if not provided
-    role: str = "teacher"  # teacher or admin
+    schoolName: str = ""
+    role: str = "teacher"  # teacher or admin or ADMIN
     walletBalance: float = 0.0
-    freeLessonUsed: bool = False
+    freeLessonsRemaining: int = FREE_LESSONS_ON_SIGNUP  # New: 5 free lessons on signup
+    freeLessonUsed: bool = False  # Legacy support
     freeNotesUsed: bool = False
     createdAt: datetime = Field(default_factory=datetime.utcnow)
+
+class Wallet(BaseModel):
+    """One wallet per user - stores current balance"""
+    id: Optional[str] = None
+    userId: str
+    balance: float = 0.0
+    currency: str = "KES"
+    updatedAt: datetime = Field(default_factory=datetime.utcnow)
+
+class WalletLedgerEntry(BaseModel):
+    """Source of truth for all wallet transactions"""
+    id: Optional[str] = None
+    userId: str
+    type: str  # CREDIT or DEBIT
+    amount: float
+    reference: str  # UNIQUE - prevents duplicate processing
+    source: str  # MPESA, SYSTEM, LESSON_PLAN, etc.
+    description: Optional[str] = None
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+
+class Payment(BaseModel):
+    """Payment records with raw callback storage"""
+    id: Optional[str] = None
+    userId: str
+    provider: str = "MPESA"
+    providerRef: Optional[str] = None  # MpesaReceiptNumber or CheckoutRequestID
+    amount: float
+    currency: str = "KES"
+    status: str = "PENDING"  # PENDING, SUCCESS, FAILED
+    rawCallback: Optional[Dict[str, Any]] = None  # Store raw payload for auditing
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+    updatedAt: datetime = Field(default_factory=datetime.utcnow)
 
 class Grade(BaseModel):
     id: Optional[str] = None
