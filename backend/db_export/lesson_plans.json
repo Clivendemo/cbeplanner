@@ -1,0 +1,803 @@
+[
+  {
+    "_id": {
+      "$oid": "6981e9e30686ce152f12b0d2"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "",
+    "schoolName": "",
+    "duration": 40,
+    "gradeId": "6981d7ede18a37d46e145bd4",
+    "gradeName": "Grade 6",
+    "subjectId": "6981d7ede18a37d46e145bd9",
+    "subjectName": "Mathematics",
+    "strandId": "6981d7ede18a37d46e145bdc",
+    "strandName": "Numbers",
+    "substrandId": "6981d7ede18a37d46e145be7",
+    "substrandName": "Whole Numbers",
+    "sloId": "6981d7ede18a37d46e145bf4",
+    "sloName": "Read and write numbers up to 10,000",
+    "sloDescription": "By the end of the sub-strand, the learner should be able to read and write numbers up to 10,000 in numerals and words",
+    "knowledge": [
+      "Understand Read and write numbers up to 10,000",
+      "Recall key concepts of Whole Numbers"
+    ],
+    "skills": [
+      "Apply Whole Numbers concepts",
+      "Demonstrate understanding of Read and write numbers up to 10,000"
+    ],
+    "attitudes": [
+      "Show curiosity and interest",
+      "Develop positive learning habits"
+    ],
+    "learningResources": [
+      "Textbooks",
+      "Charts and diagrams",
+      "Real objects/models",
+      "Digital resources"
+    ],
+    "competencies": [
+      {
+        "name": "Communication and Collaboration",
+        "description": "Learners work together effectively and share ideas clearly"
+      },
+      {
+        "name": "Critical Thinking and Problem Solving",
+        "description": "Learners analyze situations and develop creative solutions"
+      }
+    ],
+    "values": [
+      {
+        "name": "Respect",
+        "description": "Learners show respect for others, ideas, and diversity"
+      },
+      {
+        "name": "Responsibility",
+        "description": "Learners take ownership of their actions and learning"
+      }
+    ],
+    "pcis": [
+      {
+        "name": "Financial Literacy",
+        "description": "Understanding the value and responsible use of money"
+      }
+    ],
+    "introduction": "Teacher introduces Whole Numbers (5 min). Learners share what they know about the topic.",
+    "lessonDevelopment": "Teacher explains Read and write numbers up to 10,000 with examples (25 min). Learners participate in: Use number cards to practice reading and writing numbers.",
+    "extendedActivity": "",
+    "conclusion": "Teacher summarizes key points (5 min). Learners reflect on learning.",
+    "assessment": "Quick assessment (5 min): Ask learners questions to assess understanding verbally",
+    "createdAt": {
+      "$date": "2026-02-03T12:28:19.321000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69882d3ab1927e20ed71d812"
+    },
+    "teacherId": "69882b4cb1927e20ed71d811",
+    "teacherName": "Clive Ndemo",
+    "schoolName": "Freretown",
+    "duration": 40,
+    "gradeId": "6981d7ede18a37d46e145bd3",
+    "gradeName": "Grade 5",
+    "subjectId": "6981d7ede18a37d46e145bd9",
+    "subjectName": "Mathematics",
+    "strandId": "6981d7ede18a37d46e145bdc",
+    "strandName": "Numbers",
+    "substrandId": "6981d7ede18a37d46e145be7",
+    "substrandName": "Whole Numbers",
+    "sloId": "6981d7ede18a37d46e145bf4",
+    "sloName": "Read and write numbers up to 10,000",
+    "sloDescription": "By the end of the sub-strand, the learner should be able to read and write numbers up to 10,000 in numerals and words",
+    "knowledge": [
+      "Understand Read and write numbers up to 10,000",
+      "Recall key concepts of Whole Numbers"
+    ],
+    "skills": [
+      "Apply Whole Numbers concepts",
+      "Demonstrate understanding of Read and write numbers up to 10,000"
+    ],
+    "attitudes": [
+      "Show curiosity and interest",
+      "Develop positive learning habits"
+    ],
+    "learningResources": [
+      "Textbooks",
+      "Charts and diagrams",
+      "Real objects/models",
+      "Digital resources"
+    ],
+    "competencies": [
+      {
+        "name": "Communication and Collaboration",
+        "description": "Learners work together effectively and share ideas clearly"
+      },
+      {
+        "name": "Critical Thinking and Problem Solving",
+        "description": "Learners analyze situations and develop creative solutions"
+      }
+    ],
+    "values": [
+      {
+        "name": "Respect",
+        "description": "Learners show respect for others, ideas, and diversity"
+      },
+      {
+        "name": "Responsibility",
+        "description": "Learners take ownership of their actions and learning"
+      }
+    ],
+    "pcis": [
+      {
+        "name": "Financial Literacy",
+        "description": "Understanding the value and responsible use of money"
+      }
+    ],
+    "introduction": "Teacher introduces Whole Numbers (5 min). Learners share what they know about the topic.",
+    "lessonDevelopment": "Teacher explains Read and write numbers up to 10,000 with examples (25 min). Learners participate in: Use number cards to practice reading and writing numbers.",
+    "extendedActivity": "",
+    "conclusion": "Teacher summarizes key points (5 min). Learners reflect on learning.",
+    "assessment": "Quick assessment (5 min): Ask learners questions to assess understanding verbally",
+    "createdAt": {
+      "$date": "2026-02-08T06:29:14.761000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69886fd5022dd6c3f96b4bca"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "",
+    "schoolName": "",
+    "duration": 80,
+    "gradeId": "69886a9c022dd6c3f96b4bc6",
+    "gradeName": "Grade 10",
+    "subjectId": "69886dba734e50f34eb11ac1",
+    "subjectName": "Physics",
+    "strandId": "69886dba734e50f34eb11ac2",
+    "strandName": "Mechanics",
+    "substrandId": "69886dba734e50f34eb11ac3",
+    "substrandName": "Motion",
+    "sloId": "69886dba734e50f34eb11ac4",
+    "sloName": "Describe types of motion",
+    "sloDescription": "Describe types of motion",
+    "knowledge": [
+      "Understand Describe types of motion",
+      "Recall key concepts of Motion"
+    ],
+    "skills": [
+      "Apply Motion concepts",
+      "Demonstrate understanding of Describe types of motion"
+    ],
+    "attitudes": [
+      "Show curiosity and interest",
+      "Develop positive learning habits"
+    ],
+    "learningResources": [
+      "Textbooks",
+      "Charts and diagrams",
+      "Real objects/models",
+      "Digital resources"
+    ],
+    "competencies": [],
+    "values": [],
+    "pcis": [],
+    "introduction": "Comprehensive introduction to Motion (10 min). Teacher uses multimedia/real objects. Learners engage in discussion and pre-assessment.",
+    "lessonDevelopment": "Detailed explanation of Describe types of motion with multiple examples (24 min). Learners participate in: various guided activities.",
+    "extendedActivity": "Extended group work and differentiated activities (19 min): Learners explore Motion through projects, experiments, or research. Teacher provides individualized support.",
+    "conclusion": "Comprehensive review and reflection (10 min). Group presentations, peer feedback, and teacher summary.",
+    "assessment": "Comprehensive assessment (11 min): Multiple methods - oral questions, written tasks, practical demonstrations, peer assessment",
+    "createdAt": {
+      "$date": "2026-02-08T11:13:25.149000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69887025022dd6c3f96b4bcb"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "",
+    "schoolName": "",
+    "duration": 80,
+    "gradeId": "69886a9c022dd6c3f96b4bc6",
+    "gradeName": "Grade 10",
+    "subjectId": "69886dba734e50f34eb11ac1",
+    "subjectName": "Physics",
+    "strandId": "69886dba734e50f34eb11ac2",
+    "strandName": "Mechanics",
+    "substrandId": "69886dba734e50f34eb11ac3",
+    "substrandName": "Motion",
+    "sloId": "69886dba734e50f34eb11ac4",
+    "sloName": "Describe types of motion",
+    "sloDescription": "Describe types of motion",
+    "knowledge": [
+      "Understand Describe types of motion",
+      "Recall key concepts of Motion"
+    ],
+    "skills": [
+      "Apply Motion concepts",
+      "Demonstrate understanding of Describe types of motion"
+    ],
+    "attitudes": [
+      "Show curiosity and interest",
+      "Develop positive learning habits"
+    ],
+    "learningResources": [
+      "Textbooks",
+      "Charts and diagrams",
+      "Real objects/models",
+      "Digital resources"
+    ],
+    "competencies": [],
+    "values": [],
+    "pcis": [],
+    "introduction": "Comprehensive introduction to Motion (10 min). Teacher uses multimedia/real objects. Learners engage in discussion and pre-assessment.",
+    "lessonDevelopment": "Detailed explanation of Describe types of motion with multiple examples (24 min). Learners participate in: various guided activities.",
+    "extendedActivity": "Extended group work and differentiated activities (19 min): Learners explore Motion through projects, experiments, or research. Teacher provides individualized support.",
+    "conclusion": "Comprehensive review and reflection (10 min). Group presentations, peer feedback, and teacher summary.",
+    "assessment": "Comprehensive assessment (11 min): Multiple methods - oral questions, written tasks, practical demonstrations, peer assessment",
+    "createdAt": {
+      "$date": "2026-02-08T11:14:45.458000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69887059022dd6c3f96b4bcc"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "",
+    "schoolName": "",
+    "duration": 40,
+    "gradeId": "69886a9c022dd6c3f96b4bc6",
+    "gradeName": "Grade 10",
+    "subjectId": "69886dba734e50f34eb11b3a",
+    "subjectName": "Computer Science",
+    "strandId": "69886dba734e50f34eb11b3b",
+    "strandName": "Programming",
+    "substrandId": "69886dba734e50f34eb11b3c",
+    "substrandName": "Programming Fundamentals",
+    "sloId": "69886dba734e50f34eb11b3d",
+    "sloName": "Write algorithms",
+    "sloDescription": "Write algorithms",
+    "knowledge": [
+      "Understand Write algorithms",
+      "Recall key concepts of Programming Fundamentals"
+    ],
+    "skills": [
+      "Apply Programming Fundamentals concepts",
+      "Demonstrate understanding of Write algorithms"
+    ],
+    "attitudes": [
+      "Show curiosity and interest",
+      "Develop positive learning habits"
+    ],
+    "learningResources": [
+      "Textbooks",
+      "Charts and diagrams",
+      "Real objects/models",
+      "Digital resources"
+    ],
+    "competencies": [],
+    "values": [],
+    "pcis": [],
+    "introduction": "Teacher introduces Programming Fundamentals (5 min). Learners share what they know about the topic.",
+    "lessonDevelopment": "Teacher explains Write algorithms with examples (25 min). Learners participate in: guided practice.",
+    "extendedActivity": "",
+    "conclusion": "Teacher summarizes key points (5 min). Learners reflect on learning.",
+    "assessment": "Quick assessment (5 min): Oral questions and observation",
+    "createdAt": {
+      "$date": "2026-02-08T11:15:37.616000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "698877e6bb54aa9d34f8b2e2"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "",
+    "schoolName": "",
+    "duration": 40,
+    "gradeId": "69886a9c022dd6c3f96b4bc6",
+    "gradeName": "Grade 10",
+    "subjectId": "69886dba734e50f34eb11a42",
+    "subjectName": "Kiswahili",
+    "strandId": "69886dba734e50f34eb11a43",
+    "strandName": "Kusikiliza na Kuzungumza",
+    "substrandId": "69886dba734e50f34eb11a44",
+    "substrandName": "Ufahamu wa Kusikiliza",
+    "sloId": "69886dba734e50f34eb11a45",
+    "sloName": "Kusikiliza kwa makini",
+    "sloDescription": "Kusikiliza kwa makini",
+    "knowledge": [
+      "Understand Kusikiliza kwa makini",
+      "Recall key concepts of Ufahamu wa Kusikiliza"
+    ],
+    "skills": [
+      "Apply Ufahamu wa Kusikiliza concepts",
+      "Demonstrate understanding of Kusikiliza kwa makini"
+    ],
+    "attitudes": [
+      "Show curiosity and interest",
+      "Develop positive learning habits"
+    ],
+    "learningResources": [
+      "Textbooks",
+      "Charts and diagrams",
+      "Real objects/models",
+      "Digital resources"
+    ],
+    "competencies": [],
+    "values": [],
+    "pcis": [],
+    "introduction": "Teacher introduces Ufahamu wa Kusikiliza (5 min). Learners share what they know about the topic.",
+    "lessonDevelopment": "Teacher explains Kusikiliza kwa makini with examples (25 min). Learners participate in: guided practice.",
+    "extendedActivity": "",
+    "conclusion": "Teacher summarizes key points (5 min). Learners reflect on learning.",
+    "assessment": "Quick assessment (5 min): Oral questions and observation",
+    "createdAt": {
+      "$date": "2026-02-08T11:47:50.365000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69887836bb54aa9d34f8b2e3"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "",
+    "schoolName": "",
+    "duration": 40,
+    "gradeId": "6981d7ede18a37d46e145bd3",
+    "gradeName": "Grade 5",
+    "subjectId": "6981d7ede18a37d46e145bd9",
+    "subjectName": "Mathematics",
+    "strandId": "6981d7ede18a37d46e145bdc",
+    "strandName": "Numbers",
+    "substrandId": "6981d7ede18a37d46e145be7",
+    "substrandName": "Whole Numbers",
+    "sloId": "6981d7ede18a37d46e145bf4",
+    "sloName": "Read and write numbers up to 10,000",
+    "sloDescription": "By the end of the sub-strand, the learner should be able to read and write numbers up to 10,000 in numerals and words",
+    "knowledge": [
+      "Understand Read and write numbers up to 10,000",
+      "Recall key concepts of Whole Numbers"
+    ],
+    "skills": [
+      "Apply Whole Numbers concepts",
+      "Demonstrate understanding of Read and write numbers up to 10,000"
+    ],
+    "attitudes": [
+      "Show curiosity and interest",
+      "Develop positive learning habits"
+    ],
+    "learningResources": [
+      "Textbooks",
+      "Charts and diagrams",
+      "Real objects/models",
+      "Digital resources"
+    ],
+    "competencies": [
+      {
+        "name": "Communication and Collaboration",
+        "description": "Learners work together effectively and share ideas clearly"
+      },
+      {
+        "name": "Critical Thinking and Problem Solving",
+        "description": "Learners analyze situations and develop creative solutions"
+      }
+    ],
+    "values": [
+      {
+        "name": "Respect",
+        "description": "Learners show respect for others, ideas, and diversity"
+      },
+      {
+        "name": "Responsibility",
+        "description": "Learners take ownership of their actions and learning"
+      }
+    ],
+    "pcis": [
+      {
+        "name": "Financial Literacy",
+        "description": "Understanding the value and responsible use of money"
+      }
+    ],
+    "introduction": "Teacher introduces Whole Numbers (5 min). Learners share what they know about the topic.",
+    "lessonDevelopment": "Teacher explains Read and write numbers up to 10,000 with examples (25 min). Learners participate in: Use number cards to practice reading and writing numbers.",
+    "extendedActivity": "",
+    "conclusion": "Teacher summarizes key points (5 min). Learners reflect on learning.",
+    "assessment": "Quick assessment (5 min): Ask learners questions to assess understanding verbally",
+    "createdAt": {
+      "$date": "2026-02-08T11:49:10.235000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "698879c7f6a9bbdfee02ffdd"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "",
+    "schoolName": "",
+    "duration": 40,
+    "gradeId": "69886a9c022dd6c3f96b4bc6",
+    "gradeName": "Grade 10",
+    "subjectId": "69886dba734e50f34eb11b3a",
+    "subjectName": "Computer Science",
+    "strandId": "69886dba734e50f34eb11b3b",
+    "strandName": "Programming",
+    "substrandId": "69886dba734e50f34eb11b3c",
+    "substrandName": "Programming Fundamentals",
+    "sloId": "69886dba734e50f34eb11b3d",
+    "sloName": "Write algorithms",
+    "sloDescription": "Write algorithms",
+    "knowledge": [
+      "Understand Write algorithms",
+      "Recall key concepts of Programming Fundamentals"
+    ],
+    "skills": [
+      "Apply Programming Fundamentals concepts",
+      "Demonstrate understanding of Write algorithms"
+    ],
+    "attitudes": [
+      "Show curiosity and interest",
+      "Develop positive learning habits"
+    ],
+    "learningResources": [
+      "Textbooks",
+      "Charts and diagrams",
+      "Real objects/models",
+      "Digital resources"
+    ],
+    "competencies": [
+      {
+        "name": "Critical Thinking and Problem Solving",
+        "description": "Learners analyze situations and develop creative solutions"
+      },
+      {
+        "name": "Creativity and Imagination",
+        "description": "Learners explore different approaches and think innovatively"
+      }
+    ],
+    "values": [
+      {
+        "name": "Unity",
+        "description": "Learners work together harmoniously and support each other"
+      },
+      {
+        "name": "Social Justice",
+        "description": "Fairness and equity in society"
+      }
+    ],
+    "pcis": [
+      {
+        "name": "Citizenship",
+        "description": "Understanding rights, responsibilities, and civic engagement"
+      }
+    ],
+    "introduction": "Teacher introduces Programming Fundamentals (5 min). Learners share what they know about the topic.",
+    "lessonDevelopment": "Teacher explains Write algorithms with examples (25 min). Learners participate in: guided practice.",
+    "extendedActivity": "",
+    "conclusion": "Teacher summarizes key points (5 min). Learners reflect on learning.",
+    "assessment": "Quick assessment (5 min): Oral questions and observation",
+    "createdAt": {
+      "$date": "2026-02-08T11:55:51.514000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69a063e91841ed933044bca8"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "",
+    "schoolName": "",
+    "duration": 40,
+    "gradeId": "69886a9c022dd6c3f96b4bc6",
+    "gradeName": "Grade 10",
+    "subjectId": "69886dba734e50f34eb11ac1",
+    "subjectName": "Physics",
+    "strandId": "69886dba734e50f34eb11ac2",
+    "strandName": "Mechanics",
+    "substrandId": "69886dba734e50f34eb11ac3",
+    "substrandName": "Motion",
+    "sloId": "69886dba734e50f34eb11ac4",
+    "sloName": "Describe types of motion",
+    "sloDescription": "Describe types of motion",
+    "knowledge": [
+      "Understand Describe types of motion",
+      "Recall key concepts of Motion"
+    ],
+    "skills": [
+      "Apply Motion concepts",
+      "Demonstrate understanding of Describe types of motion"
+    ],
+    "attitudes": [
+      "Show curiosity and interest",
+      "Develop positive learning habits"
+    ],
+    "learningResources": [
+      "Textbooks",
+      "Charts and diagrams",
+      "Real objects/models",
+      "Digital resources"
+    ],
+    "competencies": [
+      {
+        "name": "Learning to Learn",
+        "description": "Learners take responsibility for their own learning"
+      },
+      {
+        "name": "Citizenship",
+        "description": "Understanding rights, responsibilities and civic engagement"
+      }
+    ],
+    "values": [
+      {
+        "name": "Peace",
+        "description": "Learners promote peaceful coexistence and conflict resolution"
+      },
+      {
+        "name": "Love",
+        "description": "Learners show care and compassion for others"
+      }
+    ],
+    "pcis": [
+      {
+        "name": "Citizenship",
+        "description": "Understanding rights, responsibilities, and civic engagement"
+      }
+    ],
+    "introduction": "Teacher introduces Motion (5 min). Learners share what they know about the topic.",
+    "lessonDevelopment": "Teacher explains Describe types of motion with examples (25 min). Learners participate in: guided practice.",
+    "extendedActivity": "",
+    "conclusion": "Teacher summarizes key points (5 min). Learners reflect on learning.",
+    "assessment": "Quick assessment (5 min): Oral questions and observation",
+    "createdAt": {
+      "$date": "2026-02-26T15:16:57.712000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69a065281841ed933044bca9"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "",
+    "schoolName": "",
+    "duration": 80,
+    "gradeId": "69886a9c022dd6c3f96b4bc6",
+    "gradeName": "Grade 10",
+    "subjectId": "69886dba734e50f34eb11a98",
+    "subjectName": "Chemistry",
+    "strandId": "6988bfd45e11eecc859f3777",
+    "strandName": "Inorganic Chemistry",
+    "substrandId": "6988bfd45e11eecc859f3778",
+    "substrandName": "Introduction to Chemistry",
+    "sloId": "6988bfd45e11eecc859f3779",
+    "sloName": "Explain the meaning of Chemistry as a field of science",
+    "sloDescription": "By the end of the lesson, the learner should be able to explain the meaning of Chemistry as a field of science.",
+    "knowledge": [
+      "Understand Explain the meaning of Chemistry as a field of science",
+      "Recall key concepts of Introduction to Chemistry"
+    ],
+    "skills": [
+      "Apply Introduction to Chemistry concepts",
+      "Demonstrate understanding of Explain the meaning of Chemistry as a field of science"
+    ],
+    "attitudes": [
+      "Show curiosity and interest",
+      "Develop positive learning habits"
+    ],
+    "learningResources": [
+      "Textbooks",
+      "Charts and diagrams",
+      "Real objects/models",
+      "Digital resources"
+    ],
+    "competencies": [],
+    "values": [],
+    "pcis": [],
+    "introduction": "Comprehensive introduction to Introduction to Chemistry (10 min). Teacher uses multimedia/real objects. Learners engage in discussion and pre-assessment.",
+    "lessonDevelopment": "Detailed explanation of Explain the meaning of Chemistry as a field of science with multiple examples (24 min). Learners participate in: various guided activities.",
+    "extendedActivity": "Extended group work and differentiated activities (19 min): Learners explore Introduction to Chemistry through projects, experiments, or research. Teacher provides individualized support.",
+    "conclusion": "Comprehensive review and reflection (10 min). Group presentations, peer feedback, and teacher summary.",
+    "assessment": "Comprehensive assessment (11 min): Multiple methods - oral questions, written tasks, practical demonstrations, peer assessment",
+    "createdAt": {
+      "$date": "2026-02-26T15:22:16.053000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69a066e91841ed933044bcac"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "",
+    "schoolName": "",
+    "duration": 40,
+    "gradeId": "69886a9c022dd6c3f96b4bc6",
+    "gradeName": "Grade 10",
+    "subjectId": "69886dba734e50f34eb11b3a",
+    "subjectName": "Computer Science",
+    "strandId": "6988bfd45e11eecc859f37a0",
+    "strandName": "Foundation of Computer Science",
+    "substrandId": "6988bfd45e11eecc859f37a1",
+    "substrandName": "Evolution and Development of Computers",
+    "sloId": "6988bfd45e11eecc859f37a2",
+    "sloName": "Identify early computing devices",
+    "sloDescription": "By the end of the lesson, the learner should be able to identify early computing devices and how they relate to evolution of electronic computers.",
+    "knowledge": [
+      "Understand Identify early computing devices",
+      "Recall key concepts of Evolution and Development of Computers"
+    ],
+    "skills": [
+      "Apply Evolution and Development of Computers concepts",
+      "Demonstrate understanding of Identify early computing devices"
+    ],
+    "attitudes": [
+      "Show curiosity and interest",
+      "Develop positive learning habits"
+    ],
+    "learningResources": [
+      "Textbooks",
+      "Charts and diagrams",
+      "Real objects/models",
+      "Digital resources"
+    ],
+    "competencies": [],
+    "values": [],
+    "pcis": [],
+    "introduction": "Teacher introduces Evolution and Development of Computers (5 min). Learners share what they know about the topic.",
+    "lessonDevelopment": "Teacher explains Identify early computing devices with examples (25 min). Learners participate in: guided practice.",
+    "extendedActivity": "",
+    "conclusion": "Teacher summarizes key points (5 min). Learners reflect on learning.",
+    "assessment": "Quick assessment (5 min): Oral questions and observation",
+    "createdAt": {
+      "$date": "2026-02-26T15:29:45.010000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69a0700e5ea260e6510ed922"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "",
+    "schoolName": "",
+    "duration": 40,
+    "gradeId": "69a06c0be7927ae20e67b2d1",
+    "gradeName": "Grade 10",
+    "subjectId": "69a06caa533e4a4d60370bbe",
+    "subjectName": "Chemistry",
+    "strandId": "69a06caa533e4a4d60370bbf",
+    "strandName": "Inorganic Chemistry",
+    "substrandId": "69a06caa533e4a4d60370bc0",
+    "substrandName": "Introduction to Chemistry",
+    "sloId": "69a06caa533e4a4d60370bc1",
+    "sloName": "Explain the meaning of Chemistry as a field of science",
+    "sloDescription": "By the end of the lesson, the learner should be able to explain the meaning of Chemistry as a field of science.",
+    "knowledge": [
+      "Understand Explain the meaning of Chemistry as a field of science",
+      "Recall key concepts of Introduction to Chemistry"
+    ],
+    "skills": [
+      "Apply Introduction to Chemistry concepts",
+      "Demonstrate understanding of Explain the meaning of Chemistry as a field of science"
+    ],
+    "attitudes": [
+      "Show curiosity and interest",
+      "Develop positive learning habits"
+    ],
+    "learningResources": [
+      "Textbooks",
+      "Charts and diagrams",
+      "Real objects/models",
+      "Digital resources"
+    ],
+    "competencies": [],
+    "values": [],
+    "pcis": [],
+    "introduction": "Teacher introduces Introduction to Chemistry (5 min). Learners share what they know about the topic.",
+    "lessonDevelopment": "Teacher explains Explain the meaning of Chemistry as a field of science with examples (25 min). Learners participate in: guided practice.",
+    "extendedActivity": "",
+    "conclusion": "Teacher summarizes key points (5 min). Learners reflect on learning.",
+    "assessment": "Quick assessment (5 min): Oral questions and observation",
+    "createdAt": {
+      "$date": "2026-02-26T16:08:46.720000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69a0a82493ee851d9ee3a7e5"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "",
+    "schoolName": "",
+    "duration": 40,
+    "gradeId": "69a06c0be7927ae20e67b2d1",
+    "gradeName": "Grade 10",
+    "subjectId": "69a06caa533e4a4d60370bbe",
+    "subjectName": "Chemistry",
+    "strandId": "69a06caa533e4a4d60370bbf",
+    "strandName": "Inorganic Chemistry",
+    "substrandId": "69a06caa533e4a4d60370bc0",
+    "substrandName": "Introduction to Chemistry",
+    "sloId": "69a06caa533e4a4d60370bc1",
+    "sloName": "Explain the meaning of Chemistry as a field of science",
+    "sloDescription": "By the end of the lesson, the learner should be able to explain the meaning of Chemistry as a field of science.",
+    "knowledge": [
+      "Understand Explain the meaning of Chemistry as a field of science",
+      "Recall key concepts of Introduction to Chemistry"
+    ],
+    "skills": [
+      "Apply Introduction to Chemistry concepts",
+      "Demonstrate understanding of Explain the meaning of Chemistry as a field of science"
+    ],
+    "attitudes": [
+      "Show curiosity and interest",
+      "Develop positive learning habits"
+    ],
+    "learningResources": [
+      "Textbooks",
+      "Charts and diagrams",
+      "Real objects/models",
+      "Digital resources"
+    ],
+    "competencies": [],
+    "values": [],
+    "pcis": [],
+    "introduction": "Teacher introduces Introduction to Chemistry (5 min). Learners share what they know about the topic.",
+    "lessonDevelopment": "Teacher explains Explain the meaning of Chemistry as a field of science with examples (25 min). Learners participate in: guided practice.",
+    "extendedActivity": "",
+    "conclusion": "Teacher summarizes key points (5 min). Learners reflect on learning.",
+    "assessment": "Quick assessment (5 min): Oral questions and observation",
+    "createdAt": {
+      "$date": "2026-02-26T20:08:04.130000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69a0a85293ee851d9ee3a7e6"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "",
+    "schoolName": "",
+    "duration": 40,
+    "gradeId": "69a06c0be7927ae20e67b2d1",
+    "gradeName": "Grade 10",
+    "subjectId": "69a06caa533e4a4d60370be8",
+    "subjectName": "Computer Science",
+    "strandId": "69a06caa533e4a4d60370be9",
+    "strandName": "Foundation of Computer Science",
+    "substrandId": "69a06caa533e4a4d60370bea",
+    "substrandName": "Evolution and Development of Computers",
+    "sloId": "69a06caa533e4a4d60370beb",
+    "sloName": "Identify early computing devices",
+    "sloDescription": "By the end of the lesson, the learner should be able to identify early computing devices and how they relate to evolution of electronic computers.",
+    "knowledge": [
+      "Understand Identify early computing devices",
+      "Recall key concepts of Evolution and Development of Computers"
+    ],
+    "skills": [
+      "Apply Evolution and Development of Computers concepts",
+      "Demonstrate understanding of Identify early computing devices"
+    ],
+    "attitudes": [
+      "Show curiosity and interest",
+      "Develop positive learning habits"
+    ],
+    "learningResources": [
+      "Textbooks",
+      "Charts and diagrams",
+      "Real objects/models",
+      "Digital resources"
+    ],
+    "competencies": [],
+    "values": [],
+    "pcis": [],
+    "introduction": "Teacher introduces Evolution and Development of Computers (5 min). Learners share what they know about the topic.",
+    "lessonDevelopment": "Teacher explains Identify early computing devices with examples (25 min). Learners participate in: guided practice.",
+    "extendedActivity": "",
+    "conclusion": "Teacher summarizes key points (5 min). Learners reflect on learning.",
+    "assessment": "Quick assessment (5 min): Oral questions and observation",
+    "createdAt": {
+      "$date": "2026-02-26T20:08:50.698000"
+    }
+  }
+]

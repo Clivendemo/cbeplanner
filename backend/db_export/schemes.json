@@ -1,0 +1,4214 @@
+[
+  {
+    "_id": {
+      "$oid": "698875f464d29beef2aa8185"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "clive",
+    "school": "ferer",
+    "subjectId": "69886dba734e50f34eb11b3a",
+    "subjectName": "Computer Science",
+    "gradeId": "69886a9c022dd6c3f96b4bc6",
+    "gradeName": "Grade 10",
+    "term": 1,
+    "year": 2026,
+    "curriculumStandard": "KICD CBC",
+    "totalWeeks": 14,
+    "lessonsPerWeek": 5,
+    "lessons": [
+      {
+        "week": 1,
+        "lessonNumber": 1,
+        "isBreak": true,
+        "breakType": "Half-Term",
+        "breakDescription": "cat 1",
+        "strand": null,
+        "substrand": null,
+        "slo": null,
+        "keyInquiryQuestions": [],
+        "learningExperiences": [],
+        "learningResources": [],
+        "assessmentMethods": [],
+        "reflection": ""
+      },
+      {
+        "week": 1,
+        "lessonNumber": 2,
+        "isBreak": true,
+        "breakType": "Half-Term",
+        "breakDescription": "cat 1",
+        "strand": null,
+        "substrand": null,
+        "slo": null,
+        "keyInquiryQuestions": [],
+        "learningExperiences": [],
+        "learningResources": [],
+        "assessmentMethods": [],
+        "reflection": ""
+      },
+      {
+        "week": 1,
+        "lessonNumber": 3,
+        "isBreak": true,
+        "breakType": "Half-Term",
+        "breakDescription": "cat 1",
+        "strand": null,
+        "substrand": null,
+        "slo": null,
+        "keyInquiryQuestions": [],
+        "learningExperiences": [],
+        "learningResources": [],
+        "assessmentMethods": [],
+        "reflection": ""
+      },
+      {
+        "week": 1,
+        "lessonNumber": 4,
+        "isBreak": true,
+        "breakType": "Half-Term",
+        "breakDescription": "cat 1",
+        "strand": null,
+        "substrand": null,
+        "slo": null,
+        "keyInquiryQuestions": [],
+        "learningExperiences": [],
+        "learningResources": [],
+        "assessmentMethods": [],
+        "reflection": ""
+      },
+      {
+        "week": 1,
+        "lessonNumber": 5,
+        "isBreak": true,
+        "breakType": "Half-Term",
+        "breakDescription": "cat 1",
+        "strand": null,
+        "substrand": null,
+        "slo": null,
+        "keyInquiryQuestions": [],
+        "learningExperiences": [],
+        "learningResources": [],
+        "assessmentMethods": [],
+        "reflection": ""
+      },
+      {
+        "week": 2,
+        "lessonNumber": 1,
+        "isBreak": true,
+        "breakType": "Half-Term",
+        "breakDescription": "cat 1",
+        "strand": null,
+        "substrand": null,
+        "slo": null,
+        "keyInquiryQuestions": [],
+        "learningExperiences": [],
+        "learningResources": [],
+        "assessmentMethods": [],
+        "reflection": ""
+      },
+      {
+        "week": 2,
+        "lessonNumber": 2,
+        "isBreak": true,
+        "breakType": "Half-Term",
+        "breakDescription": "cat 1",
+        "strand": null,
+        "substrand": null,
+        "slo": null,
+        "keyInquiryQuestions": [],
+        "learningExperiences": [],
+        "learningResources": [],
+        "assessmentMethods": [],
+        "reflection": ""
+      },
+      {
+        "week": 2,
+        "lessonNumber": 3,
+        "isBreak": true,
+        "breakType": "Half-Term",
+        "breakDescription": "cat 1",
+        "strand": null,
+        "substrand": null,
+        "slo": null,
+        "keyInquiryQuestions": [],
+        "learningExperiences": [],
+        "learningResources": [],
+        "assessmentMethods": [],
+        "reflection": ""
+      },
+      {
+        "week": 2,
+        "lessonNumber": 4,
+        "isBreak": true,
+        "breakType": "Half-Term",
+        "breakDescription": "cat 1",
+        "strand": null,
+        "substrand": null,
+        "slo": null,
+        "keyInquiryQuestions": [],
+        "learningExperiences": [],
+        "learningResources": [],
+        "assessmentMethods": [],
+        "reflection": ""
+      },
+      {
+        "week": 2,
+        "lessonNumber": 5,
+        "isBreak": true,
+        "breakType": "Half-Term",
+        "breakDescription": "cat 1",
+        "strand": null,
+        "substrand": null,
+        "slo": null,
+        "keyInquiryQuestions": [],
+        "learningExperiences": [],
+        "learningResources": [],
+        "assessmentMethods": [],
+        "reflection": ""
+      },
+      {
+        "week": 3,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Programming",
+        "substrand": "Programming Fundamentals",
+        "slo": "Write algorithms",
+        "keyInquiryQuestions": [
+          "What is Programming Fundamentals?",
+          "How do we apply Programming Fundamentals in daily life?",
+          "Why is Programming Fundamentals important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 3,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Programming",
+        "substrand": "Programming Fundamentals",
+        "slo": "Use programming constructs",
+        "keyInquiryQuestions": [
+          "What is Programming Fundamentals?",
+          "How do we apply Programming Fundamentals in daily life?",
+          "Why is Programming Fundamentals important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 3,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Programming",
+        "substrand": "Programming Fundamentals",
+        "slo": "Debug programs",
+        "keyInquiryQuestions": [
+          "What is Programming Fundamentals?",
+          "How do we apply Programming Fundamentals in daily life?",
+          "Why is Programming Fundamentals important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 3,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Programming",
+        "substrand": "Data Structures",
+        "slo": "Implement arrays",
+        "keyInquiryQuestions": [
+          "What is Data Structures?",
+          "How do we apply Data Structures in daily life?",
+          "Why is Data Structures important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 3,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Programming",
+        "substrand": "Data Structures",
+        "slo": "Use lists and stacks",
+        "keyInquiryQuestions": [
+          "What is Data Structures?",
+          "How do we apply Data Structures in daily life?",
+          "Why is Data Structures important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 4,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Programming",
+        "substrand": "Data Structures",
+        "slo": "Apply data structures in programs",
+        "keyInquiryQuestions": [
+          "What is Data Structures?",
+          "How do we apply Data Structures in daily life?",
+          "Why is Data Structures important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 4,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Programming",
+        "substrand": "Object-Oriented Programming",
+        "slo": "Define classes and objects",
+        "keyInquiryQuestions": [
+          "What is Object-Oriented Programming?",
+          "How do we apply Object-Oriented Programming in daily life?",
+          "Why is Object-Oriented Programming important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 4,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Programming",
+        "substrand": "Object-Oriented Programming",
+        "slo": "Implement inheritance",
+        "keyInquiryQuestions": [
+          "What is Object-Oriented Programming?",
+          "How do we apply Object-Oriented Programming in daily life?",
+          "Why is Object-Oriented Programming important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 4,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Programming",
+        "substrand": "Object-Oriented Programming",
+        "slo": "Apply encapsulation",
+        "keyInquiryQuestions": [
+          "What is Object-Oriented Programming?",
+          "How do we apply Object-Oriented Programming in daily life?",
+          "Why is Object-Oriented Programming important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 4,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Web Development",
+        "substrand": "HTML and CSS",
+        "slo": "Create web pages",
+        "keyInquiryQuestions": [
+          "What is HTML and CSS?",
+          "How do we apply HTML and CSS in daily life?",
+          "Why is HTML and CSS important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 5,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Web Development",
+        "substrand": "HTML and CSS",
+        "slo": "Apply CSS styling",
+        "keyInquiryQuestions": [
+          "What is HTML and CSS?",
+          "How do we apply HTML and CSS in daily life?",
+          "Why is HTML and CSS important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 5,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Web Development",
+        "substrand": "HTML and CSS",
+        "slo": "Design responsive layouts",
+        "keyInquiryQuestions": [
+          "What is HTML and CSS?",
+          "How do we apply HTML and CSS in daily life?",
+          "Why is HTML and CSS important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 5,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Web Development",
+        "substrand": "JavaScript",
+        "slo": "Write JavaScript code",
+        "keyInquiryQuestions": [
+          "What is JavaScript?",
+          "How do we apply JavaScript in daily life?",
+          "Why is JavaScript important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 5,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Web Development",
+        "substrand": "JavaScript",
+        "slo": "Manipulate DOM",
+        "keyInquiryQuestions": [
+          "What is JavaScript?",
+          "How do we apply JavaScript in daily life?",
+          "Why is JavaScript important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 5,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Web Development",
+        "substrand": "JavaScript",
+        "slo": "Handle events",
+        "keyInquiryQuestions": [
+          "What is JavaScript?",
+          "How do we apply JavaScript in daily life?",
+          "Why is JavaScript important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 6,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Database Management",
+        "substrand": "Database Design",
+        "slo": "Design database schemas",
+        "keyInquiryQuestions": [
+          "What is Database Design?",
+          "How do we apply Database Design in daily life?",
+          "Why is Database Design important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 6,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Database Management",
+        "substrand": "Database Design",
+        "slo": "Normalize databases",
+        "keyInquiryQuestions": [
+          "What is Database Design?",
+          "How do we apply Database Design in daily life?",
+          "Why is Database Design important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 6,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Database Management",
+        "substrand": "Database Design",
+        "slo": "Create ER diagrams",
+        "keyInquiryQuestions": [
+          "What is Database Design?",
+          "How do we apply Database Design in daily life?",
+          "Why is Database Design important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 6,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Database Management",
+        "substrand": "SQL",
+        "slo": "Write SQL queries",
+        "keyInquiryQuestions": [
+          "What is SQL?",
+          "How do we apply SQL in daily life?",
+          "Why is SQL important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 6,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Database Management",
+        "substrand": "SQL",
+        "slo": "Perform CRUD operations",
+        "keyInquiryQuestions": [
+          "What is SQL?",
+          "How do we apply SQL in daily life?",
+          "Why is SQL important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 7,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Database Management",
+        "substrand": "SQL",
+        "slo": "Join tables",
+        "keyInquiryQuestions": [
+          "What is SQL?",
+          "How do we apply SQL in daily life?",
+          "Why is SQL important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 7,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Cybersecurity",
+        "substrand": "Security Fundamentals",
+        "slo": "Identify cyber threats",
+        "keyInquiryQuestions": [
+          "What is Security Fundamentals?",
+          "How do we apply Security Fundamentals in daily life?",
+          "Why is Security Fundamentals important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 7,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Cybersecurity",
+        "substrand": "Security Fundamentals",
+        "slo": "Apply security measures",
+        "keyInquiryQuestions": [
+          "What is Security Fundamentals?",
+          "How do we apply Security Fundamentals in daily life?",
+          "Why is Security Fundamentals important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 7,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Cybersecurity",
+        "substrand": "Security Fundamentals",
+        "slo": "Practice safe computing",
+        "keyInquiryQuestions": [
+          "What is Security Fundamentals?",
+          "How do we apply Security Fundamentals in daily life?",
+          "Why is Security Fundamentals important?"
+        ],
+        "learningExperiences": [
+          "Group discussions",
+          "Practical demonstrations",
+          "Problem-solving activities",
+          "Research and presentations"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": ""
+      },
+      {
+        "week": 7,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 8,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 8,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 8,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 8,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 8,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 9,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 9,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 9,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 9,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 9,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 10,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 10,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 10,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 10,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 10,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 11,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 11,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 11,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 11,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 11,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 12,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 12,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 12,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 12,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 12,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 13,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 13,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 13,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 13,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 13,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 14,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 14,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 14,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 14,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      },
+      {
+        "week": 14,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "Review and consolidate learning",
+        "keyInquiryQuestions": [
+          "What have we learned?",
+          "What areas need more practice?"
+        ],
+        "learningExperiences": [
+          "Review exercises",
+          "Practice tests",
+          "Q&A sessions"
+        ],
+        "learningResources": [
+          "Textbooks",
+          "Charts",
+          "Digital devices",
+          "Writing materials"
+        ],
+        "assessmentMethods": [
+          "Oral Questions",
+          "Written Exercise",
+          "Group Activity Observation"
+        ],
+        "reflection": "Consolidation and revision"
+      }
+    ],
+    "createdAt": {
+      "$date": "2026-02-08T11:39:32.059000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "698877b0bb54aa9d34f8b2e1"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "ndemo",
+    "school": "frere",
+    "subjectId": "69886dba734e50f34eb11b3a",
+    "subjectName": "Computer Science",
+    "gradeId": "69886a9c022dd6c3f96b4bc6",
+    "gradeName": "Grade 10",
+    "term": 1,
+    "year": 2026,
+    "curriculumStandard": "KICD CBC",
+    "totalWeeks": 14,
+    "lessonsPerWeek": 5,
+    "lessons": [
+      {
+        "week": 1,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Programming",
+        "substrand": "1.1 Programming Fundamentals",
+        "slo": "By the end of the lesson, the learner should be able to write algorithms.",
+        "keyInquiryQuestions": "1. How do we implement Programming Fundamentals in programming? 2. What are the best practices for Programming Fundamentals?",
+        "learningExperiences": "The learner is guided to explore and understand Programming Fundamentals through interactive learning activities.",
+        "learningResources": "Reference materials, Programming IDE, Code samples, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 1,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Programming",
+        "substrand": "1.1 Programming Fundamentals",
+        "slo": "By the end of the lesson, the learner should be able to use programming constructs.",
+        "keyInquiryQuestions": "1. How do we implement Programming Fundamentals in programming? 2. What are the best practices for Programming Fundamentals?",
+        "learningExperiences": "The learner is guided to apply Programming Fundamentals concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Programming IDE, Code samples, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 1,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Programming",
+        "substrand": "1.1 Programming Fundamentals",
+        "slo": "By the end of the lesson, the learner should be able to debug programs.",
+        "keyInquiryQuestions": "1. How do we implement Programming Fundamentals in programming? 2. What are the best practices for Programming Fundamentals?",
+        "learningExperiences": "The learner is guided to explore and understand Programming Fundamentals through interactive learning activities.",
+        "learningResources": "Reference materials, Programming IDE, Code samples, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 1,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Programming",
+        "substrand": "1.2 Data Structures",
+        "slo": "By the end of the lesson, the learner should be able to implement arrays.",
+        "keyInquiryQuestions": "1. What are the main components of Data Structures? 2. How do the different parts of Data Structures work together?",
+        "learningExperiences": "The learner is guided to explore and understand Data Structures through interactive learning activities.",
+        "learningResources": "Reference materials, Programming IDE, Code samples, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 1,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Programming",
+        "substrand": "1.2 Data Structures",
+        "slo": "By the end of the lesson, the learner should be able to use lists and stacks.",
+        "keyInquiryQuestions": "1. What are the main components of Data Structures? 2. How do the different parts of Data Structures work together?",
+        "learningExperiences": "The learner is guided to apply Data Structures concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Programming IDE, Code samples, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 2,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Programming",
+        "substrand": "1.2 Data Structures",
+        "slo": "By the end of the lesson, the learner should be able to apply data structures in programs.",
+        "keyInquiryQuestions": "1. What are the main components of Data Structures? 2. How do the different parts of Data Structures work together?",
+        "learningExperiences": "The learner is guided to apply Data Structures concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Programming IDE, Code samples, Textbooks",
+        "assessmentMethods": "Practical assessment",
+        "reflection": ""
+      },
+      {
+        "week": 2,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Programming",
+        "substrand": "1.3 Object-Oriented Programming",
+        "slo": "By the end of the lesson, the learner should be able to define classes and objects.",
+        "keyInquiryQuestions": "1. How do we implement Object-Oriented Programming in programming? 2. What are the best practices for Object-Oriented Programming?",
+        "learningExperiences": "The learner is guided to explore and understand Object-Oriented Programming through interactive learning activities.",
+        "learningResources": "Reference materials, Programming IDE, Code samples, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 2,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Programming",
+        "substrand": "1.3 Object-Oriented Programming",
+        "slo": "By the end of the lesson, the learner should be able to implement inheritance.",
+        "keyInquiryQuestions": "1. How do we implement Object-Oriented Programming in programming? 2. What are the best practices for Object-Oriented Programming?",
+        "learningExperiences": "The learner is guided to explore and understand Object-Oriented Programming through interactive learning activities.",
+        "learningResources": "Reference materials, Programming IDE, Code samples, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 2,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Programming",
+        "substrand": "1.3 Object-Oriented Programming",
+        "slo": "By the end of the lesson, the learner should be able to apply encapsulation.",
+        "keyInquiryQuestions": "1. How do we implement Object-Oriented Programming in programming? 2. What are the best practices for Object-Oriented Programming?",
+        "learningExperiences": "The learner is guided to apply Object-Oriented Programming concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Programming IDE, Code samples, Textbooks",
+        "assessmentMethods": "Practical assessment",
+        "reflection": ""
+      },
+      {
+        "week": 2,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Web Development",
+        "substrand": "2.1 HTML and CSS",
+        "slo": "By the end of the lesson, the learner should be able to create web pages.",
+        "keyInquiryQuestions": "1. What is the importance of HTML and CSS? 2. How do we apply HTML and CSS in real-world situations?",
+        "learningExperiences": "The learner is guided to create/design a model or project demonstrating HTML and CSS using locally available materials.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Project",
+        "reflection": ""
+      },
+      {
+        "week": 3,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Web Development",
+        "substrand": "2.1 HTML and CSS",
+        "slo": "By the end of the lesson, the learner should be able to apply css styling.",
+        "keyInquiryQuestions": "1. What is the importance of HTML and CSS? 2. How do we apply HTML and CSS in real-world situations?",
+        "learningExperiences": "The learner is guided to apply HTML and CSS concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Practical assessment",
+        "reflection": ""
+      },
+      {
+        "week": 3,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Web Development",
+        "substrand": "2.1 HTML and CSS",
+        "slo": "By the end of the lesson, the learner should be able to design responsive layouts.",
+        "keyInquiryQuestions": "1. What is the importance of HTML and CSS? 2. How do we apply HTML and CSS in real-world situations?",
+        "learningExperiences": "The learner is guided to create/design a model or project demonstrating HTML and CSS using locally available materials.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Project",
+        "reflection": ""
+      },
+      {
+        "week": 3,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Web Development",
+        "substrand": "2.2 JavaScript",
+        "slo": "By the end of the lesson, the learner should be able to write javascript code.",
+        "keyInquiryQuestions": "1. What is the importance of JavaScript? 2. How do we apply JavaScript in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand JavaScript through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 3,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Web Development",
+        "substrand": "2.2 JavaScript",
+        "slo": "By the end of the lesson, the learner should be able to manipulate dom.",
+        "keyInquiryQuestions": "1. What is the importance of JavaScript? 2. How do we apply JavaScript in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand JavaScript through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 3,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Web Development",
+        "substrand": "2.2 JavaScript",
+        "slo": "By the end of the lesson, the learner should be able to handle events.",
+        "keyInquiryQuestions": "1. What is the importance of JavaScript? 2. How do we apply JavaScript in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand JavaScript through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 4,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Database Management",
+        "substrand": "3.1 Database Design",
+        "slo": "By the end of the lesson, the learner should be able to design database schemas.",
+        "keyInquiryQuestions": "1. What is the importance of Database Design? 2. How do we apply Database Design in real-world situations?",
+        "learningExperiences": "The learner is guided to create/design a model or project demonstrating Database Design using locally available materials.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Project",
+        "reflection": ""
+      },
+      {
+        "week": 4,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Database Management",
+        "substrand": "3.1 Database Design",
+        "slo": "By the end of the lesson, the learner should be able to normalize databases.",
+        "keyInquiryQuestions": "1. What is the importance of Database Design? 2. How do we apply Database Design in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Database Design through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 4,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Database Management",
+        "substrand": "3.1 Database Design",
+        "slo": "By the end of the lesson, the learner should be able to create er diagrams.",
+        "keyInquiryQuestions": "1. What is the importance of Database Design? 2. How do we apply Database Design in real-world situations?",
+        "learningExperiences": "The learner is guided to create/design a model or project demonstrating Database Design using locally available materials.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Project",
+        "reflection": ""
+      },
+      {
+        "week": 4,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Database Management",
+        "substrand": "3.2 SQL",
+        "slo": "By the end of the lesson, the learner should be able to write sql queries.",
+        "keyInquiryQuestions": "1. What is the importance of SQL? 2. How do we apply SQL in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand SQL through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 4,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Database Management",
+        "substrand": "3.2 SQL",
+        "slo": "By the end of the lesson, the learner should be able to perform crud operations.",
+        "keyInquiryQuestions": "1. What is the importance of SQL? 2. How do we apply SQL in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand SQL through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 5,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Database Management",
+        "substrand": "3.2 SQL",
+        "slo": "By the end of the lesson, the learner should be able to join tables.",
+        "keyInquiryQuestions": "1. What is the importance of SQL? 2. How do we apply SQL in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand SQL through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 5,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "4.0 Cybersecurity",
+        "substrand": "4.1 Security Fundamentals",
+        "slo": "By the end of the lesson, the learner should be able to identify cyber threats.",
+        "keyInquiryQuestions": "1. What is the importance of Security Fundamentals? 2. How do we apply Security Fundamentals in real-world situations?",
+        "learningExperiences": "The learner is guided to search for information on Security Fundamentals using reference materials and digital resources.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 5,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "4.0 Cybersecurity",
+        "substrand": "4.1 Security Fundamentals",
+        "slo": "By the end of the lesson, the learner should be able to apply security measures.",
+        "keyInquiryQuestions": "1. What is the importance of Security Fundamentals? 2. How do we apply Security Fundamentals in real-world situations?",
+        "learningExperiences": "The learner is guided to apply Security Fundamentals concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Practical assessment",
+        "reflection": ""
+      },
+      {
+        "week": 5,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "4.0 Cybersecurity",
+        "substrand": "4.1 Security Fundamentals",
+        "slo": "By the end of the lesson, the learner should be able to practice safe computing.",
+        "keyInquiryQuestions": "1. What is the importance of Security Fundamentals? 2. How do we apply Security Fundamentals in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Security Fundamentals through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 5,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 6,
+        "lessonNumber": 1,
+        "isBreak": true,
+        "breakType": "Half-Term",
+        "breakDescription": "Half-Term",
+        "breakDuration": 10,
+        "strand": "",
+        "substrand": "",
+        "slo": "",
+        "keyInquiryQuestions": "",
+        "learningExperiences": "",
+        "learningResources": "",
+        "assessmentMethods": "",
+        "reflection": ""
+      },
+      {
+        "week": 8,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 8,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 8,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 8,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 8,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 9,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 9,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 9,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 9,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 9,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 10,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 10,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 10,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 10,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 10,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 11,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 11,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 11,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 11,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 11,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 12,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 12,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 12,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 12,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 12,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 13,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 13,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 13,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 13,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 13,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 14,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 14,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 14,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 14,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 14,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      }
+    ],
+    "createdAt": {
+      "$date": "2026-02-08T11:46:56.634000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69a065e01841ed933044bcaa"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "",
+    "school": "",
+    "subjectId": "69886dba734e50f34eb11a0d",
+    "subjectName": "English",
+    "gradeId": "69886a9c022dd6c3f96b4bc6",
+    "gradeName": "Grade 10",
+    "term": 1,
+    "year": 2026,
+    "curriculumStandard": "KICD CBC",
+    "totalWeeks": 14,
+    "lessonsPerWeek": 5,
+    "lessons": [
+      {
+        "week": 1,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.1 Extensive Listening",
+        "slo": "By the end of the lesson, the learner should be able to describe characters and events from recordings.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Extensive Listening? 2. How do we apply Extensive Listening in real-world situations?",
+        "learningExperiences": "The learner is guided to search for information on Extensive Listening using reference materials and digital resources.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 1,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.1 Extensive Listening",
+        "slo": "By the end of the lesson, the learner should be able to pick key details from recordings.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Extensive Listening? 2. How do we apply Extensive Listening in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Extensive Listening through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 1,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.1 Extensive Listening",
+        "slo": "By the end of the lesson, the learner should be able to recount story or dialogue.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Extensive Listening? 2. How do we apply Extensive Listening in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Extensive Listening through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 1,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.1 Extensive Listening",
+        "slo": "By the end of the lesson, the learner should be able to acknowledge role of identifying key information.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Extensive Listening? 2. How do we apply Extensive Listening in real-world situations?",
+        "learningExperiences": "The learner is guided to search for information on Extensive Listening using reference materials and digital resources.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 1,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.2 Etiquette",
+        "slo": "By the end of the lesson, the learner should be able to pick out target sounds and etiquette.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Etiquette? 2. How do we apply Etiquette in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Etiquette through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 2,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.2 Etiquette",
+        "slo": "By the end of the lesson, the learner should be able to use appropriate etiquette.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Etiquette? 2. How do we apply Etiquette in real-world situations?",
+        "learningExperiences": "The learner is guided to apply Etiquette concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 2,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.2 Etiquette",
+        "slo": "By the end of the lesson, the learner should be able to articulate sounds for communication.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Etiquette? 2. How do we apply Etiquette in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Etiquette through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 2,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.2 Etiquette",
+        "slo": "By the end of the lesson, the learner should be able to justify accurate pronunciation.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Etiquette? 2. How do we apply Etiquette in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Etiquette through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 2,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.3 Critical Listening",
+        "slo": "By the end of the lesson, the learner should be able to describe distractions to listening.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Critical Listening? 2. How do we apply Critical Listening in real-world situations?",
+        "learningExperiences": "The learner is guided to search for information on Critical Listening using reference materials and digital resources.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 2,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.3 Critical Listening",
+        "slo": "By the end of the lesson, the learner should be able to determine speaker and intention.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Critical Listening? 2. How do we apply Critical Listening in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Critical Listening through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 3,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.3 Critical Listening",
+        "slo": "By the end of the lesson, the learner should be able to select key points from audio.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Critical Listening? 2. How do we apply Critical Listening in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Critical Listening through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 3,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.3 Critical Listening",
+        "slo": "By the end of the lesson, the learner should be able to appreciate critical listening.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Critical Listening? 2. How do we apply Critical Listening in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Critical Listening through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 3,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.4 Pronunciation and Conversational Skills",
+        "slo": "By the end of the lesson, the learner should be able to classify discourse markers.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Pronunciation and Conversational Skills? 2. How do we apply Pronunciation and Conversational Skills in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Pronunciation and Conversational Skills through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 3,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.4 Pronunciation and Conversational Skills",
+        "slo": "By the end of the lesson, the learner should be able to articulate sounds for oral fluency.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Pronunciation and Conversational Skills? 2. How do we apply Pronunciation and Conversational Skills in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Pronunciation and Conversational Skills through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 3,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.4 Pronunciation and Conversational Skills",
+        "slo": "By the end of the lesson, the learner should be able to use discourse markers.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Pronunciation and Conversational Skills? 2. How do we apply Pronunciation and Conversational Skills in real-world situations?",
+        "learningExperiences": "The learner is guided to apply Pronunciation and Conversational Skills concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 4,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.4 Pronunciation and Conversational Skills",
+        "slo": "By the end of the lesson, the learner should be able to apply onomatopoeic words.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Pronunciation and Conversational Skills? 2. How do we apply Pronunciation and Conversational Skills in real-world situations?",
+        "learningExperiences": "The learner is guided to apply Pronunciation and Conversational Skills concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Practical assessment",
+        "reflection": ""
+      },
+      {
+        "week": 4,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.4 Pronunciation and Conversational Skills",
+        "slo": "By the end of the lesson, the learner should be able to advocate appropriate idea organisation.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Pronunciation and Conversational Skills? 2. How do we apply Pronunciation and Conversational Skills in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Pronunciation and Conversational Skills through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 4,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.5 Intensive Listening",
+        "slo": "By the end of the lesson, the learner should be able to select specific details from text.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Intensive Listening? 2. How do we apply Intensive Listening in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Intensive Listening through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 4,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.5 Intensive Listening",
+        "slo": "By the end of the lesson, the learner should be able to use words and phrases from oral text.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Intensive Listening? 2. How do we apply Intensive Listening in real-world situations?",
+        "learningExperiences": "The learner is guided to apply Intensive Listening concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 4,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.5 Intensive Listening",
+        "slo": "By the end of the lesson, the learner should be able to advocate discrimination among sounds.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Intensive Listening? 2. How do we apply Intensive Listening in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Intensive Listening through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 5,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.6 Non-verbal Cues",
+        "slo": "By the end of the lesson, the learner should be able to identify sounds in oral texts.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Non-verbal Cues? 2. How do we apply Non-verbal Cues in real-world situations?",
+        "learningExperiences": "The learner is guided to search for information on Non-verbal Cues using reference materials and digital resources.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 5,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.6 Non-verbal Cues",
+        "slo": "By the end of the lesson, the learner should be able to articulate sounds for fluency.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Non-verbal Cues? 2. How do we apply Non-verbal Cues in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Non-verbal Cues through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 5,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.6 Non-verbal Cues",
+        "slo": "By the end of the lesson, the learner should be able to use nonverbal cues appropriately.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Non-verbal Cues? 2. How do we apply Non-verbal Cues in real-world situations?",
+        "learningExperiences": "The learner is guided to apply Non-verbal Cues concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 5,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "1.0 Listening and Speaking",
+        "substrand": "1.6 Non-verbal Cues",
+        "slo": "By the end of the lesson, the learner should be able to acknowledge accurate articulation.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Non-verbal Cues? 2. How do we apply Non-verbal Cues in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Non-verbal Cues through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 5,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.1 Reading Fluency",
+        "slo": "By the end of the lesson, the learner should be able to preview text and make predictions.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Reading Fluency? 2. How do we apply Reading Fluency in real-world situations?",
+        "learningExperiences": "The learner is guided to create/design a model or project demonstrating Reading Fluency using locally available materials.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Project",
+        "reflection": ""
+      },
+      {
+        "week": 6,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.1 Reading Fluency",
+        "slo": "By the end of the lesson, the learner should be able to skim texts to obtain gist.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Reading Fluency? 2. How do we apply Reading Fluency in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Reading Fluency through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 6,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.1 Reading Fluency",
+        "slo": "By the end of the lesson, the learner should be able to scan text for specific details.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Reading Fluency? 2. How do we apply Reading Fluency in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Reading Fluency through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 6,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.1 Reading Fluency",
+        "slo": "By the end of the lesson, the learner should be able to predict word collocations.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Reading Fluency? 2. How do we apply Reading Fluency in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Reading Fluency through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 6,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.1 Reading Fluency",
+        "slo": "By the end of the lesson, the learner should be able to acknowledge importance of reading fluency.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Reading Fluency? 2. How do we apply Reading Fluency in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Reading Fluency through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 6,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.2 Extensive Reading",
+        "slo": "By the end of the lesson, the learner should be able to select text for reading.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Extensive Reading? 2. How do we apply Extensive Reading in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Extensive Reading through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 7,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.2 Extensive Reading",
+        "slo": "By the end of the lesson, the learner should be able to read varied texts for enjoyment.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Extensive Reading? 2. How do we apply Extensive Reading in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Extensive Reading through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 7,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.2 Extensive Reading",
+        "slo": "By the end of the lesson, the learner should be able to recognise role of extensive reading.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Extensive Reading? 2. How do we apply Extensive Reading in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Extensive Reading through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 7,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.3 Study Skills",
+        "slo": "By the end of the lesson, the learner should be able to outline steps in summary making.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Study Skills? 2. How do we apply Study Skills in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Study Skills through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 7,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.3 Study Skills",
+        "slo": "By the end of the lesson, the learner should be able to use sq4r technique.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Study Skills? 2. How do we apply Study Skills in real-world situations?",
+        "learningExperiences": "The learner is guided to apply Study Skills concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 7,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.3 Study Skills",
+        "slo": "By the end of the lesson, the learner should be able to analyse visual information.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Study Skills? 2. How do we apply Study Skills in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Study Skills through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 8,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.3 Study Skills",
+        "slo": "By the end of the lesson, the learner should be able to acknowledge effective study skills.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Study Skills? 2. How do we apply Study Skills in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Study Skills through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 8,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.4 Intensive Reading",
+        "slo": "By the end of the lesson, the learner should be able to evaluate understanding of text.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Intensive Reading? 2. How do we apply Intensive Reading in real-world situations?",
+        "learningExperiences": "The learner is guided to analyze case studies and evaluate different approaches to Intensive Reading.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 8,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.4 Intensive Reading",
+        "slo": "By the end of the lesson, the learner should be able to make predictions about text.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Intensive Reading? 2. How do we apply Intensive Reading in real-world situations?",
+        "learningExperiences": "The learner is guided to create/design a model or project demonstrating Intensive Reading using locally available materials.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Project",
+        "reflection": ""
+      },
+      {
+        "week": 8,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.4 Intensive Reading",
+        "slo": "By the end of the lesson, the learner should be able to answer questions from text.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Intensive Reading? 2. How do we apply Intensive Reading in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Intensive Reading through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 8,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.4 Intensive Reading",
+        "slo": "By the end of the lesson, the learner should be able to infer meaning of words.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Intensive Reading? 2. How do we apply Intensive Reading in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Intensive Reading through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 9,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.4 Intensive Reading",
+        "slo": "By the end of the lesson, the learner should be able to promote reading comprehension.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Intensive Reading? 2. How do we apply Intensive Reading in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Intensive Reading through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 9,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.5 Critical Reading",
+        "slo": "By the end of the lesson, the learner should be able to identify audience, purpose and attitude.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Critical Reading? 2. How do we apply Critical Reading in real-world situations?",
+        "learningExperiences": "The learner is guided to search for information on Critical Reading using reference materials and digital resources.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 9,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.5 Critical Reading",
+        "slo": "By the end of the lesson, the learner should be able to determine audience and purpose in text.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Critical Reading? 2. How do we apply Critical Reading in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Critical Reading through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 9,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.5 Critical Reading",
+        "slo": "By the end of the lesson, the learner should be able to use phrasal verbs and expressions.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Critical Reading? 2. How do we apply Critical Reading in real-world situations?",
+        "learningExperiences": "The learner is guided to apply Critical Reading concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 9,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "2.0 Reading",
+        "substrand": "2.5 Critical Reading",
+        "slo": "By the end of the lesson, the learner should be able to recognise importance of critical reading.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Critical Reading? 2. How do we apply Critical Reading in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Critical Reading through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 10,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Grammar in Use",
+        "substrand": "3.1 Word Classes",
+        "slo": "By the end of the lesson, the learner should be able to classify nouns in sentences.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Word Classes? 2. How do we apply Word Classes in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Word Classes through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 10,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Grammar in Use",
+        "substrand": "3.1 Word Classes",
+        "slo": "By the end of the lesson, the learner should be able to recognise types of pronouns.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Word Classes? 2. How do we apply Word Classes in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Word Classes through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 10,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Grammar in Use",
+        "substrand": "3.1 Word Classes",
+        "slo": "By the end of the lesson, the learner should be able to differentiate pronouns and determiners.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Word Classes? 2. How do we apply Word Classes in real-world situations?",
+        "learningExperiences": "The learner is guided to compare and contrast different aspects of Word Classes through group discussions and research.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 10,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Grammar in Use",
+        "substrand": "3.1 Word Classes",
+        "slo": "By the end of the lesson, the learner should be able to use nouns and pronouns correctly.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Word Classes? 2. How do we apply Word Classes in real-world situations?",
+        "learningExperiences": "The learner is guided to apply Word Classes concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 10,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Grammar in Use",
+        "substrand": "3.1 Word Classes",
+        "slo": "By the end of the lesson, the learner should be able to acknowledge correct usage.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Word Classes? 2. How do we apply Word Classes in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Word Classes through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 11,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Grammar in Use",
+        "substrand": "3.2 Phrases",
+        "slo": "By the end of the lesson, the learner should be able to identify constituents of phrases.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Phrases? 2. How do we apply Phrases in real-world situations?",
+        "learningExperiences": "The learner is guided to search for information on Phrases using reference materials and digital resources.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 11,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Grammar in Use",
+        "substrand": "3.2 Phrases",
+        "slo": "By the end of the lesson, the learner should be able to use noun and verb phrases.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Phrases? 2. How do we apply Phrases in real-world situations?",
+        "learningExperiences": "The learner is guided to apply Phrases concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 11,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Grammar in Use",
+        "substrand": "3.2 Phrases",
+        "slo": "By the end of the lesson, the learner should be able to advocate correct phrase usage.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Phrases? 2. How do we apply Phrases in real-world situations?",
+        "learningExperiences": "The learner is guided to explore and understand Phrases through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 11,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Grammar in Use",
+        "substrand": "3.3 Clauses",
+        "slo": "By the end of the lesson, the learner should be able to pick out clauses in sentences.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Clauses? 2. How do we apply Clauses in real-world situations?",
+        "learningExperiences": "The learner is guided to apply Clauses concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 11,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Grammar in Use",
+        "substrand": "3.3 Clauses",
+        "slo": "By the end of the lesson, the learner should be able to distinguish clause types.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Clauses? 2. How do we apply Clauses in real-world situations?",
+        "learningExperiences": "The learner is guided to apply Clauses concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 12,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Grammar in Use",
+        "substrand": "3.3 Clauses",
+        "slo": "By the end of the lesson, the learner should be able to use clauses in varied contexts.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Clauses? 2. How do we apply Clauses in real-world situations?",
+        "learningExperiences": "The learner is guided to apply Clauses concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 12,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Grammar in Use",
+        "substrand": "3.3 Clauses",
+        "slo": "By the end of the lesson, the learner should be able to advocate correct clause use.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What is the importance of Clauses? 2. How do we apply Clauses in real-world situations?",
+        "learningExperiences": "The learner is guided to apply Clauses concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 12,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Grammar in Use",
+        "substrand": "3.4 Sentence Structure",
+        "slo": "By the end of the lesson, the learner should be able to analyse sentence patterns.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What are the main components of Sentence Structure? 2. How do the different parts of Sentence Structure work together?",
+        "learningExperiences": "The learner is guided to explore and understand Sentence Structure through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 12,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Grammar in Use",
+        "substrand": "3.4 Sentence Structure",
+        "slo": "By the end of the lesson, the learner should be able to use simple sentences.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What are the main components of Sentence Structure? 2. How do the different parts of Sentence Structure work together?",
+        "learningExperiences": "The learner is guided to apply Sentence Structure concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 12,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Grammar in Use",
+        "substrand": "3.4 Sentence Structure",
+        "slo": "By the end of the lesson, the learner should be able to use compound sentences.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What are the main components of Sentence Structure? 2. How do the different parts of Sentence Structure work together?",
+        "learningExperiences": "The learner is guided to apply Sentence Structure concepts through practical exercises and problem-solving activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 13,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "3.0 Grammar in Use",
+        "substrand": "3.4 Sentence Structure",
+        "slo": "By the end of the lesson, the learner should be able to recognise sentence variety.",
+        "coreCompetencies": "Critical Thinking, Communication",
+        "coreValues": "Responsibility, Respect",
+        "keyInquiryQuestions": "1. What are the main components of Sentence Structure? 2. How do the different parts of Sentence Structure work together?",
+        "learningExperiences": "The learner is guided to explore and understand Sentence Structure through interactive learning activities.",
+        "learningResources": "Reference materials, Textbooks",
+        "assessmentMethods": "Oral questions",
+        "reflection": ""
+      },
+      {
+        "week": 13,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 13,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 13,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 13,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 14,
+        "lessonNumber": 1,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 14,
+        "lessonNumber": 2,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 14,
+        "lessonNumber": 3,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 14,
+        "lessonNumber": 4,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      },
+      {
+        "week": 14,
+        "lessonNumber": 5,
+        "isBreak": false,
+        "breakType": null,
+        "breakDescription": null,
+        "strand": "Revision",
+        "substrand": "Term Revision",
+        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
+        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+        "learningResources": "Revision notes, Past papers, Reference materials",
+        "assessmentMethods": "Oral questions, Written tests",
+        "reflection": ""
+      }
+    ],
+    "createdAt": {
+      "$date": "2026-02-26T15:25:20.566000"
+    }
+  }
+]

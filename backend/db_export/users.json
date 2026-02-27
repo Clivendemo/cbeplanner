@@ -1,0 +1,70 @@
+[
+  {
+    "_id": {
+      "$oid": "6976389c7842c9a39eddb902"
+    },
+    "firebaseUid": "WGXO4MILfMTzh5zWKTFOKT1JzPZ2",
+    "email": "mail2clive@gmail.com",
+    "firstName": "",
+    "lastName": "",
+    "schoolName": "",
+    "role": "teacher",
+    "walletBalance": 100.0,
+    "freeLessonUsed": false,
+    "freeNotesUsed": false,
+    "createdAt": {
+      "$date": "2026-01-25T15:37:00.757000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "697638c27842c9a39eddb903"
+    },
+    "firebaseUid": "5vUA4g8u7EeRAijh3nmVxSQKWEl1",
+    "email": "clivedemoac@gmail.com",
+    "firstName": "",
+    "lastName": "",
+    "schoolName": "",
+    "role": "teacher",
+    "walletBalance": 70.0,
+    "freeLessonUsed": true,
+    "freeNotesUsed": true,
+    "createdAt": {
+      "$date": "2026-01-25T15:37:38.082000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69882b4cb1927e20ed71d811"
+    },
+    "firebaseUid": "BZW1Sp42MHdwHpopW4Ml6ohT57v1",
+    "email": "mail2clive@gmail.com",
+    "firstName": "Clive",
+    "lastName": "Ndemo",
+    "schoolName": "Freretown",
+    "role": "admin",
+    "walletBalance": 0.0,
+    "freeLessonUsed": true,
+    "freeNotesUsed": false,
+    "createdAt": {
+      "$date": "2026-02-08T06:21:00.051000"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69a06cddd3e7adb543b7a167"
+    },
+    "uid": "demo_user_123",
+    "email": "demo@test.com",
+    "firstName": "Demo",
+    "lastName": "Teacher",
+    "schoolName": "Nairobi High School",
+    "role": "teacher",
+    "walletBalance": 100.0,
+    "freeLessonUsed": false,
+    "freeNotesUsed": false,
+    "createdAt": {
+      "$date": "2026-02-26T15:55:09.651000"
+    }
+  }
+]

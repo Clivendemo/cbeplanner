@@ -1,0 +1,26 @@
+[
+  {
+    "_id": {
+      "$oid": "69a0a4886877218e3330e54f"
+    },
+    "userId": "697638c27842c9a39eddb903",
+    "tx_ref": "CBE-20260226195240-26E77A5F",
+    "mpesaReceiptNumber": null,
+    "checkoutRequestID": null,
+    "merchantRequestID": null,
+    "provider": "mpesa",
+    "type": "topup",
+    "amount": 70.0,
+    "currency": "KES",
+    "phoneNumber": "254723698143",
+    "status": "failed",
+    "resultCode": null,
+    "resultDesc": "M-Pesa authentication failed: Client error '400 Bad Request' for url 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400",
+    "createdAt": {
+      "$date": "2026-02-26T19:52:40.866000"
+    },
+    "updatedAt": {
+      "$date": "2026-02-26T19:52:42.474000"
+    }
+  }
+]

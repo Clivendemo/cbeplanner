@@ -1,0 +1,191 @@
+[
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed919"
+    },
+    "sloId": "69a06bff5ea260e6510ed8e9",
+    "competencyIds": [
+      "69a06bff5ea260e6510ed8ff",
+      "69a06bff5ea260e6510ed900"
+    ],
+    "valueIds": [
+      "69a06bff5ea260e6510ed905",
+      "69a06bff5ea260e6510ed907"
+    ],
+    "pciIds": [
+      "69a06bff5ea260e6510ed90c"
+    ],
+    "assessmentIds": [
+      "69a06bff5ea260e6510ed912",
+      "69a06bff5ea260e6510ed913"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed91a"
+    },
+    "sloId": "69a06bff5ea260e6510ed8ea",
+    "competencyIds": [
+      "69a06bff5ea260e6510ed900",
+      "69a06bff5ea260e6510ed901"
+    ],
+    "valueIds": [
+      "69a06bff5ea260e6510ed906",
+      "69a06bff5ea260e6510ed908"
+    ],
+    "pciIds": [
+      "69a06bff5ea260e6510ed90d"
+    ],
+    "assessmentIds": [
+      "69a06bff5ea260e6510ed913",
+      "69a06bff5ea260e6510ed914"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed91b"
+    },
+    "sloId": "69a06bff5ea260e6510ed8eb",
+    "competencyIds": [
+      "69a06bff5ea260e6510ed901",
+      "69a06bff5ea260e6510ed902"
+    ],
+    "valueIds": [
+      "69a06bff5ea260e6510ed907",
+      "69a06bff5ea260e6510ed909"
+    ],
+    "pciIds": [
+      "69a06bff5ea260e6510ed90e"
+    ],
+    "assessmentIds": [
+      "69a06bff5ea260e6510ed914",
+      "69a06bff5ea260e6510ed915"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed91c"
+    },
+    "sloId": "69a06bff5ea260e6510ed8ec",
+    "competencyIds": [
+      "69a06bff5ea260e6510ed902",
+      "69a06bff5ea260e6510ed903"
+    ],
+    "valueIds": [
+      "69a06bff5ea260e6510ed908",
+      "69a06bff5ea260e6510ed90a"
+    ],
+    "pciIds": [
+      "69a06bff5ea260e6510ed90f"
+    ],
+    "assessmentIds": [
+      "69a06bff5ea260e6510ed915",
+      "69a06bff5ea260e6510ed916"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed91d"
+    },
+    "sloId": "69a06bff5ea260e6510ed8ed",
+    "competencyIds": [
+      "69a06bff5ea260e6510ed903",
+      "69a06bff5ea260e6510ed904"
+    ],
+    "valueIds": [
+      "69a06bff5ea260e6510ed909",
+      "69a06bff5ea260e6510ed90b"
+    ],
+    "pciIds": [
+      "69a06bff5ea260e6510ed910"
+    ],
+    "assessmentIds": [
+      "69a06bff5ea260e6510ed916",
+      "69a06bff5ea260e6510ed917"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed91e"
+    },
+    "sloId": "69a06bff5ea260e6510ed8ee",
+    "competencyIds": [
+      "69a06bff5ea260e6510ed904",
+      "69a06bff5ea260e6510ed8ff"
+    ],
+    "valueIds": [
+      "69a06bff5ea260e6510ed90a",
+      "69a06bff5ea260e6510ed905"
+    ],
+    "pciIds": [
+      "69a06bff5ea260e6510ed911"
+    ],
+    "assessmentIds": [
+      "69a06bff5ea260e6510ed917",
+      "69a06bff5ea260e6510ed918"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed91f"
+    },
+    "sloId": "69a06bff5ea260e6510ed8ef",
+    "competencyIds": [
+      "69a06bff5ea260e6510ed8ff",
+      "69a06bff5ea260e6510ed900"
+    ],
+    "valueIds": [
+      "69a06bff5ea260e6510ed90b",
+      "69a06bff5ea260e6510ed906"
+    ],
+    "pciIds": [
+      "69a06bff5ea260e6510ed90c"
+    ],
+    "assessmentIds": [
+      "69a06bff5ea260e6510ed918",
+      "69a06bff5ea260e6510ed912"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed920"
+    },
+    "sloId": "69a06bff5ea260e6510ed8f0",
+    "competencyIds": [
+      "69a06bff5ea260e6510ed900",
+      "69a06bff5ea260e6510ed901"
+    ],
+    "valueIds": [
+      "69a06bff5ea260e6510ed905",
+      "69a06bff5ea260e6510ed907"
+    ],
+    "pciIds": [
+      "69a06bff5ea260e6510ed90d"
+    ],
+    "assessmentIds": [
+      "69a06bff5ea260e6510ed912",
+      "69a06bff5ea260e6510ed913"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed921"
+    },
+    "sloId": "69a06bff5ea260e6510ed8f1",
+    "competencyIds": [
+      "69a06bff5ea260e6510ed901",
+      "69a06bff5ea260e6510ed902"
+    ],
+    "valueIds": [
+      "69a06bff5ea260e6510ed906",
+      "69a06bff5ea260e6510ed908"
+    ],
+    "pciIds": [
+      "69a06bff5ea260e6510ed90e"
+    ],
+    "assessmentIds": [
+      "69a06bff5ea260e6510ed913",
+      "69a06bff5ea260e6510ed914"
+    ]
+  }
+]

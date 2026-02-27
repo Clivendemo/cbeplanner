@@ -1,0 +1,118 @@
+[
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8ca"
+    },
+    "name": "Literacy Activities",
+    "gradeIds": [
+      "69a06bff5ea260e6510ed8c4",
+      "69a06bff5ea260e6510ed8c5",
+      "69a06bff5ea260e6510ed8c6"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8cb"
+    },
+    "name": "Mathematical Activities",
+    "gradeIds": [
+      "69a06bff5ea260e6510ed8c4",
+      "69a06bff5ea260e6510ed8c5",
+      "69a06bff5ea260e6510ed8c6"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8cc"
+    },
+    "name": "Environmental Activities",
+    "gradeIds": [
+      "69a06bff5ea260e6510ed8c4",
+      "69a06bff5ea260e6510ed8c5",
+      "69a06bff5ea260e6510ed8c6"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8cd"
+    },
+    "name": "English",
+    "gradeIds": [
+      "69a06bff5ea260e6510ed8c7",
+      "69a06bff5ea260e6510ed8c8",
+      "69a06bff5ea260e6510ed8c9",
+      "69a06c0be7927ae20e67b2d1"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8ce"
+    },
+    "name": "Mathematics",
+    "gradeIds": [
+      "69a06bff5ea260e6510ed8c7",
+      "69a06bff5ea260e6510ed8c8",
+      "69a06bff5ea260e6510ed8c9",
+      "69a06c0be7927ae20e67b2d1"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8cf"
+    },
+    "name": "Science and Technology",
+    "gradeIds": [
+      "69a06bff5ea260e6510ed8c7",
+      "69a06bff5ea260e6510ed8c8",
+      "69a06bff5ea260e6510ed8c9",
+      "69a06c0be7927ae20e67b2d1"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8d0"
+    },
+    "name": "Social Studies",
+    "gradeIds": [
+      "69a06bff5ea260e6510ed8c7",
+      "69a06bff5ea260e6510ed8c8",
+      "69a06bff5ea260e6510ed8c9"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bbe"
+    },
+    "name": "Chemistry",
+    "gradeIds": [
+      "69a06c0be7927ae20e67b2d1"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370be8"
+    },
+    "name": "Computer Science",
+    "gradeIds": [
+      "69a06c0be7927ae20e67b2d1"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c4a"
+    },
+    "name": "Community Service Learning",
+    "gradeIds": [
+      "69a06c0be7927ae20e67b2d1"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ce9"
+    },
+    "name": "Fasihi ya Kiswahili",
+    "gradeIds": [
+      "69a06c0be7927ae20e67b2d1"
+    ]
+  }
+]

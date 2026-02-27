@@ -1,0 +1,24 @@
+[
+  {
+    "_id": {
+      "$oid": "69a066ac1841ed933044bcab"
+    },
+    "teacherId": "697638c27842c9a39eddb903",
+    "teacherName": "",
+    "schoolName": "",
+    "duration": 40,
+    "gradeId": "69886a9c022dd6c3f96b4bc6",
+    "gradeName": "Grade 10",
+    "subjectId": "69886dba734e50f34eb119dc",
+    "subjectName": "Mathematics",
+    "strandId": "69886dba734e50f34eb119dd",
+    "strandName": "Numbers and Operations",
+    "substrandId": "69886dba734e50f34eb119de",
+    "substrandName": "Real Numbers",
+    "content": "# Real Numbers\n\n## Key Points\n- Understanding Real Numbers concepts\n- Basic principles and applications\n- Real-world examples\n\n## Summary\nBrief explanation of Real Numbers within Numbers and Operations.",
+    "activities": [],
+    "createdAt": {
+      "$date": "2026-02-26T15:28:44.606000"
+    }
+  }
+]

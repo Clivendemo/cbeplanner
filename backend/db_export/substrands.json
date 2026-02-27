@@ -1,0 +1,562 @@
+[
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8dc"
+    },
+    "name": "Whole Numbers",
+    "strandId": "69a06bff5ea260e6510ed8d1"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8dd"
+    },
+    "name": "Fractions",
+    "strandId": "69a06bff5ea260e6510ed8d1"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8de"
+    },
+    "name": "Decimals",
+    "strandId": "69a06bff5ea260e6510ed8d1"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8df"
+    },
+    "name": "Percentages",
+    "strandId": "69a06bff5ea260e6510ed8d1"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8e0"
+    },
+    "name": "2D Shapes",
+    "strandId": "69a06bff5ea260e6510ed8d3"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8e1"
+    },
+    "name": "3D Shapes",
+    "strandId": "69a06bff5ea260e6510ed8d3"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8e2"
+    },
+    "name": "Angles",
+    "strandId": "69a06bff5ea260e6510ed8d3"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8e6"
+    },
+    "name": "Plants",
+    "strandId": "69a06bff5ea260e6510ed8d9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8e7"
+    },
+    "name": "Animals",
+    "strandId": "69a06bff5ea260e6510ed8d9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8e8"
+    },
+    "name": "Human Body",
+    "strandId": "69a06bff5ea260e6510ed8d9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bc0"
+    },
+    "name": "Introduction to Chemistry",
+    "strandId": "69a06caa533e4a4d60370bbf"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bc5"
+    },
+    "name": "The Atom",
+    "strandId": "69a06caa533e4a4d60370bbf"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bca"
+    },
+    "name": "The Periodic Table",
+    "strandId": "69a06caa533e4a4d60370bbf"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bd0"
+    },
+    "name": "Chemical Bonding",
+    "strandId": "69a06caa533e4a4d60370bbf"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bd5"
+    },
+    "name": "Periodicity",
+    "strandId": "69a06caa533e4a4d60370bbf"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bdc"
+    },
+    "name": "Acids and Bases",
+    "strandId": "69a06caa533e4a4d60370bdb"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370be2"
+    },
+    "name": "Introduction to Salts",
+    "strandId": "69a06caa533e4a4d60370bdb"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bea"
+    },
+    "name": "Evolution and Development of Computers",
+    "strandId": "69a06caa533e4a4d60370be9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bef"
+    },
+    "name": "Computer Organisation and Architecture",
+    "strandId": "69a06caa533e4a4d60370be9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bf5"
+    },
+    "name": "Input/Output (I/O) Devices",
+    "strandId": "69a06caa533e4a4d60370be9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bfa"
+    },
+    "name": "Computer Storage",
+    "strandId": "69a06caa533e4a4d60370be9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c00"
+    },
+    "name": "Central Processing Unit (CPU)",
+    "strandId": "69a06caa533e4a4d60370be9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c05"
+    },
+    "name": "Operating System (OS)",
+    "strandId": "69a06caa533e4a4d60370be9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c0b"
+    },
+    "name": "Computer Setup",
+    "strandId": "69a06caa533e4a4d60370be9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c11"
+    },
+    "name": "Data Communication",
+    "strandId": "69a06caa533e4a4d60370c10"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c17"
+    },
+    "name": "Data Transmission Media",
+    "strandId": "69a06caa533e4a4d60370c10"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c1d"
+    },
+    "name": "Computer Network Elements",
+    "strandId": "69a06caa533e4a4d60370c10"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c23"
+    },
+    "name": "Network Topologies",
+    "strandId": "69a06caa533e4a4d60370c10"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c29"
+    },
+    "name": "Computer Programming Concepts",
+    "strandId": "69a06caa533e4a4d60370c28"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c2f"
+    },
+    "name": "Program Development",
+    "strandId": "69a06caa533e4a4d60370c28"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c35"
+    },
+    "name": "Identifiers and Operators",
+    "strandId": "69a06caa533e4a4d60370c28"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c3b"
+    },
+    "name": "Control Structures",
+    "strandId": "69a06caa533e4a4d60370c28"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c40"
+    },
+    "name": "Data Structures",
+    "strandId": "69a06caa533e4a4d60370c28"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c45"
+    },
+    "name": "Functions",
+    "strandId": "69a06caa533e4a4d60370c28"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c4c"
+    },
+    "name": "Concept of CSL",
+    "strandId": "69a06caa533e4a4d60370c4b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c52"
+    },
+    "name": "Community Needs",
+    "strandId": "69a06caa533e4a4d60370c4b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c57"
+    },
+    "name": "Leadership Development",
+    "strandId": "69a06caa533e4a4d60370c4b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c5d"
+    },
+    "name": "Intercultural Competence",
+    "strandId": "69a06caa533e4a4d60370c4b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c63"
+    },
+    "name": "Self-Awareness in the Community",
+    "strandId": "69a06caa533e4a4d60370c62"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c68"
+    },
+    "name": "Conflict Resolution",
+    "strandId": "69a06caa533e4a4d60370c62"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c6d"
+    },
+    "name": "Responsible Decision-Making",
+    "strandId": "69a06caa533e4a4d60370c62"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c73"
+    },
+    "name": "Introduction to Action Research",
+    "strandId": "69a06caa533e4a4d60370c72"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c79"
+    },
+    "name": "Problem Identification",
+    "strandId": "69a06caa533e4a4d60370c72"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c7f"
+    },
+    "name": "Implementation Process",
+    "strandId": "69a06caa533e4a4d60370c72"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c86"
+    },
+    "name": "Social Entrepreneurship Process",
+    "strandId": "69a06caa533e4a4d60370c85"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c8b"
+    },
+    "name": "Opportunity Identification",
+    "strandId": "69a06caa533e4a4d60370c85"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c90"
+    },
+    "name": "Social Enterprise Planning",
+    "strandId": "69a06caa533e4a4d60370c85"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c95"
+    },
+    "name": "Resource Mobilisation",
+    "strandId": "69a06caa533e4a4d60370c85"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c9b"
+    },
+    "name": "Extensive Listening",
+    "strandId": "69a06caa533e4a4d60370c9a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ca0"
+    },
+    "name": "Etiquette",
+    "strandId": "69a06caa533e4a4d60370c9a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ca5"
+    },
+    "name": "Critical Listening",
+    "strandId": "69a06caa533e4a4d60370c9a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370caa"
+    },
+    "name": "Pronunciation and Conversational Skills",
+    "strandId": "69a06caa533e4a4d60370c9a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cb0"
+    },
+    "name": "Intensive Listening",
+    "strandId": "69a06caa533e4a4d60370c9a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cb4"
+    },
+    "name": "Non-verbal Cues",
+    "strandId": "69a06caa533e4a4d60370c9a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cba"
+    },
+    "name": "Reading Fluency",
+    "strandId": "69a06caa533e4a4d60370cb9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cc0"
+    },
+    "name": "Extensive Reading",
+    "strandId": "69a06caa533e4a4d60370cb9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cc4"
+    },
+    "name": "Study Skills",
+    "strandId": "69a06caa533e4a4d60370cb9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cc9"
+    },
+    "name": "Intensive Reading",
+    "strandId": "69a06caa533e4a4d60370cb9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ccf"
+    },
+    "name": "Critical Reading",
+    "strandId": "69a06caa533e4a4d60370cb9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cd5"
+    },
+    "name": "Word Classes",
+    "strandId": "69a06caa533e4a4d60370cd4"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cdb"
+    },
+    "name": "Phrases",
+    "strandId": "69a06caa533e4a4d60370cd4"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cdf"
+    },
+    "name": "Clauses",
+    "strandId": "69a06caa533e4a4d60370cd4"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ce4"
+    },
+    "name": "Sentence Structure",
+    "strandId": "69a06caa533e4a4d60370cd4"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ceb"
+    },
+    "name": "Utangulizi wa Fasihi Simulizi",
+    "strandId": "69a06caa533e4a4d60370cea"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cf1"
+    },
+    "name": "Hadithi - Hekaya na Hurafa",
+    "strandId": "69a06caa533e4a4d60370cea"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cf7"
+    },
+    "name": "Semi",
+    "strandId": "69a06caa533e4a4d60370cea"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cfd"
+    },
+    "name": "Maigizo",
+    "strandId": "69a06caa533e4a4d60370cea"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d03"
+    },
+    "name": "Maghani ya Kawaida",
+    "strandId": "69a06caa533e4a4d60370cea"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d0a"
+    },
+    "name": "Uainishaji wa Mashairi",
+    "strandId": "69a06caa533e4a4d60370d09"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d11"
+    },
+    "name": "Uchambuzi wa Maudhui na Dhamira",
+    "strandId": "69a06caa533e4a4d60370d09"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d15"
+    },
+    "name": "Ushairi Simulizi",
+    "strandId": "69a06caa533e4a4d60370d09"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d1b"
+    },
+    "name": "Mtindo - Misemo na Nahau",
+    "strandId": "69a06caa533e4a4d60370d09"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d21"
+    },
+    "name": "Uhuru wa Kishairi",
+    "strandId": "69a06caa533e4a4d60370d09"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d28"
+    },
+    "name": "Tamthilia - Maudhui na Dhamira",
+    "strandId": "69a06caa533e4a4d60370d27"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d2e"
+    },
+    "name": "Tamthilia - Wahusika na Mandhari",
+    "strandId": "69a06caa533e4a4d60370d27"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d34"
+    },
+    "name": "Tamthilia - Muundo na Mtindo",
+    "strandId": "69a06caa533e4a4d60370d27"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d3a"
+    },
+    "name": "Riwaya - Maudhui na Dhamira",
+    "strandId": "69a06caa533e4a4d60370d27"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d40"
+    },
+    "name": "Riwaya - Wahusika na Mandhari",
+    "strandId": "69a06caa533e4a4d60370d27"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d46"
+    },
+    "name": "Riwaya - Muundo na Mtindo",
+    "strandId": "69a06caa533e4a4d60370d27"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d4b"
+    },
+    "name": "Utunzi wa Mashairi na Bunilizi",
+    "strandId": "69a06caa533e4a4d60370d27"
+  }
+]

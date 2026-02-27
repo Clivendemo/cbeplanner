@@ -1,0 +1,44 @@
+[
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed90c"
+    },
+    "name": "Financial Literacy",
+    "description": "Understanding the value and responsible use of money"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed90d"
+    },
+    "name": "Education for Sustainable Development",
+    "description": "Learning about environmental conservation and sustainability"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed90e"
+    },
+    "name": "Safety and Security",
+    "description": "Understanding personal and community safety"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed90f"
+    },
+    "name": "Health Education",
+    "description": "Promoting healthy lifestyles and wellbeing"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed910"
+    },
+    "name": "Citizenship",
+    "description": "Understanding rights, responsibilities, and civic engagement"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed911"
+    },
+    "name": "Social Cohesion",
+    "description": "Promoting unity and harmony in diverse communities"
+  }
+]

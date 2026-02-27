@@ -1,0 +1,106 @@
+[
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8f2"
+    },
+    "description": "Use number cards to practice reading and writing numbers",
+    "strandId": "69a06bff5ea260e6510ed8d1",
+    "substrandId": "69a06bff5ea260e6510ed8dc"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8f3"
+    },
+    "description": "Play number ordering games using place value charts",
+    "strandId": "69a06bff5ea260e6510ed8d1",
+    "substrandId": "69a06bff5ea260e6510ed8dc"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8f4"
+    },
+    "description": "Count objects in groups and write the corresponding numerals",
+    "strandId": "69a06bff5ea260e6510ed8d1",
+    "substrandId": "69a06bff5ea260e6510ed8dc"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8f5"
+    },
+    "description": "Practice addition and subtraction using counters and number lines",
+    "strandId": "69a06bff5ea260e6510ed8d1",
+    "substrandId": "69a06bff5ea260e6510ed8dc"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8f6"
+    },
+    "description": "Identify 2D shapes in the classroom environment",
+    "strandId": "69a06bff5ea260e6510ed8d3",
+    "substrandId": "69a06bff5ea260e6510ed8e0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8f7"
+    },
+    "description": "Draw shapes using rulers and geometric tools",
+    "strandId": "69a06bff5ea260e6510ed8d3",
+    "substrandId": "69a06bff5ea260e6510ed8e0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8f8"
+    },
+    "description": "Create shape patterns and designs",
+    "strandId": "69a06bff5ea260e6510ed8d3",
+    "substrandId": "69a06bff5ea260e6510ed8e0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8f9"
+    },
+    "description": "Read short passages aloud and discuss main ideas",
+    "strandId": "69a06bff5ea260e6510ed8d6",
+    "substrandId": "69a06bff5ea260e6510ed8e3"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8fa"
+    },
+    "description": "Answer comprehension questions in pairs",
+    "strandId": "69a06bff5ea260e6510ed8d6",
+    "substrandId": "69a06bff5ea260e6510ed8e3"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8fb"
+    },
+    "description": "Identify and list new vocabulary from texts",
+    "strandId": "69a06bff5ea260e6510ed8d6",
+    "substrandId": "69a06bff5ea260e6510ed8e3"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8fc"
+    },
+    "description": "Observe and label parts of real plants",
+    "strandId": "69a06bff5ea260e6510ed8d9",
+    "substrandId": "69a06bff5ea260e6510ed8e6"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8fd"
+    },
+    "description": "Plant seeds and observe their growth over time",
+    "strandId": "69a06bff5ea260e6510ed8d9",
+    "substrandId": "69a06bff5ea260e6510ed8e6"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8fe"
+    },
+    "description": "Draw and label the life cycle of a plant",
+    "strandId": "69a06bff5ea260e6510ed8d9",
+    "substrandId": "69a06bff5ea260e6510ed8e6"
+  }
+]

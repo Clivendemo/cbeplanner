@@ -1,0 +1,44 @@
+[
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8ff"
+    },
+    "name": "Communication and Collaboration",
+    "description": "Learners work together effectively and share ideas clearly"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed900"
+    },
+    "name": "Critical Thinking and Problem Solving",
+    "description": "Learners analyze situations and develop creative solutions"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed901"
+    },
+    "name": "Creativity and Imagination",
+    "description": "Learners explore different approaches and think innovatively"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed902"
+    },
+    "name": "Digital Literacy",
+    "description": "Learners use digital tools and resources effectively"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed903"
+    },
+    "name": "Learning to Learn",
+    "description": "Learners take responsibility for their own learning"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed904"
+    },
+    "name": "Self-Efficacy",
+    "description": "Learners develop confidence in their abilities"
+  }
+]

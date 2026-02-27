@@ -1,0 +1,86 @@
+[
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8c4"
+    },
+    "name": "Grade 1",
+    "order": 1
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8c5"
+    },
+    "name": "Grade 2",
+    "order": 2
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8c6"
+    },
+    "name": "Grade 3",
+    "order": 3
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8c7"
+    },
+    "name": "Grade 4",
+    "order": 4
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8c8"
+    },
+    "name": "Grade 5",
+    "order": 5
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8c9"
+    },
+    "name": "Grade 6",
+    "order": 6
+  },
+  {
+    "_id": {
+      "$oid": "69a06c0be7927ae20e67b2ce"
+    },
+    "name": "Grade 7",
+    "order": 7
+  },
+  {
+    "_id": {
+      "$oid": "69a06c0be7927ae20e67b2cf"
+    },
+    "name": "Grade 8",
+    "order": 8
+  },
+  {
+    "_id": {
+      "$oid": "69a06c0be7927ae20e67b2d0"
+    },
+    "name": "Grade 9",
+    "order": 9
+  },
+  {
+    "_id": {
+      "$oid": "69a06c0be7927ae20e67b2d1"
+    },
+    "name": "Grade 10",
+    "order": 10
+  },
+  {
+    "_id": {
+      "$oid": "69a06c0be7927ae20e67b2d2"
+    },
+    "name": "Grade 11",
+    "order": 11
+  },
+  {
+    "_id": {
+      "$oid": "69a06c0be7927ae20e67b2d3"
+    },
+    "name": "Grade 12",
+    "order": 12
+  }
+]

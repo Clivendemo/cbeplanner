@@ -1,0 +1,2562 @@
+[
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8e9"
+    },
+    "name": "Read and write numbers up to 10,000",
+    "description": "By the end of the sub-strand, the learner should be able to read and write numbers up to 10,000 in numerals and words",
+    "substrandId": "69a06bff5ea260e6510ed8dc"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8ea"
+    },
+    "name": "Compare and order numbers up to 10,000",
+    "description": "By the end of the sub-strand, the learner should be able to compare and order numbers up to 10,000 using greater than, less than and equal to",
+    "substrandId": "69a06bff5ea260e6510ed8dc"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8eb"
+    },
+    "name": "Add and subtract numbers up to 10,000",
+    "description": "By the end of the sub-strand, the learner should be able to add and subtract whole numbers up to 10,000",
+    "substrandId": "69a06bff5ea260e6510ed8dc"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8ec"
+    },
+    "name": "Identify and name 2D shapes",
+    "description": "By the end of the sub-strand, the learner should be able to identify and name common 2D shapes including triangles, squares, rectangles, and circles",
+    "substrandId": "69a06bff5ea260e6510ed8e0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8ed"
+    },
+    "name": "Draw 2D shapes",
+    "description": "By the end of the sub-strand, the learner should be able to draw and construct basic 2D shapes using appropriate tools",
+    "substrandId": "69a06bff5ea260e6510ed8e0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8f0"
+    },
+    "name": "Identify parts of a plant",
+    "description": "By the end of the sub-strand, the learner should be able to identify and name the main parts of a flowering plant",
+    "substrandId": "69a06bff5ea260e6510ed8e6"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8f1"
+    },
+    "name": "Describe plant growth",
+    "description": "By the end of the sub-strand, the learner should be able to describe the life cycle and growth process of plants",
+    "substrandId": "69a06bff5ea260e6510ed8e6"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bc1"
+    },
+    "name": "Explain the meaning of Chemistry as a field of science",
+    "description": "By the end of the lesson, the learner should be able to explain the meaning of Chemistry as a field of science.",
+    "substrandId": "69a06caa533e4a4d60370bc0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bc2"
+    },
+    "name": "Explore the role of Chemistry in day to day life",
+    "description": "By the end of the lesson, the learner should be able to explore the role of Chemistry in day to day life.",
+    "substrandId": "69a06caa533e4a4d60370bc0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bc3"
+    },
+    "name": "Examine the effects of drug and substance use",
+    "description": "By the end of the lesson, the learner should be able to examine the effects of drug and substance use in day to day life.",
+    "substrandId": "69a06caa533e4a4d60370bc0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bc4"
+    },
+    "name": "Promote rights to safe learning environment",
+    "description": "By the end of the lesson, the learner should be able to promote the rights and responsibilities to a safe and healthy learning environment.",
+    "substrandId": "69a06caa533e4a4d60370bc0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bc6"
+    },
+    "name": "Describe the structure of the atom",
+    "description": "By the end of the lesson, the learner should be able to describe the structure of the atom.",
+    "substrandId": "69a06caa533e4a4d60370bc5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bc7"
+    },
+    "name": "Determine the relative atomic mass of elements",
+    "description": "By the end of the lesson, the learner should be able to determine the relative atomic mass of elements.",
+    "substrandId": "69a06caa533e4a4d60370bc5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bc8"
+    },
+    "name": "Write electron arrangement using s and p notation",
+    "description": "By the end of the lesson, the learner should be able to write the electron arrangement of elements using s and p notation.",
+    "substrandId": "69a06caa533e4a4d60370bc5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bc9"
+    },
+    "name": "Develop interest in the study of structure of the atom",
+    "description": "By the end of the lesson, the learner should be able to develop interest in the study of structure of the atom.",
+    "substrandId": "69a06caa533e4a4d60370bc5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bcb"
+    },
+    "name": "Relate element position to electron arrangement",
+    "description": "By the end of the lesson, the learner should be able to relate the position of an element in the periodic table to its electron arrangement.",
+    "substrandId": "69a06caa533e4a4d60370bca"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bcc"
+    },
+    "name": "Illustrate ion formation of elements",
+    "description": "By the end of the lesson, the learner should be able to illustrate ion formation of elements.",
+    "substrandId": "69a06caa533e4a4d60370bca"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bcd"
+    },
+    "name": "Derive the formulae of compounds",
+    "description": "By the end of the lesson, the learner should be able to derive the formulae of compounds.",
+    "substrandId": "69a06caa533e4a4d60370bca"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bce"
+    },
+    "name": "Write balanced equations for chemical reactions",
+    "description": "By the end of the lesson, the learner should be able to write balanced equations for chemical reactions.",
+    "substrandId": "69a06caa533e4a4d60370bca"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bcf"
+    },
+    "name": "Appreciate role of electron arrangement",
+    "description": "By the end of the lesson, the learner should be able to appreciate the role of electron arrangement in the development of the periodic table.",
+    "substrandId": "69a06caa533e4a4d60370bca"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bd1"
+    },
+    "name": "Illustrate bond types in elements and compounds",
+    "description": "By the end of the lesson, the learner should be able to illustrate bond types in elements, molecules and compounds.",
+    "substrandId": "69a06caa533e4a4d60370bd0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bd2"
+    },
+    "name": "Investigate bond types and physical properties",
+    "description": "By the end of the lesson, the learner should be able to investigate the relationship between bond types and physical properties of elements, molecules and compounds.",
+    "substrandId": "69a06caa533e4a4d60370bd0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bd3"
+    },
+    "name": "Relate bond types to uses of substances",
+    "description": "By the end of the lesson, the learner should be able to relate bond types and resultant structures to the uses of elements, molecules and compounds.",
+    "substrandId": "69a06caa533e4a4d60370bd0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bd4"
+    },
+    "name": "Appreciate uses of substances based on bond types",
+    "description": "By the end of the lesson, the learner should be able to appreciate the uses of different substances based on their bond types and structures in day to day life.",
+    "substrandId": "69a06caa533e4a4d60370bd0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bd6"
+    },
+    "name": "Describe trends in physical properties",
+    "description": "By the end of the lesson, the learner should be able to describe the trends in physical properties of elements of the periodic table.",
+    "substrandId": "69a06caa533e4a4d60370bd5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bd7"
+    },
+    "name": "Investigate chemical properties of elements",
+    "description": "By the end of the lesson, the learner should be able to investigate the chemical properties of elements in group of the periodic table.",
+    "substrandId": "69a06caa533e4a4d60370bd5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bd8"
+    },
+    "name": "Describe trends in properties across a period",
+    "description": "By the end of the lesson, the learner should be able to describe the trends in properties across a period.",
+    "substrandId": "69a06caa533e4a4d60370bd5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bd9"
+    },
+    "name": "Outline applications of periodic table elements",
+    "description": "By the end of the lesson, the learner should be able to outline applications of elements of the periodic table.",
+    "substrandId": "69a06caa533e4a4d60370bd5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bda"
+    },
+    "name": "Appreciate applications of various elements",
+    "description": "By the end of the lesson, the learner should be able to appreciate applications of various elements of the periodic table.",
+    "substrandId": "69a06caa533e4a4d60370bd5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bdd"
+    },
+    "name": "Explain characteristics of acids and bases",
+    "description": "By the end of the lesson, the learner should be able to explain the characteristics of acids and bases in aqueous solutions.",
+    "substrandId": "69a06caa533e4a4d60370bdc"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bde"
+    },
+    "name": "Describe chemical properties of acids and bases",
+    "description": "By the end of the lesson, the learner should be able to describe the chemical properties of acids and bases.",
+    "substrandId": "69a06caa533e4a4d60370bdc"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bdf"
+    },
+    "name": "Classify acids and bases into strong and weak",
+    "description": "By the end of the lesson, the learner should be able to classify acids and bases into strong and weak using universal indicator.",
+    "substrandId": "69a06caa533e4a4d60370bdc"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370be0"
+    },
+    "name": "Outline uses of acids and bases",
+    "description": "By the end of the lesson, the learner should be able to outline the uses of acids and bases in day to day life.",
+    "substrandId": "69a06caa533e4a4d60370bdc"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370be1"
+    },
+    "name": "Appreciate uses of acids and bases",
+    "description": "By the end of the lesson, the learner should be able to appreciate the uses of acids and bases in day to day activities.",
+    "substrandId": "69a06caa533e4a4d60370bdc"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370be3"
+    },
+    "name": "Classify different salts based on properties",
+    "description": "By the end of the lesson, the learner should be able to classify different salts based on their properties.",
+    "substrandId": "69a06caa533e4a4d60370be2"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370be4"
+    },
+    "name": "Prepare salts using appropriate methods",
+    "description": "By the end of the lesson, the learner should be able to prepare salts using appropriate methods in the laboratory.",
+    "substrandId": "69a06caa533e4a4d60370be2"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370be5"
+    },
+    "name": "Describe behaviour of salts when exposed to air",
+    "description": "By the end of the lesson, the learner should be able to describe the behaviour of salts when exposed to air.",
+    "substrandId": "69a06caa533e4a4d60370be2"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370be6"
+    },
+    "name": "Outline applications of salts",
+    "description": "By the end of the lesson, the learner should be able to outline applications of salts in day to day life.",
+    "substrandId": "69a06caa533e4a4d60370be2"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370be7"
+    },
+    "name": "Appreciate applications of salts",
+    "description": "By the end of the lesson, the learner should be able to appreciate applications of salts in day to day life.",
+    "substrandId": "69a06caa533e4a4d60370be2"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370beb"
+    },
+    "name": "Identify early computing devices",
+    "description": "By the end of the lesson, the learner should be able to identify early computing devices and how they relate to evolution of electronic computers.",
+    "substrandId": "69a06caa533e4a4d60370bea"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bec"
+    },
+    "name": "Describe principle technologies of computer development",
+    "description": "By the end of the lesson, the learner should be able to describe principle technologies that defined development of computers.",
+    "substrandId": "69a06caa533e4a4d60370bea"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bed"
+    },
+    "name": "Relate technologies to computer generations",
+    "description": "By the end of the lesson, the learner should be able to relate the principle technologies to respective computer generation.",
+    "substrandId": "69a06caa533e4a4d60370bea"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bee"
+    },
+    "name": "Appreciate technological advancement in computers",
+    "description": "By the end of the lesson, the learner should be able to appreciate technological advancement in the development of computers.",
+    "substrandId": "69a06caa533e4a4d60370bea"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bf0"
+    },
+    "name": "Describe von Neumann computer organisation",
+    "description": "By the end of the lesson, the learner should be able to describe the functional organisation and architecture of a von Neumann computer.",
+    "substrandId": "69a06caa533e4a4d60370bef"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bf1"
+    },
+    "name": "Analyse relationships among functional elements",
+    "description": "By the end of the lesson, the learner should be able to analyse the relationships among functional elements of von Neumann computer.",
+    "substrandId": "69a06caa533e4a4d60370bef"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bf2"
+    },
+    "name": "Create a model of computer architecture",
+    "description": "By the end of the lesson, the learner should be able to create a model of a computer architecture depicting the structural elements of a von Neumann computer.",
+    "substrandId": "69a06caa533e4a4d60370bef"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bf3"
+    },
+    "name": "Use number systems to represent data",
+    "description": "By the end of the lesson, the learner should be able to use binary, octal and hexadecimal number systems to represent data in a von Neumann's digital computer.",
+    "substrandId": "69a06caa533e4a4d60370bef"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bf4"
+    },
+    "name": "Appreciate importance of computer architecture",
+    "description": "By the end of the lesson, the learner should be able to appreciate the importance of computer architecture in computing.",
+    "substrandId": "69a06caa533e4a4d60370bef"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bf6"
+    },
+    "name": "Describe types of input and output devices",
+    "description": "By the end of the lesson, the learner should be able to describe types of input and output devices used in computer systems.",
+    "substrandId": "69a06caa533e4a4d60370bf5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bf7"
+    },
+    "name": "Examine criteria for selecting I/O devices",
+    "description": "By the end of the lesson, the learner should be able to examine criteria used in selecting input and output devices.",
+    "substrandId": "69a06caa533e4a4d60370bf5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bf8"
+    },
+    "name": "Use input and output devices",
+    "description": "By the end of the lesson, the learner should be able to use input and output devices to perform tasks.",
+    "substrandId": "69a06caa533e4a4d60370bf5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bf9"
+    },
+    "name": "Appreciate advancement of I/O devices",
+    "description": "By the end of the lesson, the learner should be able to appreciate the advancement of input and output devices used in computer systems.",
+    "substrandId": "69a06caa533e4a4d60370bf5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bfb"
+    },
+    "name": "Identify types of storage",
+    "description": "By the end of the lesson, the learner should be able to identify types of storage used in computer systems.",
+    "substrandId": "69a06caa533e4a4d60370bfa"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bfc"
+    },
+    "name": "Categorise types of storage",
+    "description": "By the end of the lesson, the learner should be able to categorise types of storage used in computer systems.",
+    "substrandId": "69a06caa533e4a4d60370bfa"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bfd"
+    },
+    "name": "Read and write data to storage",
+    "description": "By the end of the lesson, the learner should be able to read data from and write data to a computer storage.",
+    "substrandId": "69a06caa533e4a4d60370bfa"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bfe"
+    },
+    "name": "Establish criteria for selecting storage",
+    "description": "By the end of the lesson, the learner should be able to establish criteria used to select computer storage.",
+    "substrandId": "69a06caa533e4a4d60370bfa"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bff"
+    },
+    "name": "Acknowledge safety of data in storage",
+    "description": "By the end of the lesson, the learner should be able to acknowledge safety of data in computer storage media.",
+    "substrandId": "69a06caa533e4a4d60370bfa"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c01"
+    },
+    "name": "Describe structural elements of CPU",
+    "description": "By the end of the lesson, the learner should be able to describe structural elements of the CPU of a computer system.",
+    "substrandId": "69a06caa533e4a4d60370c00"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c02"
+    },
+    "name": "Relate CPU elements to their functions",
+    "description": "By the end of the lesson, the learner should be able to relate structural elements of the CPU to their functions.",
+    "substrandId": "69a06caa533e4a4d60370c00"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c03"
+    },
+    "name": "Examine types of CPUs",
+    "description": "By the end of the lesson, the learner should be able to examine types of CPUs in computing devices.",
+    "substrandId": "69a06caa533e4a4d60370c00"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c04"
+    },
+    "name": "Appreciate the role of CPU",
+    "description": "By the end of the lesson, the learner should be able to appreciate the role of CPU in computing.",
+    "substrandId": "69a06caa533e4a4d60370c00"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c06"
+    },
+    "name": "Describe functions of an operating system",
+    "description": "By the end of the lesson, the learner should be able to describe functions of an operating system.",
+    "substrandId": "69a06caa533e4a4d60370c05"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c07"
+    },
+    "name": "Classify operating systems",
+    "description": "By the end of the lesson, the learner should be able to classify operating system according to different attributes.",
+    "substrandId": "69a06caa533e4a4d60370c05"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c08"
+    },
+    "name": "Install an operating system",
+    "description": "By the end of the lesson, the learner should be able to install an operating system in a computer.",
+    "substrandId": "69a06caa533e4a4d60370c05"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c09"
+    },
+    "name": "Use an operating system",
+    "description": "By the end of the lesson, the learner should be able to use an operating system to perform a task.",
+    "substrandId": "69a06caa533e4a4d60370c05"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c0a"
+    },
+    "name": "Acknowledge importance of operating systems",
+    "description": "By the end of the lesson, the learner should be able to acknowledge the importance of operating systems in computing.",
+    "substrandId": "69a06caa533e4a4d60370c05"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c0c"
+    },
+    "name": "Explain types of ports and cables",
+    "description": "By the end of the lesson, the learner should be able to explain types of ports and cables used in computers.",
+    "substrandId": "69a06caa533e4a4d60370c0b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c0d"
+    },
+    "name": "Relate cables to corresponding ports",
+    "description": "By the end of the lesson, the learner should be able to relate cables to their corresponding ports in a computer.",
+    "substrandId": "69a06caa533e4a4d60370c0b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c0e"
+    },
+    "name": "Set up a computer for use",
+    "description": "By the end of the lesson, the learner should be able to set up a computer for use.",
+    "substrandId": "69a06caa533e4a4d60370c0b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c0f"
+    },
+    "name": "Appreciate correct setup procedure",
+    "description": "By the end of the lesson, the learner should be able to appreciate following the correct procedure when setting up a computer.",
+    "substrandId": "69a06caa533e4a4d60370c0b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c12"
+    },
+    "name": "Define data communication concepts",
+    "description": "By the end of the lesson, the learner should be able to define basic data communications concepts.",
+    "substrandId": "69a06caa533e4a4d60370c11"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c13"
+    },
+    "name": "Describe characteristics of data communication",
+    "description": "By the end of the lesson, the learner should be able to describe characteristics of data communication in computer networking.",
+    "substrandId": "69a06caa533e4a4d60370c11"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c14"
+    },
+    "name": "Analyse components of data communication",
+    "description": "By the end of the lesson, the learner should be able to analyse the components of data communication system.",
+    "substrandId": "69a06caa533e4a4d60370c11"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c15"
+    },
+    "name": "Simulate modes of data flow",
+    "description": "By the end of the lesson, the learner should be able to simulate modes of data flow in communication systems.",
+    "substrandId": "69a06caa533e4a4d60370c11"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c16"
+    },
+    "name": "Acknowledge significance of data communication",
+    "description": "By the end of the lesson, the learner should be able to acknowledge the significance of data communication systems in networking.",
+    "substrandId": "69a06caa533e4a4d60370c11"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c18"
+    },
+    "name": "Define data transmission concepts",
+    "description": "By the end of the lesson, the learner should be able to define basic concepts used in data transmission.",
+    "substrandId": "69a06caa533e4a4d60370c17"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c19"
+    },
+    "name": "Describe types of transmission media",
+    "description": "By the end of the lesson, the learner should be able to describe types of transmission media used in computer networks.",
+    "substrandId": "69a06caa533e4a4d60370c17"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c1a"
+    },
+    "name": "Connect digital devices for data communication",
+    "description": "By the end of the lesson, the learner should be able to connect digital devices used in data communication.",
+    "substrandId": "69a06caa533e4a4d60370c17"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c1b"
+    },
+    "name": "Establish factors affecting network communication",
+    "description": "By the end of the lesson, the learner should be able to establish factors that affect communication over a computer network.",
+    "substrandId": "69a06caa533e4a4d60370c17"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c1c"
+    },
+    "name": "Appreciate role of transmission media",
+    "description": "By the end of the lesson, the learner should be able to appreciate the role of transmission media in computer networking.",
+    "substrandId": "69a06caa533e4a4d60370c17"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c1e"
+    },
+    "name": "Identify types of computer networks",
+    "description": "By the end of the lesson, the learner should be able to identify different types of computer networks.",
+    "substrandId": "69a06caa533e4a4d60370c1d"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c1f"
+    },
+    "name": "Describe elements of a computer network",
+    "description": "By the end of the lesson, the learner should be able to describe elements of a computer network.",
+    "substrandId": "69a06caa533e4a4d60370c1d"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c20"
+    },
+    "name": "Evaluate criteria of a computer network",
+    "description": "By the end of the lesson, the learner should be able to evaluate criteria of a computer network.",
+    "substrandId": "69a06caa533e4a4d60370c1d"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c21"
+    },
+    "name": "Connect a device to network",
+    "description": "By the end of the lesson, the learner should be able to connect a computing device to available network.",
+    "substrandId": "69a06caa533e4a4d60370c1d"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c22"
+    },
+    "name": "Appreciate role of networks in communication",
+    "description": "By the end of the lesson, the learner should be able to appreciate the role of computer networks in communication.",
+    "substrandId": "69a06caa533e4a4d60370c1d"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c24"
+    },
+    "name": "Differentiate network topologies",
+    "description": "By the end of the lesson, the learner should be able to differentiate between physical and logical network topologies.",
+    "substrandId": "69a06caa533e4a4d60370c23"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c25"
+    },
+    "name": "Describe types of topologies",
+    "description": "By the end of the lesson, the learner should be able to describe types of logical and physical topologies in computer networking.",
+    "substrandId": "69a06caa533e4a4d60370c23"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c26"
+    },
+    "name": "Create a physical network topology",
+    "description": "By the end of the lesson, the learner should be able to create a physical network topology for a computer network.",
+    "substrandId": "69a06caa533e4a4d60370c23"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c27"
+    },
+    "name": "Appreciate use of network topologies",
+    "description": "By the end of the lesson, the learner should be able to appreciate the use of network topologies in computer networks.",
+    "substrandId": "69a06caa533e4a4d60370c23"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c2a"
+    },
+    "name": "Explain programming terminologies",
+    "description": "By the end of the lesson, the learner should be able to explain the terminologies used in programming languages.",
+    "substrandId": "69a06caa533e4a4d60370c29"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c2b"
+    },
+    "name": "Describe evolution of programming languages",
+    "description": "By the end of the lesson, the learner should be able to describe evolution of programming languages in software development.",
+    "substrandId": "69a06caa533e4a4d60370c29"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c2c"
+    },
+    "name": "Categorise programming languages",
+    "description": "By the end of the lesson, the learner should be able to categorise the programming languages according to the paradigms.",
+    "substrandId": "69a06caa533e4a4d60370c29"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c2d"
+    },
+    "name": "Create simple instructions",
+    "description": "By the end of the lesson, the learner should be able to create simple instructions to simulate low level programming languages.",
+    "substrandId": "69a06caa533e4a4d60370c29"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c2e"
+    },
+    "name": "Acknowledge evolution of programming",
+    "description": "By the end of the lesson, the learner should be able to acknowledge the evolution of programming languages in software development.",
+    "substrandId": "69a06caa533e4a4d60370c29"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c30"
+    },
+    "name": "Describe stages of program development",
+    "description": "By the end of the lesson, the learner should be able to describe stages of program development in computer programming.",
+    "substrandId": "69a06caa533e4a4d60370c2f"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c31"
+    },
+    "name": "Write a pseudocode for algorithm",
+    "description": "By the end of the lesson, the learner should be able to write a pseudocode to illustrate the logical flow of an algorithm.",
+    "substrandId": "69a06caa533e4a4d60370c2f"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c32"
+    },
+    "name": "Represent algorithm using flowchart",
+    "description": "By the end of the lesson, the learner should be able to represent the logical flow of an algorithm using a flowchart.",
+    "substrandId": "69a06caa533e4a4d60370c2f"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c33"
+    },
+    "name": "Design algorithm to solve problems",
+    "description": "By the end of the lesson, the learner should be able to design an algorithm to solve a real life problem.",
+    "substrandId": "69a06caa533e4a4d60370c2f"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c34"
+    },
+    "name": "Appreciate algorithms in problem solving",
+    "description": "By the end of the lesson, the learner should be able to appreciate the importance of using algorithms in problem solving.",
+    "substrandId": "69a06caa533e4a4d60370c2f"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c36"
+    },
+    "name": "Describe elementary elements of programs",
+    "description": "By the end of the lesson, the learner should be able to describe the elementary elements of a computer program.",
+    "substrandId": "69a06caa533e4a4d60370c35"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c37"
+    },
+    "name": "Declare variables and constants",
+    "description": "By the end of the lesson, the learner should be able to declare variables and constants in a programming language.",
+    "substrandId": "69a06caa533e4a4d60370c35"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c38"
+    },
+    "name": "Use input and output statements",
+    "description": "By the end of the lesson, the learner should be able to use input and output statements in a programming language.",
+    "substrandId": "69a06caa533e4a4d60370c35"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c39"
+    },
+    "name": "Use operators in programming",
+    "description": "By the end of the lesson, the learner should be able to use operators in a programming language.",
+    "substrandId": "69a06caa533e4a4d60370c35"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c3a"
+    },
+    "name": "Appreciate identifiers and operators",
+    "description": "By the end of the lesson, the learner should be able to appreciate the role of identifiers and operators in programming.",
+    "substrandId": "69a06caa533e4a4d60370c35"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c3c"
+    },
+    "name": "Describe control structures",
+    "description": "By the end of the lesson, the learner should be able to describe control structures in programming.",
+    "substrandId": "69a06caa533e4a4d60370c3b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c3d"
+    },
+    "name": "Select appropriate control structure",
+    "description": "By the end of the lesson, the learner should be able to select program control structure for a given situation.",
+    "substrandId": "69a06caa533e4a4d60370c3b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c3e"
+    },
+    "name": "Use control structures in programming",
+    "description": "By the end of the lesson, the learner should be able to use control structures in programming.",
+    "substrandId": "69a06caa533e4a4d60370c3b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c3f"
+    },
+    "name": "Appreciate application of control structures",
+    "description": "By the end of the lesson, the learner should be able to appreciate the application of control structures in programming.",
+    "substrandId": "69a06caa533e4a4d60370c3b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c41"
+    },
+    "name": "Describe types of containers",
+    "description": "By the end of the lesson, the learner should be able to describe types of containers in programming.",
+    "substrandId": "69a06caa533e4a4d60370c40"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c42"
+    },
+    "name": "Use containers in programming",
+    "description": "By the end of the lesson, the learner should be able to use containers in programming.",
+    "substrandId": "69a06caa533e4a4d60370c40"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c43"
+    },
+    "name": "Apply sorting and searching techniques",
+    "description": "By the end of the lesson, the learner should be able to apply sorting and searching techniques in data structures.",
+    "substrandId": "69a06caa533e4a4d60370c40"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c44"
+    },
+    "name": "Embrace use of containers",
+    "description": "By the end of the lesson, the learner should be able to embrace the use of containers in programming.",
+    "substrandId": "69a06caa533e4a4d60370c40"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c46"
+    },
+    "name": "Discuss types of functions",
+    "description": "By the end of the lesson, the learner should be able to discuss types of function used in modular programming.",
+    "substrandId": "69a06caa533e4a4d60370c45"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c47"
+    },
+    "name": "Use built-in and user-defined functions",
+    "description": "By the end of the lesson, the learner should be able to use built-in and user-defined functions to create a modular program.",
+    "substrandId": "69a06caa533e4a4d60370c45"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c48"
+    },
+    "name": "Discuss scope and parameter passing",
+    "description": "By the end of the lesson, the learner should be able to discuss the scope of variables and parameter passing between functions.",
+    "substrandId": "69a06caa533e4a4d60370c45"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c49"
+    },
+    "name": "Appreciate modularity in programming",
+    "description": "By the end of the lesson, the learner should be able to appreciate the importance of modularity in programming.",
+    "substrandId": "69a06caa533e4a4d60370c45"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c4d"
+    },
+    "name": "Explain principles of CSL",
+    "description": "By the end of the lesson, the learner should be able to explain the principles of CSL as a learning strategy.",
+    "substrandId": "69a06caa533e4a4d60370c4c"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c4e"
+    },
+    "name": "Outline rationale of CSL",
+    "description": "By the end of the lesson, the learner should be able to outline the rationale of CSL in the learning process.",
+    "substrandId": "69a06caa533e4a4d60370c4c"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c4f"
+    },
+    "name": "Examine civic identity",
+    "description": "By the end of the lesson, the learner should be able to examine their own civic identity as a member of the community.",
+    "substrandId": "69a06caa533e4a4d60370c4c"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c50"
+    },
+    "name": "Examine purpose of CSL",
+    "description": "By the end of the lesson, the learner should be able to examine the purpose of CSL in promoting responsible citizenry.",
+    "substrandId": "69a06caa533e4a4d60370c4c"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c51"
+    },
+    "name": "Appreciate benefits of CSL",
+    "description": "By the end of the lesson, the learner should be able to appreciate the benefits of CSL for self and community.",
+    "substrandId": "69a06caa533e4a4d60370c4c"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c53"
+    },
+    "name": "Categorise community needs",
+    "description": "By the end of the lesson, the learner should be able to categorise various needs in the community.",
+    "substrandId": "69a06caa533e4a4d60370c52"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c54"
+    },
+    "name": "Map community resources",
+    "description": "By the end of the lesson, the learner should be able to map potential community resources for CSL activities.",
+    "substrandId": "69a06caa533e4a4d60370c52"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c55"
+    },
+    "name": "Explore community stakeholders",
+    "description": "By the end of the lesson, the learner should be able to explore various community stakeholders for partnership in CSL activities.",
+    "substrandId": "69a06caa533e4a4d60370c52"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c56"
+    },
+    "name": "Realise vastness of needs and resources",
+    "description": "By the end of the lesson, the learner should be able to realise the vastness of needs and resources within their communities for CSL activities.",
+    "substrandId": "69a06caa533e4a4d60370c52"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c58"
+    },
+    "name": "Examine qualities of effective leader",
+    "description": "By the end of the lesson, the learner should be able to examine qualities of an effective leader.",
+    "substrandId": "69a06caa533e4a4d60370c57"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c59"
+    },
+    "name": "Assess leadership styles",
+    "description": "By the end of the lesson, the learner should be able to assess different styles of leadership relevant to community initiatives.",
+    "substrandId": "69a06caa533e4a4d60370c57"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c5a"
+    },
+    "name": "Develop leadership guidelines",
+    "description": "By the end of the lesson, the learner should be able to develop guidelines to govern leadership activities.",
+    "substrandId": "69a06caa533e4a4d60370c57"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c5b"
+    },
+    "name": "Apply leadership skills",
+    "description": "By the end of the lesson, the learner should be able to apply leadership skills in executing leadership actions.",
+    "substrandId": "69a06caa533e4a4d60370c57"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c5c"
+    },
+    "name": "Recognise need for effective leadership",
+    "description": "By the end of the lesson, the learner should be able to recognise the need for effective leadership in executing CSL activities.",
+    "substrandId": "69a06caa533e4a4d60370c57"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c5e"
+    },
+    "name": "Analyse intercultural competence",
+    "description": "By the end of the lesson, the learner should be able to analyse the concept of intercultural competence.",
+    "substrandId": "69a06caa533e4a4d60370c5d"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c5f"
+    },
+    "name": "Participate in intercultural activities",
+    "description": "By the end of the lesson, the learner should be able to participate in intercultural activities in the community.",
+    "substrandId": "69a06caa533e4a4d60370c5d"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c60"
+    },
+    "name": "Exhibit positive attitudes towards cultures",
+    "description": "By the end of the lesson, the learner should be able to exhibit positive attitudes towards different cultures.",
+    "substrandId": "69a06caa533e4a4d60370c5d"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c61"
+    },
+    "name": "Recognise importance of social cohesion",
+    "description": "By the end of the lesson, the learner should be able to recognise the importance of promoting social cohesion among people of varied cultures.",
+    "substrandId": "69a06caa533e4a4d60370c5d"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c64"
+    },
+    "name": "Explain factors influencing self-awareness",
+    "description": "By the end of the lesson, the learner should be able to explain factors that influence public self-awareness.",
+    "substrandId": "69a06caa533e4a4d60370c63"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c65"
+    },
+    "name": "Analyse importance of positive public-image",
+    "description": "By the end of the lesson, the learner should be able to analyse the importance of positive public-image.",
+    "substrandId": "69a06caa533e4a4d60370c63"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c66"
+    },
+    "name": "Apply public consciousness",
+    "description": "By the end of the lesson, the learner should be able to apply public consciousness (mindfulness of others) in day-to-day life.",
+    "substrandId": "69a06caa533e4a4d60370c63"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c67"
+    },
+    "name": "Appreciate positive public image",
+    "description": "By the end of the lesson, the learner should be able to appreciate my positive public image in the community.",
+    "substrandId": "69a06caa533e4a4d60370c63"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c69"
+    },
+    "name": "Explain conflict situations",
+    "description": "By the end of the lesson, the learner should be able to explain situations in the community where conflicts might arise in day to day life.",
+    "substrandId": "69a06caa533e4a4d60370c68"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c6a"
+    },
+    "name": "Discuss approaches of solving conflicts",
+    "description": "By the end of the lesson, the learner should be able to discuss approaches of solving conflicts in the community.",
+    "substrandId": "69a06caa533e4a4d60370c68"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c6b"
+    },
+    "name": "Apply strategies of solving conflicts",
+    "description": "By the end of the lesson, the learner should be able to apply strategies of solving conflicts in the community.",
+    "substrandId": "69a06caa533e4a4d60370c68"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c6c"
+    },
+    "name": "Appreciate peaceful conflict resolution",
+    "description": "By the end of the lesson, the learner should be able to appreciate peaceful conflict resolution in the community.",
+    "substrandId": "69a06caa533e4a4d60370c68"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c6e"
+    },
+    "name": "Describe decision-making process",
+    "description": "By the end of the lesson, the learner should be able to describe decision-making process in day-to-day life.",
+    "substrandId": "69a06caa533e4a4d60370c6d"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c6f"
+    },
+    "name": "Evaluate qualities of responsible decisions",
+    "description": "By the end of the lesson, the learner should be able to evaluate qualities of responsible decisions.",
+    "substrandId": "69a06caa533e4a4d60370c6d"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c70"
+    },
+    "name": "Make responsible decisions",
+    "description": "By the end of the lesson, the learner should be able to make responsible decisions in daily life.",
+    "substrandId": "69a06caa533e4a4d60370c6d"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c71"
+    },
+    "name": "Appreciate responsible decisions",
+    "description": "By the end of the lesson, the learner should be able to appreciate responsible decisions in life.",
+    "substrandId": "69a06caa533e4a4d60370c6d"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c74"
+    },
+    "name": "Explain meaning of action research",
+    "description": "By the end of the lesson, the learner should be able to explain the meaning of action research.",
+    "substrandId": "69a06caa533e4a4d60370c73"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c75"
+    },
+    "name": "Analyse characteristics of action research",
+    "description": "By the end of the lesson, the learner should be able to analyse the characteristics of action research.",
+    "substrandId": "69a06caa533e4a4d60370c73"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c76"
+    },
+    "name": "Illustrate action research cycle",
+    "description": "By the end of the lesson, the learner should be able to illustrate the cycle of action research.",
+    "substrandId": "69a06caa533e4a4d60370c73"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c77"
+    },
+    "name": "Use action research cycle",
+    "description": "By the end of the lesson, the learner should be able to use action research cycle to address issues in the community.",
+    "substrandId": "69a06caa533e4a4d60370c73"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c78"
+    },
+    "name": "Appreciate action research",
+    "description": "By the end of the lesson, the learner should be able to appreciate action research in addressing challenges in the community.",
+    "substrandId": "69a06caa533e4a4d60370c73"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c7a"
+    },
+    "name": "Critique scenarios to identify problems",
+    "description": "By the end of the lesson, the learner should be able to critique given scenarios to identify the problem in a community.",
+    "substrandId": "69a06caa533e4a4d60370c79"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c7b"
+    },
+    "name": "Use data collection tools",
+    "description": "By the end of the lesson, the learner should be able to use data collection tools to record the characteristics of the problem identified.",
+    "substrandId": "69a06caa533e4a4d60370c79"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c7c"
+    },
+    "name": "Analyse data to determine problem nature",
+    "description": "By the end of the lesson, the learner should be able to analyse simple data to determine the nature and extent of the problem.",
+    "substrandId": "69a06caa533e4a4d60370c79"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c7d"
+    },
+    "name": "Document and manage data",
+    "description": "By the end of the lesson, the learner should be able to document and manage data for information dissemination.",
+    "substrandId": "69a06caa533e4a4d60370c79"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c7e"
+    },
+    "name": "Appreciate accurate documentation",
+    "description": "By the end of the lesson, the learner should be able to appreciate the importance of accurate documentation for effective problem resolution.",
+    "substrandId": "69a06caa533e4a4d60370c79"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c80"
+    },
+    "name": "Identify viable solution",
+    "description": "By the end of the lesson, the learner should be able to identify a viable solution to address a community problem.",
+    "substrandId": "69a06caa533e4a4d60370c7f"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c81"
+    },
+    "name": "Create implementation plan",
+    "description": "By the end of the lesson, the learner should be able to create an implementation plan focusing on the identified solution.",
+    "substrandId": "69a06caa533e4a4d60370c7f"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c82"
+    },
+    "name": "Implement the plan",
+    "description": "By the end of the lesson, the learner should be able to implement the plan to address the identified problem.",
+    "substrandId": "69a06caa533e4a4d60370c7f"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c83"
+    },
+    "name": "Develop reflective report",
+    "description": "By the end of the lesson, the learner should be able to develop a reflective report on the implemented action.",
+    "substrandId": "69a06caa533e4a4d60370c7f"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c84"
+    },
+    "name": "Appreciate implementation process",
+    "description": "By the end of the lesson, the learner should be able to appreciate the process of implementation.",
+    "substrandId": "69a06caa533e4a4d60370c7f"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c87"
+    },
+    "name": "Distinguish social entrepreneurship",
+    "description": "By the end of the lesson, the learner should be able to distinguish social entrepreneurship from other types of enterprises.",
+    "substrandId": "69a06caa533e4a4d60370c86"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c88"
+    },
+    "name": "Analyse social enterprise development",
+    "description": "By the end of the lesson, the learner should be able to analyse the process of a social enterprise development in the community.",
+    "substrandId": "69a06caa533e4a4d60370c86"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c89"
+    },
+    "name": "Apply approaches to sensitise community",
+    "description": "By the end of the lesson, the learner should be able to apply appropriate approaches to sensitise the community on the benefits of social enterprises.",
+    "substrandId": "69a06caa533e4a4d60370c86"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c8a"
+    },
+    "name": "Appreciate benefits of social enterprise",
+    "description": "By the end of the lesson, the learner should be able to appreciate the benefits of social enterprise in the community.",
+    "substrandId": "69a06caa533e4a4d60370c86"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c8c"
+    },
+    "name": "Assess community needs",
+    "description": "By the end of the lesson, the learner should be able to assess the needs of the community for a social enterprise.",
+    "substrandId": "69a06caa533e4a4d60370c8b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c8d"
+    },
+    "name": "Develop social enterprise ideas",
+    "description": "By the end of the lesson, the learner should be able to develop social enterprise ideas for the community.",
+    "substrandId": "69a06caa533e4a4d60370c8b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c8e"
+    },
+    "name": "Select viable social enterprise ideas",
+    "description": "By the end of the lesson, the learner should be able to select viable social enterprise ideas with the community.",
+    "substrandId": "69a06caa533e4a4d60370c8b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c8f"
+    },
+    "name": "Develop interest in social entrepreneurship",
+    "description": "By the end of the lesson, the learner should be able to develop genuine interest in social entrepreneurship in addressing community issues.",
+    "substrandId": "69a06caa533e4a4d60370c8b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c91"
+    },
+    "name": "Evaluate planning process",
+    "description": "By the end of the lesson, the learner should be able to evaluate the social enterprise planning process.",
+    "substrandId": "69a06caa533e4a4d60370c90"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c92"
+    },
+    "name": "Develop social enterprise plan",
+    "description": "By the end of the lesson, the learner should be able to develop a social enterprise plan for the opportunity identified.",
+    "substrandId": "69a06caa533e4a4d60370c90"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c93"
+    },
+    "name": "Critique social enterprise plan",
+    "description": "By the end of the lesson, the learner should be able to critique a social enterprise plan for refinement.",
+    "substrandId": "69a06caa533e4a4d60370c90"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c94"
+    },
+    "name": "Value planning for social enterprise",
+    "description": "By the end of the lesson, the learner should be able to value planning for social enterprise in the community.",
+    "substrandId": "69a06caa533e4a4d60370c90"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c96"
+    },
+    "name": "Analyse resource mobilisation",
+    "description": "By the end of the lesson, the learner should be able to analyse the concept of resource mobilisation for social enterprise.",
+    "substrandId": "69a06caa533e4a4d60370c95"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c97"
+    },
+    "name": "Develop low-cost budget",
+    "description": "By the end of the lesson, the learner should be able to develop a low-cost budget for social enterprise development.",
+    "substrandId": "69a06caa533e4a4d60370c95"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c98"
+    },
+    "name": "Plan for resource gathering",
+    "description": "By the end of the lesson, the learner should be able to plan for resource gathering for implementation of a social enterprise plan.",
+    "substrandId": "69a06caa533e4a4d60370c95"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c99"
+    },
+    "name": "Recognize role of resource mobilisation",
+    "description": "By the end of the lesson, the learner should be able to recognize the role of resource mobilisation for social enterprise.",
+    "substrandId": "69a06caa533e4a4d60370c95"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c9c"
+    },
+    "name": "Describe characters and events from recordings",
+    "description": "By the end of the lesson, the learner should be able to describe characters, places and memorable events from a recording.",
+    "substrandId": "69a06caa533e4a4d60370c9b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c9d"
+    },
+    "name": "Pick key details from recordings",
+    "description": "By the end of the lesson, the learner should be able to listen to a recording and pick key details for general information.",
+    "substrandId": "69a06caa533e4a4d60370c9b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c9e"
+    },
+    "name": "Recount story or dialogue",
+    "description": "By the end of the lesson, the learner should be able to recount a story or dialogue in an oral context for enjoyment.",
+    "substrandId": "69a06caa533e4a4d60370c9b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c9f"
+    },
+    "name": "Acknowledge role of identifying key information",
+    "description": "By the end of the lesson, the learner should be able to acknowledge the role of identifying key information for lifelong learning.",
+    "substrandId": "69a06caa533e4a4d60370c9b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ca1"
+    },
+    "name": "Pick out target sounds and etiquette",
+    "description": "By the end of the lesson, the learner should be able to pick out the target sounds and aspects of etiquette in oral or written texts.",
+    "substrandId": "69a06caa533e4a4d60370ca0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ca2"
+    },
+    "name": "Use appropriate etiquette",
+    "description": "By the end of the lesson, the learner should be able to use appropriate etiquette in different contexts.",
+    "substrandId": "69a06caa533e4a4d60370ca0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ca3"
+    },
+    "name": "Articulate sounds for communication",
+    "description": "By the end of the lesson, the learner should be able to articulate the sounds /\u0252/ and /\u0254:/ for effective communication.",
+    "substrandId": "69a06caa533e4a4d60370ca0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ca4"
+    },
+    "name": "Justify accurate pronunciation",
+    "description": "By the end of the lesson, the learner should be able to justify the need for accurate pronunciation in communication.",
+    "substrandId": "69a06caa533e4a4d60370ca0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ca6"
+    },
+    "name": "Describe distractions to listening",
+    "description": "By the end of the lesson, the learner should be able to describe various forms of distractions to effective listening in different contexts.",
+    "substrandId": "69a06caa533e4a4d60370ca5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ca7"
+    },
+    "name": "Determine speaker and intention",
+    "description": "By the end of the lesson, the learner should be able to determine the speaker, context and intention in varied oral texts.",
+    "substrandId": "69a06caa533e4a4d60370ca5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ca8"
+    },
+    "name": "Select key points from audio",
+    "description": "By the end of the lesson, the learner should be able to select key points from an audio text for information.",
+    "substrandId": "69a06caa533e4a4d60370ca5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ca9"
+    },
+    "name": "Appreciate critical listening",
+    "description": "By the end of the lesson, the learner should be able to appreciate the importance of critical listening in communication.",
+    "substrandId": "69a06caa533e4a4d60370ca5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cab"
+    },
+    "name": "Classify discourse markers",
+    "description": "By the end of the lesson, the learner should be able to classify discourse markers used in a variety of texts.",
+    "substrandId": "69a06caa533e4a4d60370caa"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cac"
+    },
+    "name": "Articulate sounds for oral fluency",
+    "description": "By the end of the lesson, the learner should be able to articulate the sounds /\u0259/, /\u0251:/ and /\u025c:/ for oral fluency.",
+    "substrandId": "69a06caa533e4a4d60370caa"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cad"
+    },
+    "name": "Use discourse markers",
+    "description": "By the end of the lesson, the learner should be able to use discourse markers to organise ideas during conversations.",
+    "substrandId": "69a06caa533e4a4d60370caa"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cae"
+    },
+    "name": "Apply onomatopoeic words",
+    "description": "By the end of the lesson, the learner should be able to apply onomatopoeic words and idiophones in oral communication.",
+    "substrandId": "69a06caa533e4a4d60370caa"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370caf"
+    },
+    "name": "Advocate appropriate idea organisation",
+    "description": "By the end of the lesson, the learner should be able to advocate the need to organise ideas appropriately in oral communication.",
+    "substrandId": "69a06caa533e4a4d60370caa"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cb1"
+    },
+    "name": "Select specific details from text",
+    "description": "By the end of the lesson, the learner should be able to select specific details from a listening text.",
+    "substrandId": "69a06caa533e4a4d60370cb0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cb2"
+    },
+    "name": "Use words and phrases from oral text",
+    "description": "By the end of the lesson, the learner should be able to use words and phrases picked from an oral text in a variety of contexts.",
+    "substrandId": "69a06caa533e4a4d60370cb0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cb3"
+    },
+    "name": "Advocate discrimination among sounds",
+    "description": "By the end of the lesson, the learner should be able to advocate the need to discriminate among sounds for effective communication.",
+    "substrandId": "69a06caa533e4a4d60370cb0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cb5"
+    },
+    "name": "Identify sounds in oral texts",
+    "description": "By the end of the lesson, the learner should be able to identify the sounds /\u028c/, /\u00e6/, /a\u028a/ and /\u0259\u028a/ in oral texts.",
+    "substrandId": "69a06caa533e4a4d60370cb4"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cb6"
+    },
+    "name": "Articulate sounds for fluency",
+    "description": "By the end of the lesson, the learner should be able to articulate the sounds /\u028c/, /\u00e6/, /a\u028a/ and /\u0259\u028a/ for oral fluency.",
+    "substrandId": "69a06caa533e4a4d60370cb4"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cb7"
+    },
+    "name": "Use nonverbal cues appropriately",
+    "description": "By the end of the lesson, the learner should be able to use nonverbal cues appropriately in oral communication.",
+    "substrandId": "69a06caa533e4a4d60370cb4"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cb8"
+    },
+    "name": "Acknowledge accurate articulation",
+    "description": "By the end of the lesson, the learner should be able to acknowledge the importance of articulating sounds accurately.",
+    "substrandId": "69a06caa533e4a4d60370cb4"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cbb"
+    },
+    "name": "Preview text and make predictions",
+    "description": "By the end of the lesson, the learner should be able to preview a text and make predictions about characters, people and places for reading fluency.",
+    "substrandId": "69a06caa533e4a4d60370cba"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cbc"
+    },
+    "name": "Skim texts to obtain gist",
+    "description": "By the end of the lesson, the learner should be able to skim varied texts while glossing over unknown words to obtain the gist.",
+    "substrandId": "69a06caa533e4a4d60370cba"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cbd"
+    },
+    "name": "Scan text for specific details",
+    "description": "By the end of the lesson, the learner should be able to scan a text to obtain specific details.",
+    "substrandId": "69a06caa533e4a4d60370cba"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cbe"
+    },
+    "name": "Predict word collocations",
+    "description": "By the end of the lesson, the learner should be able to predict how words collocate for effective communication.",
+    "substrandId": "69a06caa533e4a4d60370cba"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cbf"
+    },
+    "name": "Acknowledge importance of reading fluency",
+    "description": "By the end of the lesson, the learner should be able to acknowledge the importance of reading fluency in lifelong learning.",
+    "substrandId": "69a06caa533e4a4d60370cba"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cc1"
+    },
+    "name": "Select text for reading",
+    "description": "By the end of the lesson, the learner should be able to select a text in preparation for reading.",
+    "substrandId": "69a06caa533e4a4d60370cc0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cc2"
+    },
+    "name": "Read varied texts for enjoyment",
+    "description": "By the end of the lesson, the learner should be able to read varied texts for enjoyment and general understanding.",
+    "substrandId": "69a06caa533e4a4d60370cc0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cc3"
+    },
+    "name": "Recognise role of extensive reading",
+    "description": "By the end of the lesson, the learner should be able to recognise the role of extensive reading in building vocabulary.",
+    "substrandId": "69a06caa533e4a4d60370cc0"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cc5"
+    },
+    "name": "Outline steps in summary making",
+    "description": "By the end of the lesson, the learner should be able to outline steps in summary and note making for improving comprehension.",
+    "substrandId": "69a06caa533e4a4d60370cc4"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cc6"
+    },
+    "name": "Use SQ4R technique",
+    "description": "By the end of the lesson, the learner should be able to use the SQ4R technique and summary and note making skills for study purposes.",
+    "substrandId": "69a06caa533e4a4d60370cc4"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cc7"
+    },
+    "name": "Analyse visual information",
+    "description": "By the end of the lesson, the learner should be able to analyse visual information in a reading context.",
+    "substrandId": "69a06caa533e4a4d60370cc4"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cc8"
+    },
+    "name": "Acknowledge effective study skills",
+    "description": "By the end of the lesson, the learner should be able to acknowledge the importance of using effective study skills in extensive and intensive reading.",
+    "substrandId": "69a06caa533e4a4d60370cc4"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cca"
+    },
+    "name": "Evaluate understanding of text",
+    "description": "By the end of the lesson, the learner should be able to evaluate their understanding of a text for comprehension.",
+    "substrandId": "69a06caa533e4a4d60370cc9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ccb"
+    },
+    "name": "Make predictions about text",
+    "description": "By the end of the lesson, the learner should be able to make predictions about events, people and places in a text.",
+    "substrandId": "69a06caa533e4a4d60370cc9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ccc"
+    },
+    "name": "Answer questions from text",
+    "description": "By the end of the lesson, the learner should be able to answer direct and inferential questions from a text.",
+    "substrandId": "69a06caa533e4a4d60370cc9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ccd"
+    },
+    "name": "Infer meaning of words",
+    "description": "By the end of the lesson, the learner should be able to infer the meaning of words and phrases in a written text.",
+    "substrandId": "69a06caa533e4a4d60370cc9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cce"
+    },
+    "name": "Promote reading comprehension",
+    "description": "By the end of the lesson, the learner should be able to promote the role of reading comprehension in lifelong learning.",
+    "substrandId": "69a06caa533e4a4d60370cc9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cd0"
+    },
+    "name": "Identify audience, purpose and attitude",
+    "description": "By the end of the lesson, the learner should be able to explain how to identify the audience, purpose and attitude in a text.",
+    "substrandId": "69a06caa533e4a4d60370ccf"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cd1"
+    },
+    "name": "Determine audience and purpose in text",
+    "description": "By the end of the lesson, the learner should be able to determine the audience, purpose and attitude in a reading text for clarity.",
+    "substrandId": "69a06caa533e4a4d60370ccf"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cd2"
+    },
+    "name": "Use phrasal verbs and expressions",
+    "description": "By the end of the lesson, the learner should be able to use transparent phrasal verbs and binomial expressions in sentences.",
+    "substrandId": "69a06caa533e4a4d60370ccf"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cd3"
+    },
+    "name": "Recognise importance of critical reading",
+    "description": "By the end of the lesson, the learner should be able to recognise the importance of critical and close reading in understanding a text.",
+    "substrandId": "69a06caa533e4a4d60370ccf"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cd6"
+    },
+    "name": "Classify nouns in sentences",
+    "description": "By the end of the lesson, the learner should be able to classify nouns in sentences.",
+    "substrandId": "69a06caa533e4a4d60370cd5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cd7"
+    },
+    "name": "Recognise types of pronouns",
+    "description": "By the end of the lesson, the learner should be able to recognise the various types of pronouns in varied contexts.",
+    "substrandId": "69a06caa533e4a4d60370cd5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cd8"
+    },
+    "name": "Differentiate pronouns and determiners",
+    "description": "By the end of the lesson, the learner should be able to differentiate the use of words as pronouns and determiners in sentences.",
+    "substrandId": "69a06caa533e4a4d60370cd5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cd9"
+    },
+    "name": "Use nouns and pronouns correctly",
+    "description": "By the end of the lesson, the learner should be able to use nouns and pronouns in sentences.",
+    "substrandId": "69a06caa533e4a4d60370cd5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cda"
+    },
+    "name": "Acknowledge correct usage",
+    "description": "By the end of the lesson, the learner should be able to acknowledge the importance of the correct usage of nouns, pronouns and determiners for effective communication.",
+    "substrandId": "69a06caa533e4a4d60370cd5"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cdc"
+    },
+    "name": "Identify constituents of phrases",
+    "description": "By the end of the lesson, the learner should be able to identify the constituents of the noun phrase and verb phrase for information.",
+    "substrandId": "69a06caa533e4a4d60370cdb"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cdd"
+    },
+    "name": "Use noun and verb phrases",
+    "description": "By the end of the lesson, the learner should be able to use the noun phrase and verb phrase for fluency in oral and written texts.",
+    "substrandId": "69a06caa533e4a4d60370cdb"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cde"
+    },
+    "name": "Advocate correct phrase usage",
+    "description": "By the end of the lesson, the learner should be able to advocate the correct usage of noun phrases and verb phrases in communication.",
+    "substrandId": "69a06caa533e4a4d60370cdb"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ce0"
+    },
+    "name": "Pick out clauses in sentences",
+    "description": "By the end of the lesson, the learner should be able to pick out relative and adverbial clauses in sentences.",
+    "substrandId": "69a06caa533e4a4d60370cdf"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ce1"
+    },
+    "name": "Distinguish clause types",
+    "description": "By the end of the lesson, the learner should be able to distinguish between defining and non-defining relative clauses in a text.",
+    "substrandId": "69a06caa533e4a4d60370cdf"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ce2"
+    },
+    "name": "Use clauses in varied contexts",
+    "description": "By the end of the lesson, the learner should be able to use relative clauses and adverbial clauses in varied contexts.",
+    "substrandId": "69a06caa533e4a4d60370cdf"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ce3"
+    },
+    "name": "Advocate correct clause use",
+    "description": "By the end of the lesson, the learner should be able to advocate the correct use of relative clauses and adverbial clauses in sentences.",
+    "substrandId": "69a06caa533e4a4d60370cdf"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ce5"
+    },
+    "name": "Analyse sentence patterns",
+    "description": "By the end of the lesson, the learner should be able to analyse the SV, SVO, SVC, SVOO, SVOA patterns in simple sentences.",
+    "substrandId": "69a06caa533e4a4d60370ce4"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ce6"
+    },
+    "name": "Use simple sentences",
+    "description": "By the end of the lesson, the learner should be able to use simple sentences in oral and written texts.",
+    "substrandId": "69a06caa533e4a4d60370ce4"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ce7"
+    },
+    "name": "Use compound sentences",
+    "description": "By the end of the lesson, the learner should be able to use compound sentences in oral and written texts.",
+    "substrandId": "69a06caa533e4a4d60370ce4"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ce8"
+    },
+    "name": "Recognise sentence variety",
+    "description": "By the end of the lesson, the learner should be able to recognise the importance of using a variety of sentences in communication.",
+    "substrandId": "69a06caa533e4a4d60370ce4"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cec"
+    },
+    "name": "Kueleza maana ya fasihi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza maana ya fasihi.",
+    "substrandId": "69a06caa533e4a4d60370ceb"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370ced"
+    },
+    "name": "Kueleza maana ya fasihi simulizi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza maana ya fasihi simulizi.",
+    "substrandId": "69a06caa533e4a4d60370ceb"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cee"
+    },
+    "name": "Kufafanua sifa za fasihi simulizi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kufafanua sifa za fasihi simulizi.",
+    "substrandId": "69a06caa533e4a4d60370ceb"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cef"
+    },
+    "name": "Kujadili umuhimu wa fasihi simulizi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili umuhimu wa fasihi simulizi katika jamii.",
+    "substrandId": "69a06caa533e4a4d60370ceb"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cf0"
+    },
+    "name": "Kuchangamkia fasihi simulizi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuchangamkia fasihi simulizi katika jamii.",
+    "substrandId": "69a06caa533e4a4d60370ceb"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cf2"
+    },
+    "name": "Kueleza maana ya hekaya na hurafa",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza maana ya hekaya na hurafa.",
+    "substrandId": "69a06caa533e4a4d60370cf1"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cf3"
+    },
+    "name": "Kufafanua sifa za hekaya na hurafa",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kufafanua sifa za hekaya na hurafa.",
+    "substrandId": "69a06caa533e4a4d60370cf1"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cf4"
+    },
+    "name": "Kujadili umuhimu wa hekaya na hurafa",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili umuhimu wa hekaya na hurafa katika jamii.",
+    "substrandId": "69a06caa533e4a4d60370cf1"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cf5"
+    },
+    "name": "Kujadili vipengele vya uwasilishaji",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili vipengele vya uwasilishaji wa hekaya na hurafa.",
+    "substrandId": "69a06caa533e4a4d60370cf1"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cf6"
+    },
+    "name": "Kuwasilisha hekaya na hurafa",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuwasilisha hekaya na hurafa akizingatia vipengele vya uwasilishaji.",
+    "substrandId": "69a06caa533e4a4d60370cf1"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cf8"
+    },
+    "name": "Kueleza maana ya semi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza maana ya semi katika fasihi simulizi.",
+    "substrandId": "69a06caa533e4a4d60370cf7"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cf9"
+    },
+    "name": "Kufafanua sifa za semi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kufafanua sifa za semi katika fasihi simulizi.",
+    "substrandId": "69a06caa533e4a4d60370cf7"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cfa"
+    },
+    "name": "Kujadili umuhimu wa semi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili umuhimu wa semi katika jamii.",
+    "substrandId": "69a06caa533e4a4d60370cf7"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cfb"
+    },
+    "name": "Kuainisha vipera vya semi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuainisha vipera vya semi ili kuvibainisha.",
+    "substrandId": "69a06caa533e4a4d60370cf7"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cfc"
+    },
+    "name": "Kufurahia matumizi ya semi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kufurahia matumizi ya vipera mbalimbali vya semi katika fasihi simulizi.",
+    "substrandId": "69a06caa533e4a4d60370cf7"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cfe"
+    },
+    "name": "Kueleza dhana ya maigizo",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza dhana ya maigizo katika fasihi simulizi.",
+    "substrandId": "69a06caa533e4a4d60370cfd"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cff"
+    },
+    "name": "Kufafanua sifa za maigizo",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kufafanua sifa za maigizo.",
+    "substrandId": "69a06caa533e4a4d60370cfd"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d00"
+    },
+    "name": "Kujadili umuhimu wa maigizo",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili umuhimu wa maigizo katika jamii.",
+    "substrandId": "69a06caa533e4a4d60370cfd"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d01"
+    },
+    "name": "Kuigiza vipera vya maigizo",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuigiza vipera vya maigizo ya fasihi simulizi.",
+    "substrandId": "69a06caa533e4a4d60370cfd"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d02"
+    },
+    "name": "Kuhangamkia maigizo",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuhangamkia umuhimu wa maigizo katika jamii yake.",
+    "substrandId": "69a06caa533e4a4d60370cfd"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d04"
+    },
+    "name": "Kueleza maana ya maghani ya kawaida",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza maana ya maghani ya kawaida kama kipera cha ushairi simulizi.",
+    "substrandId": "69a06caa533e4a4d60370d03"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d05"
+    },
+    "name": "Kueleza aina za maghani",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza maana ya majigambo, pembezi na tondozi kama aina za maghani ya kawaida.",
+    "substrandId": "69a06caa533e4a4d60370d03"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d06"
+    },
+    "name": "Kueleza sifa za maghani",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza sifa za majigambo, pembezi na tondozi kama aina za maghani ya kawaida.",
+    "substrandId": "69a06caa533e4a4d60370d03"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d07"
+    },
+    "name": "Kujadili umuhimu wa maghani",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili umuhimu wa majigambo, pembezi na tondozi katika jamii.",
+    "substrandId": "69a06caa533e4a4d60370d03"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d08"
+    },
+    "name": "Kuchanganua vipengele vya maghani",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuchanganua vipengele vya majigambo, pembezi na tondozi katika matini.",
+    "substrandId": "69a06caa533e4a4d60370d03"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d0b"
+    },
+    "name": "Kueleza maana ya ushairi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza maana ya ushairi.",
+    "substrandId": "69a06caa533e4a4d60370d0a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d0c"
+    },
+    "name": "Kueleza ushairi arudhi na huru",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza maana ya ushairi arudhi na ushairi huru.",
+    "substrandId": "69a06caa533e4a4d60370d0a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d0d"
+    },
+    "name": "Kujadili sifa za ushairi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili sifa za ushairi arudhi na ushairi huru.",
+    "substrandId": "69a06caa533e4a4d60370d0a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d0e"
+    },
+    "name": "Kutambua mashairi katika matini",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kutambua mashairi arudhi na mashairi huru katika matini.",
+    "substrandId": "69a06caa533e4a4d60370d0a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d0f"
+    },
+    "name": "Kufafanua dhima ya ushairi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kufafanua dhima ya ushairi katika jamii.",
+    "substrandId": "69a06caa533e4a4d60370d0a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d10"
+    },
+    "name": "Kuhangamkia aina za mashairi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuhangamkia aina mbalimbali za mashairi katika jamii.",
+    "substrandId": "69a06caa533e4a4d60370d0a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d12"
+    },
+    "name": "Kuchambua maudhui na dhamira",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuchambua maudhui na dhamira katika mashairi.",
+    "substrandId": "69a06caa533e4a4d60370d11"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d13"
+    },
+    "name": "Kulinganisha maudhui na dhamira",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kulinganisha na kulinganua maudhui na dhamira katika mashairi mbalimbali.",
+    "substrandId": "69a06caa533e4a4d60370d11"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d14"
+    },
+    "name": "Kufurahia maudhui na dhamira",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kufurahia maudhui na dhamira katika mashairi.",
+    "substrandId": "69a06caa533e4a4d60370d11"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d16"
+    },
+    "name": "Kueleza maana ya ushairi simulizi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza maana ya ushairi simulizi ili kuubainisha.",
+    "substrandId": "69a06caa533e4a4d60370d15"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d17"
+    },
+    "name": "Kufafanua sifa za ushairi simulizi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kufafanua sifa za ushairi simulizi ili kuzipambanua.",
+    "substrandId": "69a06caa533e4a4d60370d15"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d18"
+    },
+    "name": "Kuchambua sifa za ushairi simulizi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuchambua sifa za ushairi simulizi katika simulizi.",
+    "substrandId": "69a06caa533e4a4d60370d15"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d19"
+    },
+    "name": "Kujadili dhima za ushairi simulizi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili dhima za ushairi simulizi katika jamii.",
+    "substrandId": "69a06caa533e4a4d60370d15"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d1a"
+    },
+    "name": "Kuhangamkia ushairi simulizi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuhangamkia ushairi simulizi katika jamii.",
+    "substrandId": "69a06caa533e4a4d60370d15"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d1c"
+    },
+    "name": "Kueleza maana ya misemo na nahau",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza maana ya misemo na nahau ili kuipambanua.",
+    "substrandId": "69a06caa533e4a4d60370d1b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d1d"
+    },
+    "name": "Kutambua misemo na nahau",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kutambua misemo na nahau katika matini ya fasihi simulizi.",
+    "substrandId": "69a06caa533e4a4d60370d1b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d1e"
+    },
+    "name": "Kujadili vipengele vya misemo na nahau",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili vipengele vya misemo na nahau mbalimbali.",
+    "substrandId": "69a06caa533e4a4d60370d1b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d1f"
+    },
+    "name": "Kuchanganua misemo na nahau",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuchanganua misemo na nahau katika matini.",
+    "substrandId": "69a06caa533e4a4d60370d1b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d20"
+    },
+    "name": "Kutumia misemo na nahau",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kutumia misemo na nahau katika tungo za fasihi simulizi.",
+    "substrandId": "69a06caa533e4a4d60370d1b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d22"
+    },
+    "name": "Kueleza lahaja, utohozi na lugha ya kale",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza maana ya lahaja, utohozi na lugha ya kale kama vipengele vya uhuru wa kishairi.",
+    "substrandId": "69a06caa533e4a4d60370d21"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d23"
+    },
+    "name": "Kutambua matumizi ya lahaja na utohozi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kutambua matumizi ya lahaja, utohozi na lugha ya kale katika mashairi.",
+    "substrandId": "69a06caa533e4a4d60370d21"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d24"
+    },
+    "name": "Kujadili umuhimu wa lahaja na utohozi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili umuhimu wa lahaja, utohozi na lugha ya kale katika mashairi.",
+    "substrandId": "69a06caa533e4a4d60370d21"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d25"
+    },
+    "name": "Kuchambua mashairi kwa lahaja na utohozi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuchambua mashairi kwa kuzingatia matumizi ya lahaja, utohozi na lugha ya kale.",
+    "substrandId": "69a06caa533e4a4d60370d21"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d26"
+    },
+    "name": "Kufurahia matumizi ya lahaja na utohozi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kufurahia matumizi ya lahaja, utohozi na lugha ya kale katika mashairi.",
+    "substrandId": "69a06caa533e4a4d60370d21"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d29"
+    },
+    "name": "Kueleza maudhui na dhamira",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza maana ya maudhui na dhamira katika fasihi.",
+    "substrandId": "69a06caa533e4a4d60370d28"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d2a"
+    },
+    "name": "Kutambua maudhui na dhamira katika tamthilia",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kutambua maudhui na dhamira mbalimbali katika tamthilia teule.",
+    "substrandId": "69a06caa533e4a4d60370d28"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d2b"
+    },
+    "name": "Kujadili maudhui na dhamira",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili na wenzake maudhui na dhamira ya tamthilia teule.",
+    "substrandId": "69a06caa533e4a4d60370d28"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d2c"
+    },
+    "name": "Kuwasilisha uchambuzi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuwawasilishia wenzake darasani uchambuzi wake kuhusu maudhui.",
+    "substrandId": "69a06caa533e4a4d60370d28"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d2d"
+    },
+    "name": "Kuandika maelezo kuhusu maudhui",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuandika maelezo mafupi kuhusu maudhui katika tamthilia teule.",
+    "substrandId": "69a06caa533e4a4d60370d28"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d2f"
+    },
+    "name": "Kueleza wahusika na mandhari",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza dhana ya wahusika na mandhari katika riwaya.",
+    "substrandId": "69a06caa533e4a4d60370d2e"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d30"
+    },
+    "name": "Kutambua wahusika na mandhari",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kutambua wahusika na mandhari katika tamthilia teule.",
+    "substrandId": "69a06caa533e4a4d60370d2e"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d31"
+    },
+    "name": "Kujadili sifa za wahusika",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili sifa za wahusika katika tamthilia teule.",
+    "substrandId": "69a06caa533e4a4d60370d2e"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d32"
+    },
+    "name": "Kueleza umuhimu wa wahusika",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza umuhimu wa wahusika na mandhari katika tamthilia teule.",
+    "substrandId": "69a06caa533e4a4d60370d2e"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d33"
+    },
+    "name": "Kujadili mbinu za usawiri",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili mbinu za usawiri wa wahusika katika tamthilia teule.",
+    "substrandId": "69a06caa533e4a4d60370d2e"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d35"
+    },
+    "name": "Kueleza muundo na mtindo",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza maana ya muundo na mtindo katika tamthilia.",
+    "substrandId": "69a06caa533e4a4d60370d34"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d36"
+    },
+    "name": "Kutambua vipengele vya muundo na mtindo",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kutambua vipengele vya muundo na mtindo katika tamthilia.",
+    "substrandId": "69a06caa533e4a4d60370d34"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d37"
+    },
+    "name": "Kujadili vipengele vya muundo na mtindo",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili vipengele vya muundo na mtindo katika tamthilia teule.",
+    "substrandId": "69a06caa533e4a4d60370d34"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d38"
+    },
+    "name": "Kutathmini nafasi ya vipengele",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kutathmini nafasi ya vipengele vya muundo na mtindo katika tamthilia teule.",
+    "substrandId": "69a06caa533e4a4d60370d34"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d39"
+    },
+    "name": "Kuchambua tamthilia",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuchambua tamthilia teule kwa kuzingatia muundo na mtindo wake.",
+    "substrandId": "69a06caa533e4a4d60370d34"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d3b"
+    },
+    "name": "Kueleza maudhui na dhamira katika riwaya",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza maana ya maudhui na dhamira katika riwaya teule.",
+    "substrandId": "69a06caa533e4a4d60370d3a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d3c"
+    },
+    "name": "Kutambua maudhui na dhamira",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kutambua maudhui na dhamira katika riwaya teule.",
+    "substrandId": "69a06caa533e4a4d60370d3a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d3d"
+    },
+    "name": "Kueleza namna maudhui yanavyowasilishwa",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza namna maudhui yanavyowasilishwa katika riwaya.",
+    "substrandId": "69a06caa533e4a4d60370d3a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d3e"
+    },
+    "name": "Kuchanganua maudhui na dhamira",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuchanganua maudhui na dhamira katika riwaya teule.",
+    "substrandId": "69a06caa533e4a4d60370d3a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d3f"
+    },
+    "name": "Kuhangamkia maudhui na dhamira",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuhangamkia maudhui na dhamira katika riwaya.",
+    "substrandId": "69a06caa533e4a4d60370d3a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d41"
+    },
+    "name": "Kueleza wahusika na mandhari katika riwaya",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza dhana ya wahusika na mandhari katika riwaya.",
+    "substrandId": "69a06caa533e4a4d60370d40"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d42"
+    },
+    "name": "Kujadili usawiri wa wahusika",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili usawiri wa wahusika katika riwaya teule.",
+    "substrandId": "69a06caa533e4a4d60370d40"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d43"
+    },
+    "name": "Kueleza umuhimu wa wahusika",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza umuhimu wa wahusika katika riwaya.",
+    "substrandId": "69a06caa533e4a4d60370d40"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d44"
+    },
+    "name": "Kueleza umuhimu wa mandhari",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza umuhimu wa mandhari katika riwaya.",
+    "substrandId": "69a06caa533e4a4d60370d40"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d45"
+    },
+    "name": "Kujadili aina za mandhari",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili aina za mandhari katika riwaya.",
+    "substrandId": "69a06caa533e4a4d60370d40"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d47"
+    },
+    "name": "Kueleza muundo na mtindo katika riwaya",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kueleza maana ya muundo na mtindo katika riwaya.",
+    "substrandId": "69a06caa533e4a4d60370d46"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d48"
+    },
+    "name": "Kujadili vipengele vya muundo na mtindo",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kujadili vipengele vya muundo na mtindo katika fasihi.",
+    "substrandId": "69a06caa533e4a4d60370d46"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d49"
+    },
+    "name": "Kuchanganua muundo na mtindo",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuchanganua muundo na mtindo katika riwaya.",
+    "substrandId": "69a06caa533e4a4d60370d46"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d4a"
+    },
+    "name": "Kuhangamkia muundo na mtindo",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuhangamkia muundo na mtindo katika riwaya.",
+    "substrandId": "69a06caa533e4a4d60370d46"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d4c"
+    },
+    "name": "Kutambua vipengele vya utunzi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kutambua vipengele vya utunzi wa mashairi na bunilizi ili kuvibainisha.",
+    "substrandId": "69a06caa533e4a4d60370d4b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d4d"
+    },
+    "name": "Kupambanua hatua za utunzi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kupambanua hatua za utunzi wa mashairi na bunilizi ili kuzitambulisha.",
+    "substrandId": "69a06caa533e4a4d60370d4b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d4e"
+    },
+    "name": "Kuandika shairi au bunilizi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuandika shairi au bunilizi fupi kwa kuzingatia vipengele na hatua za utunzi wa kazi ya fasihi.",
+    "substrandId": "69a06caa533e4a4d60370d4b"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d4f"
+    },
+    "name": "Kuonea fahari utunzi wa bunilizi",
+    "description": "Kufikia mwisho wa somo, mwanafunzi ataweza kuonea fahari utunzi wa bunilizi katika maisha ya kila siku.",
+    "substrandId": "69a06caa533e4a4d60370d4b"
+  }
+]

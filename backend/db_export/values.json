@@ -1,0 +1,51 @@
+[
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed905"
+    },
+    "name": "Respect",
+    "description": "Learners show respect for others, ideas, and diversity"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed906"
+    },
+    "name": "Integrity",
+    "description": "Learners demonstrate honesty and ethical behavior"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed907"
+    },
+    "name": "Responsibility",
+    "description": "Learners take ownership of their actions and learning"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed908"
+    },
+    "name": "Unity",
+    "description": "Learners work together harmoniously and support each other"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed909"
+    },
+    "name": "Peace",
+    "description": "Learners promote peaceful coexistence and conflict resolution"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed90a"
+    },
+    "name": "Love",
+    "description": "Learners show care and compassion for others"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed90b"
+    },
+    "name": "Patriotism",
+    "description": "Learners appreciate and contribute to their nation"
+  }
+]

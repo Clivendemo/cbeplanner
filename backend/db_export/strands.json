@@ -1,0 +1,156 @@
+[
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8d1"
+    },
+    "name": "Numbers",
+    "subjectId": "69a06bff5ea260e6510ed8ce"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8d2"
+    },
+    "name": "Algebra",
+    "subjectId": "69a06bff5ea260e6510ed8ce"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8d3"
+    },
+    "name": "Geometry",
+    "subjectId": "69a06bff5ea260e6510ed8ce"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8d4"
+    },
+    "name": "Measurement",
+    "subjectId": "69a06bff5ea260e6510ed8ce"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8d9"
+    },
+    "name": "Living Things",
+    "subjectId": "69a06bff5ea260e6510ed8cf"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8da"
+    },
+    "name": "Energy",
+    "subjectId": "69a06bff5ea260e6510ed8cf"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed8db"
+    },
+    "name": "Materials",
+    "subjectId": "69a06bff5ea260e6510ed8cf"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bbf"
+    },
+    "name": "Inorganic Chemistry",
+    "subjectId": "69a06caa533e4a4d60370bbe"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370bdb"
+    },
+    "name": "Physical Chemistry",
+    "subjectId": "69a06caa533e4a4d60370bbe"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370be9"
+    },
+    "name": "Foundation of Computer Science",
+    "subjectId": "69a06caa533e4a4d60370be8"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c10"
+    },
+    "name": "Computer Networking",
+    "subjectId": "69a06caa533e4a4d60370be8"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c28"
+    },
+    "name": "Software Development",
+    "subjectId": "69a06caa533e4a4d60370be8"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c4b"
+    },
+    "name": "Citizenship",
+    "subjectId": "69a06caa533e4a4d60370c4a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c62"
+    },
+    "name": "Life Skills",
+    "subjectId": "69a06caa533e4a4d60370c4a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c72"
+    },
+    "name": "Action Research",
+    "subjectId": "69a06caa533e4a4d60370c4a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c85"
+    },
+    "name": "Social Entrepreneurship",
+    "subjectId": "69a06caa533e4a4d60370c4a"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370c9a"
+    },
+    "name": "Listening and Speaking",
+    "subjectId": "69a06bff5ea260e6510ed8cd"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cb9"
+    },
+    "name": "Reading",
+    "subjectId": "69a06bff5ea260e6510ed8cd"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cd4"
+    },
+    "name": "Grammar in Use",
+    "subjectId": "69a06bff5ea260e6510ed8cd"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370cea"
+    },
+    "name": "Fasihi Simulizi",
+    "subjectId": "69a06caa533e4a4d60370ce9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d09"
+    },
+    "name": "Ushairi",
+    "subjectId": "69a06caa533e4a4d60370ce9"
+  },
+  {
+    "_id": {
+      "$oid": "69a06caa533e4a4d60370d27"
+    },
+    "name": "Bunilizi",
+    "subjectId": "69a06caa533e4a4d60370ce9"
+  }
+]
