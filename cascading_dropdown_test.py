@@ -15,7 +15,7 @@ import sys
 from typing import Dict, List, Optional
 
 # Get backend URL from frontend .env
-BACKEND_URL = "https://refactor-ready.preview.emergentagent.com/api"
+BACKEND_URL = "https://kenya-teacher-app.preview.emergentagent.com/api"
 
 class CascadingDropdownTester:
     def __init__(self):
