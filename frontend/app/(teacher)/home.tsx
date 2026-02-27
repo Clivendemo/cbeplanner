@@ -44,6 +44,29 @@ export default function Home() {
     loadGrades();
   }, []);
 
+  // Effect to load substrands when selectedStrand changes
+  useEffect(() => {
+    console.log('[DEBUG] selectedStrand changed to:', selectedStrand);
+    if (selectedStrand) {
+      console.log('[DEBUG] Triggering loadSubstrands from useEffect');
+      loadSubstrands(selectedStrand);
+    } else {
+      setSubstrands([]);
+      setSlos([]);
+    }
+  }, [selectedStrand]);
+
+  // Effect to load SLOs when selectedSubstrand changes
+  useEffect(() => {
+    console.log('[DEBUG] selectedSubstrand changed to:', selectedSubstrand);
+    if (selectedSubstrand) {
+      console.log('[DEBUG] Triggering loadSLOs from useEffect');
+      loadSLOs(selectedSubstrand);
+    } else {
+      setSlos([]);
+    }
+  }, [selectedSubstrand]);
+
   const getHeaders = async () => {
     if (firebaseUser) {
       const token = await firebaseUser.getIdToken();
