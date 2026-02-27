@@ -832,7 +832,8 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   freeLessonInfo: {
-    marginLeft: 12
+    marginLeft: 12,
+    flex: 1
   },
   freeLessonLabel: {
     fontSize: 14,
@@ -842,6 +843,17 @@ const styles = StyleSheet.create({
   freeLessonStatus: {
     fontSize: 12,
     color: '#10B981'
+  },
+  priceBadge: {
+    backgroundColor: '#EEF2FF',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12
+  },
+  priceText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#6366F1'
   },
   freeNotesCard: {
     backgroundColor: '#FFFFFF',
