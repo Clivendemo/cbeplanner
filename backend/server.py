@@ -442,9 +442,13 @@ async def verify_token(authorization: Optional[str] = Header(None)):
         raise HTTPException(status_code=401, detail=f"Token verification error: {str(e)}")
 
 async def verify_admin(authorization: Optional[str] = Header(None)):
+    """
+    Verify that the user is an admin.
+    Accepts both 'admin' and 'ADMIN' role values.
+    """
     user = await verify_token(authorization)
-    if user["role"] != "admin":
-        raise HTTPException(status_code=403, detail="Admin access required")
+    if user.get("role", "").upper() != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin access required. Only users with ADMIN role can access this endpoint.")
     return user
 
 # ==================== AUTH ENDPOINTS ====================
