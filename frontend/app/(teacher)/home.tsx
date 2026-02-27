@@ -197,12 +197,7 @@ export default function Home() {
     setSelectedStrand(strandId);
     setSelectedSubstrand('');
     setSelectedSLO('');
-    setSubstrands([]);
-    setSlos([]);
-    if (strandId) {
-      console.log('[DEBUG] Calling loadSubstrands with:', strandId);
-      loadSubstrands(strandId);
-    }
+    // Note: loadSubstrands will be triggered by useEffect watching selectedStrand
   };
 
   const handleSubstrandChange = (substrandId: string) => {
