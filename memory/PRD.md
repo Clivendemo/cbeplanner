@@ -6,7 +6,7 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - 5 free lesson plans on signup, then KES 2 per plan
 - Firebase authentication
 - MongoDB Atlas database
-- Deployment to Railway (backend) and Vercel (frontend)
+- Deployment to Render (backend) and Vercel (frontend)
 
 ## What's Been Implemented
 
@@ -25,18 +25,15 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - Database indexes for performance
 
 ### Deployment Prep (DONE - Dec 2025)
-- Dockerfile configured with `$PORT` environment variable
-- `railway.toml` with health check configuration
-- Health check endpoint at `/api/health`
+- Dockerfile configured with `$PORT` environment variable (Render default: 10000)
+- Health check endpoints: `GET /health` (simple) and `GET /api/health` (detailed)
 - `.env.example` with all required variables documented
-- `RAILWAY_DEPLOYMENT.md` guide created
+- Start command: `uvicorn server:app --host 0.0.0.0 --port $PORT`
 
 ## Key Files
 - `backend/server.py` - Main FastAPI application
 - `backend/mpesa_service.py` - M-Pesa integration
-- `backend/Dockerfile` - Production-ready Docker configuration
-- `backend/railway.toml` - Railway deployment config
-- `backend/RAILWAY_DEPLOYMENT.md` - Deployment instructions
+- `backend/Dockerfile` - Production-ready Docker configuration for Render
 - `frontend/app/(teacher)/home.tsx` - Main lesson generation UI
 - `frontend/app/(teacher)/profile.tsx` - Wallet & M-Pesa UI
 
@@ -46,17 +43,19 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 
 ## Important Notes
 - **M-Pesa is in SANDBOX mode.** `MPESA_CALLBACK_URL` must be updated with production URL after deployment.
-- Railway sets `$PORT` automatically - Dockerfile is configured to use it.
+- Render sets `$PORT` automatically - Dockerfile is configured to use it.
 
-## Deployment Checklist
+## Render Deployment Steps
 1. Push code to GitHub
-2. Connect repo to Railway
-3. Set all environment variables in Railway dashboard
-4. Update `MPESA_CALLBACK_URL` with Railway URL
-5. Deploy frontend to Vercel with backend URL
+2. Create new Web Service on Render
+3. Connect to GitHub repository
+4. Set environment variables in Render dashboard
+5. Deploy (Render auto-detects Dockerfile)
+6. Update `MPESA_CALLBACK_URL` with Render URL
 
 ## Next Steps / Backlog
-- [ ] Test on Railway with production M-Pesa credentials
+- [ ] Deploy backend to Render
 - [ ] Deploy frontend to Vercel
+- [ ] Test with production M-Pesa credentials
 - [ ] Debug Expo Go stability issues (if still occurring)
 - [ ] Import English curriculum data (requires OCR)
