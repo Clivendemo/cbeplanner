@@ -9,7 +9,10 @@ dockerfilePath = "Dockerfile"
 [deploy]
 # Health check configuration
 healthcheckPath = "/api/health"
-healthcheckTimeout = 30
+healthcheckTimeout = 100
+
+# Number of replicas
+numReplicas = 1
 
 # Restart policy
 restartPolicyType = "ON_FAILURE"
