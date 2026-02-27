@@ -334,18 +334,29 @@ export default function Home() {
           {selectedStrand && (
             <View style={styles.pickerContainer}>
               <Text style={styles.label}>Sub-Strand *</Text>
-              <View style={styles.pickerWrapper}>
-                <Picker
-                  selectedValue={selectedSubstrand}
-                  onValueChange={handleSubstrandChange}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Select Sub-Strand" value="" />
-                  {substrands.map((substrand) => (
-                    <Picker.Item key={substrand.id} label={substrand.name} value={substrand.id} />
-                  ))}
-                </Picker>
-              </View>
+              {loading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="small" color="#6366F1" />
+                  <Text style={styles.loadingText}>Loading sub-strands...</Text>
+                </View>
+              ) : substrands.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>No sub-strands found for this strand</Text>
+                </View>
+              ) : (
+                <View style={styles.pickerWrapper}>
+                  <Picker
+                    selectedValue={selectedSubstrand}
+                    onValueChange={handleSubstrandChange}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="Select Sub-Strand" value="" />
+                    {substrands.map((substrand) => (
+                      <Picker.Item key={substrand.id} label={substrand.name} value={substrand.id} />
+                    ))}
+                  </Picker>
+                </View>
+              )}
             </View>
           )}
 
