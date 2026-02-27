@@ -21,7 +21,8 @@ interface User {
   schoolName: string;
   role: string;
   walletBalance: number;
-  freeLessonUsed: boolean;
+  freeLessonsRemaining: number;  // New: tracks remaining free lessons (5 on signup)
+  freeLessonUsed: boolean;  // Legacy support
   freeNotesUsed: boolean;
 }
 
