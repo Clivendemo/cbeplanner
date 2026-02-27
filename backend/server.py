@@ -1106,7 +1106,9 @@ async def get_strands(subjectId: str, user: dict = Depends(verify_token)):
 
 @api_router.get("/substrands")
 async def get_substrands(strandId: str, user: dict = Depends(verify_token)):
+    logger.info(f"[SUBSTRANDS] Fetching substrands for strandId: {strandId}")
     substrands = await db.substrands.find({"strandId": strandId}).to_list(100)
+    logger.info(f"[SUBSTRANDS] Found {len(substrands)} substrands for strandId: {strandId}")
     return {"success": True, "substrands": [serialize_doc(s) for s in substrands]}
 
 @api_router.get("/slos")
