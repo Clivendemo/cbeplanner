@@ -223,6 +223,8 @@ class LearningActivities(BaseModel):
     development_activities: List[str] = []
     conclusion_activities: List[str] = []
     extended_activities: List[str] = []
+    learning_resources: List[str] = []
+    assessment_methods: List[str] = []
 
 class Assessment(BaseModel):
     id: Optional[str] = None
