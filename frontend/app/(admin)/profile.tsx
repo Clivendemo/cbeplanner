@@ -5,7 +5,8 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Alert
+  Alert,
+  Platform
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
@@ -16,30 +17,42 @@ export default function AdminProfile() {
   const router = useRouter();
 
   const handleSignOut = async () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Sign Out',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await signOut();
-              // Use setTimeout to ensure state is cleared before navigation
-              setTimeout(() => {
+    // Use window.confirm for web, Alert.alert for native
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Are you sure you want to sign out?');
+      if (confirmed) {
+        try {
+          await signOut();
+          router.replace('/auth/login');
+        } catch (error) {
+          console.error('Sign out error:', error);
+          router.replace('/auth/login');
+        }
+      }
+    } else {
+      Alert.alert(
+        'Sign Out',
+        'Are you sure you want to sign out?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Sign Out',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await signOut();
+                setTimeout(() => {
+                  router.replace('/auth/login');
+                }, 100);
+              } catch (error) {
+                console.error('Sign out error:', error);
                 router.replace('/auth/login');
-              }, 100);
-            } catch (error) {
-              console.error('Sign out error:', error);
-              // Still try to navigate even if signOut fails
-              router.replace('/auth/login');
+              }
             }
           }
-        }
-      ]
-    );
+        ]
+      );
+    }
   };
 
   return (
