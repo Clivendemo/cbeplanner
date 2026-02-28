@@ -13,6 +13,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
+// The ONLY admin email - must match backend
+const ADMIN_EMAIL = 'mail2clive@gmail.com';
+
 interface User {
   id: string;
   email: string;
@@ -21,8 +24,8 @@ interface User {
   schoolName: string;
   role: string;
   walletBalance: number;
-  freeLessonsRemaining: number;  // New: tracks remaining free lessons (5 on signup)
-  freeLessonUsed: boolean;  // Legacy support
+  freeLessonsRemaining: number;
+  freeLessonUsed: boolean;
   freeNotesUsed: boolean;
 }
 
@@ -30,6 +33,8 @@ interface AuthContextType {
   user: User | null;
   firebaseUser: FirebaseUser | null;
   loading: boolean;
+  isAdmin: boolean;
+  authChecked: boolean;
   signIn: (email: string, password: string) => Promise<User | null>;
   signUp: (email: string, password: string, firstName: string, lastName: string, schoolName: string) => Promise<User | null>;
   signOut: () => Promise<void>;
@@ -43,6 +48,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  // Check if user is admin by email (client-side check, backend also enforces)
+  const isAdmin = user?.email?.toLowerCase().trim() === ADMIN_EMAIL;
 
   const verifyAndSetUser = useCallback(async (fbUser: FirebaseUser) => {
     try {
@@ -82,6 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       setLoading(false);
+      setAuthChecked(true);
     });
 
     return () => unsubscribe();
@@ -94,7 +104,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log('Firebase sign in successful');
       
-      // Manually verify and set user since onAuthStateChanged might be delayed
       const verifiedUser = await verifyAndSetUser(userCredential.user);
       setLoading(false);
       return verifiedUser;
@@ -102,7 +111,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Sign in error:', error.code, error.message);
       setLoading(false);
       
-      // Provide user-friendly error messages
       let message = 'Login failed. Please try again.';
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
         message = 'Invalid email or password';
@@ -122,7 +130,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log('Firebase sign up successful');
       
-      // Send profile data to backend
       const idToken = await userCredential.user.getIdToken();
       const response = await axios.post(`${BACKEND_URL}/api/auth/verify`, {
         idToken,
@@ -164,6 +171,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setFirebaseUser(null);
     } catch (error: any) {
       console.error('Sign out error:', error);
+      // Force clear state even on error
+      setUser(null);
+      setFirebaseUser(null);
+      await AsyncStorage.removeItem('userToken');
       throw new Error(error.message);
     }
   };
@@ -194,7 +205,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, firebaseUser, loading, signIn, signUp, signOut, refreshProfile, resetPassword }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      firebaseUser, 
+      loading, 
+      isAdmin,
+      authChecked,
+      signIn, 
+      signUp, 
+      signOut, 
+      refreshProfile, 
+      resetPassword 
+    }}>
       {children}
     </AuthContext.Provider>
   );
