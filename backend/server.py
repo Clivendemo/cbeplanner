@@ -1233,6 +1233,25 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
             }).to_list(100)
             assessments = [{"name": a["name"], "description": a["description"]} for a in assess_docs]
     
+    # Fetch specific learning activities for this substrand
+    learning_activities_doc = await db.learning_activities.find_one({"substrandId": request.substrandId})
+    
+    # Extract specific activities or use defaults
+    intro_activities = []
+    dev_activities = []
+    conclusion_activities = []
+    extended_activities_list = []
+    specific_resources = []
+    specific_assessments = []
+    
+    if learning_activities_doc:
+        intro_activities = learning_activities_doc.get("introduction_activities", [])
+        dev_activities = learning_activities_doc.get("development_activities", [])
+        conclusion_activities = learning_activities_doc.get("conclusion_activities", [])
+        extended_activities_list = learning_activities_doc.get("extended_activities", [])
+        specific_resources = learning_activities_doc.get("learning_resources", [])
+        specific_assessments = learning_activities_doc.get("assessment_methods", [])
+    
     # Duration-aware content generation
     duration = request.duration
     
