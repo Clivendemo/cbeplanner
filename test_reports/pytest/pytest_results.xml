@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="33" failures="0" skipped="0" tests="33" time="0.602" timestamp="2026-02-28T12:33:20.416503+00:00" hostname="agent-env-210affd8-54ba-46f5-93d3-dec28ce0fe4d"><testcase classname="tests.test_curriculum_seeding.TestDatabaseConnection" name="test_database_connection" time="0.001"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestTotalCounts" name="test_total_subjects_count" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestTotalCounts" name="test_total_strands_count" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestTotalCounts" name="test_total_substrands_count" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestTotalCounts" name="test_total_slos_count" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestTotalCounts" name="test_total_learning_activities_count" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestNewSubjectsExist" name="test_business_studies_exists" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestNewSubjectsExist" name="test_cre_exists" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestNewSubjectsExist" name="test_electrical_technology_exists" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestNewSubjectsExist" name="test_fine_arts_exists" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestNewSubjectsExist" name="test_french_exists" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestBusinessStudiesData" name="test_business_studies_strands" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestBusinessStudiesData" name="test_business_studies_substrands" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestBusinessStudiesData" name="test_business_studies_slos" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestCREData" name="test_cre_strands" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestCREData" name="test_cre_substrands" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestCREData" name="test_cre_slos" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestElectricalTechnologyData" name="test_electrical_tech_strands" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestElectricalTechnologyData" name="test_electrical_tech_substrands" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestElectricalTechnologyData" name="test_electrical_tech_slos" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestFineArtsData" name="test_fine_arts_strands" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestFineArtsData" name="test_fine_arts_substrands" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestFineArtsData" name="test_fine_arts_slos" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestFrenchData" name="test_french_strands" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestFrenchData" name="test_french_substrands" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestFrenchData" name="test_french_slos" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestLearningActivities" name="test_learning_activities_exist" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestLearningActivities" name="test_learning_activities_structure" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestDataIntegrity" name="test_strands_reference_valid_subjects" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestDataIntegrity" name="test_substrands_reference_valid_strands" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestDataIntegrity" name="test_slos_reference_valid_substrands" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestGrades" name="test_grades_exist" time="0.000"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase><testcase classname="tests.test_curriculum_seeding.TestGrades" name="test_subjects_have_grade_assignments" time="0.001"><error message="failed on setup with &quot;pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.&#10;See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture&quot;">/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:728: in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+E   pytest.PytestRemovedIn9Warning: 'test_curriculum_seeding.py' requested an async fixture 'db_client', with no plugin or hook that handled it. This is usually an error, as pytest does not natively support it. This will turn into an error in pytest 9.
+E   See: https://docs.pytest.org/en/stable/deprecations.html#sync-test-depending-on-async-fixture</error></testcase></testsuite></testsuites>
