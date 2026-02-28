@@ -578,6 +578,13 @@ async def initialize_default_admin():
 async def get_profile(user: dict = Depends(verify_token)):
     return {"success": True, "user": user}
 
+@api_router.get("/profile/is-admin")
+async def check_is_admin(user: dict = Depends(verify_token)):
+    """Check if current user is the designated admin"""
+    user_email = user.get("email", "").lower().strip()
+    is_admin = user_email == ADMIN_EMAIL
+    return {"success": True, "isAdmin": is_admin}
+
 # REMOVED: reset-free-trial endpoint - Free trial is one-time only on signup
 # REMOVED: become-admin endpoint - Admin access is restricted to mail2clive@gmail.com only
 
