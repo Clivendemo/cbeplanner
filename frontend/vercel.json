@@ -1,0 +1,12 @@
+{
+  "buildCommand": "expo export -p web",
+  "outputDirectory": "dist",
+  "installCommand": "yarn install",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/((?!api|_next|static|favicon.ico|assets).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
