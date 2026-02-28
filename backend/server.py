@@ -1997,7 +1997,10 @@ async def admin_update_slo(slo_id: str, slo: SLO, user: dict = Depends(verify_ad
 
 @api_router.delete("/admin/slos/{slo_id}")
 async def admin_delete_slo(slo_id: str, user: dict = Depends(verify_admin)):
+    """Delete an SLO and its associated mapping"""
     await db.slos.delete_one({"_id": ObjectId(slo_id)})
+    # Also delete the SLO mapping
+    await db.slo_mappings.delete_one({"sloId": slo_id})
     return {"success": True}
 
 # Activities
