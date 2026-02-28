@@ -91,13 +91,25 @@ export default function Home() {
     }
   };
 
-  const loadSubjects = async (gradeId: string) => {
+  const loadSubjects = async (gradeId: string, gradeName: string) => {
     try {
       setLoading(true);
       const headers = await getHeaders();
       const response = await axios.get(`${BACKEND_URL}/api/subjects?gradeId=${gradeId}`, { headers });
       if (response.data.success) {
-        setSubjects(response.data.subjects);
+        const allSubjectsFromDb = response.data.subjects;
+        setAllSubjects(allSubjectsFromDb);
+        
+        // Filter subjects based on KICD grade band mapping
+        const filteredSubjects = filterSubjectsByGrade(allSubjectsFromDb, gradeName);
+        setSubjects(filteredSubjects);
+        
+        // Log for debugging
+        const band = getGradeBand(gradeName);
+        if (band) {
+          console.log(`[KICD] ${gradeName} (${getGradeBandDisplayName(band)}): Showing ${filteredSubjects.length} of ${allSubjectsFromDb.length} subjects`);
+        }
+        
         setStrands([]);
         setSubstrands([]);
         setSlos([]);
