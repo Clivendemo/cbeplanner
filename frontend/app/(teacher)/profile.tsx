@@ -258,28 +258,42 @@ export default function Profile() {
   };
 
   const handleSignOut = async () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Sign Out',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await signOut();
-              setTimeout(() => {
+    // Use window.confirm for web, Alert.alert for native
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Are you sure you want to sign out?');
+      if (confirmed) {
+        try {
+          await signOut();
+          router.replace('/auth/login');
+        } catch (error) {
+          console.error('Sign out error:', error);
+          router.replace('/auth/login');
+        }
+      }
+    } else {
+      Alert.alert(
+        'Sign Out',
+        'Are you sure you want to sign out?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Sign Out',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await signOut();
+                setTimeout(() => {
+                  router.replace('/auth/login');
+                }, 100);
+              } catch (error) {
+                console.error('Sign out error:', error);
                 router.replace('/auth/login');
-              }, 100);
-            } catch (error) {
-              console.error('Sign out error:', error);
-              router.replace('/auth/login');
+              }
             }
           }
-        }
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const formatDate = (dateString: string) => {
