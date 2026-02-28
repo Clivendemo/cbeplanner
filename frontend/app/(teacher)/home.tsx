@@ -184,16 +184,30 @@ export default function Home() {
   };
 
   const handleGradeChange = (gradeId: string) => {
+    // Find the grade name for filtering
+    const grade = grades.find(g => g.id === gradeId);
+    const gradeName = grade?.name || '';
+    
     setSelectedGrade(gradeId);
+    setSelectedGradeName(gradeName);
+    
+    // Clear all downstream selections
     setSelectedSubject('');
     setSelectedStrand('');
     setSelectedSubstrand('');
     setSelectedSLO('');
+    
+    // Clear all downstream data
+    setAllSubjects([]);
     setSubjects([]);
     setStrands([]);
     setSubstrands([]);
     setSlos([]);
-    if (gradeId) loadSubjects(gradeId);
+    
+    // Load subjects with grade name for KICD filtering
+    if (gradeId && gradeName) {
+      loadSubjects(gradeId, gradeName);
+    }
   };
 
   const handleSubjectChange = (subjectId: string) => {
