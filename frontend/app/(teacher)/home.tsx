@@ -761,5 +761,33 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 14,
     color: '#92400E'
+  },
+  labelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8
+  },
+  gradeBandLabel: {
+    fontSize: 11,
+    color: '#6366F1',
+    backgroundColor: '#EEF2FF',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    fontWeight: '500'
+  },
+  noSubjectsMessage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    padding: 12,
+    borderRadius: 8,
+    gap: 8
+  },
+  noSubjectsText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#92400E'
   }
 });
