@@ -478,6 +478,16 @@ export default function Home() {
                 </View>
 
                 <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Pertinent and Contemporary Issues (PCIs)</Text>
+                  {lessonPlan.pcis?.map((pci: any, i: number) => (
+                    <View key={i} style={styles.itemCard}>
+                      <Text style={styles.itemName}>{pci.name}</Text>
+                      <Text style={styles.itemDescription}>{pci.description}</Text>
+                    </View>
+                  ))}
+                </View>
+
+                <View style={styles.section}>
                   <Text style={styles.sectionTitle}>Lesson Body</Text>
                   <View style={styles.lessonStep}>
                     <Text style={styles.stepTitle}>1. Introduction</Text>
