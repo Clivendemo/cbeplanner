@@ -1937,10 +1937,58 @@ async def admin_get_slos(substrandId: Optional[str] = None, user: dict = Depends
     slos = await db.slos.find(query).to_list(100)
     return {"success": True, "slos": [serialize_doc(s) for s in slos]}
 
+# Helper function to create default SLO mapping
+async def create_default_slo_mapping(slo_id: str):
+    """Create default SLO mapping with common competencies, values, and PCIs"""
+    # Get default competencies (3 common ones)
+    default_competency_names = [
+        "Critical Thinking and Problem Solving",
+        "Communication and Collaboration",
+        "Learning to Learn"
+    ]
+    competency_ids = []
+    for name in default_competency_names:
+        comp = await db.competencies.find_one({"name": name})
+        if comp:
+            competency_ids.append(str(comp["_id"]))
+    
+    # Get default values (3 common ones)
+    default_value_names = ["Responsibility", "Respect", "Integrity"]
+    value_ids = []
+    for name in default_value_names:
+        val = await db.values.find_one({"name": name})
+        if val:
+            value_ids.append(str(val["_id"]))
+    
+    # Get default PCIs (2 common ones)
+    default_pci_names = ["Life Skills", "Citizenship"]
+    pci_ids = []
+    for name in default_pci_names:
+        pci = await db.pcis.find_one({"name": name})
+        if pci:
+            pci_ids.append(str(pci["_id"]))
+    
+    # Create the mapping
+    mapping_doc = {
+        "sloId": slo_id,
+        "competencyIds": competency_ids,
+        "valueIds": value_ids,
+        "pciIds": pci_ids,
+        "assessmentIds": []
+    }
+    await db.slo_mappings.insert_one(mapping_doc)
+    return mapping_doc
+
 @api_router.post("/admin/slos")
 async def admin_create_slo(slo: SLO, user: dict = Depends(verify_admin)):
+    """Create a new SLO and automatically add default mappings for competencies, values, and PCIs"""
     result = await db.slos.insert_one(slo.dict(exclude={"id"}))
-    return {"success": True, "id": str(result.inserted_id)}
+    slo_id = str(result.inserted_id)
+    
+    # Automatically create default SLO mapping
+    await create_default_slo_mapping(slo_id)
+    
+    return {"success": True, "id": slo_id, "message": "SLO created with default competency/value/PCI mappings"}
 
 @api_router.put("/admin/slos/{slo_id}")
 async def admin_update_slo(slo_id: str, slo: SLO, user: dict = Depends(verify_admin)):
