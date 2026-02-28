@@ -1,88 +1,77 @@
-<analysis>
+<analysis>**original_problem_statement**:
+The user's initial goal was to build a production-ready Competency-Based Education (CBE) lesson planning system for Kenyan teachers.
 
-<original_problem_statement>
-The user's initial goal was to build a production-ready Competency-Based Education (CBE) lesson planning system for Kenyan teachers. The project has since evolved significantly through multiple user requests.
-
-The current primary objectives, as defined by the latest user requests, are:
+The primary objectives have evolved to:
 1.  **Implement a Production-Ready Wallet System:** Integrate a secure M-Pesa STK Push payment system for wallet top-ups.
-2.  **Implement Business Logic for Content:** Charge KES 2 for each lesson plan generated after a user has exhausted their 5 free plans, which are granted upon signup.
-3.  **Ensure Production Readiness:** Prepare the application for independent deployment on platforms like Vercel (frontend) and Railway (backend), with a production-grade MongoDB Atlas database.
-4.  **Fix Bugs and Improve Stability:** Resolve various bugs, including app crashes on Expo Go, broken API endpoints, and dependent dropdown failures.
-5.  **Add Branding:** Add Developed by LEGIT LAB branding to the application.
-</original_problem_statement>
+2.  **Implement Business Logic for Content:** Charge KES 2 for each lesson plan generated after a user exhausts their 5 free plans.
+3.  **Enhance Lesson Plan Content:** Instead of generic placeholders, the generated lesson plan's body (introduction, development, conclusion) must contain specific, detailed suggested learning activities extracted directly from KICD curriculum PDFs for the chosen strand and substrand.
+4.  **Continuously Update Curriculum Database:** Add new subjects, strands, substrands, SLOs, and learning activities by parsing user-provided KICD curriculum PDFs.
+5.  **Ensure Production Readiness:** Prepare the application for independent deployment on Vercel (frontend) and Render (backend), with a production-grade MongoDB Atlas database.
+6.  **Fix Bugs and Improve Stability:** Resolve various bugs, including app crashes on the Expo Go mobile client.
+7.  **Add Branding:** Add Developed by LEGIT LAB branding to the application.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application with a FastAPI backend and an Expo (React Native) frontend. The backend is connected to a user-provided MongoDB Atlas database. The application is largely feature-complete and has undergone significant refactoring for production deployment.
-
-Key implemented features include:
--   **User Authentication:** Firebase-based authentication and user management.
--   **Wallet System:** A complete M-Pesa STK Push integration for topping up a user's wallet. The system includes a ledger () for atomic, idempotent transactions.
--   **Business Logic:** Users receive 5 free lesson plans upon signup. Subsequent plans cost KES 2, deducted from their wallet.
--   **Core CBE Features:** Lesson Plan Generator, Notes Generator, and Schemes of Work Generator using curriculum data stored in MongoDB.
--   **Admin Role:** Role-based access control is implemented, restricting certain endpoints to users with .
--   **Deployment Prep:** The codebase includes a , , and a production-ready database connection module ().
+A full-stack application with a FastAPI backend and an Expo (React Native) frontend, with web support configured for Vercel deployment. The backend is connected to a user-provided MongoDB Atlas database. The application includes:
+-   **User Authentication:** Firebase-based authentication.
+-   **Wallet System:** A functional M-Pesa STK Push integration (sandbox mode) for wallet top-ups.
+-   **Business Logic:** Users receive 5 free lesson plans on signup, with subsequent plans costing KES 2.
+-   **Dynamic Lesson Generation:** The core feature is the Lesson Plan Generator. It now dynamically populates the lesson body with specific learning activities extracted from curriculum PDFs, a significant improvement from the previous generic content.
+-   **Curriculum Database:** The MongoDB database is populated with multiple subjects, including their strands, substrands, SLOs, and associated learning activities.
+-   **Deployment Configurations:** The backend is prepared for Render deployment (cleaned , Dockerfile) and the frontend is prepared for Vercel deployment (, build scripts).
 
 **Last working item**:
--   **Last item agent was working:** The agent was tasked with preparing the backend for deployment on Railway, with a strict instruction to **NOT** refactor, rename, or restructure any part of the application. The goal was to add only the absolute necessary components for a Railway deployment. The agent had begun by auditing the existing  and  to identify necessary changes like port binding.
+-   **Last item agent was working:** The agent began processing a batch of 5 new curriculum PDFs (, , , , ) provided by the user. The goal is to extract all curriculum data and the specific suggested teaching and learning activities from these files and seed them into the MongoDB database, following the user's latest directive.
 -   **Status:** IN PROGRESS
 -   **Agent Testing Done:** N
--   **Which testing method agent to use?** backend testing agent. The agent should verify that the new  endpoint works and that the server can start correctly using the Railway-compatible start command. A  command against the health check endpoint would be a sufficient manual test.
+-   **Which testing method agent to use?** backend testing agent. After seeding, the agent must verify the new subjects are available via the  endpoint and that generating a lesson plan for one of the new subjects correctly includes the specific activities.
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
 -   **Issue 1: Potential Expo Go Instability (P1)**
-    -   **Description:** The user has repeatedly reported that the app keeps stopping or refuses to load on Expo Go (mobile client). The agent has made several fixes, including resolving dependency conflicts () and refactoring unstable nested components in the UI layouts. However, the user's last report of this issue came *after* the most recent fix, suggesting the problem may not be fully resolved.
+    -   **Description:** A recurring issue where the user reported the app keeps stopping on the Expo Go mobile client. While the agent has fixed several specific crashes (dependency conflicts, layout refactoring), the user has not confirmed the overall stability. The recent sign-out button fix was implemented with web in mind and needs to be verified on mobile.
     -   **Next debug checklist:**
-        1.  Ask the user for specific error messages or crash logs from their Expo Go client.
-        2.  Review  and  to confirm the unstable component fix was correctly applied.
-        3.  Use  or Xcode console logs to monitor for native crashes when the user attempts to run the app.
-        4.  Investigate for memory leaks or long-running processes on the frontend that might be causing crashes on a mobile device.
-    -   **Why fix this issue and what will be achieved with this?** The app is unusable for the user on their target mobile testing platform. Fixing this is critical for user acceptance and testing.
+        1.  Ask the user to test the latest version on Expo Go and report if crashes persist.
+        2.  If crashes continue, request specific error messages or screen recordings from the user.
+        3.  Review the latest changes (, ) for any components or logic that might be unstable on React Native for mobile.
+    -   **Why fix this issue and what will be achieved with this?** The app must be stable on the user's primary testing platform (mobile).
     -   **Status:** IN PROGRESS
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** frontend
     -   **Blocked on other issue:** None
 
 **In progress Task List**:
--   **Task 1: Finalize Backend Preparation for Railway Deployment (P0)**
-    -   **Where to resume:** The agent has audited the dependencies. The next steps are:
-        1.  Modify  to bind to the port specified by the  environment variable, instead of the hardcoded .
-        2.  Add a simple  endpoint to  that returns .
-        3.  Verify/create a  or provide the correct  start command for Railway's Procfile: .
-        4.  Ensure the  file contains all necessary environment variables (, , M-Pesa secrets, etc.).
-    -   **What will be achieved with this?** The backend will be fully configured for one-click deployment on the Railway platform, completing the user's final request.
+-   **Task 1: Complete Data Extraction and Seeding for 5 New Subjects (P0)**
+    -   **Where to resume:** The agent has started analyzing the first PDF (). It needs to complete the analysis for all 5 PDFs, run the  and  scripts, and verify the data has been added to the database.
+    -   **What will be achieved with this?** The application's curriculum database will be expanded with 5 new subjects, complete with specific learning activities, directly addressing the user's request.
     -   **Status:** IN PROGRESS
     -   **Should Test frontend/backend/both after fix?** backend
     -   **Blocked on something:** None.
 
 **Upcoming and Future Tasks**
-There are no outstanding feature requests. The immediate focus is on stabilizing the app and completing the deployment preparation.
+-   **Add More Subjects via PDF Uploads (P0):** The user's primary ongoing task is to continue expanding the curriculum database. The agent should expect more PDF uploads and follow the established process of extracting both curriculum structure and learning activities.
 
 **Completed work in this session**
--   **Production Wallet & Business Logic (DONE):**
-    -   Implemented a production-grade DB connection module ().
-    -   Integrated lesson plan pricing: 5 free plans on signup, then KES 2 per plan deducted from the wallet.
-    -   Updated M-Pesa callback to use a  for robust, atomic crediting.
-    -   Secured admin endpoints with a role-based check ().
-    -   Added a DB startup event to create necessary indexes.
-    -   Updated frontend to display remaining free lessons.
--   **Bug Fixes (DONE):**
-    -   **Substrand Dropdown:** Fixed the dependent dropdown issue where substrands would not load when a strand was selected. Refactored to a more reliable  pattern in .
-    -   **Grades API 404:** Fixed a critical bug where the  endpoint was not registered due to a missing  decorator in .
-    -   **Unexpected text node Crash:** Resolved a frontend crash by refactoring an  component that was incorrectly placed inside a  component.
-    -   ** Crash:** Solved a major app startup crash by identifying and removing conflicting versions of  dependencies, with help from the .
--   **Database Migration (DONE):**
-    -   Successfully migrated the application's database from a local instance to the user's provided MongoDB Atlas cluster. Updated the backend to use the new connection string via environment variables.
--   **UI/UX Improvements (DONE):**
-    -   **Logout Flow:** Fixed the logout functionality and moved the profile/logout button to the header's top-right corner for easier access.
-    -   **Branding:** Added Developed by LEGIT LAB branding to the app's footer.
-    -   **Lesson Plan Display:** Implemented a tabular format for displaying generated lesson plans.
+-   **Feature: Specific Learning Activities in Lesson Plans (DONE):**
+    -   Reworked the lesson generation logic () to fetch specific introduction, development, and conclusion activities from a new  DB collection. This replaces the previous generic text.
+    -   Created and executed scripts () to parse KICD PDFs for Suggested Learning Activities and populate the database.
+-   **Database Seeding (DONE):**
+    -   Added 6 new subjects (Kiswahili Lugha, Agriculture, Arabic, Aviation Technology, Biology, Building Construction) by parsing provided PDFs.
+    -   Populated the database with core competencies, values, and PCIs.
+-   **Deployment Preparation (DONE):**
+    -   **Render (Backend):** Cleaned  to remove private/dev dependencies (), making the Docker build succeed on Render. Provided guidance on fixing Dockerfile not found errors by setting the root directory.
+    -   **Vercel (Frontend):** Created  to handle SPA routing, added a build script to , and provided the user a complete step-by-step guide for deploying the Expo web app.
+-   **Bug Fix: Sign-Out Button (DONE - User Verification Pending):**
+    -   Fixed the non-responsive sign-out button by using a platform-aware confirmation dialog ( for web,  for native) in . The agent could not test due to invalid login credentials.
+-   **M-Pesa Configuration (DONE):**
+    -   Successfully configured the user's M-Pesa sandbox credentials and the callback URL in the backend  file.
+-   **UI Improvement (DONE):**
+    -   Updated the  component to correctly display PCIs alongside competencies and values.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1: English PDF Data Extraction Failure**
-    -   **Debug checklist:** In the project's early stages, the agent failed to parse  because the text extraction was garbled. This data was skipped and never imported. If the user still needs this curriculum data, a different PDF parsing library or strategy (e.g., OCR) may be required.
+    -   **Debug checklist:** In the project's early stages, the agent failed to parse  because the text extraction was garbled. This data was skipped and never imported. If the user still needs this curriculum data, a different PDF parsing library or strategy may be required.
     -   **Why to solve this issue and what will be achieved with this?** The English curriculum content is currently missing from the application.
     -   **Should Test frontend/backend/both after fix:** backend
     -   **Is recurring issue?** N
@@ -96,91 +85,83 @@ There are no outstanding feature requests. The immediate focus is on stabilizing
 
 
 **Key Technical Concepts**
--   **Frontend:** Expo SDK, React Native, Expo Router, React Context API
+-   **Frontend:** Expo SDK (with Web support), React Native, Expo Router, React Context API
 -   **Backend:** FastAPI, Pydantic
--   **Database:** MongoDB (hosted on Atlas), Motor (async driver), Pymongo
--   **Authentication:** Firebase Authentication (frontend), JWT verification (backend)
--   **Payments:** Safaricom Daraja API for M-Pesa STK Push
--   **Deployment:** Docker, Railway (target), Vercel (target)
+-   **Database:** MongoDB (Atlas), Motor, Pymongo
+-   **Data Processing:** PDF text extraction () to populate curriculum and specific learning activities.
+-   **Authentication:** Firebase Authentication
+-   **Payments:** Safaricom Daraja API (M-Pesa STK Push)
+-   **Deployment:** Docker, Render (backend), Vercel (frontend)
 
 **key DB schema**
--   **users:** , ,  (USER or ADMIN),  (Number)
--   **wallets:** ,  (Number),  (String, KES)
--   **wallet_ledger:** ,  (CREDIT/DEBIT), ,  (String, unique),  (MPESA/LESSON_PLAN_PURCHASE)
--   **payments:** ,  (MPESA),  (CheckoutRequestID), ,  (PENDING/SUCCESS/FAILED),  (Object)
--   **grades, subjects, strands, substrands:** Hierarchical curriculum data.  in  is a String referencing .
+-   **users:** , , , 
+-   **wallets:** , 
+-   **wallet_ledger:** , , , , 
+-   **grades, subjects, strands, substrands, slos:** Hierarchical curriculum data.
+-   **learning_activities:** , , , , , , 
 
 **changes in tech stack**
--   The database was migrated from a local MongoDB instance to a production MongoDB Atlas cluster.
--   A dedicated, serverless-safe database connection module () was introduced, replacing direct client instantiation in .
+-   The  file was significantly cleaned to contain only production dependencies, resolving a critical deployment blocker.
 
 **All files of reference**
--   : The core backend file, heavily modified to add wallet logic, payment endpoints, business rules, and admin checks.
--   : **New file.** Manages the MongoDB connection in a production-safe manner.
--   : The main lesson generation screen. Updated to fix the dynamic substrand dropdown.
--   : Updated with the M-Pesa wallet top-up UI.
--   : Modified to manage and provide  state, including .
--   : Refactored to extract  into a stable, named component to prevent crashes.
--   : Updated with branding and deployment information.
+-   : The  endpoint was rewritten to use the new  collection.
+-   : **New file.** Created to parse PDFs and populate the  collection.
+-   : Modified to handle seeding of new subjects.
+-   : Heavily edited to remove non-production dependencies.
+-    & : Sign-out logic was updated to be platform-specific.
+-   : Modified to render PCIs from the lesson plan data.
+-   : **New file.** Added to configure SPA rewrites for Vercel deployment.
+-   : The  section was updated with a  command.
 
 **Areas that need refactoring**:
-- The agent correctly refactored unstable nested components in  and  to improve stability. No further refactoring is requested or advisable at this time, per the user's strict instructions.
+-   No refactoring is requested. The user has explicitly instructed against it.
 
 **key api endpoints**
--   : Starts the M-Pesa STK Push flow.
--   : The webhook Safaricom calls to confirm payment status.
--   : Generates a lesson plan, applying the 5 free then KES 2 logic.
--   : Endpoint hit on user login; now also creates a wallet and assigns free lessons for new users.
--   , , : Endpoints for the dynamic dropdowns.
--   : **To be created.**
+-   : **CRITICAL/CHANGED.** Now generates lesson plans with specific activities from the database.
+-   : Used to verify that new subjects have been seeded correctly.
+-   : Initiates M-Pesa STK Push.
+-   : M-Pesa webhook for payment confirmation.
+-   : Health check endpoint for Render.
 
 **Critical Info for New Agent**
--   **Your immediate and only task is to prepare the backend for Railway deployment.** The user has been extremely clear: **DO NOT REFACTOR, RENAME, OR RESTRUCTURE ANYTHING.** Only add the minimal changes required for deployment (port binding, health check endpoint, start command).
--   The M-Pesa integration is configured for the **sandbox environment**. The  is a placeholder and will need to be updated with the actual Railway deployment URL for the callback to work. You should inform the user of this.
--   The Expo Go keeps stopping issue is likely still present. Be prepared to debug this if the user reports it again. The previous fix (refactoring unstable components) was a good step, but the root cause might be different.
--   Be careful with the  script. The previous agent accidentally wiped the database by running a related API call. This script should only be run intentionally.
+-   **Your immediate task is to complete the data seeding for the 5 new PDFs.** This is the user's active request. The process is: analyze PDFs, run  and , and verify the data in the DB.
+-   **The lesson generation logic is fundamentally changed.** The app now relies on specific learning activities extracted from PDFs. Do not revert to the old generic content. When adding new subjects, you MUST extract these activities.
+-   **The deployment build blockers have been fixed.** The backend  is clean, and the frontend has a  for correct routing. The user has been guided on how to set the 'Root Directory' in their deployment services ( for Render,  for Vercel).
+-   **The Expo Go instability issue is a high-priority, unresolved user concern.** Be mindful of mobile stability when making any frontend changes.
 
-**documents created in this job**
+**documents and test reports created in this job**
 -   
--   
--   
--   
--   
--   
--   
--   Root 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User (LATEST):** Strict request to prepare the backend for Railway, forbidding any refactoring. (Status: IN PROGRESS)
-2.  **User:** Repeats the same strict request. (Status: IN PROGRESS)
-3.  **User:** Request to fix the non-loading substrand dropdown. (Status: RESOLVED)
-4.  **User:** Very detailed request to implement the production-ready wallet, pricing logic, and admin controls. (Status: RESOLVED)
-5.  **User:** Provided their MongoDB Atlas connection string. (Status: RESOLVED)
-6.  **User:** Asked for database details to deploy to Atlas. (Status: RESOLVED)
-7.  **User:** Reported that expo go keep on stoping. (Status: IN PROGRESS, fix attempted)
-8.  **User:** Reported  on grades and asked for LEGIT LAB branding. (Status: RESOLVED)
-9.  **User:** Reported the app refuses to load for testing on expo go. (Status: RESOLVED, was the unexpected text node error)
-10. **User:** Switched payment provider request from Flutterwave to M-Pesa. (Status: RESOLVED)
+1.  **User (LATEST):** Uploaded 5 new subject PDFs and instructed the agent to extract curriculum and learning activities. (Status: IN PROGRESS)
+2.  **User:** Asked what the agent advises for making lesson plan content specific; agent recommended pre-defined activities from PDFs. (Status: RESOLVED)
+3.  **User:** Asked if the agent can add more subjects from KICD curriculum. (Status: RESOLVED)
+4.  **User:** Requested an update to the database with new subjects and to include core values/competencies/PCIs in the generated lesson. (Status: RESOLVED)
+5.  **User:** Reported the sign-out button is not responding. (Status: RESOLVED, pending user verification)
+6.  **User:** Requested an update to the database with . (Status: RESOLVED)
+7.  **User:** Asked for guidance on deploying the frontend to Vercel. (Status: RESOLVED)
+8.  **User:** Asked for the MONGODB URI. (Status: RESOLVED)
+9.  **User:** Reported a build failure on Render due to  not being found. (Status: RESOLVED)
+10. **User:** Asked for the M-Pesa callback URL to use in the Render environment. (Status: RESOLVED)
 
 **Project Health Check:**
 -   **Broken:** The Expo Go mobile client is potentially unstable and may crash for the user. This is the highest priority bug.
--   **Mocked:** The M-Pesa integration is using **sandbox** credentials. The  is not configured for a live environment and needs to be set to the production backend URL once deployed.
+-   **Mocked:** The M-Pesa integration is using **sandbox** credentials and requires the final Render URL to be set in the  environment variable for production use.
 
 **3rd Party Integrations**
 -   **Firebase Authentication:** Used for user sign-up and login.
 -   **MongoDB Atlas:** Production database provider.
 -   **Safaricom Daraja API:** For M-Pesa STK Push payments (currently in sandbox mode).
+-   **PyMuPDF ():** Used for extracting text and data from curriculum PDFs.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES (The  was used successfully to diagnose a critical dependency conflict).
--   **Troubleshoot agent used after agent stuck in loop:** YES
+-   **Testing agent used after significant changes:** NO
+-   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** []
--   **Known regressions:** A database wipe occurred when a seeding API was called inadvertently. The data was restored, but it highlights the danger of destructive API endpoints.
+-   **Known regressions:** None in this session.
 
 **Credentials to test flow:**
-No specific credentials have been provided. The user is testing with their own account (). The M-Pesa sandbox credentials are placeholders in .
+The agent does not have valid credentials to log into the frontend, which prevents e2e testing of authenticated features like profile and sign-out. The user is testing with their own account.
 
 **What agent forgot to execute**
-The agent has not forgotten any tasks. It was actively working on the user's latest and most urgent request to prepare the backend for Railway deployment when the session ended. This task is now the highest priority for the next agent.
-
-</analysis>
+The agent did not forget any tasks. It was actively in the middle of the user's latest request (seeding 5 new PDFs) when the session concluded. The task is incomplete and is the top priority for the next session.</analysis>

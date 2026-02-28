@@ -56,7 +56,7 @@ else:
         "http://localhost:19006",
         "http://localhost:19000",
         "https://*.vercel.app",
-        "https://kenya-teacher-app.preview.emergentagent.com"
+        "https://teacher-lesson-gen.preview.emergentagent.com"
     ]
 
 # ===========================================
