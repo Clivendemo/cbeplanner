@@ -25,6 +25,7 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - **8 Core Values:** Love, Responsibility, Respect, Unity, Peace, Patriotism, Social Justice, Integrity
 - **15 PCIs:** Environmental Conservation, Safety and Security, Health Education, Life Skills, Financial Literacy, Citizenship Education, Gender Issues, Drug and Substance Abuse, Disaster Risk Reduction, Animal Welfare, Digital Citizenship, Climate Change, and more
 - **106 SLO Mappings:** Linking SLOs to competencies, values, and PCIs
+- **20 Detailed Learning Activities:** Specific activities for Introduction, Lesson Development, Conclusion, and Extended Activities for Agriculture, Biology, and Building Construction substrands
 
 ### Database (DONE)
 - MongoDB Atlas connection configured
