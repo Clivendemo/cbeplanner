@@ -14,6 +14,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import { LessonPlanDisplay } from '../../components/LessonPlanDisplay';
+import { filterSubjectsByGrade, getGradeBand, getGradeBandDisplayName } from '../../utils/kicdSubjectMapping';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -23,13 +24,15 @@ export default function Home() {
   const { firebaseUser, user, refreshProfile } = useAuth();
   
   const [grades, setGrades] = useState<any[]>([]);
-  const [subjects, setSubjects] = useState<any[]>([]);
+  const [allSubjects, setAllSubjects] = useState<any[]>([]); // All subjects from DB
+  const [subjects, setSubjects] = useState<any[]>([]); // Filtered subjects for display
   const [strands, setStrands] = useState<any[]>([]);
   const [substrands, setSubstrands] = useState<any[]>([]);
   const [slos, setSlos] = useState<any[]>([]);
   
   const [selectedDuration, setSelectedDuration] = useState<number>(40);
   const [selectedGrade, setSelectedGrade] = useState<string>('');
+  const [selectedGradeName, setSelectedGradeName] = useState<string>(''); // Track grade name for filtering
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [selectedStrand, setSelectedStrand] = useState<string>('');
   const [selectedSubstrand, setSelectedSubstrand] = useState<string>('');
