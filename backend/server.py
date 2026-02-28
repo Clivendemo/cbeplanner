@@ -1260,9 +1260,6 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
     skills = [f"Apply {substrand['name']} concepts", f"Demonstrate understanding of {slo['name']}"]
     attitudes = ["Show curiosity and interest", "Develop positive learning habits"]
     
-    # Learning resources
-    learning_resources = ["Textbooks", "Charts and diagrams", "Real objects/models", "Digital resources"]
-    
     # Duration-based content depth - using specific activities from database
     if duration <= 40:
         # Short lesson (25-40 min): Brief, focused
