@@ -2125,6 +2125,36 @@ async def admin_create_pci(pci: PCI, user: dict = Depends(verify_admin)):
     result = await db.pcis.insert_one(pci.dict(exclude={"id"}))
     return {"success": True, "id": str(result.inserted_id)}
 
+# SLO Mappings (link SLOs to competencies, values, PCIs)
+@api_router.get("/admin/slo-mappings/{slo_id}")
+async def admin_get_slo_mapping(slo_id: str, user: dict = Depends(verify_admin)):
+    """Get the mapping for a specific SLO"""
+    mapping = await db.slo_mappings.find_one({"sloId": slo_id})
+    if not mapping:
+        return {"success": True, "mapping": None, "exists": False}
+    return {"success": True, "mapping": serialize_doc(mapping), "exists": True}
+
+@api_router.put("/admin/slo-mappings/{slo_id}")
+async def admin_update_slo_mapping(slo_id: str, mapping_data: dict, user: dict = Depends(verify_admin)):
+    """Update or create SLO mapping (upsert)"""
+    update_doc = {
+        "sloId": slo_id,
+        "competencyIds": mapping_data.get("competencyIds", []),
+        "valueIds": mapping_data.get("valueIds", []),
+        "pciIds": mapping_data.get("pciIds", []),
+        "assessmentIds": mapping_data.get("assessmentIds", [])
+    }
+    
+    result = await db.slo_mappings.update_one(
+        {"sloId": slo_id},
+        {"$set": update_doc},
+        upsert=True
+    )
+    
+    if result.upserted_id:
+        return {"success": True, "created": True, "id": str(result.upserted_id)}
+    return {"success": True, "updated": True}
+
 # Assessments
 @api_router.get("/admin/assessments")
 async def admin_get_assessments(user: dict = Depends(verify_admin)):
