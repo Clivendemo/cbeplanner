@@ -1965,6 +1965,79 @@ async def admin_delete_activity(activity_id: str, user: dict = Depends(verify_ad
     await db.activities.delete_one({"_id": ObjectId(activity_id)})
     return {"success": True}
 
+# Learning Activities (used in lesson plan generation)
+@api_router.get("/admin/learning-activities")
+async def admin_get_learning_activities(substrandId: Optional[str] = None, user: dict = Depends(verify_admin)):
+    """Get all learning activities or filter by substrand"""
+    query = {}
+    if substrandId:
+        query["substrandId"] = substrandId
+    activities = await db.learning_activities.find(query).to_list(500)
+    return {"success": True, "learning_activities": [serialize_doc(a) for a in activities]}
+
+@api_router.get("/admin/learning-activities/{activity_id}")
+async def admin_get_learning_activity(activity_id: str, user: dict = Depends(verify_admin)):
+    """Get a single learning activity by ID"""
+    activity = await db.learning_activities.find_one({"_id": ObjectId(activity_id)})
+    if not activity:
+        raise HTTPException(status_code=404, detail="Learning activity not found")
+    return {"success": True, "learning_activity": serialize_doc(activity)}
+
+@api_router.get("/admin/learning-activities/by-substrand/{substrand_id}")
+async def admin_get_learning_activity_by_substrand(substrand_id: str, user: dict = Depends(verify_admin)):
+    """Get learning activities for a specific substrand"""
+    activity = await db.learning_activities.find_one({"substrandId": substrand_id})
+    if activity:
+        return {"success": True, "learning_activity": serialize_doc(activity), "exists": True}
+    return {"success": True, "learning_activity": None, "exists": False}
+
+@api_router.post("/admin/learning-activities")
+async def admin_create_learning_activity(activity: LearningActivities, user: dict = Depends(verify_admin)):
+    """Create a new learning activity for a substrand"""
+    # Check if activities already exist for this substrand
+    existing = await db.learning_activities.find_one({"substrandId": activity.substrandId})
+    if existing:
+        raise HTTPException(status_code=400, detail="Learning activities already exist for this substrand. Use PUT to update.")
+    
+    result = await db.learning_activities.insert_one(activity.dict(exclude={"id"}))
+    return {"success": True, "id": str(result.inserted_id)}
+
+@api_router.put("/admin/learning-activities/{activity_id}")
+async def admin_update_learning_activity(activity_id: str, activity: LearningActivities, user: dict = Depends(verify_admin)):
+    """Update an existing learning activity"""
+    update_data = activity.dict(exclude={"id"})
+    result = await db.learning_activities.update_one(
+        {"_id": ObjectId(activity_id)},
+        {"$set": update_data}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Learning activity not found")
+    return {"success": True}
+
+@api_router.put("/admin/learning-activities/by-substrand/{substrand_id}")
+async def admin_upsert_learning_activity(substrand_id: str, activity: LearningActivities, user: dict = Depends(verify_admin)):
+    """Create or update learning activities for a substrand (upsert)"""
+    update_data = activity.dict(exclude={"id"})
+    update_data["substrandId"] = substrand_id
+    
+    result = await db.learning_activities.update_one(
+        {"substrandId": substrand_id},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    if result.upserted_id:
+        return {"success": True, "id": str(result.upserted_id), "created": True}
+    return {"success": True, "created": False, "updated": True}
+
+@api_router.delete("/admin/learning-activities/{activity_id}")
+async def admin_delete_learning_activity(activity_id: str, user: dict = Depends(verify_admin)):
+    """Delete a learning activity"""
+    result = await db.learning_activities.delete_one({"_id": ObjectId(activity_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Learning activity not found")
+    return {"success": True}
+
 # Competencies
 @api_router.get("/admin/competencies")
 async def admin_get_competencies(user: dict = Depends(verify_admin)):
