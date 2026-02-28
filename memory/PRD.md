@@ -19,13 +19,45 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - **Schemes of Work Generator:** Term-based curriculum planning
 - **Admin Role:** Role-based access control for admin endpoints
 
-### Curriculum Data (DONE - Dec 2025)
-- **17 Subjects:** Literacy Activities, Mathematical Activities, Environmental Activities, English, Mathematics, Science and Technology, Social Studies, Chemistry, Computer Science, Community Service Learning, Fasihi ya Kiswahili, Kiswahili Lugha, Agriculture, Biology, Arabic, Aviation Technology, Building Construction
+### Curriculum Data (UPDATED - Dec 2025)
+- **22 Subjects:** Literacy Activities, Mathematical Activities, Environmental Activities, English, Mathematics, Science and Technology, Social Studies, Chemistry, Computer Science, Community Service Learning, Fasihi ya Kiswahili, Kiswahili Lugha, Agriculture, Biology, Arabic, Aviation Technology, Building Construction, **Business Studies**, **Christian Religious Education (CRE)**, **Electrical Technology**, **Fine Arts**, **French**
+- **60 Strands** across all subjects
+- **235 Substrands** covering all curriculum areas
+- **898 Specific Learning Outcomes (SLOs)**
+- **89 Detailed Learning Activities** for lesson plan generation
 - **7 Core Competencies:** Communication and Collaboration, Critical Thinking and Problem Solving, Creativity and Imagination, Citizenship, Digital Literacy, Learning to Learn, Self-Efficacy
 - **8 Core Values:** Love, Responsibility, Respect, Unity, Peace, Patriotism, Social Justice, Integrity
 - **15 PCIs:** Environmental Conservation, Safety and Security, Health Education, Life Skills, Financial Literacy, Citizenship Education, Gender Issues, Drug and Substance Abuse, Disaster Risk Reduction, Animal Welfare, Digital Citizenship, Climate Change, and more
-- **106 SLO Mappings:** Linking SLOs to competencies, values, and PCIs
-- **20 Detailed Learning Activities:** Specific activities for Introduction, Lesson Development, Conclusion, and Extended Activities for Agriculture, Biology, and Building Construction substrands
+
+#### New Subjects Added (Dec 2025):
+1. **Business Studies** - 4 strands, 15 substrands, 79 SLOs, 11 activities
+   - Business and Money Management
+   - Business and Its Environment
+   - Government and Global Influence in Business
+   - Financial Records in Business
+
+2. **Christian Religious Education (CRE)** - 4 strands, 23 substrands, 102 SLOs, 21 activities
+   - The Old Testament
+   - The New Testament
+   - Church in Action
+   - Christian Living Today
+
+3. **Electrical Technology** - 4 strands, 13 substrands, 54 SLOs, 13 activities
+   - Fundamentals of Electrical Technology
+   - Electrical Machines
+   - Electrical Installation
+   - Electronics
+
+4. **Fine Arts** - 3 strands, 11 substrands, 45 SLOs, 11 activities
+   - Picture Making Techniques (2D Art)
+   - Multimedia Arts (2D Art)
+   - Indigenous Crafts (3D Art)
+
+5. **French** - 4 strands, 19 substrands, 57 SLOs, 13 activities
+   - Listening and Speaking
+   - Reading
+   - Writing
+   - Grammar
 
 ### Database (DONE)
 - MongoDB Atlas connection configured
