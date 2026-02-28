@@ -1263,7 +1263,7 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
     # Learning resources
     learning_resources = ["Textbooks", "Charts and diagrams", "Real objects/models", "Digital resources"]
     
-    # Duration-based content depth
+    # Duration-based content depth - using specific activities from database
     if duration <= 40:
         # Short lesson (25-40 min): Brief, focused
         intro_time = 5
@@ -1271,13 +1271,33 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
         conclusion_time = 5
         assessment_time = 5
         
-        introduction = f"Teacher introduces {substrand['name']} ({intro_time} min). Learners share what they know about the topic."
-        lesson_development = f"Teacher explains {slo['name']} with examples ({dev_time} min). " + \
-                           f"Learners participate in: {activities[0]['description'] if activities else 'guided practice'}."
-        extended_activity = ""
-        conclusion = f"Teacher summarizes key points ({conclusion_time} min). Learners reflect on learning."
-        assessment_text = f"Quick assessment ({assessment_time} min): " + \
-                        (assessments[0]['description'] if assessments else "Oral questions and observation")
+        # Use specific activities if available
+        if intro_activities:
+            introduction = f"Introduction ({intro_time} min):\n• " + "\n• ".join(intro_activities[:2])
+        else:
+            introduction = f"Teacher introduces {substrand['name']} ({intro_time} min). Learners share what they know about the topic."
+        
+        if dev_activities:
+            lesson_development = f"Lesson Development ({dev_time} min):\n• " + "\n• ".join(dev_activities[:2])
+        else:
+            lesson_development = f"Teacher explains {slo['name']} with examples ({dev_time} min). " + \
+                               f"Learners participate in: {activities[0]['description'] if activities else 'guided practice'}."
+        
+        if extended_activities_list:
+            extended_activity = f"Extended Activity:\n• " + extended_activities_list[0]
+        else:
+            extended_activity = ""
+        
+        if conclusion_activities:
+            conclusion = f"Conclusion ({conclusion_time} min):\n• " + "\n• ".join(conclusion_activities[:1])
+        else:
+            conclusion = f"Teacher summarizes key points ({conclusion_time} min). Learners reflect on learning."
+        
+        if specific_assessments:
+            assessment_text = f"Assessment ({assessment_time} min): " + "; ".join(specific_assessments[:2])
+        else:
+            assessment_text = f"Quick assessment ({assessment_time} min): " + \
+                            (assessments[0]['description'] if assessments else "Oral questions and observation")
     
     elif duration <= 60:
         # Medium lesson (45-60 min): Moderate depth
@@ -1287,14 +1307,34 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
         conclusion_time = 8
         assessment_time = 5
         
-        introduction = f"Teacher introduces {substrand['name']} with real-life examples ({intro_time} min). " + \
-                      "Learners brainstorm and share prior knowledge."
-        lesson_development = f"Teacher explains {slo['name']} in detail ({dev_time} min). " + \
-                           f"Learners engage in: {', '.join([a['description'] for a in activities[:2]]) if activities else 'guided activities'}."
-        extended_activity = f"Group work ({ext_time} min): Learners work in small groups on practical tasks related to {substrand['name']}."
-        conclusion = f"Class discussion and summary ({conclusion_time} min). Learners present findings and reflect."
-        assessment_text = f"Assessment ({assessment_time} min): " + \
-                        ('; '.join([a['description'] for a in assessments[:2]]) if assessments else "Oral questions, written tasks, and observation")
+        # Use specific activities if available
+        if intro_activities:
+            introduction = f"Introduction ({intro_time} min):\n• " + "\n• ".join(intro_activities[:3])
+        else:
+            introduction = f"Teacher introduces {substrand['name']} with real-life examples ({intro_time} min). " + \
+                          "Learners brainstorm and share prior knowledge."
+        
+        if dev_activities:
+            lesson_development = f"Lesson Development ({dev_time} min):\n• " + "\n• ".join(dev_activities[:3])
+        else:
+            lesson_development = f"Teacher explains {slo['name']} in detail ({dev_time} min). " + \
+                               f"Learners engage in: {', '.join([a['description'] for a in activities[:2]]) if activities else 'guided activities'}."
+        
+        if extended_activities_list:
+            extended_activity = f"Extended Activities ({ext_time} min):\n• " + "\n• ".join(extended_activities_list[:2])
+        else:
+            extended_activity = f"Group work ({ext_time} min): Learners work in small groups on practical tasks related to {substrand['name']}."
+        
+        if conclusion_activities:
+            conclusion = f"Conclusion ({conclusion_time} min):\n• " + "\n• ".join(conclusion_activities[:2])
+        else:
+            conclusion = f"Class discussion and summary ({conclusion_time} min). Learners present findings and reflect."
+        
+        if specific_assessments:
+            assessment_text = f"Assessment ({assessment_time} min): " + "; ".join(specific_assessments[:3])
+        else:
+            assessment_text = f"Assessment ({assessment_time} min): " + \
+                            ('; '.join([a['description'] for a in assessments[:2]]) if assessments else "Oral questions, written tasks, and observation")
     
     else:
         # Long lesson (65-80 min): Comprehensive
@@ -1304,17 +1344,43 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
         conclusion_time = 10
         assessment_time = int((duration - 25) * 0.20)
         
-        introduction = f"Comprehensive introduction to {substrand['name']} ({intro_time} min). " + \
-                      "Teacher uses multimedia/real objects. Learners engage in discussion and pre-assessment."
-        lesson_development = f"Detailed explanation of {slo['name']} with multiple examples ({dev_time} min). " + \
-                           f"Learners participate in: {', '.join([a['description'] for a in activities[:3]]) if activities else 'various guided activities'}."
-        extended_activity = f"Extended group work and differentiated activities ({ext_time} min): " + \
-                          f"Learners explore {substrand['name']} through projects, experiments, or research. Teacher provides individualized support."
-        conclusion = f"Comprehensive review and reflection ({conclusion_time} min). " + \
-                    "Group presentations, peer feedback, and teacher summary."
-        assessment_text = f"Comprehensive assessment ({assessment_time} min): " + \
-                        ('; '.join([a['description'] for a in assessments]) if assessments else \
-                         "Multiple methods - oral questions, written tasks, practical demonstrations, peer assessment")
+        # Use specific activities if available
+        if intro_activities:
+            introduction = f"Comprehensive Introduction ({intro_time} min):\n• " + "\n• ".join(intro_activities)
+        else:
+            introduction = f"Comprehensive introduction to {substrand['name']} ({intro_time} min). " + \
+                          "Teacher uses multimedia/real objects. Learners engage in discussion and pre-assessment."
+        
+        if dev_activities:
+            lesson_development = f"Detailed Lesson Development ({dev_time} min):\n• " + "\n• ".join(dev_activities)
+        else:
+            lesson_development = f"Detailed explanation of {slo['name']} with multiple examples ({dev_time} min). " + \
+                               f"Learners participate in: {', '.join([a['description'] for a in activities[:3]]) if activities else 'various guided activities'}."
+        
+        if extended_activities_list:
+            extended_activity = f"Extended Activities and Projects ({ext_time} min):\n• " + "\n• ".join(extended_activities_list)
+        else:
+            extended_activity = f"Extended group work and differentiated activities ({ext_time} min): " + \
+                              f"Learners explore {substrand['name']} through projects, experiments, or research. Teacher provides individualized support."
+        
+        if conclusion_activities:
+            conclusion = f"Comprehensive Conclusion ({conclusion_time} min):\n• " + "\n• ".join(conclusion_activities)
+        else:
+            conclusion = f"Comprehensive review and reflection ({conclusion_time} min). " + \
+                        "Group presentations, peer feedback, and teacher summary."
+        
+        if specific_assessments:
+            assessment_text = f"Comprehensive Assessment ({assessment_time} min): " + "; ".join(specific_assessments)
+        else:
+            assessment_text = f"Comprehensive assessment ({assessment_time} min): " + \
+                            ('; '.join([a['description'] for a in assessments]) if assessments else \
+                             "Multiple methods - oral questions, written tasks, practical demonstrations, peer assessment")
+    
+    # Use specific resources if available, otherwise use defaults
+    if specific_resources:
+        learning_resources = specific_resources
+    else:
+        learning_resources = ["Textbooks", "Charts and diagrams", "Real objects/models", "Digital resources"]
     
     # Create lesson plan with teacher info from profile
     lesson_plan = {
