@@ -1,5 +1,5 @@
-import React from 'react';
-import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
+import { TouchableOpacity, View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
@@ -33,6 +33,40 @@ function EmptyHeader() {
 }
 
 export default function TeacherLayout() {
+  const { user, loading, authChecked } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Wait for auth to be checked
+    if (!authChecked) return;
+
+    // If no user, redirect to login
+    if (!user) {
+      console.log('Teacher layout: No user, redirecting to login');
+      router.replace('/auth/login');
+    }
+  }, [user, authChecked]);
+
+  // Show loading while checking auth
+  if (loading || !authChecked) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6366F1" />
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
+
+  // If no user, show nothing (will redirect)
+  if (!user) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6366F1" />
+        <Text style={styles.loadingText}>Redirecting...</Text>
+      </View>
+    );
+  }
+
   return (
     <Stack
       screenOptions={{
@@ -43,14 +77,17 @@ export default function TeacherLayout() {
         headerTitleStyle: {
           fontWeight: 'bold'
         },
-        headerRight: HeaderRight
+        headerRight: HeaderRight,
+        animation: 'slide_from_right',
+        gestureEnabled: true
       }}
     >
       <Stack.Screen
         name="dashboard"
         options={{
           title: 'CBE Planner',
-          headerShown: true
+          headerShown: true,
+          gestureEnabled: false
         }}
       />
       <Stack.Screen
@@ -95,6 +132,17 @@ export default function TeacherLayout() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB'
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#6B7280'
+  },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
