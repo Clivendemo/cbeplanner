@@ -457,14 +457,23 @@ async def verify_token(authorization: Optional[str] = Header(None)):
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Token verification error: {str(e)}")
 
+# The ONLY admin email allowed
+ADMIN_EMAIL = "mail2clive@gmail.com"
+
 async def verify_admin(authorization: Optional[str] = Header(None)):
     """
-    Verify that the user is an admin.
-    Accepts both 'admin' and 'ADMIN' role values.
+    Verify that the user is the designated admin.
+    ONLY mail2clive@gmail.com can access admin endpoints.
+    This is enforced by email, not by role field.
     """
     user = await verify_token(authorization)
-    if user.get("role", "").upper() != "ADMIN":
-        raise HTTPException(status_code=403, detail="Admin access required. Only users with ADMIN role can access this endpoint.")
+    user_email = user.get("email", "").lower().strip()
+    
+    if user_email != ADMIN_EMAIL:
+        raise HTTPException(
+            status_code=403, 
+            detail="Admin access denied. This action is restricted to authorized administrators only."
+        )
     return user
 
 # ==================== AUTH ENDPOINTS ====================
