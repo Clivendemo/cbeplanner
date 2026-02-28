@@ -14,10 +14,17 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - **User Authentication:** Firebase-based signup/login with JWT verification
 - **Wallet System:** M-Pesa STK Push integration (SANDBOX mode)
 - **Business Logic:** 5 free lessons on signup, KES 2 per subsequent plan
-- **Lesson Plan Generator:** Duration-aware lesson plans (25-80 min)
+- **Lesson Plan Generator:** Duration-aware lesson plans (25-80 min) with Core Competencies, Core Values, and PCIs
 - **Notes Generator:** Duration-aware teaching notes
 - **Schemes of Work Generator:** Term-based curriculum planning
 - **Admin Role:** Role-based access control for admin endpoints
+
+### Curriculum Data (DONE - Dec 2025)
+- **17 Subjects:** Literacy Activities, Mathematical Activities, Environmental Activities, English, Mathematics, Science and Technology, Social Studies, Chemistry, Computer Science, Community Service Learning, Fasihi ya Kiswahili, Kiswahili Lugha, Agriculture, Biology, Arabic, Aviation Technology, Building Construction
+- **7 Core Competencies:** Communication and Collaboration, Critical Thinking and Problem Solving, Creativity and Imagination, Citizenship, Digital Literacy, Learning to Learn, Self-Efficacy
+- **8 Core Values:** Love, Responsibility, Respect, Unity, Peace, Patriotism, Social Justice, Integrity
+- **15 PCIs:** Environmental Conservation, Safety and Security, Health Education, Life Skills, Financial Literacy, Citizenship Education, Gender Issues, Drug and Substance Abuse, Disaster Risk Reduction, Animal Welfare, Digital Citizenship, Climate Change, and more
+- **106 SLO Mappings:** Linking SLOs to competencies, values, and PCIs
 
 ### Database (DONE)
 - MongoDB Atlas connection configured
