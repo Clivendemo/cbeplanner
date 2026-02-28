@@ -102,6 +102,35 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - [ ] Import English curriculum data (requires OCR)
 - [ ] Add more subjects from KICD curriculum PDFs as needed
 
+## Admin Curriculum Management (DONE - Dec 2025)
+The admin panel now includes a complete curriculum management interface:
+
+**Features:**
+- **Two View Modes:**
+  - "All Data" - View and manage all entities in flat lists
+  - "Navigate Hierarchy" - Drill down: Grade → Subject → Strand → Substrand → SLOs & Activities
+
+- **Full CRUD for:**
+  - Grades (name, order)
+  - Subjects (name, linked to grades)
+  - Strands (name, linked to subjects)
+  - Substrands (name, linked to strands)
+  - SLOs (name, description, linked to substrands)
+  - Learning Activities (introduction, development, conclusion, extended activities)
+  - Competencies, Values, PCIs
+
+- **Learning Activities Management:**
+  - Access via "Manage Learning Activities" button when viewing a substrand's SLOs
+  - Add/edit/remove activities for each phase: Introduction, Development, Conclusion, Extended
+  - Data saves directly to MongoDB and is immediately available for lesson plan generation
+
+**API Endpoints Added:**
+- `GET /api/admin/learning-activities` - List all or filter by substrandId
+- `GET /api/admin/learning-activities/by-substrand/{id}` - Get activities for a substrand
+- `PUT /api/admin/learning-activities/by-substrand/{id}` - Create or update (upsert)
+- `POST /api/admin/learning-activities` - Create new
+- `DELETE /api/admin/learning-activities/{id}` - Delete
+
 ## Seeding Scripts
 - `backend/seed_new_subjects.py` - Seeds curriculum structure (subjects, strands, substrands, SLOs)
 - `backend/seed_new_activities.py` - Seeds learning activities for lesson generation
