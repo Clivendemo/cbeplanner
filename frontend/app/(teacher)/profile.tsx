@@ -11,7 +11,6 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  FlatList,
   RefreshControl
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
@@ -33,10 +32,8 @@ interface Transaction {
 }
 
 export default function Profile() {
-  const { user, firebaseUser, signOut, refreshProfile } = useAuth();
+  const { user, firebaseUser, signOut, refreshProfile, isAdmin } = useAuth();
   const router = useRouter();
-  const [resetting, setResetting] = useState(false);
-  const [becomingAdmin, setBecomingAdmin] = useState(false);
   
   // M-Pesa Top-up state
   const [showTopUpModal, setShowTopUpModal] = useState(false);
@@ -50,6 +47,7 @@ export default function Profile() {
   const [showTransactions, setShowTransactions] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch transaction history
   const fetchTransactions = useCallback(async () => {
@@ -78,15 +76,22 @@ export default function Profile() {
     }
   }, [showTransactions, fetchTransactions]);
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refreshProfile();
+    if (showTransactions) {
+      await fetchTransactions();
+    }
+    setRefreshing(false);
+  };
+
   // Handle M-Pesa top-up
   const handleTopUp = async () => {
-    // Validate phone number
     if (!phoneNumber || phoneNumber.length < 9) {
       Alert.alert('Error', 'Please enter a valid phone number');
       return;
     }
     
-    // Validate amount
     const amountNum = parseInt(amount);
     if (!amount || isNaN(amountNum) || amountNum < 50) {
       Alert.alert('Error', 'Minimum top-up amount is 50 KES');
@@ -132,11 +137,10 @@ export default function Profile() {
     }
   };
 
-  // Check payment status with polling
   const checkPaymentStatus = async (checkoutId: string) => {
     setCheckingStatus(true);
     let attempts = 0;
-    const maxAttempts = 12; // 12 attempts * 5 seconds = 1 minute max
+    const maxAttempts = 12;
     
     const pollStatus = async () => {
       try {
@@ -170,7 +174,6 @@ export default function Profile() {
         } else if (response.data.status === 'pending') {
           attempts++;
           if (attempts < maxAttempts) {
-            // Continue polling
             setTimeout(pollStatus, 5000);
             return false;
           } else {
@@ -202,63 +205,7 @@ export default function Profile() {
     pollStatus();
   };
 
-  const handleResetTrial = async () => {
-    setResetting(true);
-    try {
-      const token = await firebaseUser?.getIdToken();
-      await axios.post(
-        `${BACKEND_URL}/api/profile/reset-free-trial`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      await refreshProfile();
-      Alert.alert('Success', 'Free trial reset and 100 KES added to wallet!');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to reset trial');
-    } finally {
-      setResetting(false);
-    }
-  };
-
-  const handleBecomeAdmin = async () => {
-    Alert.alert(
-      'Become Admin',
-      'This will give you admin access to manage curriculum data. Continue?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Continue',
-          onPress: async () => {
-            setBecomingAdmin(true);
-            try {
-              const token = await firebaseUser?.getIdToken();
-              await axios.post(
-                `${BACKEND_URL}/api/profile/become-admin`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
-              );
-              Alert.alert('Success', 'You are now an admin! The app will redirect you to the admin panel.', [
-                {
-                  text: 'OK',
-                  onPress: () => {
-                    refreshProfile();
-                    router.replace('/(admin)/dashboard');
-                  }
-                }
-              ]);
-            } catch (error) {
-              Alert.alert('Error', 'Failed to become admin');
-            } finally {
-              setBecomingAdmin(false);
-            }
-          }
-        }
-      ]
-    );
-  };
-
   const handleSignOut = async () => {
-    // Use window.confirm for web, Alert.alert for native
     if (Platform.OS === 'web') {
       const confirmed = window.confirm('Are you sure you want to sign out?');
       if (confirmed) {
@@ -307,8 +254,8 @@ export default function Profile() {
     });
   };
 
-  const renderTransaction = ({ item }: { item: Transaction }) => (
-    <View style={styles.transactionItem}>
+  const renderTransaction = (item: Transaction) => (
+    <View key={item.id} style={styles.transactionItem}>
       <View style={styles.transactionLeft}>
         <View style={[
           styles.transactionIcon,
@@ -353,7 +300,13 @@ export default function Profile() {
   );
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView 
+      style={styles.container} 
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#6366F1']} />
+      }
+    >
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
           <Ionicons name="person" size={48} color="#FFFFFF" />
@@ -377,7 +330,6 @@ export default function Profile() {
             </View>
           </View>
           
-          {/* M-Pesa Top-up Button */}
           <TouchableOpacity 
             style={styles.topUpButton}
             onPress={() => setShowTopUpModal(true)}
@@ -386,7 +338,6 @@ export default function Profile() {
             <Text style={styles.topUpButtonText}>Top Up via M-Pesa</Text>
           </TouchableOpacity>
           
-          {/* Check pending payment status */}
           {pendingCheckoutId && (
             <TouchableOpacity 
               style={styles.checkStatusButton}
@@ -404,7 +355,6 @@ export default function Profile() {
             </TouchableOpacity>
           )}
           
-          {/* Transaction History Button */}
           <TouchableOpacity 
             style={styles.historyButton}
             onPress={() => setShowTransactions(!showTransactions)}
@@ -421,25 +371,19 @@ export default function Profile() {
           </TouchableOpacity>
         </View>
 
-        {/* Transaction History */}
         {showTransactions && (
           <View style={styles.transactionsContainer}>
             {loadingTransactions ? (
               <ActivityIndicator size="small" color="#6366F1" style={{ marginVertical: 20 }} />
             ) : transactions.length > 0 ? (
-              transactions.map((tx) => (
-                <View key={tx.id}>
-                  {renderTransaction({ item: tx })}
-                </View>
-              ))
+              transactions.map(renderTransaction)
             ) : (
               <Text style={styles.noTransactions}>No transactions yet</Text>
             )}
           </View>
         )}
 
-        {/* Free Trial Cards */}
-        {/* Free Lessons Card - Shows remaining count */}
+        {/* Free Lessons Card */}
         <View style={styles.freeLessonCard}>
           <View style={styles.freeLessonRow}>
             <Ionicons name="gift" size={24} color="#10B981" />
@@ -484,39 +428,21 @@ export default function Profile() {
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </TouchableOpacity>
 
+        {/* Admin Panel - ONLY for mail2clive@gmail.com */}
+        {isAdmin && (
+          <TouchableOpacity 
+            style={[styles.menuItem, styles.adminButton]} 
+            onPress={() => router.push('/(admin)/dashboard')}
+          >
+            <Ionicons name="shield-checkmark-outline" size={24} color="#F59E0B" />
+            <Text style={[styles.menuText, styles.adminText]}>Admin Panel</Text>
+            <Ionicons name="chevron-forward" size={20} color="#F59E0B" />
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity style={[styles.menuItem, styles.signOutButton]} onPress={handleSignOut}>
           <Ionicons name="log-out-outline" size={24} color="#EF4444" />
           <Text style={[styles.menuText, styles.signOutText]}>Sign Out</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.menuItem, styles.resetButton]} 
-          onPress={handleResetTrial}
-          disabled={resetting}
-        >
-          {resetting ? (
-            <ActivityIndicator size="small" color="#6366F1" />
-          ) : (
-            <Ionicons name="refresh-outline" size={24} color="#6366F1" />
-          )}
-          <Text style={[styles.menuText, styles.resetText]}>
-            {resetting ? 'Resetting...' : 'Reset Free Trial (Test)'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.menuItem, styles.adminButton]} 
-          onPress={handleBecomeAdmin}
-          disabled={becomingAdmin}
-        >
-          {becomingAdmin ? (
-            <ActivityIndicator size="small" color="#F59E0B" />
-          ) : (
-            <Ionicons name="shield-checkmark-outline" size={24} color="#F59E0B" />
-          )}
-          <Text style={[styles.menuText, styles.adminText]}>
-            {becomingAdmin ? 'Processing...' : 'Access Admin Panel'}
-          </Text>
         </TouchableOpacity>
 
         {/* Developer Credit */}
@@ -545,7 +471,6 @@ export default function Profile() {
               </TouchableOpacity>
             </View>
 
-            {/* M-Pesa Logo/Icon */}
             <View style={styles.mpesaLogoContainer}>
               <View style={styles.mpesaLogo}>
                 <Ionicons name="phone-portrait" size={32} color="#00A859" />
@@ -553,7 +478,6 @@ export default function Profile() {
               <Text style={styles.mpesaText}>M-PESA</Text>
             </View>
 
-            {/* Phone Number Input */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>M-Pesa Phone Number</Text>
               <View style={styles.phoneInputContainer}>
@@ -571,7 +495,6 @@ export default function Profile() {
               <Text style={styles.inputHint}>Enter phone number registered with M-Pesa</Text>
             </View>
 
-            {/* Amount Input */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Amount (KES)</Text>
               <View style={styles.amountInputContainer}>
@@ -588,7 +511,6 @@ export default function Profile() {
               <Text style={styles.inputHint}>Minimum: 50 KES • Maximum: 150,000 KES</Text>
             </View>
 
-            {/* Quick Amount Buttons */}
             <View style={styles.quickAmounts}>
               {[100, 200, 500, 1000].map((amt) => (
                 <TouchableOpacity
@@ -609,7 +531,6 @@ export default function Profile() {
               ))}
             </View>
 
-            {/* Pay Button */}
             <TouchableOpacity
               style={[styles.payButton, topUpLoading && styles.payButtonDisabled]}
               onPress={handleTopUp}
@@ -898,19 +819,14 @@ const styles = StyleSheet.create({
   signOutText: {
     color: '#EF4444'
   },
-  resetButton: {
-    marginTop: 8
-  },
-  resetText: {
-    color: '#6366F1'
-  },
   adminButton: {
-    marginTop: 8
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#F59E0B'
   },
   adminText: {
     color: '#F59E0B'
   },
-  // Modal styles
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
