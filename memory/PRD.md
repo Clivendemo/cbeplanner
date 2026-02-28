@@ -29,6 +29,7 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - Health check endpoints: `GET /health` (simple) and `GET /api/health` (detailed)
 - `.env.example` with all required variables documented
 - Start command: `uvicorn server:app --host 0.0.0.0 --port $PORT`
+- Clean requirements.txt with production-only dependencies (removed emergentintegrations and dev tools)
 
 ## Key Files
 - `backend/server.py` - Main FastAPI application
