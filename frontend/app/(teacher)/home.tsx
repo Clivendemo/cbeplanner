@@ -326,19 +326,35 @@ export default function Home() {
 
           {selectedGrade && (
             <View style={styles.pickerContainer}>
-              <Text style={styles.label}>Learning Area / Subject *</Text>
-              <View style={styles.pickerWrapper}>
-                <Picker
-                  selectedValue={selectedSubject}
-                  onValueChange={handleSubjectChange}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Select Subject" value="" />
-                  {subjects.map((subject) => (
-                    <Picker.Item key={subject.id} label={subject.name} value={subject.id} />
-                  ))}
-                </Picker>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>Learning Area / Subject *</Text>
+                {selectedGradeName && getGradeBand(selectedGradeName) && (
+                  <Text style={styles.gradeBandLabel}>
+                    {getGradeBandDisplayName(getGradeBand(selectedGradeName)!)}
+                  </Text>
+                )}
               </View>
+              {subjects.length === 0 && !loading ? (
+                <View style={styles.noSubjectsMessage}>
+                  <Ionicons name="information-circle-outline" size={16} color="#F59E0B" />
+                  <Text style={styles.noSubjectsText}>
+                    No subjects available for this grade. Please contact admin to add curriculum data.
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.pickerWrapper}>
+                  <Picker
+                    selectedValue={selectedSubject}
+                    onValueChange={handleSubjectChange}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label={`Select Subject (${subjects.length} available)`} value="" />
+                    {subjects.map((subject) => (
+                      <Picker.Item key={subject.id} label={subject.name} value={subject.id} />
+                    ))}
+                  </Picker>
+                </View>
+              )}
             </View>
           )}
 
