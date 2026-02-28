@@ -215,6 +215,15 @@ class Activity(BaseModel):
     strandId: str
     substrandId: str
 
+class LearningActivities(BaseModel):
+    """Learning activities for a substrand - used in lesson plan generation"""
+    id: Optional[str] = None
+    substrandId: str
+    introduction_activities: List[str] = []
+    development_activities: List[str] = []
+    conclusion_activities: List[str] = []
+    extended_activities: List[str] = []
+
 class Assessment(BaseModel):
     id: Optional[str] = None
     name: str
