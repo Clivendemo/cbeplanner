@@ -100,3 +100,10 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - [ ] Test with production M-Pesa credentials
 - [ ] Debug Expo Go stability issues (if still occurring)
 - [ ] Import English curriculum data (requires OCR)
+- [ ] Add more subjects from KICD curriculum PDFs as needed
+
+## Seeding Scripts
+- `backend/seed_new_subjects.py` - Seeds curriculum structure (subjects, strands, substrands, SLOs)
+- `backend/seed_new_activities.py` - Seeds learning activities for lesson generation
+- `backend/seed_curriculum_data.py` - Original seeding script
+- `backend/seed_activities.py` - Original activities script
