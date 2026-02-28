@@ -578,23 +578,8 @@ async def initialize_default_admin():
 async def get_profile(user: dict = Depends(verify_token)):
     return {"success": True, "user": user}
 
-@api_router.post("/profile/reset-free-trial")
-async def reset_free_trial(user: dict = Depends(verify_token)):
-    """Reset user's free lesson/notes trial for testing"""
-    await db.users.update_one(
-        {"_id": ObjectId(user["id"])},
-        {"$set": {"freeLessonUsed": False, "freeNotesUsed": False, "walletBalance": 100.0}}
-    )
-    return {"success": True, "message": "Free trial reset and 100 KES added to wallet"}
-
-@api_router.post("/profile/become-admin")
-async def become_admin(user: dict = Depends(verify_token)):
-    """Promote current user to admin (for testing only)"""
-    await db.users.update_one(
-        {"_id": ObjectId(user["id"])},
-        {"$set": {"role": "admin"}}
-    )
-    return {"success": True, "message": "You are now an admin. Please refresh the app."}
+# REMOVED: reset-free-trial endpoint - Free trial is one-time only on signup
+# REMOVED: become-admin endpoint - Admin access is restricted to mail2clive@gmail.com only
 
 # ===========================================
 # M-PESA PAYMENT ENDPOINTS
