@@ -620,8 +620,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#374151',
-    marginBottom: 8
+    color: '#374151'
   },
   pickerWrapper: {
     backgroundColor: '#FFFFFF',
