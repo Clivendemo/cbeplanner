@@ -34,12 +34,14 @@ interface AuthContextType {
   firebaseUser: FirebaseUser | null;
   loading: boolean;
   isAdmin: boolean;
+  isNewUser: boolean;
   authChecked: boolean;
   signIn: (email: string, password: string) => Promise<User | null>;
   signUp: (email: string, password: string, firstName: string, lastName: string, schoolName: string) => Promise<User | null>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  clearNewUserFlag: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
