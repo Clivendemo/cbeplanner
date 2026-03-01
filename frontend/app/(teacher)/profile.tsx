@@ -17,6 +17,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
+import { getErrorMessage, isRateLimitError } from '../../utils/errorHandler';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
