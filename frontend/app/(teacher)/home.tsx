@@ -22,7 +22,7 @@ const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const DURATIONS = [25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80];
 
 export default function Home() {
-  const { firebaseUser, user, refreshProfile } = useAuth();
+  const { firebaseUser, user, refreshProfile, isNewUser, clearNewUserFlag } = useAuth();
   
   const [grades, setGrades] = useState<any[]>([]);
   const [allSubjects, setAllSubjects] = useState<any[]>([]); // All subjects from DB
