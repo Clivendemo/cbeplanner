@@ -28,7 +28,7 @@ from datetime import datetime
 load_dotenv('/app/backend/.env')
 
 # Get environment variables
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://teacher-lesson-gen.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://lesson-builder-kenya.preview.emergentagent.com').rstrip('/')
 MONGO_URL = os.environ.get('MONGO_URL') or os.environ.get('MONGODB_URI')
 DB_NAME = os.environ.get('DB_NAME', 'cbeplanner')
 

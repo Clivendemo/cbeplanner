@@ -11,7 +11,7 @@ from typing import Dict, Any, Optional
 import time
 
 # Backend URL from environment
-BACKEND_URL = "https://teacher-lesson-gen.preview.emergentagent.com/api"
+BACKEND_URL = "https://lesson-builder-kenya.preview.emergentagent.com/api"
 
 class CBEBackendTester:
     def __init__(self):
