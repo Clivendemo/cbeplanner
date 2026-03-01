@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Header
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Header, Request
+from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -7,9 +8,15 @@ import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from bson import ObjectId
 import httpx
+
+# Import production utilities
+from app.production_utils import (
+    ProductionLogger, IdempotencyManager, InputValidator, 
+    RateLimiter, TransactionLock, get_user_error, SECURITY_HEADERS
+)
 
 # ===========================================
 # ENVIRONMENT CONFIGURATION
