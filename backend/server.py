@@ -1219,10 +1219,30 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
     - First 5 lessons are FREE (tracked via freeLessonsRemaining)
     - After that, each lesson costs KES 2
     - Wallet balance must be sufficient, no negative balances allowed
+    - Protected against duplicate submissions and race conditions
     """
     user_id = user["id"]
-    free_remaining = user.get("freeLessonsRemaining", 0)
-    wallet_balance = user.get("walletBalance", 0.0)
+    
+    # Rate limiting - max 10 lesson generations per minute
+    rate_limit_key = f"lesson_gen:{user_id}"
+    if not RateLimiter.check_rate_limit(rate_limit_key, max_requests=10, window_seconds=60):
+        ProductionLogger.log_error("RATE_LIMIT", "Lesson generation rate limited", user_id)
+        raise HTTPException(
+            status_code=429, 
+            detail=get_user_error("rate_limited")
+        )
+    
+    # Acquire transaction lock to prevent race conditions
+    lock_key = f"lesson_gen_lock:{user_id}"
+    if not TransactionLock.acquire(lock_key):
+        raise HTTPException(
+            status_code=409, 
+            detail="A lesson generation is already in progress. Please wait."
+        )
+    
+    try:
+        free_remaining = user.get("freeLessonsRemaining", 0)
+        wallet_balance = user.get("walletBalance", 0.0)
     
     # Check if user has free lessons or sufficient balance
     if free_remaining > 0:
