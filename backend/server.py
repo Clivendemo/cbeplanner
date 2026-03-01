@@ -1278,25 +1278,25 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
             try:
                 await db.wallet_ledger.insert_one(ledger_entry)
             except Exception as e:
-            # Duplicate reference - shouldn't happen but handle it
-            logger.error(f"Ledger entry failed: {str(e)}")
-            raise HTTPException(status_code=500, detail="Payment processing error")
+                # Duplicate reference - shouldn't happen but handle it
+                logger.error(f"Ledger entry failed: {str(e)}")
+                raise HTTPException(status_code=500, detail="Payment processing error")
+            
+            # Atomically decrement wallet balance
+            result = await db.users.update_one(
+                {"_id": ObjectId(user_id), "walletBalance": {"$gte": LESSON_PLAN_COST_KES}},
+                {"$inc": {"walletBalance": -LESSON_PLAN_COST_KES}}
+            )
+            
+            if result.modified_count == 0:
+                # Rollback ledger entry if balance update failed
+                await db.wallet_ledger.delete_one({"reference": ledger_ref})
+                raise HTTPException(status_code=402, detail="Insufficient wallet balance")
+            
+            logger.info(f"User {user_id} charged KES {LESSON_PLAN_COST_KES} for lesson plan. Ref: {ledger_ref}")
         
-        # Atomically decrement wallet balance
-        result = await db.users.update_one(
-            {"_id": ObjectId(user_id), "walletBalance": {"$gte": LESSON_PLAN_COST_KES}},
-            {"$inc": {"walletBalance": -LESSON_PLAN_COST_KES}}
-        )
-        
-        if result.modified_count == 0:
-            # Rollback ledger entry if balance update failed
-            await db.wallet_ledger.delete_one({"reference": ledger_ref})
-            raise HTTPException(status_code=402, detail="Insufficient wallet balance")
-        
-        logger.info(f"User {user_id} charged KES {LESSON_PLAN_COST_KES} for lesson plan. Ref: {ledger_ref}")
-    
-    # Fetch all related data
-    grade = await db.grades.find_one({"_id": ObjectId(request.gradeId)})
+        # Fetch all related data
+        grade = await db.grades.find_one({"_id": ObjectId(request.gradeId)})
     subject = await db.subjects.find_one({"_id": ObjectId(request.subjectId)})
     strand = await db.strands.find_one({"_id": ObjectId(request.strandId)})
     substrand = await db.substrands.find_one({"_id": ObjectId(request.substrandId)})
