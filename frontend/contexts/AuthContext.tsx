@@ -51,11 +51,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
 
   // Check if user is admin by email (client-side check, backend also enforces)
   const isAdmin = user?.email?.toLowerCase().trim() === ADMIN_EMAIL;
 
-  const verifyAndSetUser = useCallback(async (fbUser: FirebaseUser) => {
+  // Clear new user flag (call after showing welcome message)
+  const clearNewUserFlag = useCallback(() => {
+    setIsNewUser(false);
+  }, []);
+
+  const verifyAndSetUser = useCallback(async (fbUser: FirebaseUser, isSignUp: boolean = false) => {
     try {
       console.log('Verifying user with backend:', fbUser.email);
       const idToken = await fbUser.getIdToken(true);
