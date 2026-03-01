@@ -1244,40 +1244,40 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
         free_remaining = user.get("freeLessonsRemaining", 0)
         wallet_balance = user.get("walletBalance", 0.0)
     
-    # Check if user has free lessons or sufficient balance
-    if free_remaining > 0:
-        # Use free lesson - decrement counter
-        await db.users.update_one(
-            {"_id": ObjectId(user_id)},
-            {"$inc": {"freeLessonsRemaining": -1}}
-        )
-        logger.info(f"User {user_id} used free lesson. Remaining: {free_remaining - 1}")
-    else:
-        # Charge KES 2 from wallet
-        if wallet_balance < LESSON_PLAN_COST_KES:
-            raise HTTPException(
-                status_code=402, 
-                detail=f"Insufficient wallet balance. You need KES {LESSON_PLAN_COST_KES} to generate a lesson plan. Current balance: KES {wallet_balance}"
+        # Check if user has free lessons or sufficient balance
+        if free_remaining > 0:
+            # Use free lesson - decrement counter
+            await db.users.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$inc": {"freeLessonsRemaining": -1}}
             )
-        
-        # Atomic deduction with wallet ledger entry
-        import uuid
-        ledger_ref = f"LESSON-{uuid.uuid4().hex[:12].upper()}"
-        
-        # Create ledger entry FIRST (source of truth)
-        ledger_entry = {
-            "userId": user_id,
-            "type": "DEBIT",
-            "amount": LESSON_PLAN_COST_KES,
-            "reference": ledger_ref,
-            "source": "LESSON_PLAN",
-            "description": f"Lesson plan generation",
-            "createdAt": datetime.utcnow()
-        }
-        
-        try:
-            await db.wallet_ledger.insert_one(ledger_entry)
-        except Exception as e:
+            logger.info(f"User {user_id} used free lesson. Remaining: {free_remaining - 1}")
+        else:
+            # Charge KES 2 from wallet
+            if wallet_balance < LESSON_PLAN_COST_KES:
+                raise HTTPException(
+                    status_code=402, 
+                    detail=f"Insufficient wallet balance. You need KES {LESSON_PLAN_COST_KES} to generate a lesson plan. Current balance: KES {wallet_balance}"
+                )
+            
+            # Atomic deduction with wallet ledger entry
+            import uuid
+            ledger_ref = f"LESSON-{uuid.uuid4().hex[:12].upper()}"
+            
+            # Create ledger entry FIRST (source of truth)
+            ledger_entry = {
+                "userId": user_id,
+                "type": "DEBIT",
+                "amount": LESSON_PLAN_COST_KES,
+                "reference": ledger_ref,
+                "source": "LESSON_PLAN",
+                "description": f"Lesson plan generation",
+                "createdAt": datetime.utcnow()
+            }
+            
+            try:
+                await db.wallet_ledger.insert_one(ledger_entry)
+            except Exception as e:
             # Duplicate reference - shouldn't happen but handle it
             logger.error(f"Ledger entry failed: {str(e)}")
             raise HTTPException(status_code=500, detail="Payment processing error")
