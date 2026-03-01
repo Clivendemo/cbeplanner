@@ -77,6 +77,53 @@ app = FastAPI(
     redoc_url="/api/redoc" if ENVIRONMENT != "production" else None
 )
 
+# ===========================================
+# PRODUCTION MIDDLEWARE
+# ===========================================
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Add security headers to all responses"""
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        # Add security headers
+        for header, value in SECURITY_HEADERS.items():
+            response.headers[header] = value
+        return response
+
+class GlobalErrorHandlerMiddleware(BaseHTTPMiddleware):
+    """
+    Global error handler that catches unhandled exceptions
+    and returns user-friendly error messages
+    """
+    async def dispatch(self, request: Request, call_next):
+        try:
+            response = await call_next(request)
+            return response
+        except HTTPException:
+            # Let FastAPI handle HTTP exceptions normally
+            raise
+        except Exception as e:
+            # Log the actual error for debugging
+            ProductionLogger.log_error(
+                error_type="UNHANDLED_EXCEPTION",
+                message=str(e),
+                details={"path": str(request.url.path), "method": request.method}
+            )
+            # Return user-friendly error
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "success": False,
+                    "error": get_user_error("server_error"),
+                    "detail": "An unexpected error occurred. Please try again."
+                }
+            )
+
+# Add custom middleware (order matters - first added = last executed)
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(GlobalErrorHandlerMiddleware)
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
