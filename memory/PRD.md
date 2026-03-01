@@ -82,11 +82,13 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - Clean requirements.txt with production-only dependencies (removed emergentintegrations and dev tools)
 
 ## Key Files
-- `backend/server.py` - Main FastAPI application
+- `backend/server.py` - Main FastAPI application with production middleware
+- `backend/app/production_utils.py` - Production utilities (logging, rate limiting, validation)
 - `backend/mpesa_service.py` - M-Pesa integration
 - `backend/Dockerfile` - Production-ready Docker configuration for Render
-- `frontend/app/(teacher)/home.tsx` - Main lesson generation UI
-- `frontend/app/(teacher)/profile.tsx` - Wallet & M-Pesa UI
+- `frontend/app/(teacher)/home.tsx` - Main lesson generation UI with error handling
+- `frontend/app/(teacher)/profile.tsx` - Wallet & M-Pesa UI with error handling
+- `frontend/utils/errorHandler.ts` - Centralized error handling utility
 
 ## Known Issues
 1. **Expo Go Instability (P1):** User reported app crashes on mobile. May need further debugging.
