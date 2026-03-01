@@ -553,9 +553,11 @@ async def verify_user_token(request: TokenVerifyRequest):
             uid = user_data["localId"]
             email = user_data.get("email", "")
         
+        is_new_user = False
         user = await db.users.find_one({"firebaseUid": uid})
         if not user:
             # Create new user with 5 FREE lessons on signup
+            is_new_user = True
             new_user = {
                 "firebaseUid": uid,
                 "email": email,
@@ -591,7 +593,7 @@ async def verify_user_token(request: TokenVerifyRequest):
                 )
                 user["freeLessonsRemaining"] = free_remaining
         
-        return {"success": True, "user": serialize_doc(user)}
+        return {"success": True, "user": serialize_doc(user), "isNewUser": is_new_user}
     except httpx.HTTPError as e:
         raise HTTPException(status_code=401, detail=f"Token verification failed: {str(e)}")
     except Exception as e:
