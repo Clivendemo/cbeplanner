@@ -223,12 +223,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       firebaseUser, 
       loading, 
       isAdmin,
+      isNewUser,
       authChecked,
       signIn, 
       signUp, 
       signOut, 
       refreshProfile, 
-      resetPassword 
+      resetPassword,
+      clearNewUserFlag
     }}>
       {children}
     </AuthContext.Provider>
