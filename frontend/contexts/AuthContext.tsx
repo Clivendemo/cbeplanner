@@ -153,6 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (response.data.success) {
         console.log('User profile created:', response.data.user.email);
         setUser(response.data.user);
+        setIsNewUser(true); // Always set for signups
         setLoading(false);
         return response.data.user;
       }
