@@ -291,6 +291,9 @@ export default function Home() {
     <View style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
+          <Text style={styles.welcomeText}>
+            {isNewUser ? 'Welcome' : 'Welcome back'}, {user?.firstName}!
+          </Text>
           <Text style={styles.headerTitle}>Create Lesson Plan</Text>
           <View style={styles.infoCard}>
             <Text style={styles.infoLabel}>Teacher: {user?.firstName} {user?.lastName}</Text>
@@ -299,7 +302,10 @@ export default function Home() {
           <View style={styles.balanceCard}>
             <Ionicons name="wallet-outline" size={20} color="#6366F1" />
             <Text style={styles.balanceText}>
-              {user?.freeLessonUsed ? `Balance: ${user?.walletBalance} KES` : '1 Free Lesson Available'}
+              {(user?.freeLessonsRemaining ?? 0) > 0 
+                ? `${user?.freeLessonsRemaining} Free Lesson${(user?.freeLessonsRemaining ?? 0) !== 1 ? 's' : ''} Available`
+                : `Balance: KES ${user?.walletBalance ?? 0}`
+              }
             </Text>
           </View>
         </View>
