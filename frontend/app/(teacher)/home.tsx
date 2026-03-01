@@ -239,7 +239,7 @@ export default function Home() {
 
   const generateLessonPlan = async () => {
     if (!selectedGrade || !selectedSubject || !selectedStrand || !selectedSubstrand || !selectedSLO) {
-      Alert.alert('Error', 'Please select all required fields');
+      Alert.alert('Missing Fields', 'Please select all required fields before generating');
       return;
     }
 
@@ -256,7 +256,7 @@ export default function Home() {
           substrandId: selectedSubstrand,
           sloId: selectedSLO
         },
-        { headers }
+        { headers, timeout: 30000 } // 30 second timeout
       );
 
       if (response.data.success) {
@@ -266,10 +266,21 @@ export default function Home() {
         Alert.alert('Success', 'Lesson plan generated successfully!');
       }
     } catch (error: any) {
-      if (error.response?.status === 402) {
-        Alert.alert('Insufficient Balance', 'Please top up your wallet to generate more lesson plans');
+      const errorMessage = getErrorMessage(error);
+      
+      if (isPaymentError(error)) {
+        Alert.alert(
+          'Insufficient Balance', 
+          'You have used all your free lessons. Please top up your wallet to generate more lesson plans.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Top Up', onPress: () => {} } // Could navigate to profile
+          ]
+        );
+      } else if (isRateLimitError(error)) {
+        Alert.alert('Please Wait', errorMessage);
       } else {
-        Alert.alert('Error', error.response?.data?.detail || 'Failed to generate lesson plan');
+        Alert.alert('Generation Failed', errorMessage);
       }
     } finally {
       setGenerating(false);
