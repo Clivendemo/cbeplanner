@@ -131,8 +131,12 @@ export default function Profile() {
         setShowTopUpModal(false);
       }
     } catch (error: any) {
-      const errorMsg = error.response?.data?.detail || 'Failed to initiate payment';
-      Alert.alert('Payment Failed', errorMsg);
+      const errorMsg = getErrorMessage(error);
+      if (isRateLimitError(error)) {
+        Alert.alert('Too Many Attempts', errorMsg);
+      } else {
+        Alert.alert('Payment Failed', errorMsg);
+      }
     } finally {
       setTopUpLoading(false);
     }
