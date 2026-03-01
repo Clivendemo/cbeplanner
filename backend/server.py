@@ -1530,7 +1530,19 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
     # Convert datetime to ISO string for JSON serialization
     lesson_plan["createdAt"] = lesson_plan["createdAt"].isoformat()
     
-    return {"success": True, "lessonPlan": lesson_plan}
+        # Log successful generation
+        ProductionLogger.log_critical_action("LESSON_PLAN_GENERATED", user_id, {
+            "lesson_plan_id": lesson_plan["id"],
+            "grade": lesson_plan["gradeName"],
+            "subject": lesson_plan["subjectName"],
+            "used_free": free_remaining > 0
+        })
+        
+        return {"success": True, "lessonPlan": lesson_plan}
+    
+    finally:
+        # Always release the lock
+        TransactionLock.release(lock_key)
 
 @api_router.get("/lesson-plans")
 async def get_lesson_plans(user: dict = Depends(verify_token)):
