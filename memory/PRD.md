@@ -19,6 +19,16 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - **Schemes of Work Generator:** Term-based curriculum planning
 - **Admin Role:** Role-based access control for admin endpoints
 
+### Production Readiness (DONE - Dec 2025)
+- **Global Error Handler Middleware:** Catches unhandled exceptions and returns user-friendly messages
+- **Security Headers Middleware:** Adds X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, etc.
+- **Rate Limiting:** Prevents abuse of M-Pesa payment initiation (5 requests/min) and lesson generation (10 requests/min)
+- **Idempotency Management:** Prevents duplicate payment initiations
+- **Transaction Locking:** Prevents race conditions during lesson plan generation
+- **Structured Logging:** ProductionLogger class for sanitized, structured logs
+- **Input Validation:** Centralized phone number and amount validation
+- **Frontend Error Handler:** Utility for mapping API errors to user-friendly messages
+
 ### Curriculum Data (UPDATED - Dec 2025)
 - **22 Subjects:** Literacy Activities, Mathematical Activities, Environmental Activities, English, Mathematics, Science and Technology, Social Studies, Chemistry, Computer Science, Community Service Learning, Fasihi ya Kiswahili, Kiswahili Lugha, Agriculture, Biology, Arabic, Aviation Technology, Building Construction, **Business Studies**, **Christian Religious Education (CRE)**, **Electrical Technology**, **Fine Arts**, **French**
 - **60 Strands** across all subjects
