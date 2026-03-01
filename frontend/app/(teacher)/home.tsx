@@ -599,6 +599,12 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 24
   },
+  welcomeText: {
+    fontSize: 16,
+    color: '#6366F1',
+    fontWeight: '600',
+    marginBottom: 4
+  },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
