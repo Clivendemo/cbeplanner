@@ -697,11 +697,8 @@ async def initiate_mpesa_payment(request: InitiatePaymentRequest, user: dict = D
         # Generate unique transaction reference
         tx_ref = mpesa_service.generate_tx_ref()
         
-        # Format phone number
-        try:
-            formatted_phone = mpesa_service.format_phone_number(request.phoneNumber)
-        except ValueError as e:
-            raise HTTPException(status_code=400, detail=str(e))
+        # Log payment attempt
+        ProductionLogger.log_payment_attempt(user_id, float(request.amount), formatted_phone, "INITIATING", tx_ref)
         
         # Create pending transaction in ledger FIRST (before calling M-Pesa)
         transaction = {
