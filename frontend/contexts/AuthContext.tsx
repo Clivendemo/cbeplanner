@@ -74,6 +74,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (response.data.success) {
         console.log('User verified successfully:', response.data.user.email);
         setUser(response.data.user);
+        // Set isNewUser flag based on backend response or if this is a signup
+        if (response.data.isNewUser || isSignUp) {
+          setIsNewUser(true);
+        }
         return response.data.user;
       }
       return null;
