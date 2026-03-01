@@ -15,6 +15,7 @@ import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import { LessonPlanDisplay } from '../../components/LessonPlanDisplay';
 import { filterSubjectsByGrade, getGradeBand, getGradeBandDisplayName } from '../../utils/kicdSubjectMapping';
+import { getErrorMessage, isPaymentError, isRateLimitError } from '../../utils/errorHandler';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
