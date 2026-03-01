@@ -653,17 +653,45 @@ async def initiate_mpesa_payment(request: InitiatePaymentRequest, user: dict = D
     """
     Initiate M-Pesa STK Push payment for wallet top-up
     
-    - Validates amount (minimum 50 KES)
+    - Rate limited to prevent abuse
+    - Validates phone number and amount
+    - Prevents duplicate requests using idempotency
     - Creates pending transaction in ledger
     - Sends STK Push to customer's phone
     - Returns checkout details for status polling
     """
-    # Validate amount
-    if request.amount < 50:
-        raise HTTPException(status_code=400, detail="Minimum top-up amount is 50 KES")
+    user_id = user["id"]
     
-    if request.amount > 150000:
-        raise HTTPException(status_code=400, detail="Maximum top-up amount is 150,000 KES")
+    # Rate limiting - max 5 payment initiations per minute per user
+    rate_limit_key = f"mpesa_initiate:{user_id}"
+    if not RateLimiter.check_rate_limit(rate_limit_key, max_requests=5, window_seconds=60):
+        ProductionLogger.log_error("RATE_LIMIT", "Payment initiation rate limited", user_id)
+        raise HTTPException(
+            status_code=429, 
+            detail=get_user_error("rate_limited")
+        )
+    
+    # Validate phone number using InputValidator
+    is_valid_phone, phone_result = InputValidator.validate_phone(request.phoneNumber)
+    if not is_valid_phone:
+        raise HTTPException(status_code=400, detail=phone_result)
+    formatted_phone = phone_result
+    
+    # Validate amount using InputValidator
+    is_valid_amount, amount_val, amount_error = InputValidator.validate_amount(
+        request.amount, min_val=50, max_val=150000
+    )
+    if not is_valid_amount:
+        raise HTTPException(status_code=400, detail=amount_error)
+    
+    # Idempotency check - prevent duplicate requests within 30 seconds
+    idempotency_key = IdempotencyManager.generate_key(user_id, formatted_phone, request.amount, "initiate")
+    if IdempotencyManager.check_and_mark(idempotency_key):
+        ProductionLogger.log_error("DUPLICATE_REQUEST", "Duplicate payment initiation blocked", user_id)
+        raise HTTPException(
+            status_code=409, 
+            detail=get_user_error("duplicate_action")
+        )
     
     try:
         # Generate unique transaction reference
