@@ -182,3 +182,39 @@ Successfully downloaded and processed KICD rationalized curriculum designs from 
 - Substrands: 335
 - SLOs: 1,248
 - Learning Activities: 134
+
+## Grade 8 Complete Curriculum Data (DONE - Dec 2025)
+User uploaded official KICD Grade 8 curriculum design PDFs (April 2024 formatted versions).
+
+**PDFs Processed:**
+- Mathematics-Grade-8-Design-Formatted-April-2024.pdf
+- Integrated-Science-Grade-8-Design-Formatted-April-2024.pdf
+- Social-Studies-Grade-8-Formatted-April-2024.pdf
+- English-Grade-8-Design-Formatted-April-2024.pdf
+- Kiswahili-Grade-8-.pdf
+
+**Grade 8 Data Seeded (with full learning experiences):**
+| Subject | Strands | Substrands | SLOs | Activity Sets |
+|---------|---------|------------|------|---------------|
+| Mathematics | 5 | 27 | 82 | 27 |
+| Integrated Science | 3 | 8 | 30 | 8 |
+| Social Studies | 4 | 9 | 31 | 9 |
+| English | 4 | 8 | 24 | 8 |
+| Kiswahili | 4 | 8 | 17 | 8 |
+
+**Learning Activities Include:**
+- Introduction activities
+- Development activities  
+- Conclusion activities
+- Inquiry Questions
+- Core Competencies
+- Values
+- PCIs (Pertinent and Contemporary Issues)
+
+**Updated Database Totals:**
+- Grades: 12
+- Subjects: 147
+- Strands: 95
+- Substrands: 331
+- SLOs: 1,195
+- Learning Activities: 194
