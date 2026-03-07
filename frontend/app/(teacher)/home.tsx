@@ -14,7 +14,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import { LessonPlanDisplay } from '../../components/LessonPlanDisplay';
-import { filterSubjectsByGrade, getGradeBand, getGradeBandDisplayName } from '../../utils/kicdSubjectMapping';
 import { getErrorMessage, isPaymentError, isRateLimitError } from '../../utils/errorHandler';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -98,18 +97,12 @@ export default function Home() {
       const headers = await getHeaders();
       const response = await axios.get(`${BACKEND_URL}/api/subjects?gradeId=${gradeId}`, { headers });
       if (response.data.success) {
-        const allSubjectsFromDb = response.data.subjects;
-        setAllSubjects(allSubjectsFromDb);
+        const subjectsFromDb = response.data.subjects;
+        // Show all subjects from database - admin panel is the source of truth
+        setAllSubjects(subjectsFromDb);
+        setSubjects(subjectsFromDb);
         
-        // Filter subjects based on KICD grade band mapping
-        const filteredSubjects = filterSubjectsByGrade(allSubjectsFromDb, gradeName);
-        setSubjects(filteredSubjects);
-        
-        // Log for debugging
-        const band = getGradeBand(gradeName);
-        if (band) {
-          console.log(`[KICD] ${gradeName} (${getGradeBandDisplayName(band)}): Showing ${filteredSubjects.length} of ${allSubjectsFromDb.length} subjects`);
-        }
+        console.log(`[Subjects] ${gradeName}: Loaded ${subjectsFromDb.length} subjects from database`);
         
         setStrands([]);
         setSubstrands([]);
@@ -346,11 +339,6 @@ export default function Home() {
             <View style={styles.pickerContainer}>
               <View style={styles.labelRow}>
                 <Text style={styles.label}>Learning Area / Subject *</Text>
-                {selectedGradeName && getGradeBand(selectedGradeName) && (
-                  <Text style={styles.gradeBandLabel}>
-                    {getGradeBandDisplayName(getGradeBand(selectedGradeName)!)}
-                  </Text>
-                )}
               </View>
               {subjects.length === 0 && !loading ? (
                 <View style={styles.noSubjectsMessage}>
