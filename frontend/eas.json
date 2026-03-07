@@ -14,17 +14,17 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://your-backend.up.railway.app",
-        "EXPO_PUBLIC_BACKEND_URL": "https://your-backend.up.railway.app"
+        "EXPO_PUBLIC_API_BASE_URL": "https://cbeplanner.onrender.com",
+        "EXPO_PUBLIC_BACKEND_URL": "https://cbeplanner.onrender.com"
       }
     },
     "production": {
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://your-backend.up.railway.app",
-        "EXPO_PUBLIC_BACKEND_URL": "https://your-backend.up.railway.app"
+        "EXPO_PUBLIC_API_BASE_URL": "https://cbeplanner.onrender.com",
+        "EXPO_PUBLIC_BACKEND_URL": "https://cbeplanner.onrender.com"
       },
       "android": {
-        "buildType": "apk"
+        "buildType": "app-bundle"
       },
       "ios": {
         "resourceClass": "m1-medium"
@@ -34,11 +34,12 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "your-apple-id@email.com",
-        "ascAppId": "your-app-store-connect-app-id"
+        "appleId": "legitlabs@outlook.com",
+        "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID"
       },
       "android": {
-        "serviceAccountKeyPath": "./path-to-google-play-service-account.json"
+        "serviceAccountKeyPath": "./google-play-service-account.json",
+        "track": "production"
       }
     }
   }

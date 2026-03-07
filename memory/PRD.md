@@ -108,9 +108,12 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 
 ## Next Steps / Backlog
 - [x] Production-readiness middleware (error handling, security headers, rate limiting) - DONE Dec 2025
+- [x] Play Store preparation (app.json, eas.json, privacy policy, listing) - DONE Dec 2025
 - [ ] User verification of mobile app stability (Expo Go back button issues)
-- [ ] Deploy backend to Render
-- [ ] Deploy frontend to Vercel
+- [ ] Deploy backend to Render (https://cbeplanner.onrender.com)
+- [ ] Deploy frontend to Vercel (web)
+- [ ] Build Android AAB using `eas build --platform android --profile production`
+- [ ] Submit to Google Play Store
 - [ ] Test with production M-Pesa credentials
 - [ ] Debug Expo Go stability issues (if still occurring)
 - [ ] Import English curriculum data (requires OCR)
