@@ -2,88 +2,88 @@
 The user's goal is to build a production-ready Competency-Based Education (CBE) lesson planning system for Kenyan teachers.
 
 Key requirements implemented and evolving:
-1.  **Admin Curriculum Management:** Create a web and mobile admin panel for full CRUD (Create, Read, Update, Delete) operations on Grades, Subjects, Strands, Substrands, Specific Learning Objectives (SLOs), and Learning Activities.
-2.  **Dynamic Subject Filtering:** The subject dropdown in the lesson planner must be dynamically filtered based on the selected grade, following specific KICD curriculum clusters. This logic must be implemented in the frontend without any database schema changes.
-3.  **Auth & Security Hardening:**
-    -   Restrict admin panel access to a single, hardcoded email () enforced on the backend.
-    -   Fix mobile navigation issues, including the back button causing blank screens and the app not redirecting to login when the session is invalid.
-    -   Remove all Reset Free Trial functionality.
-4.  **Production Readiness:** Enhance the application's stability, resilience, and user experience by implementing graceful error handling, protection against duplicate submissions, transaction safety for payments, robust input validation, and structured logging.
-5.  **Expand Curriculum Database:** Continuously add new subjects and their specific suggested learning activities by parsing KICD curriculum PDFs.
-6.  **M-Pesa Integration:** A functional wallet system with M-Pesa STK Push for top-ups.
-7.  **Business Logic:** Charge KES 2 for lesson plan generation after the initial 5 free plans are used.
+1.  **Admin Curriculum Management:** Full CRUD (Create, Read, Update, Delete) operations on all curriculum data (Grades, Subjects, etc.).
+2.  **Dynamic Subject Display:** Subject dropdowns in both the admin and teacher views are now dynamically populated from the database, making the admin panel the single source of truth.
+3.  **Auth & Security Hardening:** Restricted admin access, production-readiness utilities (logging, error handling, rate limiting) implemented on the backend.
+4.  **UX Improvements:** The app now displays a Welcome or Welcome back message for new and returning users, respectively. It also accurately shows the number of free lessons remaining.
+5.  **Expand Curriculum Database:** The system is continuously updated by parsing KICD curriculum PDFs uploaded by the user or found online by the agent.
+6.  **M-Pesa Integration:** A functional wallet system with M-Pesa STK Push for top-ups (sandbox mode).
+7.  **Play Store Readiness:** The application has been configured with the necessary metadata (, , privacy policy) for submission to the Google Play Store.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application with a FastAPI backend and an Expo (React Native) frontend configured for web deployment. The backend is connected to a MongoDB Atlas database.
--   **Authentication:** Firebase-based authentication with a role system. Admin access is now hardcoded on the backend to a single user.
--   **Admin Panel:** A comprehensive curriculum management panel allows a designated admin to perform full CRUD operations on all curriculum data, including the specific learning activities that form the core of the lesson plans.
--   **Lesson Generation:** Dynamically generates lesson plans by pulling specific introduction, development, and conclusion activities from the database. The subject list is now filtered on the frontend based on the selected grade.
--   **SLO Mappings:** The system automatically creates default mappings between new SLOs and Core Competencies/Values/PCIs, ensuring generated lesson plans are always complete. An admin endpoint exists to customize these mappings.
--   **Wallet System:** A functional M-Pesa STK Push integration (sandbox mode) for wallet top-ups.
--   **Auth/Nav Guards:** The frontend now includes  and  guards to protect routes and ensure unauthenticated users are redirected to the login page on app start.
+A full-stack application with a FastAPI backend and an Expo (React Native) frontend. The backend is connected to a MongoDB Atlas database.
+-   **Authentication:** Firebase-based authentication. The backend now identifies new vs. returning users to provide a custom welcome.
+-   **Admin Panel:** A comprehensive CRUD panel for all curriculum data. It is now the single source of truth for subjects displayed in the teacher view.
+-   **Lesson Generation:** Dynamically generates lesson plans. The subject list is now fully dynamic and sorted alphabetically.
+-   **Production Readiness:** The backend is hardened with centralized middleware for error handling, security headers, rate limiting, and idempotency on critical endpoints. The frontend uses a global utility to display user-friendly error toasts.
+-   **Database Content:** The database contains curriculum data for various subjects, including recently added content for Computer Science (Grade 10), PP1, and PP2, extracted from PDFs.
+-   **Play Store Configuration:** The frontend project includes an  build configuration, a  file, and an updated  to facilitate building an Android App Bundle (AAB) for the Play Store.
 
 **Last working item**:
--   **Last item agent was working:** Implementing a broad set of production-readiness features as requested by the user. The agent started by creating a centralized utility file on the backend () to handle structured logging, security headers (CORS, HSTS), and a global error handling middleware. The agent was in the process of integrating these utilities into the main  file.
+-   **Last item agent was working:** The agent was actively fulfilling the user's request to populate the database with more curriculum data by finding and processing KICD curriculum designs for Grades 7, 8, and 9. It had successfully found several online sources and was in the process of downloading and analyzing PDFs for subjects like Pre-Technical Studies, Mathematics, and Integrated Science.
 -   **Status:** IN PROGRESS
 -   **Agent Testing Done:** N
--   **Which testing method agent to use?** both. The backend testing agent should be used to verify the new middleware, security headers, and endpoint-specific logic (e.g., idempotency). The frontend testing agent should then be used to confirm that UI components gracefully handle the new standardized error responses and loading states.
+-   **Which testing method agent to use?** backend testing agent. After the data seeding scripts are run, the agent should query the database collections (, , , etc.) to verify that the new data has been inserted correctly for the new grades.
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
 -   **Issue 1: Mobile Navigation & Stability (P1)**
-    -   **Description:** The user reported recurring issues with the mobile app, specifically the device's back button causing hangs or blank screens. While the agent implemented significant auth flow and navigation guard fixes, the user has not confirmed if these changes have resolved the underlying stability problems on the Expo Go client.
+    -   **Description:** An issue from a previous session where the mobile app's back button could cause hangs or blank screens. Auth and navigation guards were implemented to fix related problems, but the user has not confirmed if this specific issue is resolved on the Expo Go client.
+    -   **Attempted fixes:** Implemented  and  guards in the frontend using Expo Router layouts to create a more robust navigation flow.
     -   **Next debug checklist:**
-        1.  Ask the user to test the latest version on Expo Go, specifically testing back navigation, app restarts (when logged in and out), and general usage.
-        2.  If crashes persist, request specific error messages or screen recordings.
-        3.  Review the Expo Router setup in , , and  for potential misconfigurations that affect mobile navigation stacks.
-    -   **Why fix this issue and what will be achieved with this?** The app must be stable on the user's primary mobile platform.
+        1.  Ask the user to test the latest version on Expo Go, specifically focusing on back-button navigation.
+        2.  If the issue persists, request error messages or a screen recording from the user.
+    -   **Why fix this issue and what will be achieved with this?** A stable mobile experience is critical for the app's success on the Play Store.
     -   **Status:** USER VERIFICATION PENDING
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** frontend
+    -   **Blocked on other issue:** None
 
 **In progress Task List**:
--   **Task 1: Complete Production-Readiness Implementation (P0)**
-    -   **Where to resume:** The agent has created  and started modifying . The next steps are:
-        1.  Finish integrating the global error handler and security middleware in .
-        2.  Refactor critical endpoints (payments, wallet updates, lesson generation) to use the new structured logger and implement idempotency checks to prevent duplicate transactions.
-        3.  Update the frontend to replace  and raw error displays with user-friendly toasts or modals (e.g., Something went wrong. Please try again.).
-        4.  Implement loading states and disabled buttons on the frontend for all form submissions and API calls to prevent duplicate requests.
-    -   **What will be achieved with this?** The application will be significantly more stable, secure, and resilient, making it suitable for production deployment and real-world usage.
+-   **Task 1: Complete Seeding of Grade 7, 8, and 9 Curriculum Data (P0)**
+    -   **Where to resume:** The agent has downloaded several PDFs for Grades 7-9. The next steps are to:
+        1.  Finish analyzing the downloaded PDFs (, , ).
+        2.  Extract the curriculum structure (strands, sub-strands, SLOs, learning activities).
+        3.  Create and execute a Python script to seed this data into the MongoDB database.
+    -   **What will be achieved with this?** The application's database will be populated with essential Junior Secondary curriculum, making the lesson planner useful for a wider range of teachers.
     -   **Status:** IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on something:** None
+    -   **Should Test frontend/backend/both after fix?** backend
+    -   **Blocked on something:** Dependent on the successful parsing of the downloaded PDF files.
 
 **Upcoming and Future Tasks**
--   **User Verification (P0):** User needs to test and confirm the recent auth, navigation, and admin access fixes are working as expected on both web and mobile.
--   **Frontend Error Handling UI (P1):** Implement a consistent UI pattern (e.g., using  toasts) across the app to display the user-friendly error messages sent from the backend.
--   **Payment Flow Hardening (P1):** Add frontend and backend logic to handle abandoned or failed M-Pesa payments, ensuring the UI provides clear status updates and the backend prevents wallet balances from being incorrectly updated.
+-   **Upcoming Tasks:**
+    -   **User Verification (P0):** The user needs to test and confirm the Welcome vs. Welcome back feature and the corrected free lesson count are working as expected.
+    -   **Payment Flow Hardening (P1):** Implement logic to handle abandoned or failed M-Pesa payments to prevent inconsistent wallet states.
+-   **Future Tasks:**
+    -   **Refactor Admin Panel (P2):** The main admin component () is very large and should be broken down into smaller, manageable components.
+    -   **Deploy to Production (P2):** The backend needs to be deployed to a hosting service like Render, and the M-Pesa integration needs to be switched from sandbox to production credentials.
+    -   **Address English PDF Failure (P2):** The initial problem with parsing  remains. A different strategy (e.g., OCR) may be needed if this content is required.
 
 **Completed work in this session**
--   **Feature: Admin Curriculum Management Panel (DONE):**
-    -   Implemented a full CRUD UI in  for managing all curriculum entities.
-    -   Added corresponding backend CRUD endpoints in  for Grades, Subjects, Strands, Substrands, SLOs, and Learning Activities.
--   **Feature: Automatic SLO Mappings (DONE):**
-    -   The backend now automatically creates default mappings to competencies, values, and PCIs when a new SLO is created via the admin panel, ensuring all new lesson plans are complete.
-    -   The  collection is also cleaned up when an SLO is deleted.
--   **Feature: Grade-Specific Subject Filtering (DONE):**
-    -   Created a mapping in  to define which subjects belong to each KICD grade band (1-3, 4-6, 7-9, 10-12).
-    -   Modified  to filter the subjects dropdown based on the selected grade, without any database changes.
--   **Fix: Auth and Security Hardening (DONE):**
-    -   Backend admin routes are now protected by a dependency that strictly checks if the authenticated user's email is .
-    -   Removed insecure reset-free-trial and become-admin endpoints from .
-    -   Implemented  and  guards in the frontend using Expo Router layouts to protect routes and handle redirects.
-    -   Removed all admin-related links from the profile page for non-admin users.
--   **Task: Seeded 5 New Subjects (DONE):**
-    -   Parsed and seeded data from 5 new PDFs (, , , , ), including their learning activities.
--   **Task: Fixed Missing SLO Mappings (DONE):**
-    -   Ran a script to retroactively create SLO mappings for all existing subjects, ensuring that competencies, values, and PCIs load correctly for all lesson plans.
+-   **Feature: Production Readiness Overhaul (DONE):**
+    -   Integrated centralized error handling, security, and idempotency on the backend in .
+    -   Implemented user-friendly error toasts and loading states on the frontend in  and .
+-   **Feature: Welcome Message & Free Lesson Count (DONE):**
+    -   Modified  and  to differentiate between new and returning users.
+    -   Corrected the logic in  to display the accurate count of remaining free lessons.
+-   **Feature: Play Store Submission Preparation (DONE):**
+    -   Configured  and .
+    -   Created  and .
+-   **Feature: Alphabetical Sorting (DONE):**
+    -   Updated all curriculum GET endpoints in  to sort results alphabetically for a better user experience.
+-   **Bug Fix: Admin Panel Subject Display (DONE):**
+    -   Resolved an issue where newly added subjects did not appear. Moved filtering logic from the frontend to the backend () in .
+-   **Bug Fix: Teacher View Subject Mismatch (DONE):**
+    -   Removed the restrictive, static subject whitelist () from the teacher view. The dropdown in  now shows all subjects for a grade directly from the database, making the admin panel the single source of truth. The unused file was deleted.
+-   **Task: Database Seeding from PDFs (DONE):**
+    -   Seeded data for Computer Science (Grade 10), Language Activities, Mathematical Activities, and more for PP1/PP2 (Grade 1).
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1: English PDF Data Extraction Failure**
-    -   **Debug checklist:** In the project's early stages, text extraction from  was garbled. This data was skipped and never imported. If the user still needs this curriculum data, a different PDF parsing library or strategy (like OCR) may be required.
-    -   **Why to solve this issue and what will be achieved with this?** The English curriculum content is currently missing from the application.
+    -   **Debug checklist:** In an early session, text extraction from  was garbled, and the data was never imported. If this is still required, the agent should try a different PDF parsing library or an OCR-based approach.
+    -   **Why to solve this issue and what will be achieved with this?** The English curriculum is a core subject, and its absence is a significant content gap.
     -   **Should Test frontend/backend/both after fix:** backend
     -   **Is recurring issue?** N
 
@@ -93,89 +93,87 @@ A full-stack application with a FastAPI backend and an Expo (React Native) front
 -   **Status:** NOT STARTED
 
 **Code Architecture**
-isAdmin
+
 
 **Key Technical Concepts**
--   **Backend:** FastAPI, Pydantic, MongoDB (Motor), Firebase Admin SDK. Centralized middleware for error handling, CORS, and security headers.
--   **Frontend:** Expo SDK (React Native for Web), Expo Router, React Context API for auth state management ().
--   **Data Processing:**  for PDF text extraction during one-off seeding scripts.
+-   **Backend:** FastAPI, Pydantic, MongoDB (Motor), Firebase Admin SDK. Centralized middleware for error handling, CORS, and security.
+-   **Frontend:** Expo SDK (React Native for Web), Expo Router, React Context API for auth.
+-   **Data Processing:**  for PDF text extraction during data seeding scripts.
 -   **Architecture:**
-    -   **Frontend-driven filtering:** Business logic (KICD subject rules) is intentionally kept in the frontend code to avoid database modifications.
-    -   **Role-Based Access Control (RBAC):** Implemented on both frontend (hiding UI elements) and backend (API endpoint protection).
-    -   **Declarative Routing:** Using Expo Router with nested layouts for route protection and consistent UI shells.
+    -   **Server-Side Filtering:** The app now consistently uses server-side filtering for fetching curriculum data (e.g., subjects by grade), ensuring consistency between the admin and teacher views.
+    -   **Single Source of Truth:** The admin panel is now the definitive source for curriculum data shown to teachers, removing inconsistencies from static frontend mappings.
 
 **key DB schema**
+-   No changes were made to the database schema in this session.
 -   **users:** , , , 
--   **wallets:** , 
--   **subjects, strands, substrands, slos:** Hierarchical curriculum data.
--   **learning_activities:** , , , , , , , , 
--   **slo_mappings:** , , ,  (Links SLOs to competencies, etc.)
+-   **subjects, strands, substrands, slos:** Hierarchical curriculum data.  contains a  array.
+-   **learning_activities:** Stores activities linked to curriculum entities.
 
 **changes in tech stack**
--   No changes to the core technology stack.  was used as a development dependency for seeding scripts but was not added to the production .
+-   No changes to the core technology stack.
 
 **All files of reference**
--   : Major changes to add admin endpoints, automatic SLO mapping, and backend-enforced admin access control. Integration of production utilities started.
--   : **New file** for centralized error handling and security middleware.
--   : **New file**, a large component (~1300 lines) that contains the entire admin CRUD logic.
--   : **New file** containing the static mapping for grade-specific subjects.
--   : Modified to consume the  and filter subjects.
--   , : **New/Modified files** implementing auth and admin guards using Expo Router.
--   : Modified to include an  flag and a function to check admin status against the backend.
+-   : Heavily modified to add sorted and filtered endpoints, production-readiness middleware, and the  flag.
+-   : Major refactor to remove the static KICD filter, use dynamic data from the backend, and implement the new welcome message and corrected free lesson count.
+-   : Modified to use the new server-side filtering when loading subjects, fixing the refresh bug.
+-   : Updated to handle the  flag from the backend.
+-   , : Modified to prepare the app for Play Store submission.
+-   : **New file** created to centralize frontend API error handling.
+-   , : **New files** created for Play Store compliance.
+-   : **DELETED**, as it was the source of data inconsistency.
 
 **Areas that need refactoring**:
--   The admin page at  is monolithic and over 1200 lines long. It should be broken down into smaller, reusable components for each section (e.g., , , ).
--   The temporary data seeding scripts created during the session can now be deleted.
+-   The admin page at  is still monolithic and complex. It should be broken down into smaller, reusable components to improve maintainability.
 
 **key api endpoints**
--   : **NEW.** Creates/updates learning activities for a substrand.
--   : **NEW.** Endpoint to customize SLO mappings.
--   : **CHANGED.** Now automatically creates default SLO mappings on creation.
--   : **CHANGED.** Now cleans up associated mappings on deletion.
--   : **NEW.** Checks if the current authenticated user is the designated admin.
--   All  endpoints: **CHANGED.** Now protected by a backend dependency checking for .
+-   : **CHANGED.** Now accepts an optional  query parameter for filtering and sorts results alphabetically.
+-   , , : **CHANGED.** Now sort results for consistency.
+-   : **CHANGED.** Now returns an  boolean flag in its response.
 
 **Critical Info for New Agent**
--   **Your immediate task is to complete the production-readiness implementation.** This involves finishing the backend work (error handling, logging, idempotency) and then updating the frontend to gracefully handle errors and loading states.
--   **User verification is pending for major security and navigation fixes.** The user has not confirmed that the mobile stability issues are resolved. Be prepared to address follow-up bug reports in this area.
--   **Subject filtering is a frontend-only concern.** The logic resides in  and . Do not attempt to change this on the backend.
--   **The admin panel () is very large.** If you need to modify it, consider breaking it into smaller components first to make it more manageable.
+-   **Your immediate task is to continue the data seeding for Grades 7-9.** You need to analyze the downloaded PDFs and run a script to populate the database.
+-   **The subject display logic is now fully dynamic.** The old static mapping file () has been deleted. Do not try to re-implement any client-side whitelisting; the database is the single source of truth.
+-   **The app is configured for Play Store release.** The next steps would involve guiding the user through the An Expo user account is required to proceed.
+
+Log in to EAS with email or username (exit and run eas login --help to see other login options)
+Input is required, but stdin is not readable. Failed to display prompt: Email or username process and deploying the backend to a production URL.
+-   **Mobile stability remains an unconfirmed issue.** Be prepared to address this if the user reports that the back-button problem persists.
 
 **documents and test reports created in this job**
--    (Backend seeding verification)
--    (Admin CRUD API verification)
--    (Updated with completed tasks)
+-   
+-   
+-   The agent updated  throughout the session.
 
 **Last 10 User Messages and any pending HUMAN messages**
-10. **User**: Asked for a guide on how to use the new admin panel to update curriculum data. (Status: RESOLVED)
-9. **Agent**: Provided a detailed step-by-step guide for using the admin panel.
-8. **User**: Asked if newly created SLOs via the admin panel would also have missing mappings. (Status: RESOLVED)
-7. **Agent**: Confirmed it was a problem and implemented an automatic mapping fix on the backend.
-6. **User**: Requested grade-specific subject filtering based on KICD clusters, without any DB changes. (Status: RESOLVED)
-5. **Agent**: Proposed a frontend-only filtering plan, which the user approved and was implemented.
-4. **User**: Asked for a major production-readiness overhaul, including error handling, transaction safety, and UX improvements. (Status: IN PROGRESS)
-3. **Agent**: Began implementing the production-readiness features, starting with backend utilities.
-2. **User**: after updating i noticed that new subjects have missing slo mappings making competencies values and pcis not to load. is it going to be the same issue here? or you already added a script to add slo mappings for all new subjects (Status: RESOLVED)
-1. **Agent**: Acknowledged the issue and implemented a fix to automatically create SLO mappings for new SLOs created via the admin panel.
+10. **User:** Asked to update the database with data from the uploaded . (Status: COMPLETED)
+9. **User:** Asked if the agent can access KICD curriculum designs for grades 1 to 10. (Status: RESOLVED, agent explained it can search or process uploaded files)
+8. **User:** Instructed the agent to search online for PDFs and show the results. (Status: COMPLETED)
+7. **User:** Instructed the agent to download the available PDFs and update the database. (Status: IN PROGRESS, agent completed PP1/PP2)
+6. **User:** Asked the agent to get more PDFs for grades 7, 8, 9. (Status: IN PROGRESS, agent started downloading)
+5. **User:** Asked if the app can be deployed to the Play Store and web. (Status: RESOLVED, agent provided a detailed plan)
+4. **User:** Instructed the agent to prepare the app for Play Store submission. (Status: COMPLETED)
+3. **User:** Reminded the agent to fix the admin panel subject display issue. (Status: COMPLETED)
+2. **User:** Reported a new bug: subjects updated in the admin panel are not appearing in the teacher view dropdown. (Status: COMPLETED)
+1. **User:** Instructed the agent to match the subjects in the admin panel with the database and ensure changes are reflected in the teacher view. (Status: COMPLETED)
 
 **Project Health Check:**
--   **Broken:** The Expo Go mobile client's stability is unconfirmed and remains a potential point of failure, particularly regarding back-button navigation.
--   **Mocked:** The M-Pesa integration is still using **sandbox** credentials.
+-   **Broken:** The stability of the Expo Go mobile client is still unconfirmed, particularly regarding back-button navigation.
+-   **Mocked:** The M-Pesa integration is still configured for the **sandbox** environment.
 
 **3rd Party Integrations**
--   **Firebase Authentication:** For user sign-up and login.
+-   **Firebase Authentication:** User sign-up/login.
 -   **MongoDB Atlas:** Production database provider.
 -   **Safaricom Daraja API:** For M-Pesa STK Push payments (sandbox mode).
--   **PyMuPDF ():** Used as a dev dependency for one-time PDF data extraction.
+-   **PyMuPDF ():** Used as a dev dependency for one-time PDF data extraction scripts.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES
+-   **Testing agent used after significant changes:** NO (Proposed but not executed)
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** []
 -   **Known regressions:** None.
 
 **Credentials to test flow:**
-The agent does not have valid credentials to log into the frontend. The user is the only one who can test authenticated flows, especially the admin panel, which is locked to .
+The agent does not have credentials. All authenticated flows must be tested by the user. The designated admin email is .
 
 **What agent forgot to execute**
-The agent was in the middle of executing the user's latest and largest request (production readiness) when the session ended. The task is incomplete and is the top priority for the next session.</analysis>
+-   The agent proposed calling the  to verify the new vs. returning user welcome message flow but did not execute it. The implementation was completed, but not formally tested by a subagent.</analysis>

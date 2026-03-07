@@ -12,7 +12,7 @@ from bson import ObjectId
 from datetime import datetime
 
 # Use environment variable for backend URL
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://lesson-builder-kenya.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://cbe-smart-planner.preview.emergentagent.com')
 MONGO_URL = os.environ.get('MONGO_URL', os.environ.get('MONGODB_URI'))
 
 # Get MongoDB connection for direct database verification

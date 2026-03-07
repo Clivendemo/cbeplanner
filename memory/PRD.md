@@ -111,6 +111,7 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - [x] Play Store preparation (app.json, eas.json, privacy policy, listing) - DONE Dec 2025
 - [x] Fix admin panel subjects not displaying after add - DONE Dec 2025
 - [x] Sync admin panel subjects with teacher view (removed KICD whitelist filter) - DONE Dec 2025
+- [x] Seed Grade 7, 8, 9 curriculum data from KICD rationalized PDFs - DONE Dec 2025
 - [ ] User verification of mobile app stability (Expo Go back button issues)
 - [ ] Deploy backend to Render (https://cbeplanner.onrender.com)
 - [ ] Deploy frontend to Vercel (web)
@@ -119,7 +120,7 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - [ ] Test with production M-Pesa credentials
 - [ ] Debug Expo Go stability issues (if still occurring)
 - [ ] Import English curriculum data (requires OCR)
-- [ ] Add more subjects from KICD curriculum PDFs as needed
+- [ ] Seed learning activities for Junior Secondary subjects (to enable lesson plan generation)
 
 ## Admin Curriculum Management (DONE - Dec 2025)
 The admin panel now includes a complete curriculum management interface:
@@ -155,3 +156,29 @@ The admin panel now includes a complete curriculum management interface:
 - `backend/seed_new_activities.py` - Seeds learning activities for lesson generation
 - `backend/seed_curriculum_data.py` - Original seeding script
 - `backend/seed_activities.py` - Original activities script
+- `backend/seed_junior_secondary.py` - Seeds Grade 7, 8, 9 curriculum data (NEW)
+- `backend/parse_kicd_pdfs.py` - Parses KICD rationalized curriculum PDFs and seeds database (NEW)
+
+## Junior Secondary Curriculum Data (DONE - Dec 2025)
+Successfully downloaded and processed KICD rationalized curriculum designs from arena.co.ke:
+
+**Downloaded PDFs (in `/app/backend/pdfs/`):**
+- Grade 7: mathematics.pdf, integrated_science.pdf, social_studies.pdf, pre_technical_studies.pdf, english.pdf, agriculture.pdf
+- Grade 8: Same subjects
+- Grade 9: Same subjects
+
+**Seeded Data for Grades 7, 8, 9:**
+| Subject | Strands | Substrands | SLOs |
+|---------|---------|------------|------|
+| Mathematics | 5 | 22 | 69 |
+| Integrated Science | 5 | 19 | 59 |
+| Social Studies | 5 | 16 | 48 |
+| Pre-Technical Studies | 5 | 14 | 56 |
+
+**Database Totals After Seeding:**
+- Grades: 12
+- Subjects: 147
+- Strands: 93
+- Substrands: 335
+- SLOs: 1,248
+- Learning Activities: 134
