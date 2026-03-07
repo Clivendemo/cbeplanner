@@ -109,6 +109,7 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 ## Next Steps / Backlog
 - [x] Production-readiness middleware (error handling, security headers, rate limiting) - DONE Dec 2025
 - [x] Play Store preparation (app.json, eas.json, privacy policy, listing) - DONE Dec 2025
+- [x] Fix admin panel subjects not displaying after add - DONE Dec 2025
 - [ ] User verification of mobile app stability (Expo Go back button issues)
 - [ ] Deploy backend to Render (https://cbeplanner.onrender.com)
 - [ ] Deploy frontend to Vercel (web)

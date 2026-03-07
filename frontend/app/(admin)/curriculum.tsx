@@ -142,14 +142,13 @@ export default function Curriculum() {
   const loadSubjects = async (gradeId?: string) => {
     try {
       const headers = await getHeaders();
-      const response = await axios.get(`${BACKEND_URL}/api/admin/subjects`, { headers });
+      // Use server-side filtering with gradeId query parameter
+      const url = gradeId 
+        ? `${BACKEND_URL}/api/admin/subjects?gradeId=${gradeId}`
+        : `${BACKEND_URL}/api/admin/subjects`;
+      const response = await axios.get(url, { headers });
       if (response.data.success) {
-        const allSubjects = response.data.subjects;
-        if (gradeId) {
-          setSubjects(allSubjects.filter((s: any) => s.gradeIds?.includes(gradeId)));
-        } else {
-          setSubjects(allSubjects);
-        }
+        setSubjects(response.data.subjects);
       }
     } catch (error) {
       console.error('Error loading subjects:', error);
@@ -245,10 +244,10 @@ export default function Curriculum() {
     setLoading(true);
     try {
       const headers = await getHeaders();
-      const response = await axios.get(`${BACKEND_URL}/api/admin/subjects`, { headers });
+      // Use server-side filtering with gradeId query parameter
+      const response = await axios.get(`${BACKEND_URL}/api/admin/subjects?gradeId=${grade.id}`, { headers });
       if (response.data.success) {
-        const filtered = response.data.subjects.filter((s: any) => s.gradeIds?.includes(grade.id));
-        setData(filtered);
+        setData(response.data.subjects);
       }
     } catch (error) {
       console.error('Error:', error);

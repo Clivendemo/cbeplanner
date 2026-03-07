@@ -1980,8 +1980,14 @@ async def admin_delete_grade(grade_id: str, user: dict = Depends(verify_admin)):
 
 # Subjects
 @api_router.get("/admin/subjects")
-async def admin_get_subjects(user: dict = Depends(verify_admin)):
-    subjects = await db.subjects.find().to_list(100)
+async def admin_get_subjects(gradeId: Optional[str] = None, user: dict = Depends(verify_admin)):
+    """Get all subjects, optionally filtered by gradeId"""
+    if gradeId:
+        # Filter subjects that have this gradeId in their gradeIds array
+        query = {"gradeIds": gradeId}
+    else:
+        query = {}
+    subjects = await db.subjects.find(query).to_list(500)
     return {"success": True, "subjects": [serialize_doc(s) for s in subjects]}
 
 @api_router.post("/admin/subjects")
