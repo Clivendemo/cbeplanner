@@ -1199,38 +1199,78 @@ async def get_subjects(gradeId: str, user: dict = Depends(verify_token)):
 
 @api_router.get("/strands")
 async def get_strands(subjectId: str, user: dict = Depends(verify_token)):
-    # Try both ObjectId and string to handle different data formats
+    # Query both ObjectId and string formats and combine results (handles mixed data)
+    strands = []
+    seen_ids = set()
+    
     try:
-        strands = await db.strands.find({"subjectId": ObjectId(subjectId)}).sort("name", 1).to_list(100)
-        if not strands:
-            # Fallback to string query for backward compatibility
-            strands = await db.strands.find({"subjectId": subjectId}).sort("name", 1).to_list(100)
+        # Try ObjectId query first
+        oid_strands = await db.strands.find({"subjectId": ObjectId(subjectId)}).sort("name", 1).to_list(100)
+        for s in oid_strands:
+            if str(s["_id"]) not in seen_ids:
+                strands.append(s)
+                seen_ids.add(str(s["_id"]))
     except:
-        strands = await db.strands.find({"subjectId": subjectId}).sort("name", 1).to_list(100)
+        pass
+    
+    # Also try string query
+    str_strands = await db.strands.find({"subjectId": subjectId}).sort("name", 1).to_list(100)
+    for s in str_strands:
+        if str(s["_id"]) not in seen_ids:
+            strands.append(s)
+            seen_ids.add(str(s["_id"]))
+    
+    # Sort combined results by name
+    strands.sort(key=lambda x: x.get("name", ""))
     return {"success": True, "strands": [serialize_doc(s) for s in strands]}
 
 @api_router.get("/substrands")
 async def get_substrands(strandId: str, user: dict = Depends(verify_token)):
     logger.info(f"[SUBSTRANDS] Fetching substrands for strandId: {strandId}")
-    # Try both ObjectId and string to handle different data formats
+    # Query both ObjectId and string formats and combine results
+    substrands = []
+    seen_ids = set()
+    
     try:
-        substrands = await db.substrands.find({"strandId": ObjectId(strandId)}).sort("name", 1).to_list(100)
-        if not substrands:
-            substrands = await db.substrands.find({"strandId": strandId}).sort("name", 1).to_list(100)
+        oid_subs = await db.substrands.find({"strandId": ObjectId(strandId)}).sort("name", 1).to_list(100)
+        for s in oid_subs:
+            if str(s["_id"]) not in seen_ids:
+                substrands.append(s)
+                seen_ids.add(str(s["_id"]))
     except:
-        substrands = await db.substrands.find({"strandId": strandId}).sort("name", 1).to_list(100)
+        pass
+    
+    str_subs = await db.substrands.find({"strandId": strandId}).sort("name", 1).to_list(100)
+    for s in str_subs:
+        if str(s["_id"]) not in seen_ids:
+            substrands.append(s)
+            seen_ids.add(str(s["_id"]))
+    
+    substrands.sort(key=lambda x: x.get("name", ""))
     logger.info(f"[SUBSTRANDS] Found {len(substrands)} substrands for strandId: {strandId}")
     return {"success": True, "substrands": [serialize_doc(s) for s in substrands]}
 
 @api_router.get("/slos")
 async def get_slos(substrandId: str, user: dict = Depends(verify_token)):
-    # Try both ObjectId and string to handle different data formats
+    # Query both ObjectId and string formats and combine results
+    slos = []
+    seen_ids = set()
+    
     try:
-        slos = await db.slos.find({"substrandId": ObjectId(substrandId)}).to_list(100)
-        if not slos:
-            slos = await db.slos.find({"substrandId": substrandId}).to_list(100)
+        oid_slos = await db.slos.find({"substrandId": ObjectId(substrandId)}).to_list(100)
+        for s in oid_slos:
+            if str(s["_id"]) not in seen_ids:
+                slos.append(s)
+                seen_ids.add(str(s["_id"]))
     except:
-        slos = await db.slos.find({"substrandId": substrandId}).to_list(100)
+        pass
+    
+    str_slos = await db.slos.find({"substrandId": substrandId}).to_list(100)
+    for s in str_slos:
+        if str(s["_id"]) not in seen_ids:
+            slos.append(s)
+            seen_ids.add(str(s["_id"]))
+    
     return {"success": True, "slos": [serialize_doc(s) for s in slos]}
 
 @api_router.post("/lesson-plans/generate")
