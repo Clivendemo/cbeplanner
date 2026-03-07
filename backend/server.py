@@ -1194,18 +1194,18 @@ async def get_grades(user: dict = Depends(verify_token)):
 
 @api_router.get("/subjects")
 async def get_subjects(gradeId: str, user: dict = Depends(verify_token)):
-    subjects = await db.subjects.find({"gradeIds": gradeId}).to_list(100)
+    subjects = await db.subjects.find({"gradeIds": gradeId}).sort("name", 1).to_list(100)
     return {"success": True, "subjects": [serialize_doc(s) for s in subjects]}
 
 @api_router.get("/strands")
 async def get_strands(subjectId: str, user: dict = Depends(verify_token)):
-    strands = await db.strands.find({"subjectId": subjectId}).to_list(100)
+    strands = await db.strands.find({"subjectId": subjectId}).sort("name", 1).to_list(100)
     return {"success": True, "strands": [serialize_doc(s) for s in strands]}
 
 @api_router.get("/substrands")
 async def get_substrands(strandId: str, user: dict = Depends(verify_token)):
     logger.info(f"[SUBSTRANDS] Fetching substrands for strandId: {strandId}")
-    substrands = await db.substrands.find({"strandId": strandId}).to_list(100)
+    substrands = await db.substrands.find({"strandId": strandId}).sort("name", 1).to_list(100)
     logger.info(f"[SUBSTRANDS] Found {len(substrands)} substrands for strandId: {strandId}")
     return {"success": True, "substrands": [serialize_doc(s) for s in substrands]}
 
@@ -1981,13 +1981,12 @@ async def admin_delete_grade(grade_id: str, user: dict = Depends(verify_admin)):
 # Subjects
 @api_router.get("/admin/subjects")
 async def admin_get_subjects(gradeId: Optional[str] = None, user: dict = Depends(verify_admin)):
-    """Get all subjects, optionally filtered by gradeId"""
+    """Get all subjects, optionally filtered by gradeId, sorted alphabetically"""
     if gradeId:
-        # Filter subjects that have this gradeId in their gradeIds array
         query = {"gradeIds": gradeId}
     else:
         query = {}
-    subjects = await db.subjects.find(query).to_list(500)
+    subjects = await db.subjects.find(query).sort("name", 1).to_list(500)
     return {"success": True, "subjects": [serialize_doc(s) for s in subjects]}
 
 @api_router.post("/admin/subjects")
