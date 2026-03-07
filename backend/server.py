@@ -1199,19 +1199,38 @@ async def get_subjects(gradeId: str, user: dict = Depends(verify_token)):
 
 @api_router.get("/strands")
 async def get_strands(subjectId: str, user: dict = Depends(verify_token)):
-    strands = await db.strands.find({"subjectId": subjectId}).sort("name", 1).to_list(100)
+    # Try both ObjectId and string to handle different data formats
+    try:
+        strands = await db.strands.find({"subjectId": ObjectId(subjectId)}).sort("name", 1).to_list(100)
+        if not strands:
+            # Fallback to string query for backward compatibility
+            strands = await db.strands.find({"subjectId": subjectId}).sort("name", 1).to_list(100)
+    except:
+        strands = await db.strands.find({"subjectId": subjectId}).sort("name", 1).to_list(100)
     return {"success": True, "strands": [serialize_doc(s) for s in strands]}
 
 @api_router.get("/substrands")
 async def get_substrands(strandId: str, user: dict = Depends(verify_token)):
     logger.info(f"[SUBSTRANDS] Fetching substrands for strandId: {strandId}")
-    substrands = await db.substrands.find({"strandId": strandId}).sort("name", 1).to_list(100)
+    # Try both ObjectId and string to handle different data formats
+    try:
+        substrands = await db.substrands.find({"strandId": ObjectId(strandId)}).sort("name", 1).to_list(100)
+        if not substrands:
+            substrands = await db.substrands.find({"strandId": strandId}).sort("name", 1).to_list(100)
+    except:
+        substrands = await db.substrands.find({"strandId": strandId}).sort("name", 1).to_list(100)
     logger.info(f"[SUBSTRANDS] Found {len(substrands)} substrands for strandId: {strandId}")
     return {"success": True, "substrands": [serialize_doc(s) for s in substrands]}
 
 @api_router.get("/slos")
 async def get_slos(substrandId: str, user: dict = Depends(verify_token)):
-    slos = await db.slos.find({"substrandId": substrandId}).to_list(100)
+    # Try both ObjectId and string to handle different data formats
+    try:
+        slos = await db.slos.find({"substrandId": ObjectId(substrandId)}).to_list(100)
+        if not slos:
+            slos = await db.slos.find({"substrandId": substrandId}).to_list(100)
+    except:
+        slos = await db.slos.find({"substrandId": substrandId}).to_list(100)
     return {"success": True, "slos": [serialize_doc(s) for s in slos]}
 
 @api_router.post("/lesson-plans/generate")
@@ -1346,8 +1365,25 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
                 }).to_list(100)
                 assessments = [{"name": a["name"], "description": a["description"]} for a in assess_docs]
         
-        # Fetch specific learning activities for this substrand
-        learning_activities_doc = await db.learning_activities.find_one({"substrandId": request.substrandId})
+        # Fetch specific learning activities - try multiple query methods
+        learning_activities_doc = None
+        
+        # Method 1: Try by sloId (ObjectId) - new format
+        try:
+            learning_activities_doc = await db.learning_activities.find_one({"sloId": ObjectId(request.sloId)})
+        except:
+            pass
+        
+        # Method 2: Try by substrandId (ObjectId) - if not found
+        if not learning_activities_doc:
+            try:
+                learning_activities_doc = await db.learning_activities.find_one({"substrandId": ObjectId(request.substrandId)})
+            except:
+                pass
+        
+        # Method 3: Try by substrandId (string) - legacy format
+        if not learning_activities_doc:
+            learning_activities_doc = await db.learning_activities.find_one({"substrandId": request.substrandId})
         
         # Extract specific activities or use defaults
         intro_activities = []
@@ -1356,14 +1392,42 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
         extended_activities_list = []
         specific_resources = []
         specific_assessments = []
+        inquiry_questions = []  # Initialize inquiry questions
         
         if learning_activities_doc:
+            # Support both old format (introduction_activities) and new format (introduction)
             intro_activities = learning_activities_doc.get("introduction_activities", [])
+            if not intro_activities and learning_activities_doc.get("introduction"):
+                # New format: introduction is a string, split into list
+                intro_text = learning_activities_doc.get("introduction", "")
+                intro_activities = [a.strip() for a in intro_text.split(",") if a.strip()]
+            
             dev_activities = learning_activities_doc.get("development_activities", [])
+            if not dev_activities and learning_activities_doc.get("development"):
+                dev_text = learning_activities_doc.get("development", "")
+                dev_activities = [a.strip() for a in dev_text.split(",") if a.strip()]
+            
             conclusion_activities = learning_activities_doc.get("conclusion_activities", [])
+            if not conclusion_activities and learning_activities_doc.get("conclusion"):
+                conclusion_text = learning_activities_doc.get("conclusion", "")
+                conclusion_activities = [a.strip() for a in conclusion_text.split(",") if a.strip()]
+            
             extended_activities_list = learning_activities_doc.get("extended_activities", [])
             specific_resources = learning_activities_doc.get("learning_resources", [])
             specific_assessments = learning_activities_doc.get("assessment_methods", [])
+            
+            # Get competencies, values, PCIs directly from learning_activities if available (new format)
+            if not competencies and learning_activities_doc.get("core_competencies"):
+                competencies = [{"name": c, "description": c} for c in learning_activities_doc.get("core_competencies", [])]
+            
+            if not values and learning_activities_doc.get("values"):
+                values = [{"name": v, "description": v} for v in learning_activities_doc.get("values", [])]
+            
+            if not pcis and learning_activities_doc.get("pci"):
+                pcis = [{"name": p, "description": p} for p in learning_activities_doc.get("pci", [])]
+            
+            # Also get inquiry questions if available
+            inquiry_questions = learning_activities_doc.get("inquiry_questions", [])
         
         # Duration-aware content generation
         duration = request.duration
@@ -1516,6 +1580,7 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
             "competencies": competencies,
             "values": values,
             "pcis": pcis,
+            "inquiryQuestions": inquiry_questions,
             "introduction": introduction,
             "lessonDevelopment": lesson_development,
             "extendedActivity": extended_activity,
