@@ -218,3 +218,54 @@ User uploaded official KICD Grade 8 curriculum design PDFs (April 2024 formatted
 - Substrands: 331
 - SLOs: 1,195
 - Learning Activities: 194
+
+## Grade 9 Complete Curriculum Data (DONE - Dec 2025)
+User uploaded official KICD Grade 9 curriculum design PDFs. Data extracted **directly from PDFs** - no AI-generated content.
+
+**PDFs Processed:**
+- GRADE.9.ENGLISH.pdf
+- GRADE.9.MATHEMATICS.pdf  
+- GRADE.9.INTEGRATED.SCIENCE.pdf
+- Kiswahili-Grade-9.pdf
+- Social-Studies-Grade-9-Design-Formatted-April-2024.pdf
+
+**Grade 9 Data Seeded (with full learning experiences from actual PDFs):**
+| Subject | Strands | Substrands | SLOs | Activity Sets |
+|---------|---------|------------|------|---------------|
+| Mathematics | 5 | 19 | 117 | 117 |
+| Integrated Science | 3 | 9 | 46 | 46 |
+| Social Studies | 5 | 18 | 86 | 86 |
+| English | 5 | 15 | 50 | 50 |
+| Kiswahili | 4 | 10 | 36 | 36 |
+
+**Mathematics Strands (from PDF):**
+1. Numbers (Integers, Cubes and Cube Roots, Indices and Logarithms, Compound Proportions)
+2. Algebra (Matrices, Equations of a Straight Line, Linear Inequalities)
+3. Measurements (Area, Volume, Mass/Weight/Density, Time/Distance/Speed, Money, Approximations)
+4. Geometry (Coordinates and Graphs, Scale Drawing, Similarity and Enlargement, Trigonometry)
+5. Data Handling and Probability (Grouped Data, Probability)
+
+**Social Studies Strands (from PDF):**
+1. Social Studies and Career Development (Pathway Choices, Pre-career Support Systems)
+2. Community Service-Learning (CSL Project)
+3. People and Relationships (Early Humans, Indigenous Knowledge, Poverty, Population, Conflict Resolution, Relationships)
+4. Natural and Historic Built Environments (Topographical Maps, Internal Land Forming, River Projects, Conservation, Heritage Sites)
+5. Political Developments and Governance (Constitution of Kenya, Civic Engagement, Bill of Rights, Cultural Globalization)
+
+**Learning Activities Include (exactly as in PDFs):**
+- Learning experiences (Introduction, Development, Conclusion)
+- Key Inquiry Questions
+- Core Competencies
+- Values  
+- PCIs (Pertinent and Contemporary Issues)
+
+**Seeding Script:** `/app/backend/seed_grade9_accurate.py`
+- Extracts data directly from PDFs (no hallucinated content)
+- Links to existing subjects (no duplicates)
+- Uses ObjectId for all relationships (fixed previous string ID issue)
+
+**Updated Database Totals After Grade 9 Seeding:**
+- Total Grade 9 Strands: 22
+- Total Grade 9 Substrands: 71
+- Total Grade 9 SLOs: 335
+- Total Grade 9 Learning Activities: 335
