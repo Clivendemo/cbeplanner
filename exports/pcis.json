@@ -1,0 +1,107 @@
+[
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed90f"
+    },
+    "name": "Health Education",
+    "description": "Promoting healthy lifestyles and wellbeing"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed90e"
+    },
+    "name": "Safety and Security",
+    "description": "Understanding personal and community safety"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed911"
+    },
+    "name": "Social Cohesion",
+    "description": "Promoting unity and harmony in diverse communities"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed90c"
+    },
+    "name": "Financial Literacy",
+    "description": "Understanding the value and responsible use of money"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed90d"
+    },
+    "name": "Education for Sustainable Development",
+    "description": "Learning about environmental conservation and sustainability"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed910"
+    },
+    "name": "Citizenship",
+    "description": "Understanding rights, responsibilities, and civic engagement"
+  },
+  {
+    "_id": {
+      "$oid": "69a2adf90d3f0e48b4cbb543"
+    },
+    "name": "Environmental Conservation",
+    "description": "Protection and sustainable management of natural resources and ecosystems."
+  },
+  {
+    "_id": {
+      "$oid": "69a2adfa0d3f0e48b4cbb544"
+    },
+    "name": "Life Skills",
+    "description": "Essential skills for daily living including decision-making, coping, and self-management."
+  },
+  {
+    "_id": {
+      "$oid": "69a2adfa0d3f0e48b4cbb545"
+    },
+    "name": "Citizenship Education",
+    "description": "Rights, responsibilities, and participation in democratic processes."
+  },
+  {
+    "_id": {
+      "$oid": "69a2adfb0d3f0e48b4cbb546"
+    },
+    "name": "Gender Issues",
+    "description": "Gender equality, equity, and addressing gender-based discrimination."
+  },
+  {
+    "_id": {
+      "$oid": "69a2adfb0d3f0e48b4cbb547"
+    },
+    "name": "Drug and Substance Abuse",
+    "description": "Prevention and awareness of harmful effects of drugs and substances."
+  },
+  {
+    "_id": {
+      "$oid": "69a2adfb0d3f0e48b4cbb548"
+    },
+    "name": "Disaster Risk Reduction",
+    "description": "Preparedness, response, and mitigation of natural and man-made disasters."
+  },
+  {
+    "_id": {
+      "$oid": "69a2adfc0d3f0e48b4cbb549"
+    },
+    "name": "Animal Welfare",
+    "description": "Ethical treatment and care of animals in various contexts."
+  },
+  {
+    "_id": {
+      "$oid": "69a2adfc0d3f0e48b4cbb54a"
+    },
+    "name": "Digital Citizenship",
+    "description": "Responsible and ethical use of technology and online platforms."
+  },
+  {
+    "_id": {
+      "$oid": "69a2adfd0d3f0e48b4cbb54b"
+    },
+    "name": "Climate Change",
+    "description": "Understanding and addressing the causes and effects of climate change."
+  }
+]

@@ -1,0 +1,51 @@
+[
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed914"
+    },
+    "name": "Group Activity Observation",
+    "description": "Observe learners working collaboratively in groups"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed917"
+    },
+    "name": "Self-Assessment",
+    "description": "Learners reflect on their own learning and progress"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed918"
+    },
+    "name": "Projects and Presentations",
+    "description": "Learners create and present work on topics learned"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed913"
+    },
+    "name": "Written Exercise",
+    "description": "Provide written tasks and worksheets to complete"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed915"
+    },
+    "name": "Practical Task",
+    "description": "Give hands-on activities to demonstrate understanding"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed912"
+    },
+    "name": "Oral Questions",
+    "description": "Ask learners questions to assess understanding verbally"
+  },
+  {
+    "_id": {
+      "$oid": "69a06bff5ea260e6510ed916"
+    },
+    "name": "Peer Assessment",
+    "description": "Learners assess each other's work and provide feedback"
+  }
+]
