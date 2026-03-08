@@ -146,7 +146,9 @@ export default function Login() {
         <View style={styles.footer}>
           <Text style={styles.footerText}>KICD-Aligned Lesson Planning</Text>
           <Text style={styles.footerText}>For Kenyan Teachers</Text>
-          <Text style={styles.developerText}>Developed by LEGIT LAB</Text>
+          <View style={{ width: '100%', alignItems: 'center' }}>
+            <Text style={styles.developerText}>Developed by LEGIT LAB</Text>
+          </View>
         </View>
 
         {/* Password Reset Modal */}
@@ -282,7 +284,8 @@ const styles = StyleSheet.create({
     marginTop: 48,
     padding: 16,
     backgroundColor: '#EEF2FF',
-    borderRadius: 12
+    borderRadius: 12,
+    alignItems: 'center'
   },
   footerText: {
     fontSize: 12,
@@ -349,6 +352,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#9CA3AF',
     marginTop: 8,
-    fontWeight: '500'
+    fontWeight: '500',
+    textAlign: 'center'
   }
 });

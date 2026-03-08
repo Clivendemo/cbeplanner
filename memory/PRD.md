@@ -244,7 +244,13 @@ A comprehensive bulk data import system for curriculum data:
    - Generates downloadable CSV for review/editing
    - Handles varied PDF formats (STRAND 1.0, 1.0 Name patterns)
 
-3. **CSV Column Support:**
+3. **Import History Tracking (NEW - Dec 2025)**
+   - Records all data imports with filename, grade, subject
+   - Shows stats: strands, substrands, SLOs created
+   - Timestamp and user who imported
+   - Refresh button to reload history
+
+4. **CSV Column Support:**
    - strand_name (required)
    - substrand_name (required)
    - slo_name (required)
@@ -264,13 +270,19 @@ A comprehensive bulk data import system for curriculum data:
 - `POST /api/admin/import/preview-csv` - Upload and parse CSV
 - `POST /api/admin/import/extract-pdf` - Extract from PDF to CSV
 - `POST /api/admin/import/save` - Save imported data to database
+- `GET /api/admin/import/history` - Get import history records
 
 **Frontend:**
 - New admin tab: "Import" with cloud-upload icon
-- `/app/frontend/app/(admin)/data-import.tsx` - Full import UI
+- `/app/frontend/app/(admin)/data-import.tsx` - Full import UI with history section
 
 **Dependencies Added:**
 - `expo-document-picker` - For file selection on mobile/web
+
+### UI Improvements (DONE - Dec 2025)
+1. **Login Footer:** "Developed by LEGIT LAB" centered in footer
+2. **Dashboard Tiles:** Notes Generator, Schemes of Work, and Revision Papers marked as "Coming Soon"
+3. **Quick Stats:** Updated to show Free Lesson status and Wallet Balance
 
 ## Next Steps / Backlog
 - [x] Production-readiness middleware (error handling, security headers, rate limiting) - DONE Dec 2025
@@ -279,6 +291,9 @@ A comprehensive bulk data import system for curriculum data:
 - [x] Sync admin panel subjects with teacher view (removed KICD whitelist filter) - DONE Dec 2025
 - [x] Seed Grade 7, 8, 9 curriculum data from KICD rationalized PDFs - DONE Dec 2025
 - [x] Data Import System (CSV upload + PDF extraction helper) - DONE Dec 2025
+- [x] Import History Tracking feature - DONE Dec 2025
+- [x] Center "Developed by LEGIT LAB" text - DONE Dec 2025
+- [x] Mark Notes/Schemes as Coming Soon - DONE Dec 2025
 - [ ] User verification of M-Pesa MPESA_CALLBACK_URL configuration on Render
 - [ ] User verification of mobile app stability (Expo Go back button issues)
 - [ ] Deploy backend to Render (https://cbeplanner.onrender.com)

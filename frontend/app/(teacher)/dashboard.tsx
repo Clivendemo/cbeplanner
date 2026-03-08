@@ -74,8 +74,8 @@ export default function Dashboard() {
       icon: 'create',
       color: '#10B981',
       route: '/(teacher)/notes',
-      disabled: false,
-      badge: user?.freeNotesUsed ? undefined : '1 Free'
+      disabled: true,
+      badge: undefined
     },
     {
       title: 'My Lesson Plans',
@@ -91,7 +91,7 @@ export default function Dashboard() {
       icon: 'calendar',
       color: '#8B5CF6',
       route: '/(teacher)/schemes',
-      disabled: false
+      disabled: true
     },
     {
       title: 'Revision Papers',
@@ -142,9 +142,9 @@ export default function Dashboard() {
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Ionicons name="checkmark-circle" size={20} color="#3B82F6" />
-            <Text style={styles.statValue}>{user?.freeNotesUsed ? 'Used' : 'Available'}</Text>
-            <Text style={styles.statLabel}>Free Notes</Text>
+            <Ionicons name="wallet" size={20} color="#6366F1" />
+            <Text style={styles.statValue}>KES {user?.walletBalance || 0}</Text>
+            <Text style={styles.statLabel}>Balance</Text>
           </View>
         </View>
 

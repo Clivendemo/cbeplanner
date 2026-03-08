@@ -58,6 +58,23 @@ interface Subject {
   gradeIds: string[];
 }
 
+interface ImportHistoryItem {
+  id: string;
+  filename: string;
+  import_type: string;
+  grade_name: string;
+  subject_name: string;
+  stats: {
+    strands_created: number;
+    substrands_created: number;
+    slos_created: number;
+    mappings_created: number;
+    activities_created: number;
+  };
+  imported_by: string;
+  created_at: string;
+}
+
 export default function DataImport() {
   const { firebaseUser } = useAuth();
   
@@ -78,6 +95,10 @@ export default function DataImport() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveResult, setSaveResult] = useState<any>(null);
+  
+  // Import history
+  const [importHistory, setImportHistory] = useState<ImportHistoryItem[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const getHeaders = async () => {
     if (firebaseUser) {
@@ -90,6 +111,7 @@ export default function DataImport() {
   // Load grades and subjects
   useEffect(() => {
     loadGradesAndSubjects();
+    loadImportHistory();
   }, []);
 
   const loadGradesAndSubjects = async () => {
@@ -104,6 +126,33 @@ export default function DataImport() {
     } catch (error) {
       console.error('Error loading grades/subjects:', error);
     }
+  };
+
+  const loadImportHistory = async () => {
+    setLoadingHistory(true);
+    try {
+      const headers = await getHeaders();
+      const response = await axios.get(`${BACKEND_URL}/api/admin/import/history`, { headers });
+      if (response.data.success) {
+        setImportHistory(response.data.history || []);
+      }
+    } catch (error) {
+      console.error('Error loading import history:', error);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   // Download CSV template
@@ -258,7 +307,8 @@ export default function DataImport() {
         {
           gradeId: selectedGrade,
           subjectId: selectedSubject,
-          rows: previewData.rows
+          rows: previewData.rows,
+          filename: selectedFile || 'manual_import'
         },
         { headers }
       );
@@ -268,6 +318,9 @@ export default function DataImport() {
         alert(`Import successful!\n\nStrands: ${response.data.stats.strands_created}\nSub-strands: ${response.data.stats.substrands_created}\nSLOs: ${response.data.stats.slos_created}`);
         setShowPreviewModal(false);
         setPreviewData(null);
+        setSelectedFile('');
+        // Refresh history
+        loadImportHistory();
       }
     } catch (error: any) {
       alert(error.response?.data?.detail || 'Failed to save import');
@@ -481,6 +534,67 @@ export default function DataImport() {
             </View>
           </ScrollView>
         </View>
+      </View>
+
+      {/* Import History Section */}
+      <View style={styles.historySection}>
+        <View style={styles.historyHeader}>
+          <Ionicons name="time" size={24} color="#6366F1" />
+          <Text style={styles.historyTitle}>Import History</Text>
+          <TouchableOpacity onPress={loadImportHistory} style={styles.refreshBtn}>
+            <Ionicons name="refresh" size={20} color="#6366F1" />
+          </TouchableOpacity>
+        </View>
+        
+        {loadingHistory ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color="#6366F1" />
+            <Text style={styles.loadingText}>Loading history...</Text>
+          </View>
+        ) : importHistory.length === 0 ? (
+          <View style={styles.emptyHistory}>
+            <Ionicons name="folder-open-outline" size={48} color="#D1D5DB" />
+            <Text style={styles.emptyHistoryText}>No imports yet</Text>
+            <Text style={styles.emptyHistorySubtext}>Your import history will appear here</Text>
+          </View>
+        ) : (
+          <View style={styles.historyList}>
+            {importHistory.map((item) => (
+              <View key={item.id} style={styles.historyItem}>
+                <View style={styles.historyItemLeft}>
+                  <View style={styles.historyIconContainer}>
+                    <Ionicons 
+                      name={item.import_type === 'pdf' ? 'document' : 'document-text'} 
+                      size={20} 
+                      color="#6366F1" 
+                    />
+                  </View>
+                  <View style={styles.historyItemInfo}>
+                    <Text style={styles.historyFilename} numberOfLines={1}>{item.filename}</Text>
+                    <Text style={styles.historyMeta}>
+                      {item.grade_name} • {item.subject_name}
+                    </Text>
+                    <Text style={styles.historyDate}>{formatDate(item.created_at)}</Text>
+                  </View>
+                </View>
+                <View style={styles.historyStats}>
+                  <View style={styles.historyStatItem}>
+                    <Text style={styles.historyStatValue}>{item.stats?.strands_created || 0}</Text>
+                    <Text style={styles.historyStatLabel}>Strands</Text>
+                  </View>
+                  <View style={styles.historyStatItem}>
+                    <Text style={styles.historyStatValue}>{item.stats?.substrands_created || 0}</Text>
+                    <Text style={styles.historyStatLabel}>Sub-strands</Text>
+                  </View>
+                  <View style={styles.historyStatItem}>
+                    <Text style={styles.historyStatValue}>{item.stats?.slos_created || 0}</Text>
+                    <Text style={styles.historyStatLabel}>SLOs</Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
 
       {/* Preview Modal */}
@@ -1084,5 +1198,120 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#FFFFFF'
+  },
+  // Import History Styles
+  historySection: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#E5E7EB'
+  },
+  historyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16
+  },
+  historyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    marginLeft: 8,
+    flex: 1
+  },
+  refreshBtn: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#EEF2FF'
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24
+  },
+  loadingText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#6B7280'
+  },
+  emptyHistory: {
+    alignItems: 'center',
+    padding: 32
+  },
+  emptyHistoryText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginTop: 12
+  },
+  emptyHistorySubtext: {
+    fontSize: 13,
+    color: '#9CA3AF',
+    marginTop: 4
+  },
+  historyList: {
+    gap: 12
+  },
+  historyItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F9FAFB',
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E5E7EB'
+  },
+  historyItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1
+  },
+  historyIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: '#EEF2FF',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  historyItemInfo: {
+    marginLeft: 12,
+    flex: 1
+  },
+  historyFilename: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827'
+  },
+  historyMeta: {
+    fontSize: 12,
+    color: '#6366F1',
+    marginTop: 2
+  },
+  historyDate: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginTop: 2
+  },
+  historyStats: {
+    flexDirection: 'row',
+    gap: 12
+  },
+  historyStatItem: {
+    alignItems: 'center',
+    paddingHorizontal: 8
+  },
+  historyStatValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#10B981'
+  },
+  historyStatLabel: {
+    fontSize: 10,
+    color: '#6B7280',
+    marginTop: 2
   }
 });

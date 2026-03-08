@@ -2803,6 +2803,7 @@ class ImportSaveRequest(BaseModel):
     subjectId: str
     gradeId: str
     rows: List[Dict[str, Any]]
+    filename: str = "manual_import"
 
 @api_router.get("/admin/import/template")
 async def get_csv_template(user: dict = Depends(verify_admin)):
@@ -2997,11 +2998,42 @@ async def save_imported_data(request: ImportSaveRequest, user: dict = Depends(ve
         })
         stats["mappings_created"] += 1
     
+    # Record import history
+    await db.import_history.insert_one({
+        "filename": request.filename,
+        "import_type": "csv",
+        "grade_name": grade.get("name", ""),
+        "subject_name": subject.get("name", ""),
+        "stats": stats,
+        "imported_by": user.get("email", ""),
+        "created_at": datetime.now(timezone.utc)
+    })
+    
     return {
         "success": True,
         "message": f"Import completed successfully",
         "stats": stats
     }
+
+# ==================== IMPORT HISTORY ENDPOINTS ====================
+
+@api_router.get("/admin/import/history")
+async def get_import_history(user: dict = Depends(verify_admin), limit: int = 20):
+    """Get history of data imports"""
+    history = []
+    cursor = db.import_history.find().sort("created_at", -1).limit(limit)
+    async for record in cursor:
+        history.append({
+            "id": str(record["_id"]),
+            "filename": record.get("filename", "Unknown"),
+            "import_type": record.get("import_type", "csv"),
+            "grade_name": record.get("grade_name", ""),
+            "subject_name": record.get("subject_name", ""),
+            "stats": record.get("stats", {}),
+            "imported_by": record.get("imported_by", ""),
+            "created_at": record.get("created_at", "").isoformat() if record.get("created_at") else ""
+        })
+    return {"success": True, "history": history}
 
 # ==================== SEED DATA ENDPOINT ====================
 
