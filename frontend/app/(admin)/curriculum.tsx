@@ -108,6 +108,28 @@ export default function Curriculum() {
   });
   const [existingActivityId, setExistingActivityId] = useState<string | null>(null);
 
+  // Move modal state
+  const [moveModalVisible, setMoveModalVisible] = useState(false);
+  const [movingItem, setMovingItem] = useState<Entity | null>(null);
+  const [moveTargetGrade, setMoveTargetGrade] = useState<string>('');
+  const [moveTargetSubject, setMoveTargetSubject] = useState<string>('');
+  const [moveTargetStrand, setMoveTargetStrand] = useState<string>('');
+  const [moveTargetSubstrand, setMoveTargetSubstrand] = useState<string>('');
+  const [allGrades, setAllGrades] = useState<Entity[]>([]);
+  const [allSubjects, setAllSubjects] = useState<Entity[]>([]);
+  const [allStrands, setAllStrands] = useState<Entity[]>([]);
+  const [allSubstrands, setAllSubstrands] = useState<Entity[]>([]);
+
+  // Bulk add modal state
+  const [bulkAddModalVisible, setBulkAddModalVisible] = useState(false);
+  const [bulkAddMode, setBulkAddMode] = useState<'textarea' | 'table'>('textarea');
+  const [bulkTextValue, setBulkTextValue] = useState('');
+  const [bulkTableRows, setBulkTableRows] = useState<{name: string, description: string}[]>([
+    { name: '', description: '' },
+    { name: '', description: '' },
+    { name: '', description: '' }
+  ]);
+
   const getHeaders = async () => {
     if (firebaseUser) {
       const token = await firebaseUser.getIdToken();
@@ -549,6 +571,227 @@ export default function Curriculum() {
     }));
   };
 
+  // Load all curriculum data for move modal
+  const loadAllCurriculumData = async () => {
+    try {
+      const headers = await getHeaders();
+      
+      const [gradesRes, subjectsRes, strandsRes, substrandsRes] = await Promise.all([
+        axios.get(`${BACKEND_URL}/api/admin/grades`, { headers }),
+        axios.get(`${BACKEND_URL}/api/admin/subjects`, { headers }),
+        axios.get(`${BACKEND_URL}/api/admin/strands`, { headers }),
+        axios.get(`${BACKEND_URL}/api/admin/substrands`, { headers })
+      ]);
+      
+      setAllGrades(gradesRes.data.grades || []);
+      setAllSubjects(subjectsRes.data.subjects || []);
+      setAllStrands(strandsRes.data.strands || []);
+      setAllSubstrands(substrandsRes.data.substrands || []);
+    } catch (error) {
+      console.error('Error loading curriculum data:', error);
+    }
+  };
+
+  // Open move modal
+  const handleOpenMoveModal = async (item: Entity) => {
+    setMovingItem(item);
+    setMoveTargetGrade('');
+    setMoveTargetSubject('');
+    setMoveTargetStrand('');
+    setMoveTargetSubstrand('');
+    await loadAllCurriculumData();
+    setMoveModalVisible(true);
+  };
+
+  // Execute move
+  const handleExecuteMove = async () => {
+    if (!movingItem) return;
+    
+    try {
+      const headers = await getHeaders();
+      let endpoint = '';
+      let payload: any = {};
+      
+      if (selectedEntity === 'strands') {
+        if (!moveTargetSubject) {
+          showAlert('Error', 'Please select a target subject');
+          return;
+        }
+        endpoint = `${BACKEND_URL}/api/admin/strands/${movingItem.id}/move`;
+        payload = { targetSubjectId: moveTargetSubject };
+      } else if (selectedEntity === 'substrands') {
+        if (!moveTargetStrand) {
+          showAlert('Error', 'Please select a target strand');
+          return;
+        }
+        endpoint = `${BACKEND_URL}/api/admin/substrands/${movingItem.id}/move`;
+        payload = { targetStrandId: moveTargetStrand };
+      } else if (selectedEntity === 'slos') {
+        if (!moveTargetSubstrand) {
+          showAlert('Error', 'Please select a target sub-strand');
+          return;
+        }
+        endpoint = `${BACKEND_URL}/api/admin/slos/${movingItem.id}/move`;
+        payload = { targetSubstrandId: moveTargetSubstrand };
+      } else if (selectedEntity === 'subjects') {
+        if (!moveTargetGrade) {
+          showAlert('Error', 'Please select a target grade');
+          return;
+        }
+        endpoint = `${BACKEND_URL}/api/admin/subjects/${movingItem.id}/change-grade`;
+        payload = { targetGradeId: moveTargetGrade, removeFromOtherGrades: true };
+      } else {
+        showAlert('Error', 'Cannot move this type of item');
+        return;
+      }
+      
+      const response = await axios.put(endpoint, payload, { headers });
+      
+      if (response.data.success) {
+        showAlert('Success', response.data.message);
+        setMoveModalVisible(false);
+        if (currentView === 'hierarchy') {
+          // Refresh hierarchy
+          const lastBreadcrumb = breadcrumbs[breadcrumbs.length - 1];
+          if (lastBreadcrumb) {
+            if (selectedEntity === 'slos') {
+              navigateToSlosAndActivities({ id: lastBreadcrumb.id, name: lastBreadcrumb.name });
+            } else if (selectedEntity === 'substrands') {
+              const strand = breadcrumbs.find(b => b.type === 'strands');
+              if (strand) navigateToSubstrands({ id: strand.id, name: strand.name });
+            } else if (selectedEntity === 'strands') {
+              const subject = breadcrumbs.find(b => b.type === 'subjects');
+              if (subject) navigateToStrands({ id: subject.id, name: subject.name });
+            }
+          }
+        } else {
+          loadData();
+        }
+      }
+    } catch (error: any) {
+      showAlert('Error', error.response?.data?.detail || 'Failed to move item');
+    }
+  };
+
+  // Open bulk add modal
+  const handleOpenBulkAddModal = () => {
+    setBulkTextValue('');
+    setBulkTableRows([
+      { name: '', description: '' },
+      { name: '', description: '' },
+      { name: '', description: '' }
+    ]);
+    setBulkAddModalVisible(true);
+  };
+
+  // Add row to bulk table
+  const addBulkTableRow = () => {
+    setBulkTableRows([...bulkTableRows, { name: '', description: '' }]);
+  };
+
+  // Update bulk table row
+  const updateBulkTableRow = (index: number, field: 'name' | 'description', value: string) => {
+    const newRows = [...bulkTableRows];
+    newRows[index][field] = value;
+    setBulkTableRows(newRows);
+  };
+
+  // Remove bulk table row
+  const removeBulkTableRow = (index: number) => {
+    if (bulkTableRows.length > 1) {
+      setBulkTableRows(bulkTableRows.filter((_, i) => i !== index));
+    }
+  };
+
+  // Execute bulk add
+  const handleExecuteBulkAdd = async () => {
+    let items: { name: string; description?: string }[] = [];
+    
+    if (bulkAddMode === 'textarea') {
+      items = bulkTextValue
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+        .map(name => ({ name }));
+    } else {
+      items = bulkTableRows
+        .filter(row => row.name.trim().length > 0)
+        .map(row => ({
+          name: row.name.trim(),
+          description: row.description.trim() || undefined
+        }));
+    }
+    
+    if (items.length === 0) {
+      showAlert('Error', 'Please enter at least one item');
+      return;
+    }
+    
+    try {
+      const headers = await getHeaders();
+      const config = ENTITY_CONFIG[selectedEntity];
+      
+      // Use the appropriate parent ID
+      let parentId = currentParentId;
+      if (!parentId) {
+        showAlert('Error', 'Please select a parent first');
+        return;
+      }
+      
+      const response = await axios.post(
+        `${BACKEND_URL}/api/admin/${config.apiPath}/bulk`,
+        { items, parentId },
+        { headers }
+      );
+      
+      if (response.data.success) {
+        showAlert('Success', `Created ${response.data.createdIds?.length || items.length} items`);
+        setBulkAddModalVisible(false);
+        
+        // Refresh data
+        if (currentView === 'hierarchy') {
+          const lastBreadcrumb = breadcrumbs[breadcrumbs.length - 1];
+          if (lastBreadcrumb) {
+            if (selectedEntity === 'slos') {
+              navigateToSlosAndActivities({ id: lastBreadcrumb.id, name: lastBreadcrumb.name });
+            } else if (selectedEntity === 'substrands') {
+              const strand = breadcrumbs.find(b => b.type === 'strands');
+              if (strand) navigateToSubstrands({ id: strand.id, name: strand.name });
+            } else if (selectedEntity === 'strands') {
+              const subject = breadcrumbs.find(b => b.type === 'subjects');
+              if (subject) navigateToStrands({ id: subject.id, name: subject.name });
+            } else if (selectedEntity === 'subjects') {
+              const grade = breadcrumbs.find(b => b.type === 'grades');
+              if (grade) navigateToSubjects({ id: grade.id, name: grade.name });
+            }
+          }
+        } else {
+          loadData();
+        }
+      }
+    } catch (error: any) {
+      showAlert('Error', error.response?.data?.detail || 'Failed to create items');
+    }
+  };
+
+  // Get filtered subjects for move modal
+  const getFilteredSubjectsForMove = () => {
+    if (!moveTargetGrade) return allSubjects;
+    return allSubjects.filter(s => s.gradeIds?.includes(moveTargetGrade));
+  };
+
+  // Get filtered strands for move modal
+  const getFilteredStrandsForMove = () => {
+    if (!moveTargetSubject) return allStrands;
+    return allStrands.filter(s => s.subjectId === moveTargetSubject);
+  };
+
+  // Get filtered substrands for move modal
+  const getFilteredSubstrandsForMove = () => {
+    if (!moveTargetStrand) return allSubstrands;
+    return allSubstrands.filter(s => s.strandId === moveTargetStrand);
+  };
+
   const removeActivityField = (type: keyof typeof activitiesFormData, index: number) => {
     setActivitiesFormData(prev => ({
       ...prev,
@@ -602,37 +845,47 @@ export default function Curriculum() {
   const renderItem = ({ item }: { item: Entity }) => {
     const config = ENTITY_CONFIG[selectedEntity];
     const canNavigate = currentView === 'hierarchy' && selectedEntity !== 'slos';
+    const canMove = selectedEntity !== 'grades' && selectedEntity !== 'competencies' && selectedEntity !== 'values' && selectedEntity !== 'pcis' && selectedEntity !== 'learning_activities';
     
     return (
-      <TouchableOpacity 
-        style={styles.listItem}
-        onPress={() => canNavigate ? handleItemPress(item) : null}
-        activeOpacity={canNavigate ? 0.7 : 1}
-      >
-        <View style={[styles.itemIcon, { backgroundColor: config.color + '20' }]}>
-          <Ionicons name={config.icon as any} size={20} color={config.color} />
-        </View>
-        <View style={styles.itemContent}>
-          <Text style={styles.itemName}>{item.name || item.description}</Text>
-          {item.description && item.name && (
-            <Text style={styles.itemDescription} numberOfLines={2}>{item.description}</Text>
+      <View style={styles.listItem}>
+        <TouchableOpacity 
+          style={styles.listItemContent}
+          onPress={() => canNavigate ? handleItemPress(item) : null}
+          activeOpacity={canNavigate ? 0.7 : 1}
+        >
+          <View style={[styles.itemIcon, { backgroundColor: config.color + '20' }]}>
+            <Ionicons name={config.icon as any} size={20} color={config.color} />
+          </View>
+          <View style={styles.itemContent}>
+            <Text style={styles.itemName}>{item.name || item.description}</Text>
+            {item.description && item.name && (
+              <Text style={styles.itemDescription} numberOfLines={2}>{item.description}</Text>
+            )}
+            {item.order !== undefined && (
+              <Text style={styles.itemMeta}>Order: {item.order}</Text>
+            )}
+          </View>
+          
+          {canNavigate && (
+            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" style={{ marginRight: 8 }} />
           )}
-          {item.order !== undefined && (
-            <Text style={styles.itemMeta}>Order: {item.order}</Text>
+        </TouchableOpacity>
+        
+        <View style={styles.itemActions}>
+          {canMove && (
+            <TouchableOpacity style={styles.moveButton} onPress={() => handleOpenMoveModal(item)}>
+              <Ionicons name="swap-horizontal" size={18} color="#6366F1" />
+            </TouchableOpacity>
           )}
+          <TouchableOpacity style={styles.editButton} onPress={() => openEditModal(item)}>
+            <Ionicons name="pencil" size={18} color="#F59E0B" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item)}>
+            <Ionicons name="trash" size={18} color="#EF4444" />
+          </TouchableOpacity>
         </View>
-        
-        {canNavigate && (
-          <Ionicons name="chevron-forward" size={20} color="#9CA3AF" style={{ marginRight: 8 }} />
-        )}
-        
-        <TouchableOpacity style={styles.editButton} onPress={() => openEditModal(item)}>
-          <Ionicons name="pencil" size={18} color="#6366F1" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item)}>
-          <Ionicons name="trash" size={18} color="#EF4444" />
-        </TouchableOpacity>
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -779,6 +1032,15 @@ export default function Curriculum() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>{ENTITY_CONFIG[selectedEntity].title}</Text>
         <Text style={styles.headerCount}>{data.length} items</Text>
+        
+        {/* Bulk Add Button - Show when in hierarchy with parent selected */}
+        {currentView === 'hierarchy' && currentParentId && selectedEntity !== 'grades' && (
+          <TouchableOpacity style={styles.bulkAddButton} onPress={handleOpenBulkAddModal}>
+            <Ionicons name="layers" size={18} color="#10B981" />
+            <Text style={styles.bulkAddButtonText}>Bulk</Text>
+          </TouchableOpacity>
+        )}
+        
         <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
           <Ionicons name="add" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -945,6 +1207,338 @@ export default function Curriculum() {
           </View>
         </View>
       </Modal>
+
+      {/* Move Item Modal */}
+      <Modal
+        visible={moveModalVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setMoveModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxWidth: 500 }]}>
+            <View style={styles.modalHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <View style={[styles.moveIconContainer, { backgroundColor: '#EEF2FF' }]}>
+                  <Ionicons name="swap-horizontal" size={24} color="#6366F1" />
+                </View>
+                <Text style={styles.modalTitle}>Move {ENTITY_CONFIG[selectedEntity].singularTitle}</Text>
+              </View>
+              <TouchableOpacity onPress={() => setMoveModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalBody}>
+              {/* Current Item */}
+              <View style={styles.moveCurrentItem}>
+                <Text style={styles.moveCurrentItemLabel}>Moving:</Text>
+                <Text style={styles.moveCurrentItemName} numberOfLines={2}>
+                  {movingItem?.name || movingItem?.description || 'Unknown'}
+                </Text>
+              </View>
+
+              {/* Cascade Warning */}
+              {(selectedEntity === 'strands' || selectedEntity === 'substrands') && (
+                <View style={styles.moveWarning}>
+                  <Ionicons name="information-circle" size={20} color="#F59E0B" />
+                  <Text style={styles.moveWarningText}>
+                    All child items will be moved automatically (cascade move)
+                  </Text>
+                </View>
+              )}
+
+              {/* Grade Selector (for filtering) */}
+              {(selectedEntity === 'strands' || selectedEntity === 'substrands' || selectedEntity === 'slos' || selectedEntity === 'subjects') && (
+                <View style={styles.moveSelectorContainer}>
+                  <Text style={styles.moveSelectorLabel}>
+                    {selectedEntity === 'subjects' ? 'Select Target Grade *' : 'Filter by Grade'}
+                  </Text>
+                  <ScrollView style={styles.moveOptionsList} nestedScrollEnabled>
+                    <TouchableOpacity
+                      style={[styles.moveOption, !moveTargetGrade && styles.moveOptionSelected]}
+                      onPress={() => {
+                        setMoveTargetGrade('');
+                        setMoveTargetSubject('');
+                        setMoveTargetStrand('');
+                        setMoveTargetSubstrand('');
+                      }}
+                    >
+                      <Text style={[styles.moveOptionText, !moveTargetGrade && styles.moveOptionTextSelected]}>
+                        -- {selectedEntity === 'subjects' ? 'Select Grade' : 'All Grades'} --
+                      </Text>
+                    </TouchableOpacity>
+                    {allGrades.map((grade) => (
+                      <TouchableOpacity
+                        key={grade.id}
+                        style={[styles.moveOption, moveTargetGrade === grade.id && styles.moveOptionSelected]}
+                        onPress={() => {
+                          setMoveTargetGrade(grade.id);
+                          setMoveTargetSubject('');
+                          setMoveTargetStrand('');
+                          setMoveTargetSubstrand('');
+                        }}
+                      >
+                        <Text style={[styles.moveOptionText, moveTargetGrade === grade.id && styles.moveOptionTextSelected]}>
+                          {grade.name}
+                        </Text>
+                        {moveTargetGrade === grade.id && <Ionicons name="checkmark" size={18} color="#10B981" />}
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+
+              {/* Subject Selector */}
+              {(selectedEntity === 'strands' || selectedEntity === 'substrands' || selectedEntity === 'slos') && (
+                <View style={styles.moveSelectorContainer}>
+                  <Text style={styles.moveSelectorLabel}>
+                    {selectedEntity === 'strands' ? 'Select Target Subject *' : 'Filter by Subject'}
+                  </Text>
+                  <ScrollView style={styles.moveOptionsList} nestedScrollEnabled>
+                    <TouchableOpacity
+                      style={[styles.moveOption, !moveTargetSubject && styles.moveOptionSelected]}
+                      onPress={() => {
+                        setMoveTargetSubject('');
+                        setMoveTargetStrand('');
+                        setMoveTargetSubstrand('');
+                      }}
+                    >
+                      <Text style={[styles.moveOptionText, !moveTargetSubject && styles.moveOptionTextSelected]}>
+                        -- {selectedEntity === 'strands' ? 'Select Subject' : 'All Subjects'} --
+                      </Text>
+                    </TouchableOpacity>
+                    {getFilteredSubjectsForMove().map((subject) => (
+                      <TouchableOpacity
+                        key={subject.id}
+                        style={[styles.moveOption, moveTargetSubject === subject.id && styles.moveOptionSelected]}
+                        onPress={() => {
+                          setMoveTargetSubject(subject.id);
+                          setMoveTargetStrand('');
+                          setMoveTargetSubstrand('');
+                        }}
+                      >
+                        <Text style={[styles.moveOptionText, moveTargetSubject === subject.id && styles.moveOptionTextSelected]}>
+                          {subject.name}
+                        </Text>
+                        {moveTargetSubject === subject.id && <Ionicons name="checkmark" size={18} color="#10B981" />}
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+
+              {/* Strand Selector */}
+              {(selectedEntity === 'substrands' || selectedEntity === 'slos') && (
+                <View style={styles.moveSelectorContainer}>
+                  <Text style={styles.moveSelectorLabel}>
+                    {selectedEntity === 'substrands' ? 'Select Target Strand *' : 'Filter by Strand'}
+                  </Text>
+                  <ScrollView style={styles.moveOptionsList} nestedScrollEnabled>
+                    <TouchableOpacity
+                      style={[styles.moveOption, !moveTargetStrand && styles.moveOptionSelected]}
+                      onPress={() => {
+                        setMoveTargetStrand('');
+                        setMoveTargetSubstrand('');
+                      }}
+                    >
+                      <Text style={[styles.moveOptionText, !moveTargetStrand && styles.moveOptionTextSelected]}>
+                        -- {selectedEntity === 'substrands' ? 'Select Strand' : 'All Strands'} --
+                      </Text>
+                    </TouchableOpacity>
+                    {getFilteredStrandsForMove().map((strand) => (
+                      <TouchableOpacity
+                        key={strand.id}
+                        style={[styles.moveOption, moveTargetStrand === strand.id && styles.moveOptionSelected]}
+                        onPress={() => {
+                          setMoveTargetStrand(strand.id);
+                          setMoveTargetSubstrand('');
+                        }}
+                      >
+                        <Text style={[styles.moveOptionText, moveTargetStrand === strand.id && styles.moveOptionTextSelected]}>
+                          {strand.name}
+                        </Text>
+                        {moveTargetStrand === strand.id && <Ionicons name="checkmark" size={18} color="#10B981" />}
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+
+              {/* Substrand Selector */}
+              {selectedEntity === 'slos' && (
+                <View style={styles.moveSelectorContainer}>
+                  <Text style={styles.moveSelectorLabel}>Select Target Sub-strand *</Text>
+                  <ScrollView style={styles.moveOptionsList} nestedScrollEnabled>
+                    <TouchableOpacity
+                      style={[styles.moveOption, !moveTargetSubstrand && styles.moveOptionSelected]}
+                      onPress={() => setMoveTargetSubstrand('')}
+                    >
+                      <Text style={[styles.moveOptionText, !moveTargetSubstrand && styles.moveOptionTextSelected]}>
+                        -- Select Sub-strand --
+                      </Text>
+                    </TouchableOpacity>
+                    {getFilteredSubstrandsForMove().map((substrand) => (
+                      <TouchableOpacity
+                        key={substrand.id}
+                        style={[styles.moveOption, moveTargetSubstrand === substrand.id && styles.moveOptionSelected]}
+                        onPress={() => setMoveTargetSubstrand(substrand.id)}
+                      >
+                        <Text style={[styles.moveOptionText, moveTargetSubstrand === substrand.id && styles.moveOptionTextSelected]}>
+                          {substrand.name}
+                        </Text>
+                        {moveTargetSubstrand === substrand.id && <Ionicons name="checkmark" size={18} color="#10B981" />}
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setMoveModalVisible(false)}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.saveButton, { backgroundColor: '#6366F1' }]} onPress={handleExecuteMove}>
+                <Ionicons name="swap-horizontal" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+                <Text style={styles.saveButtonText}>Move Item</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Bulk Add Modal */}
+      <Modal
+        visible={bulkAddModalVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setBulkAddModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxWidth: 600 }]}>
+            <View style={styles.modalHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <View style={[styles.moveIconContainer, { backgroundColor: '#ECFDF5' }]}>
+                  <Ionicons name="layers" size={24} color="#10B981" />
+                </View>
+                <View>
+                  <Text style={styles.modalTitle}>Bulk Add {ENTITY_CONFIG[selectedEntity].title}</Text>
+                  <Text style={styles.modalSubtitle}>Add multiple items at once</Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={() => setBulkAddModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Mode Tabs */}
+            <View style={styles.bulkModeTabs}>
+              <TouchableOpacity
+                style={[styles.bulkModeTab, bulkAddMode === 'textarea' && styles.bulkModeTabActive]}
+                onPress={() => setBulkAddMode('textarea')}
+              >
+                <Ionicons name="document-text" size={18} color={bulkAddMode === 'textarea' ? '#6366F1' : '#6B7280'} />
+                <Text style={[styles.bulkModeTabText, bulkAddMode === 'textarea' && styles.bulkModeTabTextActive]}>
+                  Text Input
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.bulkModeTab, bulkAddMode === 'table' && styles.bulkModeTabActive]}
+                onPress={() => setBulkAddMode('table')}
+              >
+                <Ionicons name="grid" size={18} color={bulkAddMode === 'table' ? '#6366F1' : '#6B7280'} />
+                <Text style={[styles.bulkModeTabText, bulkAddMode === 'table' && styles.bulkModeTabTextActive]}>
+                  Table Input
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              {bulkAddMode === 'textarea' ? (
+                <View>
+                  <Text style={styles.inputLabel}>Enter one item per line:</Text>
+                  <TextInput
+                    style={styles.bulkTextarea}
+                    multiline
+                    numberOfLines={10}
+                    value={bulkTextValue}
+                    onChangeText={setBulkTextValue}
+                    placeholder={`Example:\nFirst ${ENTITY_CONFIG[selectedEntity].singularTitle.toLowerCase()}\nSecond ${ENTITY_CONFIG[selectedEntity].singularTitle.toLowerCase()}\nThird ${ENTITY_CONFIG[selectedEntity].singularTitle.toLowerCase()}`}
+                    placeholderTextColor="#9CA3AF"
+                    textAlignVertical="top"
+                  />
+                  <Text style={styles.bulkHelperText}>
+                    Tip: Copy and paste from a document or spreadsheet
+                  </Text>
+                </View>
+              ) : (
+                <View>
+                  {/* Table Header */}
+                  <View style={styles.bulkTableHeader}>
+                    <Text style={[styles.bulkTableHeaderCell, { flex: 2 }]}>Name *</Text>
+                    <Text style={[styles.bulkTableHeaderCell, { flex: 2 }]}>Description</Text>
+                    <Text style={[styles.bulkTableHeaderCell, { width: 40 }]}></Text>
+                  </View>
+
+                  {/* Table Rows */}
+                  {bulkTableRows.map((row, index) => (
+                    <View key={index} style={styles.bulkTableRow}>
+                      <TextInput
+                        style={[styles.bulkTableInput, { flex: 2 }]}
+                        value={row.name}
+                        onChangeText={(val) => updateBulkTableRow(index, 'name', val)}
+                        placeholder="Enter name"
+                        placeholderTextColor="#9CA3AF"
+                      />
+                      <TextInput
+                        style={[styles.bulkTableInput, { flex: 2 }]}
+                        value={row.description}
+                        onChangeText={(val) => updateBulkTableRow(index, 'description', val)}
+                        placeholder="Optional"
+                        placeholderTextColor="#9CA3AF"
+                      />
+                      <TouchableOpacity
+                        style={styles.bulkRemoveRowBtn}
+                        onPress={() => removeBulkTableRow(index)}
+                      >
+                        <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+
+                  {/* Add Row Button */}
+                  <TouchableOpacity style={styles.bulkAddRowBtn} onPress={addBulkTableRow}>
+                    <Ionicons name="add" size={20} color="#6366F1" />
+                    <Text style={styles.bulkAddRowBtnText}>Add Row</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </ScrollView>
+
+            {/* Item Count */}
+            <View style={styles.bulkItemCount}>
+              <Ionicons name="layers" size={16} color="#6B7280" />
+              <Text style={styles.bulkItemCountText}>
+                {bulkAddMode === 'textarea'
+                  ? bulkTextValue.split('\n').filter(l => l.trim()).length
+                  : bulkTableRows.filter(r => r.name.trim()).length
+                } items to create
+              </Text>
+            </View>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setBulkAddModalVisible(false)}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.saveButton, { backgroundColor: '#10B981' }]} onPress={handleExecuteBulkAdd}>
+                <Ionicons name="checkmark-circle" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+                <Text style={styles.saveButtonText}>Create Items</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -1080,12 +1674,16 @@ const styles = StyleSheet.create({
     padding: 16
   },
   listItem: {
+    flexDirection: 'column',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    marginBottom: 8,
+    overflow: 'hidden'
+  },
+  listItemContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8
+    padding: 12
   },
   itemIcon: {
     width: 40,
@@ -1113,12 +1711,47 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     marginTop: 2
   },
+  itemActions: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    backgroundColor: '#FAFAFA'
+  },
+  moveButton: {
+    flex: 1,
+    padding: 10,
+    alignItems: 'center',
+    borderRightWidth: 1,
+    borderRightColor: '#E5E7EB'
+  },
   editButton: {
-    padding: 8,
-    marginRight: 4
+    flex: 1,
+    padding: 10,
+    alignItems: 'center',
+    borderRightWidth: 1,
+    borderRightColor: '#E5E7EB'
   },
   deleteButton: {
-    padding: 8
+    flex: 1,
+    padding: 10,
+    alignItems: 'center'
+  },
+  bulkAddButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#10B981',
+    marginRight: 8
+  },
+  bulkAddButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#10B981'
   },
   emptyContainer: {
     flex: 1,
@@ -1287,5 +1920,189 @@ const styles = StyleSheet.create({
   removeActivityButton: {
     padding: 8,
     marginLeft: 4
+  },
+  // Move Modal Styles
+  moveIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  moveCurrentItem: {
+    padding: 14,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 10,
+    marginBottom: 16
+  },
+  moveCurrentItemLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 4
+  },
+  moveCurrentItemName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#111827'
+  },
+  moveWarning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 12,
+    backgroundColor: '#FEF3C7',
+    borderRadius: 8,
+    marginBottom: 16
+  },
+  moveWarningText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#92400E'
+  },
+  moveSelectorContainer: {
+    marginBottom: 16
+  },
+  moveSelectorLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8
+  },
+  moveOptionsList: {
+    maxHeight: 140,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E5E7EB'
+  },
+  moveOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB'
+  },
+  moveOptionSelected: {
+    backgroundColor: '#ECFDF5'
+  },
+  moveOptionText: {
+    fontSize: 14,
+    color: '#374151',
+    flex: 1
+  },
+  moveOptionTextSelected: {
+    fontWeight: '600',
+    color: '#059669'
+  },
+  // Bulk Add Modal Styles
+  bulkModeTabs: {
+    flexDirection: 'row',
+    padding: 12,
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB'
+  },
+  bulkModeTab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: '#F9FAFB'
+  },
+  bulkModeTabActive: {
+    backgroundColor: '#EEF2FF'
+  },
+  bulkModeTabText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6B7280'
+  },
+  bulkModeTabTextActive: {
+    color: '#6366F1',
+    fontWeight: '600'
+  },
+  bulkTextarea: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 14,
+    color: '#111827',
+    backgroundColor: '#F9FAFB',
+    minHeight: 180,
+    textAlignVertical: 'top'
+  },
+  bulkHelperText: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 8
+  },
+  bulkTableHeader: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingBottom: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: '#E5E7EB',
+    marginBottom: 8
+  },
+  bulkTableHeaderCell: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#374151'
+  },
+  bulkTableRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8
+  },
+  bulkTableInput: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    color: '#111827',
+    backgroundColor: '#F9FAFB'
+  },
+  bulkRemoveRowBtn: {
+    width: 40,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  bulkAddRowBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: 12,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    borderStyle: 'dashed',
+    borderRadius: 10,
+    marginTop: 8
+  },
+  bulkAddRowBtnText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6366F1'
+  },
+  bulkItemCount: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB'
+  },
+  bulkItemCountText: {
+    fontSize: 13,
+    color: '#6B7280'
   }
 });

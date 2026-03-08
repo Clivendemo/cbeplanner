@@ -19,6 +19,37 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - **Schemes of Work Generator:** Term-based curriculum planning
 - **Admin Role:** Role-based access control for admin endpoints
 
+### Admin Panel Enhancement (DONE - Dec 2025)
+**New Features:**
+1. **Move Items Feature (CASCADE)**
+   - Move strands between subjects (all substrands, SLOs cascade automatically)
+   - Move substrands between strands (all SLOs cascade automatically)
+   - Move SLOs between substrands
+   - Change subject grade assignments
+   - Full hierarchy dropdown selectors for precise targeting
+
+2. **Bulk Add Feature**
+   - Text Input mode: Paste multiple items (one per line)
+   - Table Input mode: Spreadsheet-style data entry with name + description
+   - Supports strands, substrands, and SLOs bulk creation
+   - Automatic SLO mapping creation for bulk SLOs
+
+3. **Improved UI**
+   - Action buttons row for each list item (Move, Edit, Delete)
+   - Bulk Add button in header when parent is selected
+   - Warning messages for cascade operations
+   - Item count indicator in bulk add modal
+
+**New Backend Endpoints:**
+- `PUT /api/admin/strands/{id}/move` - Move strand with cascade
+- `PUT /api/admin/substrands/{id}/move` - Move substrand with cascade
+- `PUT /api/admin/slos/{id}/move` - Move SLO
+- `PUT /api/admin/subjects/{id}/change-grade` - Reassign subject grade
+- `POST /api/admin/strands/bulk` - Bulk create strands
+- `POST /api/admin/substrands/bulk` - Bulk create substrands
+- `POST /api/admin/slos/bulk` - Bulk create SLOs with mappings
+- `GET /api/admin/curriculum-tree` - Full curriculum hierarchy for dropdowns
+
 ### Production Readiness (DONE - Dec 2025)
 - **Global Error Handler Middleware:** Catches unhandled exceptions and returns user-friendly messages
 - **Security Headers Middleware:** Adds X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, etc.

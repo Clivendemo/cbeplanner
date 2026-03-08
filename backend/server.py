@@ -2403,6 +2403,332 @@ async def admin_create_slo_mapping(mapping: SLOMapping, user: dict = Depends(ver
         result = await db.slo_mappings.insert_one(mapping.dict(exclude={"id"}))
         return {"success": True, "id": str(result.inserted_id)}
 
+# ==================== MOVE/REASSIGN ENDPOINTS (with CASCADE) ====================
+
+class MoveStrandRequest(BaseModel):
+    targetSubjectId: str
+
+class MoveSubstrandRequest(BaseModel):
+    targetStrandId: str
+
+class MoveSloRequest(BaseModel):
+    targetSubstrandId: str
+
+class ChangeSubjectGradeRequest(BaseModel):
+    targetGradeId: str
+    removeFromOtherGrades: bool = False
+
+class BulkCreateItem(BaseModel):
+    name: str
+    description: Optional[str] = None
+
+class BulkCreateRequest(BaseModel):
+    items: List[BulkCreateItem]
+    parentId: str
+
+@api_router.put("/admin/strands/{strand_id}/move")
+async def admin_move_strand(strand_id: str, request: MoveStrandRequest, user: dict = Depends(verify_admin)):
+    """
+    Move a strand to a different subject.
+    CASCADE: All substrands, SLOs, SLO mappings, and learning activities move with it.
+    """
+    # Verify strand exists
+    strand = await db.strands.find_one({"_id": ObjectId(strand_id)})
+    if not strand:
+        raise HTTPException(status_code=404, detail="Strand not found")
+    
+    # Verify target subject exists
+    target_subject = await db.subjects.find_one({"_id": ObjectId(request.targetSubjectId)})
+    if not target_subject:
+        raise HTTPException(status_code=404, detail="Target subject not found")
+    
+    old_subject_id = strand.get("subjectId")
+    
+    # Update the strand's subjectId
+    await db.strands.update_one(
+        {"_id": ObjectId(strand_id)},
+        {"$set": {"subjectId": request.targetSubjectId}}
+    )
+    
+    # Count affected items for response
+    substrands = await db.substrands.find({"strandId": strand_id}).to_list(1000)
+    substrand_count = len(substrands)
+    
+    slo_count = 0
+    activity_count = 0
+    for ss in substrands:
+        ss_id = str(ss["_id"])
+        slos = await db.slos.count_documents({"substrandId": ss_id})
+        slo_count += slos
+        activities = await db.learning_activities.count_documents({"substrandId": ss["_id"]})
+        activity_count += activities
+    
+    return {
+        "success": True,
+        "message": f"Strand moved successfully with all children",
+        "moved": {
+            "strand": strand.get("name"),
+            "fromSubject": old_subject_id,
+            "toSubject": request.targetSubjectId,
+            "cascadedSubstrands": substrand_count,
+            "cascadedSLOs": slo_count,
+            "cascadedActivities": activity_count
+        }
+    }
+
+@api_router.put("/admin/substrands/{substrand_id}/move")
+async def admin_move_substrand(substrand_id: str, request: MoveSubstrandRequest, user: dict = Depends(verify_admin)):
+    """
+    Move a substrand to a different strand.
+    CASCADE: All SLOs, SLO mappings, and learning activities move with it.
+    """
+    # Verify substrand exists
+    substrand = await db.substrands.find_one({"_id": ObjectId(substrand_id)})
+    if not substrand:
+        raise HTTPException(status_code=404, detail="Substrand not found")
+    
+    # Verify target strand exists
+    target_strand = await db.strands.find_one({"_id": ObjectId(request.targetStrandId)})
+    if not target_strand:
+        raise HTTPException(status_code=404, detail="Target strand not found")
+    
+    old_strand_id = substrand.get("strandId")
+    
+    # Update the substrand's strandId
+    await db.substrands.update_one(
+        {"_id": ObjectId(substrand_id)},
+        {"$set": {"strandId": request.targetStrandId}}
+    )
+    
+    # Count affected items
+    slo_count = await db.slos.count_documents({"substrandId": substrand_id})
+    activity_count = await db.learning_activities.count_documents({"substrandId": ObjectId(substrand_id)})
+    
+    return {
+        "success": True,
+        "message": f"Substrand moved successfully with all children",
+        "moved": {
+            "substrand": substrand.get("name"),
+            "fromStrand": old_strand_id,
+            "toStrand": request.targetStrandId,
+            "cascadedSLOs": slo_count,
+            "cascadedActivities": activity_count
+        }
+    }
+
+@api_router.put("/admin/slos/{slo_id}/move")
+async def admin_move_slo(slo_id: str, request: MoveSloRequest, user: dict = Depends(verify_admin)):
+    """
+    Move an SLO to a different substrand.
+    CASCADE: SLO mapping stays with the SLO.
+    """
+    # Verify SLO exists
+    slo = await db.slos.find_one({"_id": ObjectId(slo_id)})
+    if not slo:
+        raise HTTPException(status_code=404, detail="SLO not found")
+    
+    # Verify target substrand exists
+    target_substrand = await db.substrands.find_one({"_id": ObjectId(request.targetSubstrandId)})
+    if not target_substrand:
+        raise HTTPException(status_code=404, detail="Target substrand not found")
+    
+    old_substrand_id = slo.get("substrandId")
+    
+    # Update the SLO's substrandId
+    await db.slos.update_one(
+        {"_id": ObjectId(slo_id)},
+        {"$set": {"substrandId": request.targetSubstrandId}}
+    )
+    
+    # Check if SLO mapping exists
+    has_mapping = await db.slo_mappings.find_one({"sloId": slo_id}) is not None
+    
+    return {
+        "success": True,
+        "message": f"SLO moved successfully",
+        "moved": {
+            "slo": slo.get("name"),
+            "fromSubstrand": old_substrand_id,
+            "toSubstrand": request.targetSubstrandId,
+            "mappingPreserved": has_mapping
+        }
+    }
+
+@api_router.put("/admin/subjects/{subject_id}/change-grade")
+async def admin_change_subject_grade(subject_id: str, request: ChangeSubjectGradeRequest, user: dict = Depends(verify_admin)):
+    """
+    Change a subject's grade assignment.
+    Can add to new grade or replace all grade assignments.
+    """
+    # Verify subject exists
+    subject = await db.subjects.find_one({"_id": ObjectId(subject_id)})
+    if not subject:
+        raise HTTPException(status_code=404, detail="Subject not found")
+    
+    # Verify target grade exists
+    target_grade = await db.grades.find_one({"_id": ObjectId(request.targetGradeId)})
+    if not target_grade:
+        raise HTTPException(status_code=404, detail="Target grade not found")
+    
+    old_grade_ids = subject.get("gradeIds", [])
+    
+    if request.removeFromOtherGrades:
+        # Replace all grade assignments with just the target grade
+        new_grade_ids = [request.targetGradeId]
+    else:
+        # Add to existing grades if not already present
+        new_grade_ids = list(set(old_grade_ids + [request.targetGradeId]))
+    
+    await db.subjects.update_one(
+        {"_id": ObjectId(subject_id)},
+        {"$set": {"gradeIds": new_grade_ids}}
+    )
+    
+    return {
+        "success": True,
+        "message": f"Subject grade assignment updated",
+        "updated": {
+            "subject": subject.get("name"),
+            "oldGradeIds": old_grade_ids,
+            "newGradeIds": new_grade_ids
+        }
+    }
+
+# ==================== BULK CREATE ENDPOINTS ====================
+
+@api_router.post("/admin/strands/bulk")
+async def admin_bulk_create_strands(request: BulkCreateRequest, user: dict = Depends(verify_admin)):
+    """Create multiple strands at once for a subject"""
+    # Verify subject exists
+    subject = await db.subjects.find_one({"_id": ObjectId(request.parentId)})
+    if not subject:
+        raise HTTPException(status_code=404, detail="Subject not found")
+    
+    created_ids = []
+    for item in request.items:
+        if item.name.strip():
+            result = await db.strands.insert_one({
+                "name": item.name.strip(),
+                "subjectId": request.parentId
+            })
+            created_ids.append(str(result.inserted_id))
+    
+    return {
+        "success": True,
+        "message": f"Created {len(created_ids)} strands",
+        "createdIds": created_ids
+    }
+
+@api_router.post("/admin/substrands/bulk")
+async def admin_bulk_create_substrands(request: BulkCreateRequest, user: dict = Depends(verify_admin)):
+    """Create multiple substrands at once for a strand"""
+    # Verify strand exists
+    strand = await db.strands.find_one({"_id": ObjectId(request.parentId)})
+    if not strand:
+        raise HTTPException(status_code=404, detail="Strand not found")
+    
+    created_ids = []
+    for item in request.items:
+        if item.name.strip():
+            result = await db.substrands.insert_one({
+                "name": item.name.strip(),
+                "strandId": request.parentId
+            })
+            created_ids.append(str(result.inserted_id))
+    
+    return {
+        "success": True,
+        "message": f"Created {len(created_ids)} substrands",
+        "createdIds": created_ids
+    }
+
+@api_router.post("/admin/slos/bulk")
+async def admin_bulk_create_slos(request: BulkCreateRequest, user: dict = Depends(verify_admin)):
+    """Create multiple SLOs at once for a substrand, with automatic SLO mappings"""
+    # Verify substrand exists
+    substrand = await db.substrands.find_one({"_id": ObjectId(request.parentId)})
+    if not substrand:
+        raise HTTPException(status_code=404, detail="Substrand not found")
+    
+    created_ids = []
+    for item in request.items:
+        if item.name.strip():
+            result = await db.slos.insert_one({
+                "name": item.name.strip(),
+                "description": item.description or item.name.strip(),
+                "substrandId": request.parentId
+            })
+            slo_id = str(result.inserted_id)
+            created_ids.append(slo_id)
+            
+            # Create default SLO mapping
+            await create_default_slo_mapping(slo_id)
+    
+    return {
+        "success": True,
+        "message": f"Created {len(created_ids)} SLOs with mappings",
+        "createdIds": created_ids
+    }
+
+class BulkLearningActivityItem(BaseModel):
+    introduction_activities: List[str] = []
+    development_activities: List[str] = []
+    conclusion_activities: List[str] = []
+    extended_activities: List[str] = []
+
+@api_router.post("/admin/learning-activities/bulk-update")
+async def admin_bulk_update_learning_activities(
+    substrand_id: str,
+    activities: BulkLearningActivityItem,
+    user: dict = Depends(verify_admin)
+):
+    """Create or update learning activities for a substrand in bulk"""
+    # Verify substrand exists
+    substrand = await db.substrands.find_one({"_id": ObjectId(substrand_id)})
+    if not substrand:
+        raise HTTPException(status_code=404, detail="Substrand not found")
+    
+    # Filter empty strings
+    update_data = {
+        "substrandId": ObjectId(substrand_id),
+        "introduction_activities": [a.strip() for a in activities.introduction_activities if a.strip()],
+        "development_activities": [a.strip() for a in activities.development_activities if a.strip()],
+        "conclusion_activities": [a.strip() for a in activities.conclusion_activities if a.strip()],
+        "extended_activities": [a.strip() for a in activities.extended_activities if a.strip()]
+    }
+    
+    result = await db.learning_activities.update_one(
+        {"substrandId": ObjectId(substrand_id)},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    return {
+        "success": True,
+        "message": "Learning activities saved",
+        "created": result.upserted_id is not None
+    }
+
+# ==================== CURRICULUM HIERARCHY ENDPOINT ====================
+
+@api_router.get("/admin/curriculum-tree")
+async def admin_get_curriculum_tree(user: dict = Depends(verify_admin)):
+    """Get full curriculum hierarchy for dropdown selections"""
+    grades = await db.grades.find().to_list(100)
+    subjects = await db.subjects.find().to_list(500)
+    strands = await db.strands.find().to_list(1000)
+    substrands = await db.substrands.find().to_list(5000)
+    
+    return {
+        "success": True,
+        "tree": {
+            "grades": [serialize_doc(g) for g in grades],
+            "subjects": [serialize_doc(s) for s in subjects],
+            "strands": [serialize_doc(s) for s in strands],
+            "substrands": [serialize_doc(s) for s in substrands]
+        }
+    }
+
 # ==================== SEED DATA ENDPOINT ====================
 
 @api_router.post("/admin/seed")
