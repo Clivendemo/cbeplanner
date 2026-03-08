@@ -11,10 +11,12 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../../contexts/AuthContext';
+import { useRouter } from 'expo-router';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import { LessonPlanDisplay } from '../../components/LessonPlanDisplay';
 import { getErrorMessage, isPaymentError, isRateLimitError } from '../../utils/errorHandler';
+import { WalletCreditsPopup } from '../../components/WalletCreditsPopup';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -22,6 +24,7 @@ const DURATIONS = [25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80];
 
 export default function Home() {
   const { firebaseUser, user, refreshProfile, isNewUser, clearNewUserFlag } = useAuth();
+  const router = useRouter();
   
   const [grades, setGrades] = useState<any[]>([]);
   const [allSubjects, setAllSubjects] = useState<any[]>([]); // All subjects from DB
@@ -42,6 +45,9 @@ export default function Home() {
   const [generating, setGenerating] = useState(false);
   const [lessonPlan, setLessonPlan] = useState<any>(null);
   const [showPlan, setShowPlan] = useState(false);
+  
+  // Wallet popup state
+  const [showWalletPopup, setShowWalletPopup] = useState(false);
 
   useEffect(() => {
     loadGrades();
@@ -230,10 +236,31 @@ export default function Home() {
     if (substrandId) loadSLOs(substrandId);
   };
 
+  // Check if user has sufficient credits
+  const hasCredits = () => {
+    const freeRemaining = user?.freeLessonsRemaining ?? 0;
+    const walletBalance = user?.walletBalance ?? 0;
+    const lessonCost = 2; // KES 2 per lesson
+    
+    return freeRemaining > 0 || walletBalance >= lessonCost;
+  };
+
+  // Handle navigation to wallet/profile page
+  const navigateToWallet = () => {
+    setShowWalletPopup(false);
+    router.push('/(teacher)/profile');
+  };
+
   const generateLessonPlan = async () => {
     if (!selectedGrade || !selectedSubject || !selectedStrand || !selectedSubstrand || !selectedSLO) {
       Alert.alert('Missing Fields', 'Please select all required fields before generating');
       return;
+    }
+
+    // FRONTEND CHECK: Show friendly popup if no credits
+    if (!hasCredits()) {
+      setShowWalletPopup(true);
+      return; // Don't attempt generation
     }
 
     setGenerating(true);
@@ -262,14 +289,9 @@ export default function Home() {
       const errorMessage = getErrorMessage(error);
       
       if (isPaymentError(error)) {
-        Alert.alert(
-          'Insufficient Balance', 
-          'You have used all your free lessons. Please top up your wallet to generate more lesson plans.',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Top Up', onPress: () => {} } // Could navigate to profile
-          ]
-        );
+        // Show friendly popup instead of alert for payment errors
+        await refreshProfile(); // Refresh to get latest balance
+        setShowWalletPopup(true);
       } else if (isRateLimitError(error)) {
         Alert.alert('Please Wait', errorMessage);
       } else {
@@ -569,6 +591,15 @@ export default function Home() {
           </ScrollView>
         </View>
       </Modal>
+
+      {/* Wallet Credits Popup */}
+      <WalletCreditsPopup
+        visible={showWalletPopup}
+        currentBalance={user?.walletBalance ?? 0}
+        freeLessonsRemaining={user?.freeLessonsRemaining ?? 0}
+        onAddCredits={navigateToWallet}
+        onClose={() => setShowWalletPopup(false)}
+      />
     </View>
   );
 }
