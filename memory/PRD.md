@@ -29,25 +29,51 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - **Input Validation:** Centralized phone number and amount validation
 - **Frontend Error Handler:** Utility for mapping API errors to user-friendly messages
 
+### Critical Fixes (Dec 2025)
+
+#### PART 1: Curriculum Ordering Fixed
+- **REMOVED all automatic sorting** from strands, substrands, and SLOs API endpoints
+- Strands and substrands now return in **curriculum teaching order** (database insertion order)
+- Only subjects are sorted alphabetically for user convenience
+- No client-side sorting in frontend code
+
+**Affected Endpoints:**
+- `GET /api/strands` - NO SORT (curriculum order)
+- `GET /api/substrands` - NO SORT (curriculum order)
+- `GET /api/slos` - NO SORT (curriculum order)
+- `GET /api/subjects` - SORTED alphabetically (user convenience)
+
+#### PART 2: PCIs, Values, Core Competencies Fixed
+**Root Cause:** Grade 7, 8, 9 SLOs were missing `slo_mappings` records that link them to PCIs, values, and competencies.
+
+**Fix Applied:**
+1. Created 367 new SLO mappings for Grade 9 SLOs
+2. Updated lesson plan generation to check multiple data sources:
+   - First: Check `slo_mappings` collection (original format)
+   - Second: Check `learning_activities` for embedded data (Grade 9 format)
+   - Third: Use intelligent defaults if no data found
+3. Lesson plans now include `inquiryQuestions` field
+4. Total SLO mappings: 1,385
+
+**Lesson Plan Generation Logic:**
+```
+1. Query slo_mappings by sloId
+2. If found: fetch competencies, values, PCIs from reference collections
+3. If not found: check learning_activities for embedded core_competencies, values, pci
+4. If still missing: use subject-appropriate defaults
+```
+
 ### Curriculum Data (UPDATED - Dec 2025)
-- **22 Subjects:** Literacy Activities, Mathematical Activities, Environmental Activities, English, Mathematics, Science and Technology, Social Studies, Chemistry, Computer Science, Community Service Learning, Fasihi ya Kiswahili, Kiswahili Lugha, Agriculture, Biology, Arabic, Aviation Technology, Building Construction, **Business Studies**, **Christian Religious Education (CRE)**, **Electrical Technology**, **Fine Arts**, **French**
-- **60 Strands** across all subjects
-- **235 Substrands** covering all curriculum areas
-- **898 Specific Learning Outcomes (SLOs)**
-- **89 Detailed Learning Activities** for lesson plan generation
+- **Grades:** 12 (PP1, PP2, Grade 1-10)
+- **Subjects:** ~50 unique subjects across all grades
+- **Strands:** 90+ strands
+- **Substrands:** 328 substrands
+- **SLOs:** 1,332 Specific Learning Outcomes
+- **SLO Mappings:** 1,385 (linking SLOs to competencies/values/PCIs)
+- **Learning Activities:** 520 detailed activity sets
 - **7 Core Competencies:** Communication and Collaboration, Critical Thinking and Problem Solving, Creativity and Imagination, Citizenship, Digital Literacy, Learning to Learn, Self-Efficacy
 - **8 Core Values:** Love, Responsibility, Respect, Unity, Peace, Patriotism, Social Justice, Integrity
-- **15 PCIs:** Environmental Conservation, Safety and Security, Health Education, Life Skills, Financial Literacy, Citizenship Education, Gender Issues, Drug and Substance Abuse, Disaster Risk Reduction, Animal Welfare, Digital Citizenship, Climate Change, and more
-
-#### New Subjects Added (Dec 2025):
-1. **Business Studies** - 4 strands, 15 substrands, 79 SLOs, 11 activities
-   - Business and Money Management
-   - Business and Its Environment
-   - Government and Global Influence in Business
-   - Financial Records in Business
-
-2. **Christian Religious Education (CRE)** - 4 strands, 23 substrands, 102 SLOs, 21 activities
-   - The Old Testament
+- **15+ PCIs:** Environmental Conservation, Safety and Security, Health Education, Life Skills, Financial Literacy, Citizenship Education, and more
    - The New Testament
    - Church in Action
    - Christian Living Today
