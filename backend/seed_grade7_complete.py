@@ -20,7 +20,9 @@ import os
 from datetime import datetime
 
 # Database connection
-mongo_url = os.environ.get('MONGODB_URI') or 'mongodb+srv://clive_db_admin:n1ruhu5u@cbeplanner.jtshzub.mongodb.net/cbeplanner?retryWrites=true&w=majority&appName=cbeplanner'
+mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL')
+if not mongo_url:
+    raise ValueError("MONGODB_URI or MONGO_URL environment variable is required")
 client = AsyncIOMotorClient(mongo_url)
 db = client['cbeplanner']
 
