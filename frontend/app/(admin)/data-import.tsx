@@ -159,10 +159,15 @@ export default function DataImport() {
   const handleDownloadTemplate = async () => {
     try {
       const headers = await getHeaders();
+      console.log('Downloading template with headers:', headers);
+      console.log('Backend URL:', BACKEND_URL);
+      
       const response = await axios.get(`${BACKEND_URL}/api/admin/import/template`, {
         headers,
         responseType: 'text'
       });
+      
+      console.log('Template response received:', response.status);
       
       // For web platform, use a different approach
       if (typeof window !== 'undefined' && window.document) {
@@ -184,7 +189,10 @@ export default function DataImport() {
       }
     } catch (error: any) {
       console.error('Error downloading template:', error);
-      alert('Failed to download template. Please try again.');
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      const errorMsg = error.response?.data?.detail || error.message || 'Unknown error';
+      alert(`Failed to download template: ${errorMsg}`);
     }
   };
 
