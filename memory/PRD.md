@@ -67,10 +67,53 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - **Grades:** 12 (PP1, PP2, Grade 1-10)
 - **Subjects:** ~50 unique subjects across all grades
 - **Strands:** 90+ strands
-- **Substrands:** 328 substrands
-- **SLOs:** 1,332 Specific Learning Outcomes
-- **SLO Mappings:** 1,385 (linking SLOs to competencies/values/PCIs)
-- **Learning Activities:** 520 detailed activity sets
+- **Substrands:** 328+ substrands
+- **SLOs:** 1,400+ Specific Learning Outcomes
+- **SLO Mappings:** 1,600+ (linking SLOs to competencies/values/PCIs)
+- **Learning Activities:** 602 detailed activity sets
+
+### Grade 7 Complete Curriculum Data (UPDATED - Dec 2025)
+**Seeding Script:** `/app/backend/seed_grade7_complete.py`
+
+| Subject | Strands | Substrands | SLOs | SLO Mappings |
+|---------|---------|------------|------|--------------|
+| Mathematics | 5 | 18 | 78 | 78 |
+| Integrated Science | 4 | 11 | 43 | 43 |
+| English | 4 | 11 | 43 | 43 |
+| Kiswahili | 4 | 8 | 32 | 32 |
+| Social Studies | 5 | 8 | 32 | 32 |
+
+**Mathematics Strands (Teaching Order):**
+1. Numbers (Whole Numbers, Factors, Multiples, Fractions, Decimals, Squares and Square Roots)
+2. Algebra (Algebraic Expressions, Linear Equations)
+3. Measurements (Length, Area, Volume and Capacity, Mass, Time, Money)
+4. Geometry (Lines and Angles, Plane Figures)
+5. Data Handling and Probability (Data Collection and Organization, Probability)
+
+**Integrated Science Strands (Teaching Order):**
+1. Scientific Investigation (Introduction, Laboratory Safety, Apparatus and Instruments)
+2. Mixtures, Elements and Compounds (Classification, Separation Methods)
+3. Living Things and their Environment (Classification, Cell, Human Body Systems)
+4. Force and Energy (Force, Pressure, Light)
+
+**English Strands (Teaching Order):**
+1. Listening and Speaking (Polite Language, Listening Comprehension, Oral Narratives)
+2. Reading (Comprehension, Vocabulary Development, Literary Appreciation)
+3. Grammar in Use (Parts of Speech, Sentence Structure, Tenses)
+4. Writing (Creative Writing, Functional Writing)
+
+**Kiswahili Strands (Teaching Order):**
+1. Kusikiliza na Kuzungumza (Mazungumzo, Kusikiliza kwa Ufahamu)
+2. Kusoma (Kusoma kwa Ufahamu, Fasihi Simulizi)
+3. Kuandika (Insha za Ubunifu, Barua)
+4. Sarufi (Ngeli za Nomino, Vitenzi)
+
+**Social Studies Strands (Teaching Order):**
+1. Social Studies and Career Development (Career Awareness)
+2. Community Service-Learning (CSL Project)
+3. People and Relationships (The Family, Population)
+4. Natural and Historic Built Environments (Physical Features, Climate and Weather)
+5. Political Developments and Governance (Government, Democracy and Human Rights)
 - **7 Core Competencies:** Communication and Collaboration, Critical Thinking and Problem Solving, Creativity and Imagination, Citizenship, Digital Literacy, Learning to Learn, Self-Efficacy
 - **8 Core Values:** Love, Responsibility, Respect, Unity, Peace, Patriotism, Social Justice, Integrity
 - **15+ PCIs:** Environmental Conservation, Safety and Security, Health Education, Life Skills, Financial Literacy, Citizenship Education, and more
