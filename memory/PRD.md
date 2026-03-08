@@ -49,6 +49,27 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - `POST /api/admin/substrands/bulk` - Bulk create substrands
 - `POST /api/admin/slos/bulk` - Bulk create SLOs with mappings
 - `GET /api/admin/curriculum-tree` - Full curriculum hierarchy for dropdowns
+- `GET /api/admin/reference-data` - Get all competencies, values, PCIs
+- `PUT /api/admin/slo-mappings/bulk` - Bulk update SLO mappings
+
+### SLO Mapping Editor (DONE - Dec 2025)
+**Features:**
+1. **Per-SLO Mapping Editor**
+   - Click "Link" button on any SLO to edit its mappings
+   - Select Core Competencies (7 options)
+   - Select Core Values (8 options)
+   - Select PCIs (20+ options)
+   - Shows current selection count
+
+2. **Bulk SLO Mapping Editor**
+   - Select multiple SLOs at once (Select All / Deselect All)
+   - Apply same competencies, values, and PCIs to all selected
+   - Useful for SLOs with similar characteristics
+
+3. **User-Friendly Guides**
+   - Each modal has clear instructions
+   - Bulk add shows context-specific help for strands, substrands, SLOs
+   - Step-by-step guidance in bulk mapping editor
 
 ### Production Readiness (DONE - Dec 2025)
 - **Global Error Handler Middleware:** Catches unhandled exceptions and returns user-friendly messages

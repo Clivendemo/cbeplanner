@@ -130,6 +130,23 @@ export default function Curriculum() {
     { name: '', description: '' }
   ]);
 
+  // SLO Mapping Editor state
+  const [mappingModalVisible, setMappingModalVisible] = useState(false);
+  const [mappingSlo, setMappingSlo] = useState<Entity | null>(null);
+  const [selectedCompetencies, setSelectedCompetencies] = useState<string[]>([]);
+  const [selectedValues, setSelectedValues] = useState<string[]>([]);
+  const [selectedPcis, setSelectedPcis] = useState<string[]>([]);
+  const [allCompetencies, setAllCompetencies] = useState<Entity[]>([]);
+  const [allValues, setAllValues] = useState<Entity[]>([]);
+  const [allPcis, setAllPcis] = useState<Entity[]>([]);
+
+  // Bulk Mapping Editor state
+  const [bulkMappingModalVisible, setBulkMappingModalVisible] = useState(false);
+  const [selectedSlosForMapping, setSelectedSlosForMapping] = useState<string[]>([]);
+  const [bulkSelectedCompetencies, setBulkSelectedCompetencies] = useState<string[]>([]);
+  const [bulkSelectedValues, setBulkSelectedValues] = useState<string[]>([]);
+  const [bulkSelectedPcis, setBulkSelectedPcis] = useState<string[]>([]);
+
   const getHeaders = async () => {
     if (firebaseUser) {
       const token = await firebaseUser.getIdToken();
@@ -792,6 +809,137 @@ export default function Curriculum() {
     return allSubstrands.filter(s => s.strandId === moveTargetStrand);
   };
 
+  // ==================== SLO MAPPING FUNCTIONS ====================
+
+  // Load reference data (competencies, values, PCIs)
+  const loadReferenceData = async () => {
+    try {
+      const headers = await getHeaders();
+      const response = await axios.get(`${BACKEND_URL}/api/admin/reference-data`, { headers });
+      if (response.data.success) {
+        setAllCompetencies(response.data.competencies || []);
+        setAllValues(response.data.values || []);
+        setAllPcis(response.data.pcis || []);
+      }
+    } catch (error) {
+      console.error('Error loading reference data:', error);
+    }
+  };
+
+  // Open single SLO mapping editor
+  const handleOpenMappingModal = async (slo: Entity) => {
+    setMappingSlo(slo);
+    setSelectedCompetencies([]);
+    setSelectedValues([]);
+    setSelectedPcis([]);
+    
+    await loadReferenceData();
+    
+    // Load existing mapping
+    try {
+      const headers = await getHeaders();
+      const response = await axios.get(`${BACKEND_URL}/api/admin/slo-mappings/${slo.id}`, { headers });
+      if (response.data.success && response.data.mapping) {
+        const mapping = response.data.mapping;
+        setSelectedCompetencies(mapping.competencyIds || []);
+        setSelectedValues(mapping.valueIds || []);
+        setSelectedPcis(mapping.pciIds || []);
+      }
+    } catch (error) {
+      console.error('Error loading SLO mapping:', error);
+    }
+    
+    setMappingModalVisible(true);
+  };
+
+  // Save single SLO mapping
+  const handleSaveSloMapping = async () => {
+    if (!mappingSlo) return;
+    
+    try {
+      const headers = await getHeaders();
+      const payload = {
+        sloId: mappingSlo.id,
+        competencyIds: selectedCompetencies,
+        valueIds: selectedValues,
+        pciIds: selectedPcis,
+        assessmentIds: []
+      };
+      
+      await axios.post(`${BACKEND_URL}/api/admin/slo-mappings`, payload, { headers });
+      showAlert('Success', 'SLO mapping saved successfully');
+      setMappingModalVisible(false);
+    } catch (error: any) {
+      showAlert('Error', error.response?.data?.detail || 'Failed to save mapping');
+    }
+  };
+
+  // Toggle checkbox selection
+  const toggleSelection = (id: string, current: string[], setter: (val: string[]) => void) => {
+    if (current.includes(id)) {
+      setter(current.filter(i => i !== id));
+    } else {
+      setter([...current, id]);
+    }
+  };
+
+  // Open bulk mapping editor
+  const handleOpenBulkMappingModal = async () => {
+    setSelectedSlosForMapping([]);
+    setBulkSelectedCompetencies([]);
+    setBulkSelectedValues([]);
+    setBulkSelectedPcis([]);
+    await loadReferenceData();
+    setBulkMappingModalVisible(true);
+  };
+
+  // Toggle SLO selection for bulk mapping
+  const toggleSloSelection = (sloId: string) => {
+    if (selectedSlosForMapping.includes(sloId)) {
+      setSelectedSlosForMapping(selectedSlosForMapping.filter(id => id !== sloId));
+    } else {
+      setSelectedSlosForMapping([...selectedSlosForMapping, sloId]);
+    }
+  };
+
+  // Select all SLOs for bulk mapping
+  const selectAllSlos = () => {
+    const sloIds = data.filter(item => selectedEntity === 'slos').map(item => item.id);
+    setSelectedSlosForMapping(sloIds);
+  };
+
+  // Deselect all SLOs
+  const deselectAllSlos = () => {
+    setSelectedSlosForMapping([]);
+  };
+
+  // Save bulk SLO mappings
+  const handleSaveBulkMapping = async () => {
+    if (selectedSlosForMapping.length === 0) {
+      showAlert('Error', 'Please select at least one SLO');
+      return;
+    }
+    
+    try {
+      const headers = await getHeaders();
+      const payload = {
+        sloIds: selectedSlosForMapping,
+        competencyIds: bulkSelectedCompetencies,
+        valueIds: bulkSelectedValues,
+        pciIds: bulkSelectedPcis
+      };
+      
+      const response = await axios.put(`${BACKEND_URL}/api/admin/slo-mappings/bulk`, payload, { headers });
+      
+      if (response.data.success) {
+        showAlert('Success', response.data.message);
+        setBulkMappingModalVisible(false);
+      }
+    } catch (error: any) {
+      showAlert('Error', error.response?.data?.detail || 'Failed to save mappings');
+    }
+  };
+
   const removeActivityField = (type: keyof typeof activitiesFormData, index: number) => {
     setActivitiesFormData(prev => ({
       ...prev,
@@ -846,6 +994,7 @@ export default function Curriculum() {
     const config = ENTITY_CONFIG[selectedEntity];
     const canNavigate = currentView === 'hierarchy' && selectedEntity !== 'slos';
     const canMove = selectedEntity !== 'grades' && selectedEntity !== 'competencies' && selectedEntity !== 'values' && selectedEntity !== 'pcis' && selectedEntity !== 'learning_activities';
+    const canEditMapping = selectedEntity === 'slos';
     
     return (
       <View style={styles.listItem}>
@@ -873,6 +1022,12 @@ export default function Curriculum() {
         </TouchableOpacity>
         
         <View style={styles.itemActions}>
+          {/* Mapping Button - Only for SLOs */}
+          {canEditMapping && (
+            <TouchableOpacity style={styles.mappingButton} onPress={() => handleOpenMappingModal(item)}>
+              <Ionicons name="link" size={18} color="#8B5CF6" />
+            </TouchableOpacity>
+          )}
           {canMove && (
             <TouchableOpacity style={styles.moveButton} onPress={() => handleOpenMoveModal(item)}>
               <Ionicons name="swap-horizontal" size={18} color="#6366F1" />
@@ -1048,19 +1203,28 @@ export default function Curriculum() {
 
       {/* Learning Activities Button - Show when viewing substrands in hierarchy */}
       {currentView === 'hierarchy' && selectedEntity === 'slos' && breadcrumbs.length > 0 && (
-        <TouchableOpacity 
-          style={styles.learningActivitiesButton}
-          onPress={() => {
-            const substrand = breadcrumbs.find(b => b.type === 'substrands');
-            if (substrand) {
-              openLearningActivitiesModal({ id: substrand.id, name: substrand.name });
-            }
-          }}
-        >
-          <Ionicons name="flash" size={20} color="#84CC16" />
-          <Text style={styles.learningActivitiesButtonText}>Manage Learning Activities</Text>
-          <Ionicons name="chevron-forward" size={20} color="#84CC16" />
-        </TouchableOpacity>
+        <View style={styles.sloActionsRow}>
+          <TouchableOpacity 
+            style={styles.learningActivitiesButton}
+            onPress={() => {
+              const substrand = breadcrumbs.find(b => b.type === 'substrands');
+              if (substrand) {
+                openLearningActivitiesModal({ id: substrand.id, name: substrand.name });
+              }
+            }}
+          >
+            <Ionicons name="flash" size={20} color="#84CC16" />
+            <Text style={styles.learningActivitiesButtonText}>Learning Activities</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.bulkMappingButton}
+            onPress={handleOpenBulkMappingModal}
+          >
+            <Ionicons name="link" size={20} color="#8B5CF6" />
+            <Text style={styles.bulkMappingButtonText}>Bulk Edit Mappings</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       {/* Data List */}
@@ -1454,10 +1618,26 @@ export default function Curriculum() {
               </TouchableOpacity>
             </View>
 
+            {/* Guide Section */}
+            <View style={styles.mappingGuide}>
+              <Ionicons name="help-circle" size={20} color="#3B82F6" />
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.mappingGuideText, { fontWeight: '700', marginBottom: 4 }]}>
+                  Quick Guide for Adding {ENTITY_CONFIG[selectedEntity].title}
+                </Text>
+                <Text style={styles.mappingGuideText}>
+                  {selectedEntity === 'strands' && "Strands are the main topics/themes in a subject. Example: 'Listening and Speaking', 'Reading', 'Writing'."}
+                  {selectedEntity === 'substrands' && "Sub-strands are specific areas within a strand. Example: Under 'Reading' strand → 'Comprehension Skills', 'Vocabulary Development'."}
+                  {selectedEntity === 'slos' && "SLOs (Specific Learning Outcomes) describe what learners should achieve. Example: 'By the end of the lesson, the learner should be able to identify the main idea in a passage.'"}
+                  {selectedEntity === 'subjects' && "Subjects are the main areas of study. Example: 'Mathematics', 'English', 'Science'."}
+                </Text>
+              </View>
+            </View>
+
             <ScrollView style={styles.modalBody}>
               {bulkAddMode === 'textarea' ? (
                 <View>
-                  <Text style={styles.inputLabel}>Enter one item per line:</Text>
+                  <Text style={styles.inputLabel}>Enter one {ENTITY_CONFIG[selectedEntity].singularTitle.toLowerCase()} per line:</Text>
                   <TextInput
                     style={styles.bulkTextarea}
                     multiline
@@ -1469,7 +1649,7 @@ export default function Curriculum() {
                     textAlignVertical="top"
                   />
                   <Text style={styles.bulkHelperText}>
-                    Tip: Copy and paste from a document or spreadsheet
+                    Tip: You can copy and paste directly from Word documents, PDFs, or Excel spreadsheets. Each line becomes one item.
                   </Text>
                 </View>
               ) : (
@@ -1534,6 +1714,266 @@ export default function Curriculum() {
               <TouchableOpacity style={[styles.saveButton, { backgroundColor: '#10B981' }]} onPress={handleExecuteBulkAdd}>
                 <Ionicons name="checkmark-circle" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
                 <Text style={styles.saveButtonText}>Create Items</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* SLO Mapping Editor Modal */}
+      <Modal
+        visible={mappingModalVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setMappingModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxWidth: 600 }]}>
+            <View style={styles.modalHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <View style={[styles.moveIconContainer, { backgroundColor: '#F3E8FF' }]}>
+                  <Ionicons name="link" size={24} color="#8B5CF6" />
+                </View>
+                <View>
+                  <Text style={styles.modalTitle}>Edit SLO Mapping</Text>
+                  <Text style={styles.modalSubtitle} numberOfLines={2}>{mappingSlo?.name}</Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={() => setMappingModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Guide Section */}
+            <View style={styles.mappingGuide}>
+              <Ionicons name="information-circle" size={20} color="#3B82F6" />
+              <Text style={styles.mappingGuideText}>
+                Select the Core Competencies, Values, and PCIs that relate to this SLO. These will be used when generating lesson plans.
+              </Text>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              {/* Core Competencies */}
+              <View style={styles.mappingSection}>
+                <Text style={styles.mappingSectionTitle}>
+                  <Ionicons name="star" size={16} color="#6366F1" /> Core Competencies
+                </Text>
+                <Text style={styles.mappingSectionDesc}>Select skills this SLO develops</Text>
+                {allCompetencies.map((comp) => (
+                  <TouchableOpacity
+                    key={comp.id}
+                    style={[styles.mappingCheckbox, selectedCompetencies.includes(comp.id) && styles.mappingCheckboxSelected]}
+                    onPress={() => toggleSelection(comp.id, selectedCompetencies, setSelectedCompetencies)}
+                  >
+                    <View style={[styles.checkbox, selectedCompetencies.includes(comp.id) && styles.checkboxChecked]}>
+                      {selectedCompetencies.includes(comp.id) && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+                    </View>
+                    <Text style={styles.mappingCheckboxText}>{comp.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Core Values */}
+              <View style={styles.mappingSection}>
+                <Text style={styles.mappingSectionTitle}>
+                  <Ionicons name="heart" size={16} color="#EF4444" /> Core Values
+                </Text>
+                <Text style={styles.mappingSectionDesc}>Select values this SLO promotes</Text>
+                {allValues.map((val) => (
+                  <TouchableOpacity
+                    key={val.id}
+                    style={[styles.mappingCheckbox, selectedValues.includes(val.id) && styles.mappingCheckboxSelected]}
+                    onPress={() => toggleSelection(val.id, selectedValues, setSelectedValues)}
+                  >
+                    <View style={[styles.checkbox, selectedValues.includes(val.id) && styles.checkboxChecked]}>
+                      {selectedValues.includes(val.id) && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+                    </View>
+                    <Text style={styles.mappingCheckboxText}>{val.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* PCIs */}
+              <View style={styles.mappingSection}>
+                <Text style={styles.mappingSectionTitle}>
+                  <Ionicons name="globe" size={16} color="#10B981" /> Pertinent & Contemporary Issues (PCIs)
+                </Text>
+                <Text style={styles.mappingSectionDesc}>Select issues this SLO addresses</Text>
+                {allPcis.map((pci) => (
+                  <TouchableOpacity
+                    key={pci.id}
+                    style={[styles.mappingCheckbox, selectedPcis.includes(pci.id) && styles.mappingCheckboxSelected]}
+                    onPress={() => toggleSelection(pci.id, selectedPcis, setSelectedPcis)}
+                  >
+                    <View style={[styles.checkbox, selectedPcis.includes(pci.id) && styles.checkboxChecked]}>
+                      {selectedPcis.includes(pci.id) && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+                    </View>
+                    <Text style={styles.mappingCheckboxText}>{pci.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+
+            {/* Summary */}
+            <View style={styles.mappingSummary}>
+              <Text style={styles.mappingSummaryText}>
+                Selected: {selectedCompetencies.length} competencies, {selectedValues.length} values, {selectedPcis.length} PCIs
+              </Text>
+            </View>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setMappingModalVisible(false)}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.saveButton, { backgroundColor: '#8B5CF6' }]} onPress={handleSaveSloMapping}>
+                <Ionicons name="save" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+                <Text style={styles.saveButtonText}>Save Mapping</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Bulk SLO Mapping Modal */}
+      <Modal
+        visible={bulkMappingModalVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setBulkMappingModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxWidth: 700, maxHeight: '95%' }]}>
+            <View style={styles.modalHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <View style={[styles.moveIconContainer, { backgroundColor: '#FEF3C7' }]}>
+                  <Ionicons name="layers" size={24} color="#F59E0B" />
+                </View>
+                <View>
+                  <Text style={styles.modalTitle}>Bulk Edit SLO Mappings</Text>
+                  <Text style={styles.modalSubtitle}>Apply same mappings to multiple SLOs</Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={() => setBulkMappingModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Guide Section */}
+            <View style={styles.mappingGuide}>
+              <Ionicons name="bulb" size={20} color="#F59E0B" />
+              <Text style={styles.mappingGuideText}>
+                Step 1: Select SLOs below. Step 2: Choose competencies, values, and PCIs. Step 3: Click "Apply to Selected" to update all at once.
+              </Text>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              {/* SLO Selection */}
+              <View style={styles.mappingSection}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={styles.mappingSectionTitle}>
+                    <Ionicons name="checkbox" size={16} color="#6366F1" /> Select SLOs ({selectedSlosForMapping.length} selected)
+                  </Text>
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <TouchableOpacity style={styles.selectAllBtn} onPress={selectAllSlos}>
+                      <Text style={styles.selectAllBtnText}>Select All</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.selectAllBtn} onPress={deselectAllSlos}>
+                      <Text style={styles.selectAllBtnText}>Deselect All</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                <ScrollView style={styles.sloListContainer} nestedScrollEnabled>
+                  {data.filter(item => selectedEntity === 'slos').map((slo) => (
+                    <TouchableOpacity
+                      key={slo.id}
+                      style={[styles.mappingCheckbox, selectedSlosForMapping.includes(slo.id) && styles.mappingCheckboxSelected]}
+                      onPress={() => toggleSloSelection(slo.id)}
+                    >
+                      <View style={[styles.checkbox, selectedSlosForMapping.includes(slo.id) && styles.checkboxChecked]}>
+                        {selectedSlosForMapping.includes(slo.id) && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+                      </View>
+                      <Text style={styles.mappingCheckboxText} numberOfLines={2}>{slo.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              {/* Core Competencies */}
+              <View style={styles.mappingSection}>
+                <Text style={styles.mappingSectionTitle}>
+                  <Ionicons name="star" size={16} color="#6366F1" /> Core Competencies
+                </Text>
+                {allCompetencies.map((comp) => (
+                  <TouchableOpacity
+                    key={comp.id}
+                    style={[styles.mappingCheckbox, bulkSelectedCompetencies.includes(comp.id) && styles.mappingCheckboxSelected]}
+                    onPress={() => toggleSelection(comp.id, bulkSelectedCompetencies, setBulkSelectedCompetencies)}
+                  >
+                    <View style={[styles.checkbox, bulkSelectedCompetencies.includes(comp.id) && styles.checkboxChecked]}>
+                      {bulkSelectedCompetencies.includes(comp.id) && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+                    </View>
+                    <Text style={styles.mappingCheckboxText}>{comp.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Core Values */}
+              <View style={styles.mappingSection}>
+                <Text style={styles.mappingSectionTitle}>
+                  <Ionicons name="heart" size={16} color="#EF4444" /> Core Values
+                </Text>
+                {allValues.map((val) => (
+                  <TouchableOpacity
+                    key={val.id}
+                    style={[styles.mappingCheckbox, bulkSelectedValues.includes(val.id) && styles.mappingCheckboxSelected]}
+                    onPress={() => toggleSelection(val.id, bulkSelectedValues, setBulkSelectedValues)}
+                  >
+                    <View style={[styles.checkbox, bulkSelectedValues.includes(val.id) && styles.checkboxChecked]}>
+                      {bulkSelectedValues.includes(val.id) && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+                    </View>
+                    <Text style={styles.mappingCheckboxText}>{val.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* PCIs */}
+              <View style={styles.mappingSection}>
+                <Text style={styles.mappingSectionTitle}>
+                  <Ionicons name="globe" size={16} color="#10B981" /> Pertinent & Contemporary Issues
+                </Text>
+                {allPcis.map((pci) => (
+                  <TouchableOpacity
+                    key={pci.id}
+                    style={[styles.mappingCheckbox, bulkSelectedPcis.includes(pci.id) && styles.mappingCheckboxSelected]}
+                    onPress={() => toggleSelection(pci.id, bulkSelectedPcis, setBulkSelectedPcis)}
+                  >
+                    <View style={[styles.checkbox, bulkSelectedPcis.includes(pci.id) && styles.checkboxChecked]}>
+                      {bulkSelectedPcis.includes(pci.id) && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+                    </View>
+                    <Text style={styles.mappingCheckboxText}>{pci.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+
+            {/* Summary */}
+            <View style={styles.mappingSummary}>
+              <Text style={styles.mappingSummaryText}>
+                Will update {selectedSlosForMapping.length} SLOs with {bulkSelectedCompetencies.length} competencies, {bulkSelectedValues.length} values, {bulkSelectedPcis.length} PCIs
+              </Text>
+            </View>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setBulkMappingModalVisible(false)}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.saveButton, { backgroundColor: '#F59E0B' }, selectedSlosForMapping.length === 0 && { opacity: 0.5 }]} 
+                onPress={handleSaveBulkMapping}
+                disabled={selectedSlosForMapping.length === 0}
+              >
+                <Ionicons name="checkmark-done" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+                <Text style={styles.saveButtonText}>Apply to Selected</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1648,20 +2088,20 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   learningActivitiesButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#ECFDF5',
-    marginHorizontal: 16,
-    marginTop: 12,
-    padding: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#84CC16',
-    gap: 10
+    gap: 8
   },
   learningActivitiesButtonText: {
-    flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     color: '#3F6212'
   },
@@ -2104,5 +2544,132 @@ const styles = StyleSheet.create({
   bulkItemCountText: {
     fontSize: 13,
     color: '#6B7280'
+  },
+  // Mapping Modal Styles
+  mappingButton: {
+    flex: 1,
+    padding: 10,
+    alignItems: 'center',
+    borderRightWidth: 1,
+    borderRightColor: '#E5E7EB'
+  },
+  mappingGuide: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    padding: 14,
+    backgroundColor: '#EFF6FF',
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#BFDBFE'
+  },
+  mappingGuideText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#1E40AF',
+    lineHeight: 18
+  },
+  mappingSection: {
+    marginBottom: 20
+  },
+  mappingSectionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 4
+  },
+  mappingSectionDesc: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 10
+  },
+  mappingCheckbox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 10,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: '#E5E7EB'
+  },
+  mappingCheckboxSelected: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#10B981'
+  },
+  mappingCheckboxText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#374151'
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  checkboxChecked: {
+    backgroundColor: '#10B981',
+    borderColor: '#10B981'
+  },
+  mappingSummary: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: '#F3F4F6',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB'
+  },
+  mappingSummaryText: {
+    fontSize: 13,
+    color: '#6B7280',
+    textAlign: 'center'
+  },
+  selectAllBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: '#EEF2FF',
+    borderRadius: 6
+  },
+  selectAllBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6366F1'
+  },
+  sloListContainer: {
+    maxHeight: 150,
+    marginTop: 8
+  },
+  sloActionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB'
+  },
+  bulkMappingButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    backgroundColor: '#F3E8FF',
+    borderWidth: 1,
+    borderColor: '#8B5CF6'
+  },
+  bulkMappingButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#8B5CF6'
   }
 });

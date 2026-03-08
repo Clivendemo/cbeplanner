@@ -2403,6 +2403,68 @@ async def admin_create_slo_mapping(mapping: SLOMapping, user: dict = Depends(ver
         result = await db.slo_mappings.insert_one(mapping.dict(exclude={"id"}))
         return {"success": True, "id": str(result.inserted_id)}
 
+# ==================== REFERENCE DATA ENDPOINT ====================
+
+@api_router.get("/admin/reference-data")
+async def admin_get_reference_data(user: dict = Depends(verify_admin)):
+    """Get all competencies, values, and PCIs for mapping selection"""
+    competencies = await db.competencies.find().to_list(100)
+    values = await db.values.find().to_list(100)
+    pcis = await db.pcis.find().to_list(100)
+    
+    return {
+        "success": True,
+        "competencies": [serialize_doc(c) for c in competencies],
+        "values": [serialize_doc(v) for v in values],
+        "pcis": [serialize_doc(p) for p in pcis]
+    }
+
+# ==================== BULK SLO MAPPING UPDATE ====================
+
+class BulkSloMappingRequest(BaseModel):
+    sloIds: List[str]
+    competencyIds: List[str]
+    valueIds: List[str]
+    pciIds: List[str]
+
+@api_router.put("/admin/slo-mappings/bulk")
+async def admin_bulk_update_slo_mappings(request: BulkSloMappingRequest, user: dict = Depends(verify_admin)):
+    """Update mappings for multiple SLOs at once"""
+    updated_count = 0
+    created_count = 0
+    
+    for slo_id in request.sloIds:
+        # Check if SLO exists
+        slo = await db.slos.find_one({"_id": ObjectId(slo_id)})
+        if not slo:
+            continue
+        
+        mapping_data = {
+            "sloId": slo_id,
+            "competencyIds": request.competencyIds,
+            "valueIds": request.valueIds,
+            "pciIds": request.pciIds,
+            "assessmentIds": []
+        }
+        
+        existing = await db.slo_mappings.find_one({"sloId": slo_id})
+        if existing:
+            await db.slo_mappings.update_one(
+                {"sloId": slo_id},
+                {"$set": mapping_data}
+            )
+            updated_count += 1
+        else:
+            await db.slo_mappings.insert_one(mapping_data)
+            created_count += 1
+    
+    return {
+        "success": True,
+        "message": f"Updated {updated_count} mappings, created {created_count} new mappings",
+        "updated": updated_count,
+        "created": created_count
+    }
+
 # ==================== MOVE/REASSIGN ENDPOINTS (with CASCADE) ====================
 
 class MoveStrandRequest(BaseModel):
