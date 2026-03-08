@@ -86,8 +86,11 @@ class MpesaService:
     def generate_timestamp(self) -> str:
         """
         Generate timestamp in format YYYYMMDDHHmmss
+        Must be in East Africa Time (EAT = UTC+3) for Safaricom API
         """
-        return datetime.now().strftime('%Y%m%d%H%M%S')
+        from datetime import timezone, timedelta
+        eat = timezone(timedelta(hours=3))  # East Africa Time UTC+3
+        return datetime.now(eat).strftime('%Y%m%d%H%M%S')
     
     def generate_tx_ref(self) -> str:
         """
