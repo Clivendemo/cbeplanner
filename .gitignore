@@ -95,3 +95,7 @@ db_export/
 # Emergent Platform
 # ===========================================
 .emergent/
+-e 
+# Environment files
+*.env
+*.env.*
