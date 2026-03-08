@@ -1227,6 +1227,9 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
     - Wallet balance must be sufficient, no negative balances allowed
     - Protected against duplicate submissions and race conditions
     """
+    logger.info(f"[LESSON PLAN] Starting generation for user {user.get('id')}")
+    logger.info(f"[LESSON PLAN] Request: grade={request.gradeId}, subject={request.subjectId}, strand={request.strandId}, substrand={request.substrandId}, slo={request.sloId}")
+    
     user_id = user["id"]
     
     # Rate limiting - max 10 lesson generations per minute
@@ -1308,8 +1311,17 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
         substrand = await db.substrands.find_one({"_id": ObjectId(request.substrandId)})
         slo = await db.slos.find_one({"_id": ObjectId(request.sloId)})
         
+        logger.info(f"[LESSON PLAN] Data lookup: grade={grade is not None}, subject={subject is not None}, strand={strand is not None}, substrand={substrand is not None}, slo={slo is not None}")
+        
         if not all([grade, subject, strand, substrand, slo]):
-            raise HTTPException(status_code=404, detail="Invalid selection")
+            missing = []
+            if not grade: missing.append("grade")
+            if not subject: missing.append("subject")
+            if not strand: missing.append("strand")
+            if not substrand: missing.append("substrand")
+            if not slo: missing.append("slo")
+            logger.error(f"[LESSON PLAN] Missing data: {missing}")
+            raise HTTPException(status_code=404, detail=f"Invalid selection - missing: {', '.join(missing)}")
         
         # Get activities for this strand/substrand
         activities = await db.activities.find({
