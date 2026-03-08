@@ -177,7 +177,14 @@ class MpesaService:
         async with httpx.AsyncClient() as client:
             try:
                 logger.info(f"Initiating STK Push for {formatted_phone}, amount: {amount}")
+                logger.info(f"STK Push payload: BusinessShortCode={payload['BusinessShortCode']}, Timestamp={payload['Timestamp']}")
+                
                 response = await client.post(url, json=payload, headers=headers, timeout=30.0)
+                
+                # Log response details before raising for status
+                logger.info(f"STK Push HTTP Status: {response.status_code}")
+                logger.info(f"STK Push Response Body: {response.text}")
+                
                 response.raise_for_status()
                 data = response.json()
                 
@@ -198,6 +205,11 @@ class MpesaService:
                         "errorCode": data.get('ResponseCode')
                     }
                     
+            except httpx.HTTPStatusError as e:
+                # Capture the actual response body for HTTP errors
+                error_body = e.response.text if e.response else "No response body"
+                logger.error(f"STK Push HTTP error: {e.response.status_code} - {error_body}")
+                raise Exception(f"M-Pesa STK Push failed: {e.response.status_code} - {error_body}")
             except httpx.HTTPError as e:
                 logger.error(f"STK Push request failed: {str(e)}")
                 raise Exception(f"M-Pesa STK Push failed: {str(e)}")
