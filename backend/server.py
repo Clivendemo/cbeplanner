@@ -2859,6 +2859,8 @@ async def extract_pdf_to_csv(file: UploadFile = File(...), user: dict = Depends(
 async def save_imported_data(request: ImportSaveRequest, user: dict = Depends(verify_admin)):
     """Save imported curriculum data to database"""
     
+    logger.info(f"Import save request: {len(request.rows)} rows for subject {request.subjectId}, grade {request.gradeId}")
+    
     # Verify subject exists
     subject = await db.subjects.find_one({"_id": ObjectId(request.subjectId)})
     if not subject:
@@ -2894,7 +2896,10 @@ async def save_imported_data(request: ImportSaveRequest, user: dict = Depends(ve
         substrand_name = row.get("substrand_name", "").strip()
         slo_name = row.get("slo_name", "").strip()
         
+        logger.info(f"Processing row: strand={strand_name}, substrand={substrand_name}, slo={slo_name}")
+        
         if not strand_name or not substrand_name or not slo_name:
+            logger.warning(f"Skipping row - missing required field: strand={strand_name}, substrand={substrand_name}, slo={slo_name}")
             continue
         
         # Get or create strand
