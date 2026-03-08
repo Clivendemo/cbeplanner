@@ -161,63 +161,120 @@ export default function DataImport() {
       const headers = await getHeaders();
       const response = await axios.get(`${BACKEND_URL}/api/admin/import/template`, {
         headers,
-        responseType: 'blob'
+        responseType: 'text'
       });
       
-      // Create download link
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'curriculum_template.csv');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (error) {
-      alert('Failed to download template');
+      // For web platform, use a different approach
+      if (typeof window !== 'undefined' && window.document) {
+        const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'curriculum_template.csv';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        // Cleanup
+        setTimeout(() => {
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }, 100);
+      } else {
+        alert('Download not supported on this platform');
+      }
+    } catch (error: any) {
+      console.error('Error downloading template:', error);
+      alert('Failed to download template. Please try again.');
     }
   };
 
   // Handle CSV file upload
   const handleCsvUpload = async () => {
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['text/csv', 'text/comma-separated-values', 'application/vnd.ms-excel'],
-        copyToCacheDirectory: true
-      });
-      
-      if (result.canceled) return;
-      
-      const file = result.assets[0];
-      setSelectedFile(file.name);
-      setLoading(true);
-      
-      // Read file content
-      const response = await fetch(file.uri);
-      const text = await response.text();
-      
-      // Send to backend for parsing
-      const headers = await getHeaders();
-      const formData = new FormData();
-      formData.append('file', {
-        uri: file.uri,
-        type: 'text/csv',
-        name: file.name
-      } as any);
-      
-      const previewResponse = await axios.post(
-        `${BACKEND_URL}/api/admin/import/preview-csv`,
-        formData,
-        { 
-          headers: {
-            ...headers,
-            'Content-Type': 'multipart/form-data'
+      // Check if we're on web
+      if (typeof window !== 'undefined' && window.document) {
+        // Create a hidden file input for web
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.csv,text/csv,application/vnd.ms-excel';
+        
+        input.onchange = async (e: any) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          
+          setSelectedFile(file.name);
+          setLoading(true);
+          
+          try {
+            const headers = await getHeaders();
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const previewResponse = await axios.post(
+              `${BACKEND_URL}/api/admin/import/preview-csv`,
+              formData,
+              { 
+                headers: {
+                  ...headers,
+                  'Content-Type': 'multipart/form-data'
+                }
+              }
+            );
+            
+            if (previewResponse.data.success) {
+              setPreviewData(previewResponse.data.preview);
+              setShowPreviewModal(true);
+            }
+          } catch (error: any) {
+            console.error('Error uploading CSV:', error);
+            alert(error.response?.data?.detail || 'Failed to process CSV file');
+          } finally {
+            setLoading(false);
           }
+        };
+        
+        input.click();
+      } else {
+        // Use expo-document-picker for native
+        const result = await DocumentPicker.getDocumentAsync({
+          type: ['text/csv', 'text/comma-separated-values', 'application/vnd.ms-excel'],
+          copyToCacheDirectory: true
+        });
+        
+        if (result.canceled) return;
+        
+        const file = result.assets[0];
+        setSelectedFile(file.name);
+        setLoading(true);
+        
+        // Read file content
+        const response = await fetch(file.uri);
+        const text = await response.text();
+        
+        // Send to backend for parsing
+        const headers = await getHeaders();
+        const formData = new FormData();
+        formData.append('file', {
+          uri: file.uri,
+          type: 'text/csv',
+          name: file.name
+        } as any);
+        
+        const previewResponse = await axios.post(
+          `${BACKEND_URL}/api/admin/import/preview-csv`,
+          formData,
+          { 
+            headers: {
+              ...headers,
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        );
+        
+        if (previewResponse.data.success) {
+          setPreviewData(previewResponse.data.preview);
+          setShowPreviewModal(true);
         }
-      );
-      
-      if (previewResponse.data.success) {
-        setPreviewData(previewResponse.data.preview);
-        setShowPreviewModal(true);
       }
     } catch (error: any) {
       console.error('Error uploading CSV:', error);
@@ -230,40 +287,87 @@ export default function DataImport() {
   // Handle PDF file upload
   const handlePdfUpload = async () => {
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf'],
-        copyToCacheDirectory: true
-      });
-      
-      if (result.canceled) return;
-      
-      const file = result.assets[0];
-      setSelectedFile(file.name);
-      setLoading(true);
-      
-      const headers = await getHeaders();
-      const formData = new FormData();
-      formData.append('file', {
-        uri: file.uri,
-        type: 'application/pdf',
-        name: file.name
-      } as any);
-      
-      const extractResponse = await axios.post(
-        `${BACKEND_URL}/api/admin/import/extract-pdf`,
-        formData,
-        { 
-          headers: {
-            ...headers,
-            'Content-Type': 'multipart/form-data'
+      // Check if we're on web
+      if (typeof window !== 'undefined' && window.document) {
+        // Create a hidden file input for web
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.pdf,application/pdf';
+        
+        input.onchange = async (e: any) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          
+          setSelectedFile(file.name);
+          setLoading(true);
+          
+          try {
+            const headers = await getHeaders();
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const extractResponse = await axios.post(
+              `${BACKEND_URL}/api/admin/import/extract-pdf`,
+              formData,
+              { 
+                headers: {
+                  ...headers,
+                  'Content-Type': 'multipart/form-data'
+                }
+              }
+            );
+            
+            if (extractResponse.data.success) {
+              setPreviewData(extractResponse.data.preview);
+              setCsvContent(extractResponse.data.csv_content);
+              setShowPreviewModal(true);
+            }
+          } catch (error: any) {
+            console.error('Error extracting PDF:', error);
+            alert(error.response?.data?.detail || 'Failed to extract PDF');
+          } finally {
+            setLoading(false);
           }
+        };
+        
+        input.click();
+      } else {
+        // Use expo-document-picker for native
+        const result = await DocumentPicker.getDocumentAsync({
+          type: ['application/pdf'],
+          copyToCacheDirectory: true
+        });
+        
+        if (result.canceled) return;
+        
+        const file = result.assets[0];
+        setSelectedFile(file.name);
+        setLoading(true);
+        
+        const headers = await getHeaders();
+        const formData = new FormData();
+        formData.append('file', {
+          uri: file.uri,
+          type: 'application/pdf',
+          name: file.name
+        } as any);
+        
+        const extractResponse = await axios.post(
+          `${BACKEND_URL}/api/admin/import/extract-pdf`,
+          formData,
+          { 
+            headers: {
+              ...headers,
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        );
+        
+        if (extractResponse.data.success) {
+          setPreviewData(extractResponse.data.preview);
+          setCsvContent(extractResponse.data.csv_content);
+          setShowPreviewModal(true);
         }
-      );
-      
-      if (extractResponse.data.success) {
-        setPreviewData(extractResponse.data.preview);
-        setCsvContent(extractResponse.data.csv_content);
-        setShowPreviewModal(true);
       }
     } catch (error: any) {
       console.error('Error extracting PDF:', error);
@@ -277,14 +381,22 @@ export default function DataImport() {
   const handleDownloadExtractedCsv = () => {
     if (!csvContent) return;
     
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `extracted_${selectedFile.replace('.pdf', '.csv')}`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    if (typeof window !== 'undefined' && window.document) {
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `extracted_${selectedFile.replace('.pdf', '.csv')}`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 100);
+    } else {
+      alert('Download not supported on this platform');
+    }
   };
 
   // Save imported data
