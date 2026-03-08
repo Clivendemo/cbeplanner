@@ -1,5 +1,5 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Header, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Header, Request, UploadFile, File
+from fastapi.responses import JSONResponse, Response
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -11,6 +11,12 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
 from bson import ObjectId
 import httpx
+
+# Import curriculum import utilities
+from curriculum_import import (
+    parse_csv_content, extract_curriculum_from_pdf, 
+    generate_csv_template, rows_to_csv, CSV_TEMPLATE_HEADERS
+)
 
 # Import production utilities
 from app.production_utils import (
@@ -63,7 +69,7 @@ else:
         "http://localhost:19006",
         "http://localhost:19000",
         "https://*.vercel.app",
-        "https://cbe-curriculum.preview.emergentagent.com"
+        "https://cbe-lesson-planner.preview.emergentagent.com"
     ]
 
 # ===========================================
@@ -2789,6 +2795,212 @@ async def admin_get_curriculum_tree(user: dict = Depends(verify_admin)):
             "strands": [serialize_doc(s) for s in strands],
             "substrands": [serialize_doc(s) for s in substrands]
         }
+    }
+
+# ==================== CURRICULUM IMPORT ENDPOINTS ====================
+
+class ImportSaveRequest(BaseModel):
+    subjectId: str
+    gradeId: str
+    rows: List[Dict[str, Any]]
+
+@api_router.get("/admin/import/template")
+async def get_csv_template(user: dict = Depends(verify_admin)):
+    """Download CSV template for curriculum import"""
+    csv_content = generate_csv_template()
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=curriculum_template.csv"}
+    )
+
+@api_router.post("/admin/import/preview-csv")
+async def preview_csv_import(file: UploadFile = File(...), user: dict = Depends(verify_admin)):
+    """Upload CSV and preview data before saving"""
+    if not file.filename.endswith(('.csv', '.CSV')):
+        raise HTTPException(status_code=400, detail="File must be a CSV file")
+    
+    content = await file.read()
+    try:
+        text_content = content.decode('utf-8')
+    except UnicodeDecodeError:
+        try:
+            text_content = content.decode('latin-1')
+        except:
+            raise HTTPException(status_code=400, detail="Unable to decode file. Please ensure it's a valid CSV.")
+    
+    result = parse_csv_content(text_content)
+    
+    return {
+        "success": True,
+        "preview": result.dict()
+    }
+
+@api_router.post("/admin/import/extract-pdf")
+async def extract_pdf_to_csv(file: UploadFile = File(...), user: dict = Depends(verify_admin)):
+    """Extract curriculum data from PDF and return as previewable data"""
+    if not file.filename.endswith(('.pdf', '.PDF')):
+        raise HTTPException(status_code=400, detail="File must be a PDF file")
+    
+    content = await file.read()
+    result = extract_curriculum_from_pdf(content)
+    
+    # Also generate downloadable CSV
+    csv_content = rows_to_csv(result.rows)
+    
+    return {
+        "success": True,
+        "preview": result.dict(),
+        "csv_content": csv_content
+    }
+
+@api_router.post("/admin/import/save")
+async def save_imported_data(request: ImportSaveRequest, user: dict = Depends(verify_admin)):
+    """Save imported curriculum data to database"""
+    
+    # Verify subject exists
+    subject = await db.subjects.find_one({"_id": ObjectId(request.subjectId)})
+    if not subject:
+        raise HTTPException(status_code=404, detail="Subject not found")
+    
+    # Verify grade exists
+    grade = await db.grades.find_one({"_id": ObjectId(request.gradeId)})
+    if not grade:
+        raise HTTPException(status_code=404, detail="Grade not found")
+    
+    subject_id = str(subject["_id"])
+    
+    # Get reference data for mapping
+    competencies = {c["name"].lower(): str(c["_id"]) async for c in db.competencies.find()}
+    values = {v["name"].lower(): str(v["_id"]) async for v in db.values.find()}
+    pcis = {p["name"].lower(): str(p["_id"]) async for p in db.pcis.find()}
+    
+    # Track created items
+    stats = {
+        "strands_created": 0,
+        "substrands_created": 0,
+        "slos_created": 0,
+        "mappings_created": 0,
+        "activities_created": 0
+    }
+    
+    # Group rows by strand and substrand
+    strand_cache = {}  # strand_name -> strand_id
+    substrand_cache = {}  # strand_name|substrand_name -> substrand_id
+    
+    for row in request.rows:
+        strand_name = row.get("strand_name", "").strip()
+        substrand_name = row.get("substrand_name", "").strip()
+        slo_name = row.get("slo_name", "").strip()
+        
+        if not strand_name or not substrand_name or not slo_name:
+            continue
+        
+        # Get or create strand
+        if strand_name not in strand_cache:
+            existing_strand = await db.strands.find_one({
+                "name": strand_name,
+                "subjectId": subject_id
+            })
+            if existing_strand:
+                strand_cache[strand_name] = str(existing_strand["_id"])
+            else:
+                result = await db.strands.insert_one({
+                    "name": strand_name,
+                    "subjectId": subject_id
+                })
+                strand_cache[strand_name] = str(result.inserted_id)
+                stats["strands_created"] += 1
+        
+        strand_id = strand_cache[strand_name]
+        substrand_key = f"{strand_name}|{substrand_name}"
+        
+        # Get or create substrand
+        if substrand_key not in substrand_cache:
+            existing_substrand = await db.substrands.find_one({
+                "name": substrand_name,
+                "strandId": strand_id
+            })
+            if existing_substrand:
+                substrand_cache[substrand_key] = str(existing_substrand["_id"])
+            else:
+                result = await db.substrands.insert_one({
+                    "name": substrand_name,
+                    "strandId": strand_id
+                })
+                substrand_cache[substrand_key] = str(result.inserted_id)
+                stats["substrands_created"] += 1
+                
+                # Create learning activities for new substrand
+                activities_data = {
+                    "substrandId": result.inserted_id,
+                    "introduction_activities": row.get("introduction_activities", []),
+                    "development_activities": row.get("development_activities", []),
+                    "conclusion_activities": row.get("conclusion_activities", []),
+                    "extended_activities": row.get("extended_activities", []),
+                    "learning_resources": row.get("learning_resources", []),
+                    "assessment_methods": row.get("assessment_methods", [])
+                }
+                await db.learning_activities.insert_one(activities_data)
+                stats["activities_created"] += 1
+        
+        substrand_id = substrand_cache[substrand_key]
+        
+        # Create SLO
+        slo_result = await db.slos.insert_one({
+            "name": slo_name,
+            "description": row.get("slo_description", slo_name),
+            "substrandId": substrand_id
+        })
+        slo_id = str(slo_result.inserted_id)
+        stats["slos_created"] += 1
+        
+        # Create SLO mapping
+        comp_ids = []
+        for comp_name in row.get("competencies", []):
+            comp_lower = comp_name.lower().strip()
+            for key, val in competencies.items():
+                if comp_lower in key or key in comp_lower:
+                    comp_ids.append(val)
+                    break
+        
+        value_ids = []
+        for val_name in row.get("values", []):
+            val_lower = val_name.lower().strip()
+            for key, val in values.items():
+                if val_lower in key or key in val_lower:
+                    value_ids.append(val)
+                    break
+        
+        pci_ids = []
+        for pci_name in row.get("pcis", []):
+            pci_lower = pci_name.lower().strip()
+            for key, val in pcis.items():
+                if pci_lower in key or key in pci_lower:
+                    pci_ids.append(val)
+                    break
+        
+        # Use defaults if no mappings found
+        if not comp_ids and competencies:
+            comp_ids = list(competencies.values())[:2]
+        if not value_ids and values:
+            value_ids = list(values.values())[:2]
+        if not pci_ids and pcis:
+            pci_ids = list(pcis.values())[:2]
+        
+        await db.slo_mappings.insert_one({
+            "sloId": slo_id,
+            "competencyIds": comp_ids[:3],
+            "valueIds": value_ids[:3],
+            "pciIds": pci_ids[:3],
+            "assessmentIds": []
+        })
+        stats["mappings_created"] += 1
+    
+    return {
+        "success": True,
+        "message": f"Import completed successfully",
+        "stats": stats
     }
 
 # ==================== SEED DATA ENDPOINT ====================

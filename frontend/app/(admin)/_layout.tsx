@@ -91,12 +91,12 @@ export default function AdminLayout() {
         }}
       />
       <Tabs.Screen
-        name="users"
+        name="data-import"
         options={{
-          title: 'Users',
-          headerTitle: 'User Management',
+          title: 'Import',
+          headerTitle: 'Data Import',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people" size={size} color={color} />
+            <Ionicons name="cloud-upload" size={size} color={color} />
           )
         }}
       />

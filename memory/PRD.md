@@ -227,12 +227,59 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 5. Deploy (Render auto-detects Dockerfile)
 6. Update `MPESA_CALLBACK_URL` with Render URL
 
+### Data Import System (DONE - Dec 2025)
+A comprehensive bulk data import system for curriculum data:
+
+**Features:**
+1. **CSV Upload (Primary Method)**
+   - Download CSV template with all required columns
+   - Upload filled CSV file for validation
+   - Preview data before saving (shows strands, substrands, SLOs count)
+   - Error and warning display
+   - Grade/Subject selection before saving
+
+2. **PDF Extraction Helper Tool**
+   - Upload KICD curriculum PDFs
+   - Automatic extraction of strands, substrands, SLOs
+   - Generates downloadable CSV for review/editing
+   - Handles varied PDF formats (STRAND 1.0, 1.0 Name patterns)
+
+3. **CSV Column Support:**
+   - strand_name (required)
+   - substrand_name (required)
+   - slo_name (required)
+   - slo_description
+   - introduction_activities
+   - development_activities
+   - conclusion_activities
+   - extended_activities
+   - competencies
+   - values
+   - pcis
+   - assessment_methods
+   - learning_resources
+
+**Backend Endpoints:**
+- `GET /api/admin/import/template` - Download CSV template
+- `POST /api/admin/import/preview-csv` - Upload and parse CSV
+- `POST /api/admin/import/extract-pdf` - Extract from PDF to CSV
+- `POST /api/admin/import/save` - Save imported data to database
+
+**Frontend:**
+- New admin tab: "Import" with cloud-upload icon
+- `/app/frontend/app/(admin)/data-import.tsx` - Full import UI
+
+**Dependencies Added:**
+- `expo-document-picker` - For file selection on mobile/web
+
 ## Next Steps / Backlog
 - [x] Production-readiness middleware (error handling, security headers, rate limiting) - DONE Dec 2025
 - [x] Play Store preparation (app.json, eas.json, privacy policy, listing) - DONE Dec 2025
 - [x] Fix admin panel subjects not displaying after add - DONE Dec 2025
 - [x] Sync admin panel subjects with teacher view (removed KICD whitelist filter) - DONE Dec 2025
 - [x] Seed Grade 7, 8, 9 curriculum data from KICD rationalized PDFs - DONE Dec 2025
+- [x] Data Import System (CSV upload + PDF extraction helper) - DONE Dec 2025
+- [ ] User verification of M-Pesa MPESA_CALLBACK_URL configuration on Render
 - [ ] User verification of mobile app stability (Expo Go back button issues)
 - [ ] Deploy backend to Render (https://cbeplanner.onrender.com)
 - [ ] Deploy frontend to Vercel (web)
@@ -240,8 +287,8 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - [ ] Submit to Google Play Store
 - [ ] Test with production M-Pesa credentials
 - [ ] Debug Expo Go stability issues (if still occurring)
-- [ ] Import English curriculum data (requires OCR)
-- [ ] Seed learning activities for Junior Secondary subjects (to enable lesson plan generation)
+- [ ] Grade 8 data audit against source PDF
+- [ ] Full codebase audit to remove dead code
 
 ## Admin Curriculum Management (DONE - Dec 2025)
 The admin panel now includes a complete curriculum management interface:

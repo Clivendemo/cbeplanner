@@ -10,7 +10,7 @@ import sys
 from typing import Dict, List, Optional
 
 # Get backend URL from frontend .env
-BACKEND_URL = "https://cbe-curriculum.preview.emergentagent.com/api"
+BACKEND_URL = "https://cbe-lesson-planner.preview.emergentagent.com/api"
 
 class EnhancedCascadingTester:
     def __init__(self):
