@@ -1,0 +1,187 @@
+<analysis>**original_problem_statement**:
+The user's goal is to build a production-ready Competency-Based Education (CBE) lesson planning system for Kenyan teachers. The primary tasks involve populating the application's MongoDB database with curriculum data by accurately parsing PDF documents.
+
+PRODUCT REQUIREMENTS:
+1.  **Accurate Data Seeding:** All curriculum data (strands, substrands, SLOs, learning experiences, PCIs, values, competencies) must be extracted *exactly* from the provided PDFs. No AI-generated content is permitted.
+2.  **Preserve Curriculum Order:** The teaching order of strands and substrands as they appear in the curriculum documents must be strictly maintained. No alphabetical or other automatic sorting should be applied.
+3.  **No Duplicate Subjects:** Seeding scripts must update existing subjects by deleting old data, not create duplicates.
+4.  **Complete Lesson Plans:** Generated lesson plans must include all mandatory elements: Pertinent and Contemporary Issues (PCIs), Values, and Core Competencies.
+5.  **Data Integrity:** The application must be audited to remove conflicting, duplicate, or dead code.
+6.  **Secure Credentials:** No credentials should be hardcoded or publicly visible in the GitHub repository.
+7.  **Wallet Functionality:** Implement a friendly popup to notify users when their wallet balance is zero, preventing lesson generation until they top up.
+
+**User's preferred language**: English
+
+**what currently exists?**
+A full-stack application with a FastAPI backend, an Expo (React Native) frontend, and a MongoDB Atlas database. The database contains data for Grades 7, 8, and 9. Several critical bug fixes have been implemented, including preserving curriculum order in APIs and fixing lesson plan generation logic. A friendly wallet-empty popup has been added to the frontend, and hardcoded MongoDB credentials have been removed from scripts and secured using environment variables. The agent has also debugged a persistent M-Pesa payment issue on the user's production Render deployment, identifying the root cause as an Invalid CallBackURL configuration error.
+
+**Last working item**:
+-   **Last item agent was working:** The user uploaded five new curriculum PDFs for Grade 10 subjects (Applied Agriculture, Computer Science, Fasihi ya Kiswahili, History and Citizenship, Home Science) and instructed the agent to replace any existing data for these subjects in the database. The agent created a new seeding script file, , to handle this task.
+-   **Status:** IN PROGRESS
+-   **Agent Testing Done:** N
+-   **Which testing method agent to use?** backend testing agent. After the script is written and executed, the agent must query the database to verify that the data for the five Grade 10 subjects is accurate, complete, correctly ordered, and includes all necessary .
+-   **User Testing Done:** N
+
+**All Pending/In progress Issue list**:
+-   **Issue 1: M-Pesa STK Push Failing on Production (P0)**
+-   **Issue 2: Lesson Plan Generation Failures (P1)**
+-   **Issue 3: Incomplete or Inaccurate Data for Grade 8 (P2)**
+
+**Issues Detail**:
+-   **Issue 1: M-Pesa STK Push Failing on Production (P0)**
+    -   **Description:** The user's production deployment on Render fails to trigger an M-Pesa STK push. Logs provided by the user show a  caused by a  from the Safaricom API.
+    -   **Attempted fixes:** The agent implemented enhanced error logging in  to diagnose the issue. The agent also implemented a timezone fix (using EAT) and performance optimizations (HTTP/2, shorter timeouts).
+    -   **Next debug checklist:** The issue is a configuration error on the user's side. The agent must confirm with the user that they have corrected the  environment variable on their Render dashboard to be .
+    -   **Status:** USER VERIFICATION PENDING
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** backend
+    -   **Blocked on other issue:** None. This is a user-side blocker.
+
+-   **Issue 2: Lesson Plan Generation Failures (P1)**
+    -   **Description:** A recurring critical issue where the generate lesson plan button does nothing for some strands in Grades 7, 8, and 9.
+    -   **Attempted fixes:** The agent previously identified a deployment mismatch as the cause. While the user has since deployed the backend to Render, the M-Pesa issue has taken priority, and this core functionality has not been re-verified.
+    -   **Next debug checklist:** Once the M-Pesa issue (Issue 1) is confirmed resolved, the agent must ask the user to test the lesson plan generation feature on their production application.
+    -   **Status:** USER VERIFICATION PENDING
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** both
+    -   **Blocked on other issue:** M-Pesa STK Push Failing on Production
+
+-   **Issue 3: Incomplete or Inaccurate Data for Grade 8 (P2)**
+    -   **Description:** An early audit suggested that curriculum data for Grade 8 might be incorrect or missing.
+    -   **Attempted fixes:** None. This task was deprioritized.
+    -   **Next debug checklist:** After completing the Grade 10 seeding, create and run a new seeding script for Grade 8 based on its source PDFs.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** backend
+    -   **Blocked on other issue:** Complete Accurate Seeding of Grade 10 Curriculum Data
+
+**In progress Task List**:
+-   **Task 1: Complete Accurate Seeding of Grade 10 Curriculum Data (P0)**
+    -   **Where to resume:** The agent has created an empty file . The next step is to write the Python code for this script. The script must parse the five new PDFs, delete existing data for the corresponding Grade 10 subjects, and insert the new, correctly ordered curriculum data and SLO mappings.
+    -   **What will be achieved with this?** The database will be correctly populated with the full curriculum for the five specified Grade 10 subjects.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** backend
+    -   **Blocked on something:** None.
+
+**Upcoming and Future Tasks**
+-   **Upcoming Tasks:**
+    -   **User Verification (P0):** Follow up with the user to confirm the  has been fixed on Render and that payments are now working.
+    -   **Data Audit & Correction (P1):** Complete the audit and reseeding of Grade 8 curriculum data.
+    -   **Mobile Navigation Stability (P2):** Ask the user to test the Expo Go client to see if the previously mentioned hanging issue with the back button is resolved.
+-   **Future Tasks:**
+    -   **Full Codebase Audit (P2):** Perform a comprehensive audit to remove dead code, unused components, and conflicting logic.
+    -   **Refactor Admin Panel (P2):** Break down the monolithic  component.
+    -   **Harden Payment Flow (P2):** Implement logic to handle failed or abandoned M-Pesa payments.
+    -   **Production Deployment (P2):** Guide the user to switch M-Pesa to production credentials when ready.
+
+**Completed work in this session**
+-   **Feature - Wallet Empty Popup:** Implemented a frontend modal in  and a new  component to alert users of zero balance before they attempt to generate a lesson plan.
+-   **Security - Removed Hardcoded Credentials:** Refactored  to use environment variables for the MongoDB URI. Audited the codebase and updated  files to prevent future credential exposure.
+-   **Bug Fix - M-Pesa STK Push:** Investigated M-Pesa failures on production, implemented enhanced logging in , and diagnosed the root cause as an  error from user-provided logs.
+-   **Performance - M-Pesa Optimization:** Optimized  to use HTTP/2 and adjusted request timeouts for faster performance.
+-   **Data Seeding - Grade 7:** Successfully executed the seeding script for 5 Grade 7 subjects and verified the data integrity in the database.
+-   **Documentation - DB Schema:** Created a detailed  file and exported reference collections (competencies, values, etc.) to JSON files in the  directory.
+
+**Earlier issues found/mentioned but not fixed**
+-   None that are currently relevant; previous data extraction issues were for PDFs that have since been replaced.
+
+**Known issue recurrence from previous fork**
+-   None.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Backend:** FastAPI, Pydantic, MongoDB (Motor).
+-   **Frontend:** Expo SDK (React Native for Web), Expo Router.
+-   **Deployment Troubleshooting:** Diagnosing discrepancies between the preview environment and a production deployment (Render), focusing on environment variables, build caches, and deployment logs.
+-   **API Performance:** Optimizing external API calls using  with HTTP/2 and specific timeout configurations.
+-   **Data Seeding:** Parsing PDF documents () and performing idempotent database operations (delete then insert) to avoid duplication.
+
+**key DB schema**
+-   **subjects**: ,  (Array of )
+-   **strands**: ,  ()
+-   **substrands**: ,  ()
+-   **slos**: ,  ()
+-   **slo_mappings**: , , ,  (Links SLOs to attributes).
+-   **learning_activities**: Contains lesson components. Foreign key  is an , a key inconsistency to be aware of.
+
+**changes in tech stack**
+-   No changes to the core technology stack.
+
+**All files of reference**
+-   **Created/Updated:**
+    -   : Added timezone fix, performance optimizations, and enhanced logging.
+    -   : Integrated wallet check and popup modal.
+    -   : New component for the wallet popup.
+    -   : Removed hardcoded credentials.
+    -    (root, backend, frontend): Added/cleaned up entries.
+    -   : New (empty) file for the current task.
+    -   : New documentation file.
+    -   : New data export files.
+-   **Referenced for Debugging:**
+    -   
+    -   User-provided Render deployment logs.
+
+**Areas that need refactoring**:
+-   The data seeding process should be consolidated into a robust, reusable module.
+-   A full data normalization script should be run to standardize all foreign keys to  once the production backend is stable.
+-   The admin page at  is monolithic and needs to be broken down into smaller components.
+
+**key api endpoints**
+-   : Endpoint for the M-Pesa STK push. Fails on production due to a config error.
+-   : The M-Pesa callback endpoint. The URL for this endpoint is configured incorrectly on Render.
+-   : Core application feature, pending re-verification by the user on their production environment.
+
+**Critical Info for New Agent**
+-   **M-Pesa is Blocked by User Config:** The user's production M-Pesa flow is failing due to an  error. You must confirm with the user that they have corrected the  environment variable on their Render dashboard before investigating this issue further.
+-   **Immediate Task: Seed Grade 10 Data:** Your first coding task is to implement the script at . This script needs to accurately parse the 5 new PDFs, delete existing data for those subjects, and insert the new data while preserving order and creating SLO mappings.
+-   **Verify All Seeding:** Do not report success on any seeding task until you have thoroughly queried the database to confirm data accuracy, completeness, and correct ordering.
+-   **Production vs. Preview:** Always be mindful of the difference between the preview environment and the user's production deployment on Render. Issues reported by the user must be diagnosed using their logs, as the cause is often a configuration or deployment problem on their end.
+
+**documents and test reports created in this job**
+-   
+-   
+-   
+-   
+-   
+-   
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User:** update the database with the above [5] pdfs.... (Status: IN PROGRESS - This is the current task).
+2.  **User:** can the transaction be immediate?. (Status: ADDRESSED - Agent implemented performance optimizations in ).
+3.  **User:** Reports the M-Pesa error is still happening, providing new logs. (Status: ADDRESSED - Agent used the logs to find the Invalid CallBackURL error).
+4.  **User:** show me my database schema.... (Status: COMPLETED - Agent created  and exported data).
+5.  **User:** Provides logs showing  with an empty error. (Status: ADDRESSED - Agent added better logging to capture the full error).
+6.  **User:** Provides logs from Render showing the 400 Bad Request and duplicate request errors. (Status: ADDRESSED - Agent diagnosed the timezone issue and implemented a fix).
+7.  **User:** check which branch the code is being pushed to.... (Status: ADDRESSED - Agent identified the lack of a git remote was a red herring and confirmed fixes needed to be pushed via Save to Github).
+8.  **User:** Confirms the timezone fix code is present in their GitHub. (Status: ADDRESSED - Agent noted that the *enhanced logging* code was still missing, prompting the user to save to GitHub again).
+9.  **User:** Shares the latest logs showing the Invalid CallBackURL error. (Status: ADDRESSED - This was the final diagnostic step).
+10. **User:** replace the subjects and add the data to grade 10. (Status: IN PROGRESS - This confirmed the action to take for the new PDFs).
+
+**Project Health Check:**
+-   **Broken:**
+    -   M-Pesa payments on the production Render deployment are non-functional due to the  configuration error.
+    -   The core lesson plan generation feature is pending re-verification on production and may still be broken.
+-   **Mocked:**
+    -   M-Pesa integration is using Safaricom's sandbox environment.
+
+**3rd Party Integrations**
+-   Firebase Authentication
+-   MongoDB Atlas
+-   Safaricom Daraja API (M-Pesa)
+-   PyMuPDF () for PDF parsing
+
+**Testing status**
+-   **Testing agent used after significant changes:** NO
+-   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Test files created:** []
+-   **Known regressions:** The M-Pesa payment flow is currently broken on the user's production deployment due to a server-side configuration error on Render.
+
+**Credentials to test flow:**
+The agent does not have user credentials. The admin email is .
+
+**What agent forgot to execute**
+-   The planned full codebase audit to remove dead code and unused components has not been started.
+-   The request to check mobile navigation stability has not been followed up on.
+-   The audit of Grade 8 data is still pending.</analysis>

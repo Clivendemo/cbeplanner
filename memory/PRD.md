@@ -338,3 +338,69 @@ User uploaded official KICD Grade 9 curriculum design PDFs. Data extracted **dir
 - Total Grade 9 Substrands: 71
 - Total Grade 9 SLOs: 335
 - Total Grade 9 Learning Activities: 335
+
+## Grade 10 Complete Curriculum Data (DONE - Dec 2025)
+User uploaded official KICD Grade 10 curriculum design PDFs for 5 subjects.
+
+**PDFs Processed:**
+- Agriculture.pdf
+- Computer_Science.pdf
+- Fasihi_ya_Kiswahili.pdf
+- History_and_Citizenship.pdf
+- Home_Science.pdf
+
+**Grade 10 Data Seeded (with full learning experiences, SLO mappings):**
+| Subject | Strands | Substrands | SLOs | SLO Mappings | Learning Activities |
+|---------|---------|------------|------|--------------|---------------------|
+| Agriculture | 3 | 17 | 54 | 54 | 17 |
+| Computer Science | 3 | 17 | 60 | 60 | 17 |
+| Fasihi ya Kiswahili | 3 | 8 | 16 | 16 | 8 |
+| History and Citizenship | 4 | 15 | 30 | 30 | 15 |
+| Home Science | 3 | 12 | 25 | 25 | 12 |
+| **TOTAL** | **16** | **69** | **185** | **185** | **69** |
+
+**Agriculture Strands (Teaching Order):**
+1. Crop Production (7 substrands: Agricultural Land, Properties of Soil, Land Preparation, Field Management Practices, Growing Selected Crops, Crop Protection, General Crop Harvesting)
+2. Animal Production (5 substrands: Breeds of Livestock, Animal Handling and Safety, General Animal Health, Bee Keeping, Animal Rearing Project)
+3. Agricultural Technologies and Entrepreneurship (5 substrands: Tools and Equipment, Product Processing and Value Addition, Establishing Agricultural Enterprise, Marketing Agricultural Produce, Composting Techniques)
+
+**Computer Science Strands (Teaching Order):**
+1. Foundation of Computer Science (7 substrands: Evolution and Development of Computers, Computer Organisation and Architecture, Input/Output Devices, Computer Storage, CPU, Operating System, Computer Setup)
+2. Computer Networking (4 substrands: Data Communication, Data Transmission Media, Computer Network Elements, Network Topologies)
+3. Software Development (6 substrands: Computer Programming Concepts, Program Development, Identifiers and Operators, Control Structures, Subprograms, Problem Solving)
+
+**Fasihi ya Kiswahili Strands (Teaching Order):**
+1. Fasihi Simulizi (Oral Literature)
+2. Ushairi (Poetry)
+3. Bunilizi (Creative Writing)
+
+**History and Citizenship Strands (Teaching Order):**
+1. Themes in Kenyan History and Citizenship
+2. Themes in African History and Citizenship
+3. International Themes in History and Citizenship
+4. Contemporary Themes in History and Citizenship
+
+**Home Science Strands (Teaching Order):**
+1. Foods and Nutrition (4 substrands: Introduction to Foods and Nutrition, Meal Planning, Cooking Methods, Food Preservation)
+2. Home Management (5 substrands: Hygiene During Puberty, Home Safety and First Aid, Housing the Family, Budgeting, Consumer Education)
+3. Clothing and Textiles (3 substrands: Sewing Tools and Equipment, Textile Fibres, Clothing Construction)
+
+**SLO Mappings Include:**
+- Competency IDs (linked to Core Competencies)
+- Value IDs (linked to Core Values)
+- PCI IDs (linked to Pertinent and Contemporary Issues)
+
+**Seeding Script:** `/app/backend/seed_grade10_complete.py`
+- Extracts data from the script (curriculum data hardcoded from PDFs)
+- Properly deletes existing data before re-seeding (idempotent)
+- Links to existing subjects or creates new ones
+- Preserves curriculum teaching order
+
+**Updated Database Totals After Grade 10 Seeding:**
+- Total Grades: 12
+- Total Subjects: 52+
+- Total Strands: 100+
+- Total Substrands: 400+
+- Total SLOs: 1,400+
+- Total SLO Mappings: 1,600+
+- Total Learning Activities: 600+
