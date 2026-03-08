@@ -57,9 +57,9 @@ class MpesaService:
             "Content-Type": "application/json"
         }
         
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(http2=True) as client:
             try:
-                response = await client.get(url, headers=headers, timeout=30.0)
+                response = await client.get(url, headers=headers, timeout=10.0)
                 response.raise_for_status()
                 data = response.json()
                 
@@ -174,12 +174,12 @@ class MpesaService:
             "Content-Type": "application/json"
         }
         
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(http2=True, timeout=httpx.Timeout(15.0, connect=5.0)) as client:
             try:
                 logger.info(f"Initiating STK Push for {formatted_phone}, amount: {amount}")
                 logger.info(f"STK Push payload: BusinessShortCode={payload['BusinessShortCode']}, Timestamp={payload['Timestamp']}")
                 
-                response = await client.post(url, json=payload, headers=headers, timeout=30.0)
+                response = await client.post(url, json=payload, headers=headers)
                 
                 # Log response details before raising for status
                 logger.info(f"STK Push HTTP Status: {response.status_code}")
