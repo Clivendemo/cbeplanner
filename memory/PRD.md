@@ -404,3 +404,51 @@ User uploaded official KICD Grade 10 curriculum design PDFs for 5 subjects.
 - Total SLOs: 1,400+
 - Total SLO Mappings: 1,600+
 - Total Learning Activities: 600+
+
+## Grade 8, 9, 10 Additional Subjects (DONE - Dec 2025)
+User uploaded 5 additional PDF files containing curriculum for remaining subjects:
+- G8.pdf (Grade 8 subjects)
+- G9.pdf (Grade 9 subjects)
+- G10.pdf, G102.pdf, G103.pdf (Grade 10 subjects)
+
+**Seeding Script:** `/app/backend/seed_remaining_subjects.py`
+
+**NEWLY SEEDED SUBJECTS:**
+
+| Subject                       | Grades | Strands | Substrands | SLOs |
+|-------------------------------|--------|---------|------------|------|
+| Agriculture and Nutrition     | 2      | 4       | 20         | 12   |
+| Arabic                        | 7      | 4       | 36         | 15   |
+| Biology                       | 1      | 7       | 69         | 21   |
+| Business Studies              | 1      | 3       | 24         | 54   |
+| Chemistry                     | 1      | 2       | 12         | 8    |
+| Christian Religious Education | 10     | 4       | 22         | 22   |
+| Creative Arts and Sports      | 2      | 9       | 152        | 122  |
+| Film                          | 1      | 3       | 47         | 39   |
+| Geography                     | 1      | 3       | 40         | 19   |
+| Hindu Religious Education     | 10     | 6       | 92         | 73   |
+| Islamic Religious Education   | 10     | 1       | 6          | 11   |
+| Mandarin Chinese              | 7      | 4       | 38         | 36   |
+| Physical Education            | 1      | 3       | 56         | 22   |
+| Physics                       | 1      | 16      | 200        | 127  |
+| Pre-Technical Studies         | 3      | 5       | 42         | 28   |
+
+**FINAL DATABASE TOTALS (Dec 2025):**
+- Total Subjects: 57
+- Total Strands: 147
+- Total Substrands: 1,195
+- Total SLOs: 1,503
+- Total SLO Mappings: 1,616
+- Total Learning Activities: 831
+
+**Subjects with Missing/Incomplete Data (Require Manual Review):**
+- Literature in English (different strand format in PDF)
+- Theatre (merged with Literature in PDF)
+- Performing Arts (merged with Creative Arts)
+- French, German (G103.pdf - different extraction patterns needed)
+- Indigenous Languages (G103.pdf)
+
+**Data Extraction Notes:**
+- PDFs use varied formats (STRAND 1.0: vs 1.0 Strand Name)
+- Some subjects are combined in PDF sections
+- Senior School (Grade 10) PDFs have different curriculum structure

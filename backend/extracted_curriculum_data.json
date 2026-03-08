@@ -1,0 +1,27 @@
+[
+  {
+    "grade": "Grade 8",
+    "source_file": "/app/backend/pdfs/new_uploads/G8.pdf",
+    "subjects": []
+  },
+  {
+    "grade": "Grade 9",
+    "source_file": "/app/backend/pdfs/new_uploads/G9.pdf",
+    "subjects": []
+  },
+  {
+    "grade": "Grade 10",
+    "source_file": "/app/backend/pdfs/new_uploads/G10.pdf",
+    "subjects": []
+  },
+  {
+    "grade": "Grade 10",
+    "source_file": "/app/backend/pdfs/new_uploads/G102.pdf",
+    "subjects": []
+  },
+  {
+    "grade": "Grade 10",
+    "source_file": "/app/backend/pdfs/new_uploads/G103.pdf",
+    "subjects": []
+  }
+]
