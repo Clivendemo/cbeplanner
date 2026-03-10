@@ -159,8 +159,7 @@ export default function DataImport() {
   const handleDownloadTemplate = async () => {
     try {
       const headers = await getHeaders();
-      console.log('Downloading template with headers:', headers);
-      console.log('Backend URL:', BACKEND_URL);
+      console.log('Downloading template...');
       
       const response = await axios.get(`${BACKEND_URL}/api/admin/import/template`, {
         headers,
@@ -168,6 +167,12 @@ export default function DataImport() {
       });
       
       console.log('Template response received:', response.status);
+      console.log('Template data length:', response.data?.length);
+      
+      if (!response.data || response.data.length === 0) {
+        alert('Error: Received empty template from server');
+        return;
+      }
       
       // For web platform, use a different approach
       if (typeof window !== 'undefined' && window.document) {
@@ -184,6 +189,7 @@ export default function DataImport() {
           document.body.removeChild(link);
           URL.revokeObjectURL(url);
         }, 100);
+        console.log('Download triggered successfully');
       } else {
         alert('Download not supported on this platform');
       }

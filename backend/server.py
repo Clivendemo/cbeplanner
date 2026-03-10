@@ -2815,6 +2815,16 @@ async def get_csv_template(user: dict = Depends(verify_admin)):
         headers={"Content-Disposition": "attachment; filename=curriculum_template.csv"}
     )
 
+@api_router.get("/public/import-template")
+async def get_public_csv_template():
+    """Download CSV template for curriculum import (public access)"""
+    csv_content = generate_csv_template()
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=curriculum_template.csv"}
+    )
+
 @api_router.post("/admin/import/preview-csv")
 async def preview_csv_import(file: UploadFile = File(...), user: dict = Depends(verify_admin)):
     """Upload CSV and preview data before saving"""
