@@ -89,6 +89,66 @@ CSV_TEMPLATE_EXAMPLE = [
         "pcis": "Life Skills; Safety and Security",
         "assessment_methods": "Practical demonstration; Observation",
         "learning_resources": "Instruction cards; Real objects"
+    },
+    {
+        "strand_name": "LISTENING AND SPEAKING",
+        "substrand_name": "Pronunciation and Fluency",
+        "slo_name": "Pronounce words correctly in context",
+        "slo_description": "By the end of the lesson, the learner should be able to pronounce words correctly in context",
+        "introduction_activities": "Tongue twisters; Pronunciation warm-up exercises",
+        "development_activities": "Read aloud exercises; Peer correction; Audio model listening",
+        "conclusion_activities": "Record and playback; Self-evaluation",
+        "extended_activities": "Practice with family members",
+        "competencies": "Communication and Collaboration; Learning to Learn",
+        "values": "Respect; Responsibility",
+        "pcis": "Life Skills; Effective Communication",
+        "assessment_methods": "Oral assessment; Observation; Recording analysis",
+        "learning_resources": "Audio recordings; Textbooks; Charts"
+    },
+    {
+        "strand_name": "READING",
+        "substrand_name": "Reading Comprehension",
+        "slo_name": "Identify the main idea in a written text",
+        "slo_description": "By the end of the lesson, the learner should be able to identify the main idea in a written text",
+        "introduction_activities": "Predict content from title and pictures; Activate prior knowledge",
+        "development_activities": "Silent reading; Guided questions; Highlight key sentences",
+        "conclusion_activities": "Summarize text; Discuss main points",
+        "extended_activities": "Read similar texts at home",
+        "competencies": "Critical Thinking and Problem Solving; Communication and Collaboration",
+        "values": "Responsibility; Integrity",
+        "pcis": "Life Skills; Education for Sustainable Development",
+        "assessment_methods": "Written questions; Comprehension test; Oral retelling",
+        "learning_resources": "Textbooks; Reading passages; Charts"
+    },
+    {
+        "strand_name": "READING",
+        "substrand_name": "Vocabulary Development",
+        "slo_name": "Use context clues to determine word meanings",
+        "slo_description": "By the end of the lesson, the learner should be able to use context clues to determine word meanings",
+        "introduction_activities": "Word games; Discuss unfamiliar words",
+        "development_activities": "Read passage with new words; Identify context clues; Dictionary practice",
+        "conclusion_activities": "Create sentences with new words; Share with peers",
+        "extended_activities": "Keep a vocabulary journal",
+        "competencies": "Critical Thinking and Problem Solving; Learning to Learn",
+        "values": "Responsibility; Respect",
+        "pcis": "Life Skills; Effective Communication",
+        "assessment_methods": "Vocabulary quiz; Oral questions; Written exercises",
+        "learning_resources": "Dictionaries; Textbooks; Word cards"
+    },
+    {
+        "strand_name": "WRITING",
+        "substrand_name": "Creative Writing",
+        "slo_name": "Write a short narrative with a clear structure",
+        "slo_description": "By the end of the lesson, the learner should be able to write a short narrative with a clear structure",
+        "introduction_activities": "Discuss story elements; Read sample narratives",
+        "development_activities": "Plan story outline; Draft narrative; Peer feedback",
+        "conclusion_activities": "Edit and revise; Share final draft",
+        "extended_activities": "Write additional stories at home",
+        "competencies": "Creativity and Imagination; Communication and Collaboration",
+        "values": "Integrity; Responsibility",
+        "pcis": "Life Skills; Cultural Heritage",
+        "assessment_methods": "Writing rubric; Peer review; Portfolio assessment",
+        "learning_resources": "Writing paper; Sample narratives; Checklist"
     }
 ]
 
