@@ -181,27 +181,55 @@ def parse_csv_content(content: str) -> CurriculumImportPreview:
     strands_found = set()
     substrands_found = set()
     
+    # Column name mappings (aliases)
+    COLUMN_ALIASES = {
+        'strand_name': ['strand_name', 'strand', 'Strand'],
+        'substrand_name': ['substrand_name', 'substrand', 'sub-strand', 'Sub-strand', 'sub_strand', 'Sub_strand'],
+        'slo_name': ['slo_name', 'slo', 'Specific Learning Outcome (SLO)', 'Specific Learning Outcome', 'SLO'],
+        'slo_description': ['slo_description', 'description', 'Description'],
+        'competencies': ['competencies', 'core_competencies', 'Core Competencies', 'Core_Competencies'],
+        'values': ['values', 'Values'],
+        'pcis': ['pcis', 'PCIs', 'pci', 'PCI'],
+        'introduction_activities': ['introduction_activities', 'Introduction Activities'],
+        'development_activities': ['development_activities', 'Development Activities', 'Teaching & Learning Activities', 'Teaching and Learning Activities', 'activities', 'Activities'],
+        'conclusion_activities': ['conclusion_activities', 'Conclusion Activities'],
+        'extended_activities': ['extended_activities', 'Extended Activities', 'Additional Activities'],
+        'assessment_methods': ['assessment_methods', 'Assessment Methods', 'assessment'],
+        'learning_resources': ['learning_resources', 'Learning Resources', 'resources', 'Resources']
+    }
+    
+    def get_field(row, field_name):
+        """Get field value using aliases"""
+        aliases = COLUMN_ALIASES.get(field_name, [field_name])
+        for alias in aliases:
+            if alias in row and row[alias]:
+                return row[alias].strip()
+        return ''
+    
     for row in reader:
         row_num += 1
         cleaned_row = {}
         
-        # Clean and validate each field
-        strand = row.get('strand_name', '').strip()
-        substrand = row.get('substrand_name', '').strip()
-        slo = row.get('slo_name', '').strip()
+        # Clean and validate each field using aliases
+        strand = get_field(row, 'strand_name')
+        substrand = get_field(row, 'substrand_name')
+        slo = get_field(row, 'slo_name')
         
         if not strand:
-            errors.append(f"Row {row_num}: Missing strand_name")
+            errors.append(f"Row {row_num}: Missing strand_name (or 'Strand' column)")
             continue
         if not substrand:
-            errors.append(f"Row {row_num}: Missing substrand_name")
+            errors.append(f"Row {row_num}: Missing substrand_name (or 'Sub-strand' column)")
             continue
         if not slo:
-            errors.append(f"Row {row_num}: Missing slo_name")
+            errors.append(f"Row {row_num}: Missing slo_name (or 'Specific Learning Outcome (SLO)' column)")
             continue
         
         strands_found.add(strand)
         substrands_found.add(f"{strand}|{substrand}")
+        
+        # Get activities - if only one activities column exists, use it for development
+        activities_text = get_field(row, 'development_activities')
         
         # Build cleaned row
         cleaned_row = {
@@ -209,16 +237,16 @@ def parse_csv_content(content: str) -> CurriculumImportPreview:
             "strand_name": strand,
             "substrand_name": substrand,
             "slo_name": slo,
-            "slo_description": row.get('slo_description', slo).strip(),
-            "introduction_activities": parse_list_field(row.get('introduction_activities', '')),
-            "development_activities": parse_list_field(row.get('development_activities', '')),
-            "conclusion_activities": parse_list_field(row.get('conclusion_activities', '')),
-            "extended_activities": parse_list_field(row.get('extended_activities', '')),
-            "competencies": parse_list_field(row.get('competencies', '')),
-            "values": parse_list_field(row.get('values', '')),
-            "pcis": parse_list_field(row.get('pcis', '')),
-            "assessment_methods": parse_list_field(row.get('assessment_methods', '')),
-            "learning_resources": parse_list_field(row.get('learning_resources', ''))
+            "slo_description": get_field(row, 'slo_description') or slo,
+            "introduction_activities": parse_list_field(get_field(row, 'introduction_activities')),
+            "development_activities": parse_list_field(activities_text),
+            "conclusion_activities": parse_list_field(get_field(row, 'conclusion_activities')),
+            "extended_activities": parse_list_field(get_field(row, 'extended_activities')),
+            "competencies": parse_list_field(get_field(row, 'competencies')),
+            "values": parse_list_field(get_field(row, 'values')),
+            "pcis": parse_list_field(get_field(row, 'pcis')),
+            "assessment_methods": parse_list_field(get_field(row, 'assessment_methods')),
+            "learning_resources": parse_list_field(get_field(row, 'learning_resources'))
         }
         
         # Warnings for missing optional fields
