@@ -147,6 +147,12 @@ export default function Curriculum() {
   const [bulkSelectedValues, setBulkSelectedValues] = useState<string[]>([]);
   const [bulkSelectedPcis, setBulkSelectedPcis] = useState<string[]>([]);
 
+  // Bulk Edit Mode state
+  const [bulkEditMode, setBulkEditMode] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [bulkEditModalVisible, setBulkEditModalVisible] = useState(false);
+  const [bulkEditFormData, setBulkEditFormData] = useState<Record<string, any>>({});
+
   const getHeaders = async () => {
     if (firebaseUser) {
       const token = await firebaseUser.getIdToken();
@@ -990,18 +996,193 @@ export default function Curriculum() {
     }
   };
 
+  // ==================== BULK EDIT FUNCTIONS ====================
+
+  const toggleItemSelection = (itemId: string) => {
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(itemId)) {
+      newSelected.delete(itemId);
+    } else {
+      newSelected.add(itemId);
+    }
+    setSelectedItems(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.size === data.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(data.map(item => item.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedItems.size === 0) return;
+    
+    const itemType = selectedEntity === 'strands' ? 'strand' 
+      : selectedEntity === 'substrands' ? 'substrand' 
+      : selectedEntity === 'slos' ? 'slo' : '';
+    
+    if (!itemType) {
+      showAlert('Error', 'Bulk delete is only available for strands, substrands, and SLOs');
+      return;
+    }
+    
+    const confirmDelete = () => {
+      performBulkDelete(itemType);
+    };
+    
+    showAlert(
+      'Confirm Bulk Delete',
+      `Are you sure you want to delete ${selectedItems.size} ${selectedEntity}? This will also delete all child items.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: confirmDelete }
+      ]
+    );
+  };
+
+  const performBulkDelete = async (itemType: string) => {
+    try {
+      setLoading(true);
+      const headers = await getHeaders();
+      const response = await axios.post(`${BACKEND_URL}/api/admin/bulk-delete`, {
+        item_type: itemType,
+        item_ids: Array.from(selectedItems)
+      }, { headers });
+      
+      if (response.data.success) {
+        showAlert('Success', response.data.message);
+        setSelectedItems(new Set());
+        setBulkEditMode(false);
+        loadData();
+      }
+    } catch (error: any) {
+      showAlert('Error', error.response?.data?.detail || 'Failed to delete items');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenBulkEditModal = () => {
+    if (selectedItems.size === 0) return;
+    setBulkEditFormData({});
+    setBulkEditModalVisible(true);
+  };
+
+  const handleSaveBulkEdit = async () => {
+    if (Object.keys(bulkEditFormData).length === 0) {
+      showAlert('Error', 'Please enter at least one field to update');
+      return;
+    }
+    
+    const itemType = selectedEntity === 'strands' ? 'strand' 
+      : selectedEntity === 'substrands' ? 'substrand' 
+      : selectedEntity === 'slos' ? 'slo' : '';
+    
+    if (!itemType) {
+      showAlert('Error', 'Bulk edit is only available for strands, substrands, and SLOs');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const headers = await getHeaders();
+      const response = await axios.post(`${BACKEND_URL}/api/admin/bulk-update`, {
+        item_type: itemType,
+        item_ids: Array.from(selectedItems),
+        updates: bulkEditFormData
+      }, { headers });
+      
+      if (response.data.success) {
+        showAlert('Success', response.data.message);
+        setBulkEditModalVisible(false);
+        setSelectedItems(new Set());
+        setBulkEditMode(false);
+        loadData();
+      }
+    } catch (error: any) {
+      showAlert('Error', error.response?.data?.detail || 'Failed to update items');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ==================== REORDER FUNCTIONS ====================
+
+  const handleMoveItem = async (item: Entity, direction: 'up' | 'down') => {
+    const itemType = selectedEntity === 'strands' ? 'strand' 
+      : selectedEntity === 'substrands' ? 'substrand' 
+      : selectedEntity === 'slos' ? 'slo' : '';
+    
+    if (!itemType) return;
+    
+    try {
+      setLoading(true);
+      const headers = await getHeaders();
+      const response = await axios.post(
+        `${BACKEND_URL}/api/admin/move-item-order?item_type=${itemType}&item_id=${item.id}&direction=${direction}`,
+        {},
+        { headers }
+      );
+      
+      if (response.data.success) {
+        loadData();
+      } else {
+        showAlert('Info', response.data.message);
+      }
+    } catch (error: any) {
+      showAlert('Error', error.response?.data?.detail || 'Failed to move item');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const canReorder = selectedEntity === 'strands' || selectedEntity === 'substrands' || selectedEntity === 'slos';
+
   const renderItem = ({ item }: { item: Entity }) => {
     const config = ENTITY_CONFIG[selectedEntity];
     const canNavigate = currentView === 'hierarchy' && selectedEntity !== 'slos';
     const canMove = selectedEntity !== 'grades' && selectedEntity !== 'competencies' && selectedEntity !== 'values' && selectedEntity !== 'pcis' && selectedEntity !== 'learning_activities';
     const canEditMapping = selectedEntity === 'slos';
+    const isSelected = selectedItems.has(item.id);
     
     return (
       <View style={styles.listItem}>
+        {/* Bulk Edit Checkbox */}
+        {bulkEditMode && (
+          <TouchableOpacity 
+            style={styles.checkboxContainer}
+            onPress={() => toggleItemSelection(item.id)}
+          >
+            <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+              {isSelected && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+            </View>
+          </TouchableOpacity>
+        )}
+        
+        {/* Reorder Buttons */}
+        {canReorder && !bulkEditMode && (
+          <View style={styles.reorderButtons}>
+            <TouchableOpacity 
+              style={styles.reorderBtn}
+              onPress={() => handleMoveItem(item, 'up')}
+            >
+              <Ionicons name="chevron-up" size={16} color="#6366F1" />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.reorderBtn}
+              onPress={() => handleMoveItem(item, 'down')}
+            >
+              <Ionicons name="chevron-down" size={16} color="#6366F1" />
+            </TouchableOpacity>
+          </View>
+        )}
+        
         <TouchableOpacity 
-          style={styles.listItemContent}
-          onPress={() => canNavigate ? handleItemPress(item) : null}
-          activeOpacity={canNavigate ? 0.7 : 1}
+          style={[styles.listItemContent, bulkEditMode && { flex: 1 }]}
+          onPress={() => bulkEditMode ? toggleItemSelection(item.id) : (canNavigate ? handleItemPress(item) : null)}
+          activeOpacity={canNavigate || bulkEditMode ? 0.7 : 1}
         >
           <View style={[styles.itemIcon, { backgroundColor: config.color + '20' }]}>
             <Ionicons name={config.icon as any} size={20} color={config.color} />
@@ -1016,30 +1197,32 @@ export default function Curriculum() {
             )}
           </View>
           
-          {canNavigate && (
+          {canNavigate && !bulkEditMode && (
             <Ionicons name="chevron-forward" size={20} color="#9CA3AF" style={{ marginRight: 8 }} />
           )}
         </TouchableOpacity>
         
-        <View style={styles.itemActions}>
-          {/* Mapping Button - Only for SLOs */}
-          {canEditMapping && (
-            <TouchableOpacity style={styles.mappingButton} onPress={() => handleOpenMappingModal(item)}>
-              <Ionicons name="link" size={18} color="#8B5CF6" />
+        {!bulkEditMode && (
+          <View style={styles.itemActions}>
+            {/* Mapping Button - Only for SLOs */}
+            {canEditMapping && (
+              <TouchableOpacity style={styles.mappingButton} onPress={() => handleOpenMappingModal(item)}>
+                <Ionicons name="link" size={18} color="#8B5CF6" />
+              </TouchableOpacity>
+            )}
+            {canMove && (
+              <TouchableOpacity style={styles.moveButton} onPress={() => handleOpenMoveModal(item)}>
+                <Ionicons name="swap-horizontal" size={18} color="#6366F1" />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity style={styles.editButton} onPress={() => openEditModal(item)}>
+              <Ionicons name="pencil" size={18} color="#F59E0B" />
             </TouchableOpacity>
-          )}
-          {canMove && (
-            <TouchableOpacity style={styles.moveButton} onPress={() => handleOpenMoveModal(item)}>
-              <Ionicons name="swap-horizontal" size={18} color="#6366F1" />
+            <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item)}>
+              <Ionicons name="trash" size={18} color="#EF4444" />
             </TouchableOpacity>
-          )}
-          <TouchableOpacity style={styles.editButton} onPress={() => openEditModal(item)}>
-            <Ionicons name="pencil" size={18} color="#F59E0B" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item)}>
-            <Ionicons name="trash" size={18} color="#EF4444" />
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
       </View>
     );
   };
@@ -1188,18 +1371,79 @@ export default function Curriculum() {
         <Text style={styles.headerTitle}>{ENTITY_CONFIG[selectedEntity].title}</Text>
         <Text style={styles.headerCount}>{data.length} items</Text>
         
-        {/* Bulk Add Button - Show when in hierarchy with parent selected */}
-        {currentView === 'hierarchy' && currentParentId && selectedEntity !== 'grades' && (
-          <TouchableOpacity style={styles.bulkAddButton} onPress={handleOpenBulkAddModal}>
-            <Ionicons name="layers" size={18} color="#10B981" />
-            <Text style={styles.bulkAddButtonText}>Bulk</Text>
+        {/* Bulk Edit Mode Toggle - Only for strands, substrands, slos */}
+        {canReorder && (
+          <TouchableOpacity 
+            style={[styles.bulkEditToggle, bulkEditMode && styles.bulkEditToggleActive]} 
+            onPress={() => {
+              setBulkEditMode(!bulkEditMode);
+              setSelectedItems(new Set());
+            }}
+          >
+            <Ionicons name={bulkEditMode ? "checkmark-done" : "checkbox-outline"} size={18} color={bulkEditMode ? "#FFFFFF" : "#6366F1"} />
+            <Text style={[styles.bulkEditToggleText, bulkEditMode && styles.bulkEditToggleTextActive]}>
+              {bulkEditMode ? 'Done' : 'Bulk'}
+            </Text>
           </TouchableOpacity>
         )}
         
-        <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-          <Ionicons name="add" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
+        {/* Bulk Add Button - Show when in hierarchy with parent selected */}
+        {currentView === 'hierarchy' && currentParentId && selectedEntity !== 'grades' && !bulkEditMode && (
+          <TouchableOpacity style={styles.bulkAddButton} onPress={handleOpenBulkAddModal}>
+            <Ionicons name="layers" size={18} color="#10B981" />
+            <Text style={styles.bulkAddButtonText}>Add</Text>
+          </TouchableOpacity>
+        )}
+        
+        {!bulkEditMode && (
+          <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
+            <Ionicons name="add" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        )}
       </View>
+
+      {/* Bulk Edit Action Bar */}
+      {bulkEditMode && selectedItems.size > 0 && (
+        <View style={styles.bulkActionBar}>
+          <TouchableOpacity style={styles.selectAllBtn} onPress={toggleSelectAll}>
+            <Ionicons 
+              name={selectedItems.size === data.length ? "checkbox" : "square-outline"} 
+              size={20} 
+              color="#6366F1" 
+            />
+            <Text style={styles.selectAllText}>
+              {selectedItems.size === data.length ? 'Deselect All' : 'Select All'}
+            </Text>
+          </TouchableOpacity>
+          
+          <View style={styles.bulkActionButtons}>
+            <Text style={styles.selectedCount}>{selectedItems.size} selected</Text>
+            
+            <TouchableOpacity style={styles.bulkEditBtn} onPress={handleOpenBulkEditModal}>
+              <Ionicons name="pencil" size={18} color="#FFFFFF" />
+              <Text style={styles.bulkBtnText}>Edit</Text>
+            </TouchableOpacity>
+            
+            {selectedEntity === 'slos' && (
+              <TouchableOpacity 
+                style={[styles.bulkEditBtn, { backgroundColor: '#8B5CF6' }]} 
+                onPress={() => {
+                  setSelectedSlosForMapping(Array.from(selectedItems));
+                  handleOpenBulkMappingModal();
+                }}
+              >
+                <Ionicons name="link" size={18} color="#FFFFFF" />
+                <Text style={styles.bulkBtnText}>Map</Text>
+              </TouchableOpacity>
+            )}
+            
+            <TouchableOpacity style={styles.bulkDeleteBtn} onPress={handleBulkDelete}>
+              <Ionicons name="trash" size={18} color="#FFFFFF" />
+              <Text style={styles.bulkBtnText}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {/* Learning Activities Button - Show when viewing substrands in hierarchy */}
       {currentView === 'hierarchy' && selectedEntity === 'slos' && breadcrumbs.length > 0 && (
@@ -1979,6 +2223,86 @@ export default function Curriculum() {
           </View>
         </View>
       </Modal>
+
+      {/* Bulk Edit Modal */}
+      <Modal
+        visible={bulkEditModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setBulkEditModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Bulk Edit {selectedItems.size} Items</Text>
+              <TouchableOpacity onPress={() => setBulkEditModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.modalBody}>
+              <Text style={styles.bulkEditNote}>
+                Leave fields empty to keep existing values. Only filled fields will be updated.
+              </Text>
+              
+              {/* Name field - for strands and substrands */}
+              {(selectedEntity === 'strands' || selectedEntity === 'substrands') && (
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Name (append to existing)</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    value={bulkEditFormData.name || ''}
+                    onChangeText={(text) => setBulkEditFormData({ ...bulkEditFormData, name: text })}
+                    placeholder="Leave empty to keep existing names"
+                  />
+                </View>
+              )}
+              
+              {/* Description field - for SLOs */}
+              {selectedEntity === 'slos' && (
+                <>
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Name</Text>
+                    <TextInput
+                      style={styles.textInput}
+                      value={bulkEditFormData.name || ''}
+                      onChangeText={(text) => setBulkEditFormData({ ...bulkEditFormData, name: text })}
+                      placeholder="Leave empty to keep existing"
+                    />
+                  </View>
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Description</Text>
+                    <TextInput
+                      style={[styles.textInput, { minHeight: 80, textAlignVertical: 'top' }]}
+                      value={bulkEditFormData.description || ''}
+                      onChangeText={(text) => setBulkEditFormData({ ...bulkEditFormData, description: text })}
+                      placeholder="Leave empty to keep existing"
+                      multiline
+                    />
+                  </View>
+                </>
+              )}
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setBulkEditModalVisible(false)}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.saveButton, loading && { opacity: 0.5 }]} 
+                onPress={handleSaveBulkEdit}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.saveButtonText}>Update All</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -2671,5 +2995,119 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#8B5CF6'
+  },
+  // Bulk Edit Mode Styles
+  bulkEditToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#EEF2FF',
+    borderWidth: 1,
+    borderColor: '#6366F1',
+    gap: 4
+  },
+  bulkEditToggleActive: {
+    backgroundColor: '#6366F1'
+  },
+  bulkEditToggleText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6366F1'
+  },
+  bulkEditToggleTextActive: {
+    color: '#FFFFFF'
+  },
+  bulkActionBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#EEF2FF',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#C7D2FE'
+  },
+  selectAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8
+  },
+  selectAllText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6366F1'
+  },
+  bulkActionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8
+  },
+  selectedCount: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#4F46E5',
+    marginRight: 8
+  },
+  bulkEditBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#F59E0B',
+    gap: 4
+  },
+  bulkDeleteBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#EF4444',
+    gap: 4
+  },
+  bulkBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#FFFFFF'
+  },
+  checkboxContainer: {
+    padding: 8,
+    justifyContent: 'center'
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF'
+  },
+  checkboxSelected: {
+    backgroundColor: '#6366F1',
+    borderColor: '#6366F1'
+  },
+  reorderButtons: {
+    flexDirection: 'column',
+    paddingHorizontal: 4,
+    gap: 2
+  },
+  reorderBtn: {
+    padding: 4,
+    borderRadius: 4,
+    backgroundColor: '#EEF2FF'
+  },
+  bulkEditNote: {
+    fontSize: 13,
+    color: '#6B7280',
+    backgroundColor: '#FEF3C7',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    textAlign: 'center'
   }
 });

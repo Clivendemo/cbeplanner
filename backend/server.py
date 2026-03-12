@@ -3050,6 +3050,276 @@ async def get_import_history(user: dict = Depends(verify_admin), limit: int = 20
         })
     return {"success": True, "history": history}
 
+# ==================== BULK EDITING ENDPOINTS ====================
+
+class BulkUpdateRequest(BaseModel):
+    item_type: str  # "strand", "substrand", "slo"
+    item_ids: List[str]
+    updates: Dict[str, Any]  # Fields to update
+
+class ReorderRequest(BaseModel):
+    item_type: str  # "strand", "substrand", "slo"
+    parent_id: str  # subjectId for strands, strandId for substrands, substrandId for slos
+    item_ids: List[str]  # Ordered list of item IDs
+
+class BulkDeleteRequest(BaseModel):
+    item_type: str  # "strand", "substrand", "slo"
+    item_ids: List[str]
+
+class BulkMappingRequest(BaseModel):
+    slo_ids: List[str]
+    competency_ids: List[str] = []
+    value_ids: List[str] = []
+    pci_ids: List[str] = []
+
+@api_router.post("/admin/bulk-update")
+async def bulk_update_items(request: BulkUpdateRequest, user: dict = Depends(verify_admin)):
+    """Bulk update strands, substrands, or SLOs"""
+    collection_map = {
+        "strand": db.strands,
+        "substrand": db.substrands,
+        "slo": db.slos
+    }
+    
+    if request.item_type not in collection_map:
+        raise HTTPException(status_code=400, detail="Invalid item type")
+    
+    collection = collection_map[request.item_type]
+    updated_count = 0
+    
+    # Filter out protected fields
+    safe_updates = {k: v for k, v in request.updates.items() if k not in ["_id", "id"]}
+    
+    for item_id in request.item_ids:
+        try:
+            result = await collection.update_one(
+                {"_id": ObjectId(item_id)},
+                {"$set": safe_updates}
+            )
+            if result.modified_count > 0:
+                updated_count += 1
+        except Exception as e:
+            logger.error(f"Error updating {request.item_type} {item_id}: {str(e)}")
+    
+    return {
+        "success": True,
+        "message": f"Updated {updated_count} of {len(request.item_ids)} {request.item_type}s",
+        "updated_count": updated_count
+    }
+
+@api_router.post("/admin/reorder")
+async def reorder_items(request: ReorderRequest, user: dict = Depends(verify_admin)):
+    """Reorder strands, substrands, or SLOs"""
+    collection_map = {
+        "strand": db.strands,
+        "substrand": db.substrands,
+        "slo": db.slos
+    }
+    parent_field_map = {
+        "strand": "subjectId",
+        "substrand": "strandId",
+        "slo": "substrandId"
+    }
+    
+    if request.item_type not in collection_map:
+        raise HTTPException(status_code=400, detail="Invalid item type")
+    
+    collection = collection_map[request.item_type]
+    parent_field = parent_field_map[request.item_type]
+    
+    # Update order for each item
+    for idx, item_id in enumerate(request.item_ids):
+        try:
+            await collection.update_one(
+                {"_id": ObjectId(item_id), parent_field: request.parent_id},
+                {"$set": {"order": idx}}
+            )
+        except Exception as e:
+            logger.error(f"Error reordering {request.item_type} {item_id}: {str(e)}")
+    
+    return {
+        "success": True,
+        "message": f"Reordered {len(request.item_ids)} {request.item_type}s"
+    }
+
+@api_router.post("/admin/move-item-order")
+async def move_item_order(
+    item_type: str,
+    item_id: str,
+    direction: str,  # "up" or "down"
+    user: dict = Depends(verify_admin)
+):
+    """Move a single item up or down in the order"""
+    collection_map = {
+        "strand": db.strands,
+        "substrand": db.substrands,
+        "slo": db.slos
+    }
+    parent_field_map = {
+        "strand": "subjectId",
+        "substrand": "strandId",
+        "slo": "substrandId"
+    }
+    
+    if item_type not in collection_map:
+        raise HTTPException(status_code=400, detail="Invalid item type")
+    if direction not in ["up", "down"]:
+        raise HTTPException(status_code=400, detail="Direction must be 'up' or 'down'")
+    
+    collection = collection_map[item_type]
+    parent_field = parent_field_map[item_type]
+    
+    # Get the current item
+    item = await collection.find_one({"_id": ObjectId(item_id)})
+    if not item:
+        raise HTTPException(status_code=404, detail=f"{item_type} not found")
+    
+    current_order = item.get("order", 0)
+    parent_id = item.get(parent_field)
+    
+    # Find the sibling to swap with
+    if direction == "up":
+        sibling = await collection.find_one({
+            parent_field: parent_id,
+            "order": {"$lt": current_order}
+        }, sort=[("order", -1)])
+    else:
+        sibling = await collection.find_one({
+            parent_field: parent_id,
+            "order": {"$gt": current_order}
+        }, sort=[("order", 1)])
+    
+    if not sibling:
+        return {
+            "success": False,
+            "message": f"Cannot move {direction} - already at the {'top' if direction == 'up' else 'bottom'}"
+        }
+    
+    # Swap orders
+    sibling_order = sibling.get("order", 0)
+    await collection.update_one(
+        {"_id": ObjectId(item_id)},
+        {"$set": {"order": sibling_order}}
+    )
+    await collection.update_one(
+        {"_id": sibling["_id"]},
+        {"$set": {"order": current_order}}
+    )
+    
+    return {
+        "success": True,
+        "message": f"Moved {item_type} {direction}"
+    }
+
+@api_router.post("/admin/bulk-delete")
+async def bulk_delete_items(request: BulkDeleteRequest, user: dict = Depends(verify_admin)):
+    """Bulk delete strands, substrands, or SLOs with cascade"""
+    collection_map = {
+        "strand": db.strands,
+        "substrand": db.substrands,
+        "slo": db.slos
+    }
+    
+    if request.item_type not in collection_map:
+        raise HTTPException(status_code=400, detail="Invalid item type")
+    
+    deleted_count = 0
+    cascade_deleted = {"substrands": 0, "slos": 0, "activities": 0, "mappings": 0}
+    
+    for item_id in request.item_ids:
+        try:
+            if request.item_type == "strand":
+                # Cascade delete substrands, slos, activities, mappings
+                substrands = await db.substrands.find({"strandId": item_id}).to_list(None)
+                for ss in substrands:
+                    ss_id = str(ss["_id"])
+                    # Delete SLOs and their mappings
+                    slos = await db.slos.find({"substrandId": ss_id}).to_list(None)
+                    for slo in slos:
+                        await db.slo_mappings.delete_many({"sloId": str(slo["_id"])})
+                        cascade_deleted["mappings"] += 1
+                    slo_result = await db.slos.delete_many({"substrandId": ss_id})
+                    cascade_deleted["slos"] += slo_result.deleted_count
+                    # Delete activities
+                    act_result = await db.learning_activities.delete_many({"substrandId": ss_id})
+                    cascade_deleted["activities"] += act_result.deleted_count
+                ss_result = await db.substrands.delete_many({"strandId": item_id})
+                cascade_deleted["substrands"] += ss_result.deleted_count
+                # Delete strand
+                await db.strands.delete_one({"_id": ObjectId(item_id)})
+                deleted_count += 1
+                
+            elif request.item_type == "substrand":
+                # Cascade delete slos, activities, mappings
+                slos = await db.slos.find({"substrandId": item_id}).to_list(None)
+                for slo in slos:
+                    await db.slo_mappings.delete_many({"sloId": str(slo["_id"])})
+                    cascade_deleted["mappings"] += 1
+                slo_result = await db.slos.delete_many({"substrandId": item_id})
+                cascade_deleted["slos"] += slo_result.deleted_count
+                await db.learning_activities.delete_many({"substrandId": item_id})
+                cascade_deleted["activities"] += 1
+                await db.substrands.delete_one({"_id": ObjectId(item_id)})
+                deleted_count += 1
+                
+            elif request.item_type == "slo":
+                # Delete SLO and its mapping
+                await db.slo_mappings.delete_many({"sloId": item_id})
+                cascade_deleted["mappings"] += 1
+                await db.slos.delete_one({"_id": ObjectId(item_id)})
+                deleted_count += 1
+                
+        except Exception as e:
+            logger.error(f"Error deleting {request.item_type} {item_id}: {str(e)}")
+    
+    return {
+        "success": True,
+        "message": f"Deleted {deleted_count} {request.item_type}s",
+        "deleted_count": deleted_count,
+        "cascade_deleted": cascade_deleted
+    }
+
+@api_router.post("/admin/bulk-assign-mappings")
+async def bulk_assign_mappings(request: BulkMappingRequest, user: dict = Depends(verify_admin)):
+    """Bulk assign competencies, values, and PCIs to multiple SLOs"""
+    updated_count = 0
+    
+    for slo_id in request.slo_ids:
+        try:
+            # Check if mapping exists
+            existing = await db.slo_mappings.find_one({"sloId": slo_id})
+            
+            update_data = {}
+            if request.competency_ids:
+                update_data["competencyIds"] = request.competency_ids
+            if request.value_ids:
+                update_data["valueIds"] = request.value_ids
+            if request.pci_ids:
+                update_data["pciIds"] = request.pci_ids
+            
+            if existing:
+                await db.slo_mappings.update_one(
+                    {"sloId": slo_id},
+                    {"$set": update_data}
+                )
+            else:
+                await db.slo_mappings.insert_one({
+                    "sloId": slo_id,
+                    "competencyIds": request.competency_ids,
+                    "valueIds": request.value_ids,
+                    "pciIds": request.pci_ids,
+                    "assessmentIds": []
+                })
+            updated_count += 1
+        except Exception as e:
+            logger.error(f"Error updating mapping for SLO {slo_id}: {str(e)}")
+    
+    return {
+        "success": True,
+        "message": f"Updated mappings for {updated_count} SLOs",
+        "updated_count": updated_count
+    }
+
 # ==================== SEED DATA ENDPOINT ====================
 
 @api_router.post("/admin/seed")
@@ -3412,6 +3682,54 @@ async def startup_event():
         await db.wallet_transactions.create_index("checkoutRequestID")
         await db.wallet_transactions.create_index("tx_ref", unique=True)
         
+        # Add order indexes for curriculum items
+        await db.strands.create_index([("subjectId", 1), ("order", 1)])
+        await db.substrands.create_index([("strandId", 1), ("order", 1)])
+        await db.slos.create_index([("substrandId", 1), ("order", 1)])
+        
         logger.info("Database indexes created/verified successfully")
     except Exception as e:
         logger.error(f"Error creating indexes: {str(e)}")
+
+async def migrate_order_fields():
+    """Add order field to strands, substrands, and SLOs that don't have it"""
+    try:
+        # Migrate strands
+        subjects = await db.subjects.find().to_list(None)
+        for subject in subjects:
+            subject_id = str(subject["_id"])
+            strands = await db.strands.find({"subjectId": subject_id}).to_list(None)
+            for idx, strand in enumerate(strands):
+                if "order" not in strand:
+                    await db.strands.update_one(
+                        {"_id": strand["_id"]},
+                        {"$set": {"order": idx}}
+                    )
+        
+        # Migrate substrands
+        strands = await db.strands.find().to_list(None)
+        for strand in strands:
+            strand_id = str(strand["_id"])
+            substrands = await db.substrands.find({"strandId": strand_id}).to_list(None)
+            for idx, substrand in enumerate(substrands):
+                if "order" not in substrand:
+                    await db.substrands.update_one(
+                        {"_id": substrand["_id"]},
+                        {"$set": {"order": idx}}
+                    )
+        
+        # Migrate SLOs
+        substrands = await db.substrands.find().to_list(None)
+        for substrand in substrands:
+            substrand_id = str(substrand["_id"])
+            slos = await db.slos.find({"substrandId": substrand_id}).to_list(None)
+            for idx, slo in enumerate(slos):
+                if "order" not in slo:
+                    await db.slos.update_one(
+                        {"_id": slo["_id"]},
+                        {"$set": {"order": idx}}
+                    )
+        
+        logger.info("Order field migration completed")
+    except Exception as e:
+        logger.error(f"Error in order field migration: {str(e)}")

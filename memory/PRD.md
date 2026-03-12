@@ -227,6 +227,30 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 5. Deploy (Render auto-detects Dockerfile)
 6. Update `MPESA_CALLBACK_URL` with Render URL
 
+### Bulk Editing & Reordering (DONE - Dec 2025)
+Admin panel features for managing curriculum data:
+
+**Bulk Edit Mode:**
+- Toggle button to enter multi-select mode
+- Select multiple strands/substrands/SLOs with checkboxes
+- Bulk actions: Edit, Delete, Assign Mappings (SLOs)
+- Batch update names, descriptions across selected items
+
+**Reorder Feature:**
+- Up/down arrow buttons on each strand/substrand/SLO
+- Database `order` field for maintaining sequence
+- API endpoints: `/api/admin/move-item-order`, `/api/admin/reorder`
+
+**Backend Endpoints Added:**
+- `POST /api/admin/bulk-update` - Update multiple items at once
+- `POST /api/admin/reorder` - Set order for multiple items
+- `POST /api/admin/move-item-order` - Move single item up/down
+- `POST /api/admin/bulk-delete` - Delete multiple items with cascade
+- `POST /api/admin/bulk-assign-mappings` - Assign competencies/values/PCIs to multiple SLOs
+
+**Migration Script:**
+- `/app/backend/scripts/migrate_order_fields.py` - Add order field to existing records
+
 ### Data Import System (DONE - Dec 2025)
 A comprehensive bulk data import system for curriculum data:
 
