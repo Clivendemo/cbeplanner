@@ -3320,6 +3320,14 @@ async def bulk_assign_mappings(request: BulkMappingRequest, user: dict = Depends
         "updated_count": updated_count
     }
 
+# ==================== ADMIN UTILITY ENDPOINTS ====================
+
+@api_router.post("/admin/clear-idempotency-cache")
+async def clear_idempotency_cache(user: dict = Depends(verify_admin)):
+    """Clear the idempotency cache to allow retrying stuck payments"""
+    IdempotencyManager.clear_all()
+    return {"success": True, "message": "Idempotency cache cleared"}
+
 # ==================== SEED DATA ENDPOINT ====================
 
 @api_router.post("/admin/seed")

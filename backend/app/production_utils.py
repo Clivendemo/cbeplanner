@@ -113,7 +113,7 @@ class IdempotencyManager:
     
     # In-memory cache (for single instance), use Redis in production cluster
     _processed_keys: Dict[str, float] = {}
-    _key_expiry_seconds = 3600  # 1 hour
+    _key_expiry_seconds = 60  # 60 seconds - reduced from 1 hour to allow retries
     
     @staticmethod
     def generate_key(*args) -> str:
@@ -147,6 +147,18 @@ class IdempotencyManager:
     def is_duplicate(cls, key: str) -> bool:
         """Check if key is a duplicate without marking"""
         return key in cls._processed_keys
+    
+    @classmethod
+    def clear_all(cls):
+        """Clear all idempotency keys - useful for admin reset"""
+        cls._processed_keys.clear()
+    
+    @classmethod
+    def clear_for_user(cls, user_id: str):
+        """Clear idempotency keys containing user_id"""
+        keys_to_remove = [k for k in cls._processed_keys.keys() if user_id in k]
+        for k in keys_to_remove:
+            del cls._processed_keys[k]
 
 
 # ===========================================
