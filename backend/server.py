@@ -21,7 +21,9 @@ from curriculum_import import (
 # Import production utilities
 from app.production_utils import (
     ProductionLogger, IdempotencyManager, InputValidator, 
-    RateLimiter, TransactionLock, get_user_error, SECURITY_HEADERS
+    RateLimiter, TransactionLock, get_user_error, SECURITY_HEADERS,
+    SAFARICOM_IPS, MPESA_RESULT_CODES, get_mpesa_result_message,
+    is_safaricom_ip, get_client_ip
 )
 
 # ===========================================
@@ -803,10 +805,11 @@ async def initiate_mpesa_payment(request: InitiatePaymentRequest, user: dict = D
 
 
 @api_router.post("/payments/mpesa/callback")
-async def mpesa_callback(callback_data: PaymentCallbackData):
+async def mpesa_callback(request: Request, callback_data: PaymentCallbackData):
     """
     M-Pesa callback endpoint for payment confirmation
     
+    - Validates request comes from Safaricom IP
     - Receives payment result from M-Pesa
     - Stores raw callback payload for auditing
     - Verifies transaction exists and is pending
@@ -816,6 +819,17 @@ async def mpesa_callback(callback_data: PaymentCallbackData):
     - Implements idempotency (ignores already processed transactions)
     """
     try:
+        # Get client IP and validate it's from Safaricom
+        client_ip = get_client_ip(request)
+        is_production = os.getenv('MPESA_ENV', 'sandbox') == 'production'
+        
+        if is_production and not is_safaricom_ip(client_ip):
+            logger.warning(f"M-Pesa callback rejected - Invalid IP: {client_ip}")
+            # Still return 200 to avoid retries, but log the rejection
+            return {"ResultCode": 0, "ResultDesc": "Accepted"}
+        
+        logger.info(f"M-Pesa callback from IP: {client_ip}")
+        
         body = callback_data.Body
         stk_callback = body.get("stkCallback", {})
         
@@ -824,7 +838,10 @@ async def mpesa_callback(callback_data: PaymentCallbackData):
         result_code = stk_callback.get("ResultCode")
         result_desc = stk_callback.get("ResultDesc")
         
-        logger.info(f"M-Pesa callback received: CheckoutRequestID={checkout_request_id}, ResultCode={result_code}")
+        # Get user-friendly result message
+        result_info = get_mpesa_result_message(result_code)
+        
+        logger.info(f"M-Pesa callback received: CheckoutRequestID={checkout_request_id}, ResultCode={result_code}, Status={result_info['status']}")
         
         # Find the transaction by checkoutRequestID
         transaction = await db.wallet_transactions.find_one({
@@ -843,7 +860,11 @@ async def mpesa_callback(callback_data: PaymentCallbackData):
             "amount": transaction["amount"],
             "currency": "KES",
             "status": "SUCCESS" if result_code == 0 else "FAILED",
+            "resultCode": result_code,
+            "resultStatus": result_info["status"],
+            "resultMessage": result_info["message"],
             "rawCallback": body,  # Store full payload
+            "clientIp": client_ip,
             "createdAt": datetime.utcnow(),
             "updatedAt": datetime.utcnow()
         })
@@ -935,7 +956,7 @@ async def mpesa_callback(callback_data: PaymentCallbackData):
             else:
                 logger.info(f"Transaction {transaction['tx_ref']} already processed (concurrent request)")
         else:
-            # Payment failed or cancelled
+            # Payment failed or cancelled - store detailed result info
             await db.wallet_transactions.update_one(
                 {"_id": transaction["_id"]},
                 {
@@ -943,11 +964,13 @@ async def mpesa_callback(callback_data: PaymentCallbackData):
                         "status": "failed",
                         "resultCode": str(result_code),
                         "resultDesc": result_desc,
+                        "resultStatus": result_info["status"],
+                        "resultMessage": result_info["message"],
                         "updatedAt": datetime.utcnow()
                     }
                 }
             )
-            logger.info(f"Transaction {transaction['tx_ref']} failed: {result_desc}")
+            logger.info(f"Transaction {transaction['tx_ref']} {result_info['status']}: {result_info['message']} (Code: {result_code})")
         
         return {"ResultCode": 0, "ResultDesc": "Accepted"}
         

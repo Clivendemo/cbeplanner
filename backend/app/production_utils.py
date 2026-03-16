@@ -6,13 +6,75 @@ import logging
 import hashlib
 import time
 from datetime import datetime, timezone
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Set
 from functools import wraps
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 import re
 
 logger = logging.getLogger(__name__)
+
+# ===========================================
+# SAFARICOM M-PESA IP WHITELIST
+# ===========================================
+SAFARICOM_IPS: Set[str] = {
+    "196.201.214.200",
+    "196.201.214.206",
+    "196.201.213.114",
+    "196.201.214.207",
+    "196.201.214.208",
+    "196.201.213.44",
+    "196.201.212.127",
+    "196.201.212.138",
+    "196.201.212.129",
+    "196.201.212.136",
+    "196.201.212.74",
+    "196.201.212.69",
+}
+
+# ===========================================
+# M-PESA RESULT CODE MAPPINGS
+# ===========================================
+MPESA_RESULT_CODES: Dict[int, Dict[str, str]] = {
+    0: {"status": "success", "message": "Payment successful"},
+    1: {"status": "failed", "message": "Insufficient funds in your M-Pesa account"},
+    1032: {"status": "cancelled", "message": "Payment cancelled by user"},
+    1037: {"status": "timeout", "message": "Payment request timed out. Please try again"},
+    2001: {"status": "failed", "message": "Wrong M-Pesa PIN entered"},
+    2029: {"status": "failed", "message": "Payment could not be processed. Please contact support"},
+    17: {"status": "failed", "message": "Transaction limit exceeded"},
+    26: {"status": "failed", "message": "System busy. Please try again later"},
+}
+
+def get_mpesa_result_message(result_code: int) -> Dict[str, str]:
+    """Get user-friendly message for M-Pesa result code"""
+    return MPESA_RESULT_CODES.get(
+        result_code, 
+        {"status": "failed", "message": f"Payment failed (Code: {result_code}). Please try again"}
+    )
+
+def is_safaricom_ip(ip: str) -> bool:
+    """Check if IP address is from Safaricom"""
+    return ip in SAFARICOM_IPS
+
+def get_client_ip(request: Request) -> str:
+    """Extract client IP from request, handling proxies"""
+    # Check X-Forwarded-For header (common with load balancers/proxies)
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    if forwarded_for:
+        # Get the first IP in the chain (original client)
+        return forwarded_for.split(",")[0].strip()
+    
+    # Check X-Real-IP header
+    real_ip = request.headers.get("X-Real-IP")
+    if real_ip:
+        return real_ip.strip()
+    
+    # Fallback to direct client IP
+    if request.client:
+        return request.client.host
+    
+    return ""
 
 # ===========================================
 # USER-FRIENDLY ERROR MESSAGES

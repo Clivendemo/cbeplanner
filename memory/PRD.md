@@ -227,6 +227,41 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 5. Deploy (Render auto-detects Dockerfile)
 6. Update `MPESA_CALLBACK_URL` with Render URL
 
+### M-Pesa Production Integration (DONE - Dec 2025)
+Production-ready M-Pesa Daraja API integration:
+
+**Features:**
+1. **Production Endpoints**
+   - OAuth: `https://api.safaricom.co.ke/oauth/v1/generate`
+   - STK Push: `https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest`
+
+2. **Security**
+   - Safaricom IP whitelisting (12 IPs)
+   - Environment-based credential management
+   - IP validation on callback endpoint
+
+3. **Result Code Handling**
+   - `0` → Success
+   - `1` → Insufficient funds
+   - `1032` → Cancelled by user
+   - `1037` → Timeout
+   - `2001` → Wrong PIN
+   - `2029` → Processing error
+
+4. **Phone Number Formatting**
+   - Supports 07XX, 01XX, +254 formats
+   - Automatic conversion to 2547XXXXXXXX
+
+**Environment Variables:**
+```
+MPESA_CONSUMER_KEY
+MPESA_CONSUMER_SECRET
+MPESA_SHORTCODE
+MPESA_PASSKEY
+MPESA_CALLBACK_URL
+MPESA_ENV=production
+```
+
 ### Bulk Editing & Reordering (DONE - Dec 2025)
 Admin panel features for managing curriculum data:
 
