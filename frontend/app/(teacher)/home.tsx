@@ -436,17 +436,34 @@ export default function Home() {
           {selectedSubstrand && (
             <View style={styles.pickerContainer}>
               <Text style={styles.label}>Specific Learning Outcome (SLO) *</Text>
-              <View style={styles.pickerWrapper}>
-                <Picker
-                  selectedValue={selectedSLO}
-                  onValueChange={setSelectedSLO}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Select SLO" value="" />
-                  {slos.map((slo) => (
-                    <Picker.Item key={slo.id} label={slo.name} value={slo.id} />
-                  ))}
-                </Picker>
+              <View style={styles.sloListContainer}>
+                {slos.length === 0 ? (
+                  <Text style={styles.noDataText}>No SLOs available for this sub-strand</Text>
+                ) : (
+                  slos.map((slo) => (
+                    <TouchableOpacity
+                      key={slo.id}
+                      style={[
+                        styles.sloCard,
+                        selectedSLO === slo.id && styles.sloCardSelected
+                      ]}
+                      onPress={() => setSelectedSLO(slo.id)}
+                    >
+                      <View style={styles.sloRadio}>
+                        {selectedSLO === slo.id && (
+                          <View style={styles.sloRadioInner} />
+                        )}
+                      </View>
+                      <View style={styles.sloContent}>
+                        <Text style={styles.sloHeader}>Specific Learning Outcome</Text>
+                        <Text style={styles.sloName}>{slo.name}</Text>
+                        {slo.description && (
+                          <Text style={styles.sloDescription}>{slo.description}</Text>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  ))
+                )}
               </View>
             </View>
           )}
@@ -831,5 +848,70 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     color: '#92400E'
+  },
+  // SLO Card Styles
+  sloListContainer: {
+    gap: 12
+  },
+  sloCard: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1
+  },
+  sloCardSelected: {
+    borderColor: '#6366F1',
+    backgroundColor: '#EEF2FF'
+  },
+  sloRadio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    marginTop: 2
+  },
+  sloRadioInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#6366F1'
+  },
+  sloContent: {
+    flex: 1
+  },
+  sloHeader: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6366F1',
+    marginBottom: 6
+  },
+  sloName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 6,
+    lineHeight: 22
+  },
+  sloDescription: {
+    fontSize: 13,
+    color: '#6B7280',
+    lineHeight: 20
+  },
+  noDataText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    padding: 16
   }
 });
