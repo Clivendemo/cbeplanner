@@ -155,11 +155,13 @@ class MpesaService:
         # Prepare request payload
         url = f"{self.base_url}/mpesa/stkpush/v1/processrequest"
         
+        # Use CustomerBuyGoodsOnline for Buy Goods Till (8336258)
+        # Use CustomerPayBillOnline for Paybill
         payload = {
             "BusinessShortCode": self.shortcode,
             "Password": password,
             "Timestamp": timestamp,
-            "TransactionType": "CustomerPayBillOnline",
+            "TransactionType": "CustomerBuyGoodsOnline",
             "Amount": int(amount),
             "PartyA": formatted_phone,
             "PartyB": self.shortcode,
@@ -176,8 +178,15 @@ class MpesaService:
         
         async with httpx.AsyncClient(http2=True, timeout=httpx.Timeout(15.0, connect=5.0)) as client:
             try:
-                logger.info(f"Initiating STK Push for {formatted_phone}, amount: {amount}")
-                logger.info(f"STK Push payload: BusinessShortCode={payload['BusinessShortCode']}, Timestamp={payload['Timestamp']}")
+                logger.info(f"=" * 50)
+                logger.info(f"Initiating STK Push")
+                logger.info(f"Shortcode: {self.shortcode}")
+                logger.info(f"Amount: {amount}")
+                logger.info(f"Phone: {formatted_phone}")
+                logger.info(f"TransactionType: CustomerBuyGoodsOnline")
+                logger.info(f"CallbackURL: {self.callback_url}")
+                logger.info(f"AccountReference: {account_reference}")
+                logger.info(f"=" * 50)
                 
                 response = await client.post(url, json=payload, headers=headers)
                 
