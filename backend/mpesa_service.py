@@ -21,10 +21,15 @@ class MpesaService:
     def __init__(self):
         self.consumer_key = os.getenv('MPESA_CONSUMER_KEY', '')
         self.consumer_secret = os.getenv('MPESA_CONSUMER_SECRET', '')
-        self.shortcode = os.getenv('MPESA_SHORTCODE', '174379')  # Sandbox default
+        self.shortcode = os.getenv('MPESA_SHORTCODE', '174379')  # BusinessShortCode for STK Push
+        self.till_number = os.getenv('MPESA_TILL_NUMBER', '')  # PartyB - Till that receives payment
         self.passkey = os.getenv('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919')  # Sandbox default
         self.callback_url = os.getenv('MPESA_CALLBACK_URL', '')
         self.env = os.getenv('MPESA_ENV', 'sandbox')
+        
+        # If no till number specified, use shortcode as PartyB
+        if not self.till_number:
+            self.till_number = self.shortcode
         
         # Set base URL based on environment
         if self.env == 'production':
@@ -155,8 +160,9 @@ class MpesaService:
         # Prepare request payload
         url = f"{self.base_url}/mpesa/stkpush/v1/processrequest"
         
-        # Use CustomerBuyGoodsOnline for Buy Goods Till (8336258)
-        # Use CustomerPayBillOnline for Paybill
+        # BusinessShortCode: Parent shortcode enabled for STK Push (4978540)
+        # PartyB: Actual Till Number that receives payment (8336258)
+        # TransactionType: CustomerBuyGoodsOnline for Buy Goods Till
         payload = {
             "BusinessShortCode": self.shortcode,
             "Password": password,
@@ -164,7 +170,7 @@ class MpesaService:
             "TransactionType": "CustomerBuyGoodsOnline",
             "Amount": int(amount),
             "PartyA": formatted_phone,
-            "PartyB": self.shortcode,
+            "PartyB": self.till_number,
             "PhoneNumber": formatted_phone,
             "CallBackURL": self.callback_url,
             "AccountReference": account_reference,
@@ -180,7 +186,8 @@ class MpesaService:
             try:
                 logger.info(f"=" * 50)
                 logger.info(f"Initiating STK Push")
-                logger.info(f"Shortcode: {self.shortcode}")
+                logger.info(f"BusinessShortCode: {self.shortcode}")
+                logger.info(f"PartyB (Till): {self.till_number}")
                 logger.info(f"Amount: {amount}")
                 logger.info(f"Phone: {formatted_phone}")
                 logger.info(f"TransactionType: CustomerBuyGoodsOnline")
