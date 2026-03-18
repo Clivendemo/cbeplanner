@@ -369,7 +369,10 @@ SECURITY_HEADERS = {
     "X-XSS-Protection": "1; mode=block",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Cache-Control": "no-store, no-cache, must-revalidate",
-    "Pragma": "no-cache"
+    "Pragma": "no-cache",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.vercel.app https://*.onrender.com https://*.emergentagent.com https://*.googleapis.com; font-src 'self' data:; frame-ancestors 'none'",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()"
 }
 
 
@@ -496,7 +499,7 @@ DEVELOPMENT_CORS_ORIGINS = [
     "http://localhost:8081",
     "http://localhost:19006",
     "http://localhost:19000",
-    "https://cbe-lesson-planner.preview.emergentagent.com",
+    "https://cbe-lesson-plan.preview.emergentagent.com",
 ]
 
 def get_cors_origins(environment: str) -> list:

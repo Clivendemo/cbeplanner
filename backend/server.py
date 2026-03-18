@@ -9,7 +9,7 @@ import time
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict, Any
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from bson import ObjectId
 import httpx
 
@@ -73,7 +73,7 @@ else:
         "http://localhost:19006",
         "http://localhost:19000",
         "https://*.vercel.app",
-        "https://cbe-lesson-planner.preview.emergentagent.com"
+        "https://cbe-lesson-plan.preview.emergentagent.com"
     ]
 
 # ===========================================
@@ -1721,7 +1721,8 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
             "extendedActivity": extended_activity,
             "conclusion": conclusion,
             "assessment": assessment_text,
-            "createdAt": datetime.utcnow()
+            "createdAt": datetime.utcnow(),
+            "expiresAt": datetime.utcnow() + timedelta(days=2)
         }
         
         result = await db.lesson_plans.insert_one(lesson_plan)
@@ -1731,6 +1732,8 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
         lesson_plan["id"] = str(result.inserted_id)
         # Convert datetime to ISO string for JSON serialization
         lesson_plan["createdAt"] = lesson_plan["createdAt"].isoformat()
+        if "expiresAt" in lesson_plan:
+            lesson_plan["expiresAt"] = lesson_plan["expiresAt"].isoformat()
         
         # Log successful generation
         ProductionLogger.log_critical_action("LESSON_PLAN_GENERATED", user_id, {
@@ -1748,8 +1751,101 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
 
 @api_router.get("/lesson-plans")
 async def get_lesson_plans(user: dict = Depends(verify_token)):
-    plans = await db.lesson_plans.find({"teacherId": user["id"]}).sort("createdAt", -1).to_list(100)
-    return {"success": True, "lessonPlans": [serialize_doc(p) for p in plans]}
+    """Get all lesson plans for the user, excluding expired ones"""
+    current_time = datetime.utcnow()
+    
+    # Filter out expired plans (plans with expiresAt in the past)
+    # Also include plans without expiresAt field (legacy plans)
+    plans = await db.lesson_plans.find({
+        "teacherId": user["id"],
+        "$or": [
+            {"expiresAt": {"$gt": current_time}},
+            {"expiresAt": {"$exists": False}}
+        ]
+    }).sort("createdAt", -1).to_list(100)
+    
+    # Add daysRemaining to each plan
+    serialized_plans = []
+    for plan in plans:
+        doc = serialize_doc(plan)
+        if "expiresAt" in plan and plan["expiresAt"]:
+            days_remaining = (plan["expiresAt"] - current_time).days
+            doc["daysRemaining"] = max(0, days_remaining)
+            doc["expiresAt"] = plan["expiresAt"].isoformat()
+        else:
+            doc["daysRemaining"] = None  # Legacy plan, no expiration
+        serialized_plans.append(doc)
+    
+    return {"success": True, "lessonPlans": serialized_plans}
+
+@api_router.get("/lesson-plans/{plan_id}")
+async def get_lesson_plan_by_id(plan_id: str, user: dict = Depends(verify_token)):
+    """Get a single lesson plan by ID"""
+    try:
+        plan = await db.lesson_plans.find_one({
+            "_id": ObjectId(plan_id),
+            "teacherId": user["id"]
+        })
+        
+        if not plan:
+            raise HTTPException(status_code=404, detail="Lesson plan not found")
+        
+        # Check if expired
+        current_time = datetime.utcnow()
+        if "expiresAt" in plan and plan["expiresAt"] and plan["expiresAt"] < current_time:
+            raise HTTPException(status_code=410, detail="This lesson plan has expired and is no longer available")
+        
+        doc = serialize_doc(plan)
+        if "expiresAt" in plan and plan["expiresAt"]:
+            days_remaining = (plan["expiresAt"] - current_time).days
+            doc["daysRemaining"] = max(0, days_remaining)
+            doc["expiresAt"] = plan["expiresAt"].isoformat()
+        else:
+            doc["daysRemaining"] = None
+        
+        return {"success": True, "lessonPlan": doc}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching lesson plan: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch lesson plan")
+
+@api_router.delete("/lesson-plans/{plan_id}")
+async def delete_lesson_plan(plan_id: str, user: dict = Depends(verify_token)):
+    """Delete a lesson plan"""
+    try:
+        result = await db.lesson_plans.delete_one({
+            "_id": ObjectId(plan_id),
+            "teacherId": user["id"]
+        })
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Lesson plan not found")
+        
+        return {"success": True, "message": "Lesson plan deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting lesson plan: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to delete lesson plan")
+
+@api_router.post("/admin/cleanup-expired-plans")
+async def cleanup_expired_plans(user: dict = Depends(verify_admin)):
+    """Admin: Manually trigger cleanup of expired lesson plans"""
+    try:
+        current_time = datetime.utcnow()
+        result = await db.lesson_plans.delete_many({
+            "expiresAt": {"$lt": current_time, "$exists": True}
+        })
+        logger.info(f"Cleaned up {result.deleted_count} expired lesson plans")
+        return {
+            "success": True,
+            "deletedCount": result.deleted_count,
+            "message": f"Removed {result.deleted_count} expired lesson plan(s)"
+        }
+    except Exception as e:
+        logger.error(f"Error cleaning up expired plans: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to cleanup expired plans")
 
 @api_router.post("/notes/generate")
 async def generate_notes(request: GenerateNotesRequest, user: dict = Depends(verify_token)):
@@ -3793,6 +3889,10 @@ async def startup_event():
         await db.strands.create_index([("subjectId", 1), ("order", 1)])
         await db.substrands.create_index([("strandId", 1), ("order", 1)])
         await db.slos.create_index([("substrandId", 1), ("order", 1)])
+        
+        # Lesson plans - TTL index for auto-deletion of expired plans
+        await db.lesson_plans.create_index("expiresAt", expireAfterSeconds=0)
+        await db.lesson_plans.create_index("teacherId")
         
         logger.info("Database indexes created/verified successfully")
     except Exception as e:

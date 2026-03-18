@@ -1,0 +1,220 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  Alert
+} from 'react-native';
+import { useAuth } from '../../contexts/AuthContext';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import axios from 'axios';
+import { Ionicons } from '@expo/vector-icons';
+import { LessonPlanDisplay } from '../../components/LessonPlanDisplay';
+
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+
+export default function LessonDetail() {
+  const { firebaseUser } = useAuth();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const [lessonPlan, setLessonPlan] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (id) {
+      loadLessonPlan();
+    }
+  }, [id]);
+
+  const loadLessonPlan = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      if (firebaseUser) {
+        const token = await firebaseUser.getIdToken();
+        const response = await axios.get(`${BACKEND_URL}/api/lesson-plans/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (response.data.success) {
+          setLessonPlan(response.data.lessonPlan);
+        }
+      }
+    } catch (err: any) {
+      if (err.response?.status === 410) {
+        setError('This lesson plan has expired and is no longer available.');
+      } else if (err.response?.status === 404) {
+        setError('Lesson plan not found.');
+      } else {
+        setError('Failed to load lesson plan. Please try again.');
+      }
+      console.error('Error loading lesson plan:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete Lesson Plan',
+      'Are you sure you want to delete this lesson plan? This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              if (firebaseUser) {
+                const token = await firebaseUser.getIdToken();
+                await axios.delete(`${BACKEND_URL}/api/lesson-plans/${id}`, {
+                  headers: { Authorization: `Bearer ${token}` }
+                });
+                router.back();
+              }
+            } catch (err) {
+              Alert.alert('Error', 'Failed to delete lesson plan.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#6366F1" />
+        <Text style={styles.loadingText}>Loading lesson plan...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centerContainer}>
+        <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Text style={styles.backButtonText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (!lessonPlan) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>No lesson plan data.</Text>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Text style={styles.backButtonText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      {/* Expiration banner */}
+      {lessonPlan.daysRemaining !== null && lessonPlan.daysRemaining !== undefined && (
+        <View style={[
+          styles.expirationBanner,
+          { backgroundColor: lessonPlan.daysRemaining <= 1 ? '#FEF2F2' : '#F0FDF4' }
+        ]}>
+          <Ionicons
+            name="time-outline"
+            size={16}
+            color={lessonPlan.daysRemaining <= 1 ? '#EF4444' : '#10B981'}
+          />
+          <Text style={[
+            styles.expirationBannerText,
+            { color: lessonPlan.daysRemaining <= 1 ? '#EF4444' : '#10B981' }
+          ]}>
+            {lessonPlan.daysRemaining === 0
+              ? 'Expires today'
+              : `Expires in ${lessonPlan.daysRemaining} day(s)`}
+          </Text>
+        </View>
+      )}
+
+      {/* Delete button */}
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={handleDelete}
+        data-testid="delete-lesson-plan-btn"
+      >
+        <Ionicons name="trash-outline" size={16} color="#EF4444" />
+        <Text style={styles.deleteButtonText}>Delete</Text>
+      </TouchableOpacity>
+
+      {/* Lesson Plan Content */}
+      <LessonPlanDisplay lessonPlan={lessonPlan} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF'
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    backgroundColor: '#F9FAFB'
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#6B7280'
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#374151',
+    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 24
+  },
+  backButton: {
+    backgroundColor: '#6366F1',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8
+  },
+  backButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600'
+  },
+  expirationBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    gap: 6
+  },
+  expirationBannerText: {
+    fontSize: 13,
+    fontWeight: '600'
+  },
+  deleteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6'
+  },
+  deleteButtonText: {
+    fontSize: 13,
+    color: '#EF4444',
+    fontWeight: '500'
+  }
+});

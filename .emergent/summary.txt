@@ -2,187 +2,210 @@
 The user's goal is to build a production-ready Competency-Based Education (CBE) lesson planning system for Kenyan teachers.
 
 PRODUCT REQUIREMENTS:
-1.  **Curriculum Data Management:** The system must allow for accurate and efficient entry of curriculum data. This began with PDF parsing and has evolved into a sophisticated admin panel.
-    -   **Admin Panel:** A flexible interface to manually add, edit, and manage strands, substrands, Specific Learning Outcomes (SLOs), and learning activities.
-    -   **Data Portability:** Functionality to move curriculum items (e.g., a whole strand with its children) between different grades or subjects.
-    -   **Bulk Data Entry:** An efficient way to add multiple items at once via a text area or a spreadsheet-like interface.
-    -   **SLO Mapping:** A dedicated editor to correctly associate SLOs with their required Pertinent and Contemporary Issues (PCIs), Values, and Core Competencies.
-    -   **Bulk Data Import:** A primary import feature using CSV/Excel for reliable, 100% accurate data uploads, and a secondary helper tool to extract data from PDFs into a CSV format for user review and subsequent upload.
-2.  **Data Integrity:** The application must preserve the original curriculum order, prevent duplicate entries, and ensure all data relationships (like SLO mappings) are correct.
-3.  **Core Functionality:** The system must generate complete lesson plans based on the entered data.
-4.  **Monetization & UX:** Implement a wallet system that notifies users of a zero balance via a popup before they attempt to generate a lesson, and a secure M-Pesa payment integration for top-ups.
-5.  **Code Quality:** The final product must be error-free, neat, professional, and resilient. Conflicting or dead code should be removed.
+1.  **Curriculum Data Management:** A sophisticated admin panel to add, edit, move, and bulk-import curriculum data (strands, substrands, SLOs, etc.) via CSV/Excel and a PDF-to-CSV helper tool.
+2.  **Data Integrity:** Preserve curriculum order, prevent duplicates, and ensure correct data relationships.
+3.  **Core Functionality:** Generate complete lesson plans from the curriculum data.
+4.  **Monetization & UX:** Implement a secure M-Pesa payment integration for topping up a user wallet. The system should notify users of a zero balance before lesson generation.
+5.  **Lesson Plan Access:** Generated lesson plans should only be accessible for a limited time (14 days).
+6.  **Code Quality:** The final product must be error-free, neat, professional, and resilient. Conflicting or dead code should be removed, and the application should be hardened for production.
+7.  **Admin Tools:** Implement bulk editing and reordering capabilities for all curriculum items in the admin panel.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application with a FastAPI backend, an Expo (React Native) frontend, and a MongoDB database. The database contains curriculum data for Grades 7, 8, 9, and 10. The admin panel () has been significantly enhanced with modals and handlers for moving items, bulk-adding data, and editing SLO mappings (associating them with PCIs, values, and competencies). The backend has been updated with corresponding API endpoints to support this new functionality. The agent was in the process of creating a new, separate data import system.
+A full-stack application with a FastAPI backend, a React Native (Expo) frontend, and a MongoDB database. The application features a comprehensive admin panel for curriculum management, including tools for moving items, bulk adding, and editing SLO mappings. A data import system for CSV and PDF files is also in place. The M-Pesa payment integration has been configured with production credentials, but is currently experiencing configuration issues on the Safaricom side. The agent was in the middle of implementing a feature to make generated lesson plans viewable and have them expire after 14 days.
 
 **Last working item**:
--   **Last item agent was working:** Implementing a comprehensive data import system for the admin panel, as requested by the user. This involves creating a new page () and backend logic () to handle two main features:
-    1.  **Direct CSV/Excel Upload:** For reliable bulk data import.
-    2.  **PDF-to-CSV Helper Tool:** To extract data from PDFs into a user-editable CSV file.
-    The agent successfully created the placeholder backend router and added it to the main  file. It was about to start creating the frontend page.
+-   **Last item agent was working:** The user requested two features:
+    1.  Fix the My Lesson Plans section so that clicking on a generated lesson plan opens a new page to display its full content.
+    2.  Implement a 14-day hard-delete expiration policy for all generated lesson plans, with a notification to the user.
+    The agent identified that the viewing functionality was missing (no click handler, no detail page, no API endpoint) and started implementing the expiration logic by adding an  field to the lesson plan creation endpoint in .
 -   **Status:** IN PROGRESS
 -   **Agent Testing Done:** N
--   **Which testing method agent to use?** both. The backend logic for file parsing (CSV and PDF) and database insertion should be tested via  or a Python script. The frontend UI and user flow (file upload, data preview, submission) should be tested with the  followed by the .
+-   **Which testing method agent to use?** both. The backend API for fetching a single lesson plan and the cleanup logic for expired plans should be tested with . The frontend navigation flow (clicking a lesson card, viewing the detail page, seeing the expiration badge) should be tested with the .
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: M-Pesa STK Push Failing on Production (P0)**
--   **Issue 2: Incomplete PDF Data Extraction Logic (P1)**
+-   **Issue 1: Lesson Plans Are Not Viewable (P0)**
+-   **Issue 2: M-Pesa Production Payments Failing (P0)**
 -   **Issue 3: Lesson Plan Generation Failures (P1)**
 -   **Issue 4: Incomplete or Inaccurate Data for Grade 8 (P2)**
 
 **Issues Detail**:
--   **Issue 1: M-Pesa STK Push Failing on Production (P0)**
-    -   **Description:** The user's production deployment on Render fails to trigger M-Pesa payments, showing an  error in the logs.
-    -   **Attempted fixes:** The agent diagnosed the problem as a user-side configuration error on their Render dashboard.
-    -   **Next debug checklist:** The agent must ask the user to confirm they have corrected the  environment variable to point to their production backend URL ().
-    -   **Status:** USER VERIFICATION PENDING
-    -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** backend
-    -   **Blocked on other issue:** User action.
+-   **Issue 1: Lesson Plans Are Not Viewable (P0)**
+    -   **Description:** In the My Lesson Plans section, clicking on a lesson plan card does nothing.
+    -   **Attempted fixes:** The agent identified the root causes: no  handler in , no detail page component, and no backend API endpoint () to fetch a single lesson's data.
+    -   **Next debug checklist:**
+        1.  Create the  endpoint in .
+        2.  Create a new page component at  to display the full lesson plan.
+        3.  In , add an  handler to the lesson card that navigates to the new detail page, passing the lesson ID.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** both
+    -   **Blocked on other issue:** None
 
--   **Issue 2: Incomplete PDF Data Extraction Logic (P1)**
-    -   **Description:** Previous automated seeding scripts failed to parse certain curriculum PDFs correctly because of inconsistent formatting (e.g., strands being marked as 1.0, 2.0 instead of STRAND 1).
-    -   **Attempted fixes:** The issue was identified but not resolved. The focus shifted to building manual admin tools.
-    -   **Next debug checklist:** The new **PDF-to-CSV helper tool** being built must contain robust parsing logic that can handle these different formats. The implementation for this is in .
-    -   **Status:** NOT STARTED (to be addressed within the current Data Import task)
+-   **Issue 2: M-Pesa Production Payments Failing (P0)**
+    -   **Description:** The user is unable to complete payments in their production environment. The error messages from Safaricom have changed as the agent has applied fixes, with the latest being Merchant does not exist and shortcode mismatches.
+    -   **Attempted fixes:** The agent has:
+        1.  Updated  with  and .
+        2.  Implemented IP whitelisting for the callback endpoint.
+        3.  Changed  to .
+        4.  Implemented a split-shortcode configuration:  () initiates the STK push, while  () is the till that receives funds.
+    -   **Next debug checklist:** The issue is now on the user's side. The user needs to contact Safaricom support to ensure that the  (4978540) is authorized to initiate STK pushes that route funds to the  till (8336258). The agent has provided the user with exact instructions on what to ask Safaricom.
+    -   **Status:** BLOCKED (on user/Safaricom action)
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** backend
-    -   **Blocked on other issue:** None.
+    -   **Blocked on other issue:** None
 
 -   **Issue 3: Lesson Plan Generation Failures (P1)**
-    -   **Description:** A critical, recurring issue where the generate lesson plan button sometimes does nothing.
-    -   **Attempted fixes:** Previously identified as a potential deployment mismatch between the preview and production environments.
-    -   **Next debug checklist:** After the M-Pesa issue is confirmed resolved, the agent needs to ask the user to re-test this core feature on their live application.
+    -   **Description:** A critical, recurring issue where the generate lesson plan button sometimes does nothing on the production app.
+    -   **Next debug checklist:** After the M-Pesa issue is confirmed resolved and deployed, the agent needs to ask the user to re-test this core feature on their live application.
     -   **Status:** USER VERIFICATION PENDING
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on other issue:** Issue 1: M-Pesa STK Push Failing on Production
+    -   **Blocked on other issue:** Issue 2: M-Pesa Production Payments Failing
 
 -   **Issue 4: Incomplete or Inaccurate Data for Grade 8 (P2)**
     -   **Description:** An early audit suggested that the curriculum data for Grade 8 might be incomplete or incorrect.
-    -   **Attempted fixes:** A large-scale reseeding from new PDFs was performed, which likely overwrote the faulty data, but this was never explicitly verified.
-    -   **Next debug checklist:** Perform a specific audit of the Grade 8 data against its source PDF once the new data import tools are complete.
+    -   **Next debug checklist:** Perform a specific audit of the Grade 8 data against its source PDF once the admin tools are stable.
     -   **Status:** NOT STARTED
-    -   **Is recurring issue?** Y
+    -   **Is recurring issue?** N
     -   **Should Test frontend/backend/both after fix?** backend
-    -   **Blocked on other issue:** In progress Task 1: Implement Data Import System.
+    -   **Blocked on other issue:** None
 
 **In progress Task List**:
--   **Task 1: Implement Data Import System (P0)**
-    -   **Where to resume:** The backend router  has been created and registered. The immediate next step is to create the frontend page at .
-    -   **What will be achieved with this?** A professional and resilient system for bulk-uploading curriculum data, which is the user's preferred method for data entry. This will include a primary CSV upload feature and a secondary PDF-to-CSV helper tool.
+-   **Task 1: Implement 14-Day Lesson Plan Expiration (P1)**
+    -   **Where to resume:** The  field has been added to the lesson plan creation logic in .
+    -   **Next steps:**
+        1.  Update the  endpoint to filter out expired plans ().
+        2.  Implement a background job or a manual cleanup endpoint to hard-delete expired plans from the database.
+        3.  In , add a badge to each lesson card showing the time remaining (e.g., Expires in 10 days).
+    -   **What will be achieved with this?** Lesson plans will be automatically deleted after 14 days to save storage space and create user urgency.
     -   **Status:** IN PROGRESS
     -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on something:** None.
+    -   **Blocked on something:** Issue 1: Lesson Plans Are Not Viewable (The UI part is blocked until viewing is fixed).
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    -   **User Verification (P0):** Follow up on the M-Pesa  configuration fix.
+    -   **Production Hardening (P1):** The user approved implementing high-priority improvements. The agent started by adding rate-limiting and enabling API docs. The remaining tasks are:
+        -   Lock down CORS to allow only production domains.
+        -   Add security headers (CSP, HSTS).
+        -   Integrate an external monitoring service like Sentry.
     -   **Data Audit & Correction (P1):** Complete the specific audit of Grade 8 curriculum data.
     -   **Mobile Navigation Stability (P2):** Ask the user to test the Expo Go client to check for any hanging issues.
 -   **Future Tasks:**
-    -   **Full Codebase Audit (P2):** Perform a comprehensive audit to remove dead code and unused components.
-    -   **Harden Payment Flow (P2):** Implement logic to handle failed or abandoned M-Pesa payments.
-    -   **Production Deployment (P2):** Guide the user to switch M-Pesa to production credentials.
+    -   **Full Codebase Audit:** Perform a comprehensive audit to remove dead code and unused components.
+    -   **API Versioning:** Introduce versioning to the API (e.g., ).
+    -   **Testing Suite:** Create unit and integration tests for the backend.
+    -   **User Support Flow:** Implement an in-app channel for user support.
 
 **Completed work in this session**
--   **Feature - Advanced Admin Panel:**
-    -   Implemented a Move Item feature to reorganize curriculum items (strands, substrands) and their children across different subjects/grades.
-    -   Implemented a Bulk Add feature with both a simple textarea and a spreadsheet-style input for rapid data entry.
--   **Feature - SLO Mapping Editor:**
-    -   Created a dedicated UI in the admin panel to allow users to customize the PCIs, Values, and Competencies for each SLO, replacing the hardcoded defaults.
-    -   Added functionality for both single-SLO editing and bulk-mapping updates.
--   **Data Seeding:** Performed a massive data seeding operation for Grades 8, 9, and 10 from user-provided PDFs, which significantly populated the database.
--   **UX Improvements:** Added instructional text to the bulk-add modal to improve usability for non-technical users.
--   **Backend APIs:** Created several new, robust FastAPI endpoints to support all the new admin panel features.
+-   **Feature - Bulk Editing & Reordering:** Implemented bulk editing, multi-select, and reordering (up/down) functionality in the admin curriculum panel () with corresponding backend endpoints.
+-   **Feature - Data Import System:** Fully implemented the CSV/PDF data import system. Fixed numerous bugs related to file parsing (handling alternate column names), file downloads on web (using ), and provided a working CSV template.
+-   **Feature - Import History:** Added a section to the Data Import page to show a history of past imports.
+-   **M-Pesa Production Hardening:**
+    -   Implemented Safaricom IP whitelisting for the callback endpoint.
+    -   Enhanced logging and result code handling for payment callbacks.
+    -   Updated the configuration to support a split-shortcode setup ( vs. ) and changed the  to .
+-   **Production Readiness:**
+    -   Added IP-based rate limiting middleware.
+    -   Enabled built-in FastAPI documentation (Swagger/OpenAPI).
+    -   Added request logging middleware.
+-   **UI/UX Improvements:**
+    -   Fixed styling on the login page footer.
+    -   Marked incomplete features as Coming Soon on the dashboard.
+    -   Improved the display of SLOs in the lesson generation flow to show both the name and description.
+-   **Dependency Fixes:** Added  and  to  to fix deployment errors on the user's Render environment.
 
 **Earlier issues found/mentioned but not fixed**
 -   The core logic for handling varied PDF formats was a known issue from the automated seeding phase and is now planned to be addressed as part of the new **PDF-to-CSV Helper Tool**.
 
 **Known issue recurrence from previous fork**
--   None.
+-   The M-Pesa production payment flow has been a persistent and recurring blocker, with new issues arising from the Safaricom API as fixes are implemented.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Backend:** FastAPI, Pydantic, handling multipart/form-data for file uploads (), CSV parsing ( module), and PDF parsing ().
--   **Frontend:** Expo (React Native), complex state management for multiple modals, file selection/upload APIs, and displaying tabular data.
--   **System Design:** Architecting a user-friendly data import workflow that prioritizes data integrity (CSV) while providing a convenience tool (PDF extraction) for drafting.
+-   **FastAPI Middleware:** Used to implement IP whitelisting for M-Pesa callbacks and general IP-based rate limiting.
+-   **React Native Navigation:** The next task requires using the navigation library (likely React Navigation) to move from a list view () to a detail view ().
+-   **Environment-Specific Configuration:** The agent has had to manage different configurations for the preview environment versus the user's production environment (Render/Vercel), especially for  variables.
+-   **State Management (Frontend):** Complex state was added to  to manage bulk selection mode, selected item IDs, and modal visibility.
 
 **key DB schema**
--   No changes to the database schema. The focus has been on building tools to populate the existing schema correctly.
+-   **strands, substrands, slos**: Added an  field (Number) to each collection to support manual reordering.
+-   **lesson_plans**: An  field (DateTime) is being added to facilitate the 14-day deletion policy.
 
 **changes in tech stack**
 -   No changes to the core technology stack.
 
 **All files of reference**
 -   **Created:**
-    -   : New FastAPI router for handling data imports.
+    -   : Contains helper functions and middleware for production-readiness features like rate limiting and IP whitelisting.
 -   **Heavily Updated:**
-    -   : To register the new router and add endpoints for the admin panel.
-    -   : Refactored to include modals and handlers for moving items, bulk adding, and editing SLO mappings.
--   **To be created:**
-    -   : The new UI for the CSV and PDF import system.
+    -   : Added numerous endpoints (bulk edit, reorder, clear cache, lesson plan details), middleware (rate limit, IP whitelist), and logic for plan expiration.
+    -   : Refactored to use production credentials, handle the  transaction type, and support a split-shortcode () setup.
+    -   : Significantly refactored to add a bulk edit mode with checkboxes, a floating action bar, reordering buttons, and a new bulk edit modal.
+    -   : Fixed multiple bugs related to file uploads and downloads on the web platform.
+    -   : Added  and .
+-   **To be created/modified:**
+    -   : To be created to display a single lesson plan.
+    -   : To be modified to add navigation and an expiration badge.
 
 **Areas that need refactoring**:
--    is still a very large single file. Although it has been organized internally with functions and modals, it could be broken down into smaller, more manageable child components in the future for better maintainability.
+-    has grown to over 3,000 lines. While functional, it is now extremely difficult to maintain and should be broken down into smaller, reusable child components.
 
 **key api endpoints**
--   : Processes and imports data from an uploaded CSV file.
--   : Extracts curriculum data from a PDF into a CSV format.
--   : Moves a curriculum item and all its children to a new parent.
--   : Adds multiple curriculum items from a text-based input.
--   : Fetches all competencies, values, and PCIs for use in the SLO mapping editor.
--   : Updates the mappings for multiple SLOs at once.
+-   : Serves the CSV template file.
+-   : Updates multiple curriculum items at once.
+-   : Reorders strands, substrands, or SLOs.
+-   : Initiates the M-Pesa STK push.
+-   : Endpoint that Safaricom calls after a payment attempt. Now has IP whitelisting.
+-   **To be created:** : Fetches the details of a single lesson plan.
 
 **Critical Info for New Agent**
--   **Priority Task:** Your immediate focus is to build the **Data Import System**. The backend router is already created; you need to implement the logic for CSV/PDF processing and then build the corresponding frontend page at .
--   **User's Vision:** The user wants a professional, neat, and resilient product. This means focusing on a clean UI, clear user instructions (like downloadable templates and guide text), robust error handling, and reliable backend processing.
--   **PDF Parsing is Tricky:** Remember that previous attempts at automated PDF parsing failed due to inconsistent document formats. The new PDF-to-CSV helper tool must be designed to handle these variations or, at a minimum, fail gracefully and inform the user.
--   **Follow-up on Blockers:** Once significant progress is made on the data import feature, remember to circle back with the user regarding the M-Pesa production issue, which is blocking other verifications.
+-   **Production vs. Preview:** The user tests on their live production environment ( / ). Your code changes only affect the preview environment. You **must** remind the user to Save to Github and redeploy on Render/Vercel to see your changes. Also, remind them to update environment variables on their Render dashboard, as your  changes are not automatically synced.
+-   **M-Pesa is a Blocker:** The M-Pesa payment issue is a recurring blocker and often stems from misconfiguration on the Safaricom side. The latest problem requires the user to contact Safaricom support. Do not spend too much time debugging M-Pesa from the code side until the user confirms their Safaricom account is correctly configured for the split-shortcode setup.
+-   **Immediate Priority:** The user's most recent request is to fix the lesson plan viewing and implement the 14-day expiration. This is the highest priority task.
 
 **documents and test reports created in this job**
--   No new documents were created in the last session. The agent focused on feature implementation.
+-   No new documents were created.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:**  - **Status: IN PROGRESS**. This is the core directive for the current task. The user approved the plan to build a CSV upload system with a PDF-to-CSV helper.
-2.  **User:**  - **Status: ADDRESSED**. The agent provided a professional recommendation to use CSV/Excel, which the user accepted.
-3.  **User:**  - **Status: ADDRESSED**. This led to the discussion and planning of the current Data Import task.
-4.  **User:**  - **Status: COMPLETED**. The agent implemented the SLO Mapping Editor in response.
-5.  **User:**  - **Status: COMPLETED**. The agent implemented the SLO editor with both single/bulk options and added guide text to the bulk-add modal.
-6.  **User:**  - **Status: COMPLETED**. The agent implemented the move/bulk-add features according to these specifications.
-7.  **User:**  - **Status: COMPLETED**. This was the initial request that kicked off the entire admin panel overhaul.
-8.  **User:**  - **Status: COMPLETED**. The agent performed a large-scale data seeding based on this request.
-9.  **User:**  - **Status: ADDRESSED**. A prompt to continue a previous task.
-10. **User:**  - **Status: COMPLETED**. The agent completed the Grade 10 data seeding.
+1.  **User:** i want it to be in such a way that you are not creating a new card but maintaining the my lesson plans card... - **Status: IN PROGRESS**. User clarified the UI flow for viewing lesson plans. The agent created a refined plan which was approved.
+2.  **User:** hard delete after 14 days, notify users... check the current setup and acertain why the generated lesson plans are not viewable... - **Status: IN PROGRESS**. This is the core directive for the current task. User specified the 14-day hard-delete policy and reported the bug with viewing lesson plans.
+3.  **User:** is it possible to have the generated lesson plan to be accessible under my lesson plans for 3 day? - **Status: ADDRESSED**. The agent provided a detailed analysis of the pros, cons, and technical requirements, leading to the user's decision for a 14-day policy.
+4.  **User:** yes but dont change the structure of the app - **Status: IN PROGRESS**. User approved the plan to implement production-readiness features.
+5.  **User:** show me what consititues a production ready app. - **Status: ADDRESSED**. The agent provided a detailed checklist and a prioritized list of improvements.
+6.  **User:** ok proceed while keeoing everthing else intact - **Status: COMPLETED**. User approved the split-shortcode plan for M-Pesa.
+7.  **User:** modify as follows, business short code should be the old one 4978540, party b should be 8336258... - **Status: COMPLETED**. User specified the split-shortcode configuration for M-Pesa payments.
+8.  **User:** Log Snippet:  - **Status: ADDRESSED**. The agent diagnosed this as a Safaricom configuration issue and advised the user to contact their support.
+9.  **User:** Log Snippet:  (after ) - **Status: ADDRESSED**. The agent diagnosed this as the user's Render environment using an old, incorrect shortcode and instructed them to update their environment variables.
+10. **User:** all SLOs should appear as shown in that pic - **Status: COMPLETED**. The agent updated the SLO display in the lesson generation UI to match the user's screenshot.
 
 **Project Health Check:**
 -   **Broken:**
-    -   M-Pesa payments on the user's production Render deployment are non-functional due to the  configuration error.
-    -   The core lesson plan generation feature is pending re-verification on production.
+    -   **M-Pesa Production Payments:** Non-functional due to a Merchant does not exist error, which points to a configuration issue on Safaricom's end that the user needs to resolve.
+    -   **Lesson Plan Viewing:** Clicking a lesson plan in My Lesson Plans does nothing. This is the current task being worked on.
 -   **Mocked:**
-    -   The M-Pesa integration uses the Safaricom sandbox environment.
+    -   None. M-Pesa is using production credentials but is failing at the API level.
 
 **3rd Party Integrations**
--   Firebase Authentication
--   MongoDB Atlas
--   Safaricom Daraja API (M-Pesa)
--   PyMuPDF () for PDF parsing
+-   **Firebase Authentication:** For user login.
+-   **MongoDB Atlas:** Primary database.
+-   **Safaricom Daraja API (M-Pesa):** For payments. Configured for production but blocked by a Merchant does not exist error.
+-   **PyMuPDF ():** For PDF parsing in the data import helper tool.
 
 **Testing status**
 -   **Testing agent used after significant changes:** NO
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** []
--   **Known regressions:** The M-Pesa payment flow is confirmed to be broken on the user's production deployment due to a configuration error on their side.
+-   **Known regressions:** None identified, but the M-Pesa flow regressed due to production configuration changes.
 
 **Credentials to test flow:**
 The agent does not have user credentials. The admin email is .
 
 **What agent forgot to execute**
 -   The planned full codebase audit to remove dead code has not been started.
--   The request to check mobile navigation stability has not been followed up on.</analysis>
+-   The user request to check mobile navigation stability on the Expo Go client has not been followed up on.
+-   The agent created a migration script for adding the  field to curriculum items but ran it as a one-off script after removing it from the startup event. It is not guaranteed that this migration ran successfully on all existing data. The next agent should verify the data integrity.</analysis>

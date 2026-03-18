@@ -9,6 +9,7 @@ import {
   RefreshControl
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
+import { useRouter } from 'expo-router';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -22,10 +23,12 @@ interface LessonPlan {
   substrandName: string;
   sloName: string;
   createdAt: string;
+  daysRemaining: number | null;
 }
 
 export default function Lessons() {
   const { firebaseUser } = useAuth();
+  const router = useRouter();
   const [lessons, setLessons] = useState<LessonPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -68,6 +71,32 @@ export default function Lessons() {
     });
   };
 
+  const handleLessonPress = (lessonId: string) => {
+    router.push(`/(teacher)/lesson-detail?id=${lessonId}`);
+  };
+
+  const getExpirationBadge = (daysRemaining: number | null) => {
+    if (daysRemaining === null) return null;
+    
+    let bgColor = '#10B981'; // Green
+    let textColor = '#FFFFFF';
+    
+    if (daysRemaining <= 0) {
+      bgColor = '#EF4444'; // Red
+    } else if (daysRemaining <= 1) {
+      bgColor = '#F59E0B'; // Orange
+    }
+    
+    return (
+      <View style={[styles.expirationBadge, { backgroundColor: bgColor }]}>
+        <Ionicons name="time-outline" size={12} color={textColor} />
+        <Text style={[styles.expirationText, { color: textColor }]}>
+          {daysRemaining === 0 ? 'Expires today' : `${daysRemaining} days left`}
+        </Text>
+      </View>
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.centerContainer}>
@@ -89,6 +118,14 @@ export default function Lessons() {
         <Text style={styles.headerSubtitle}>{lessons.length} lesson(s) created</Text>
       </View>
 
+      {/* Expiration Notice */}
+      <View style={styles.noticeBox}>
+        <Ionicons name="information-circle" size={20} color="#6366F1" />
+        <Text style={styles.noticeText}>
+          Lesson plans are available for 2 days after creation, then automatically deleted.
+        </Text>
+      </View>
+
       {lessons.length === 0 ? (
         <View style={styles.emptyState}>
           <Ionicons name="document-text-outline" size={64} color="#D1D5DB" />
@@ -97,7 +134,12 @@ export default function Lessons() {
         </View>
       ) : (
         lessons.map((lesson) => (
-          <TouchableOpacity key={lesson.id} style={styles.card}>
+          <TouchableOpacity 
+            key={lesson.id} 
+            style={styles.card}
+            onPress={() => handleLessonPress(lesson.id)}
+            activeOpacity={0.7}
+          >
             <View style={styles.cardHeader}>
               <View style={styles.iconContainer}>
                 <Ionicons name="book" size={24} color="#6366F1" />
@@ -106,6 +148,7 @@ export default function Lessons() {
                 <Text style={styles.cardTitle}>{lesson.gradeName}</Text>
                 <Text style={styles.cardSubject}>{lesson.subjectName}</Text>
               </View>
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
             </View>
 
             <View style={styles.cardContent}>
@@ -128,6 +171,7 @@ export default function Lessons() {
                 <Ionicons name="calendar-outline" size={14} color="#9CA3AF" />
                 <Text style={styles.dateText}>{formatDate(lesson.createdAt)}</Text>
               </View>
+              {getExpirationBadge(lesson.daysRemaining)}
             </View>
           </TouchableOpacity>
         ))
@@ -230,7 +274,10 @@ const styles = StyleSheet.create({
   cardFooter: {
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
-    paddingTop: 12
+    paddingTop: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
   dateContainer: {
     flexDirection: 'row',
@@ -240,5 +287,17 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 12,
     color: '#9CA3AF'
+  },
+  expirationBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4
+  },
+  expirationText: {
+    fontSize: 11,
+    fontWeight: '600'
   }
 });

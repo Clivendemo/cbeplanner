@@ -122,6 +122,12 @@ export default function TeacherLayout() {
         }}
       />
       <Stack.Screen
+        name="lesson-detail"
+        options={{
+          title: 'Lesson Plan'
+        }}
+      />
+      <Stack.Screen
         name="revision"
         options={{
           title: 'Revision Papers'
