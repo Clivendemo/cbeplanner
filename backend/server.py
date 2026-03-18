@@ -73,7 +73,7 @@ else:
         "http://localhost:19006",
         "http://localhost:19000",
         "https://*.vercel.app",
-        "https://cbe-lesson-plan.preview.emergentagent.com"
+        "https://competency-planner.preview.emergentagent.com"
     ]
 
 # ===========================================
@@ -3832,26 +3832,8 @@ async def seed_sample_data_internal():
     }
 
 # Health check endpoint
-@app.get("/api/")
-async def health_check():
-    return {"message": "CBE Lesson Planning System API is running", "status": "healthy"}
-
 # Include router
 app.include_router(api_router)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
