@@ -436,35 +436,30 @@ export default function Home() {
           {selectedSubstrand && (
             <View style={styles.pickerContainer}>
               <Text style={styles.label}>Specific Learning Outcome (SLO) *</Text>
-              <View style={styles.sloListContainer}>
-                {slos.length === 0 ? (
-                  <Text style={styles.noDataText}>No SLOs available for this sub-strand</Text>
-                ) : (
-                  slos.map((slo) => (
-                    <TouchableOpacity
-                      key={slo.id}
-                      style={[
-                        styles.sloCard,
-                        selectedSLO === slo.id && styles.sloCardSelected
-                      ]}
-                      onPress={() => setSelectedSLO(slo.id)}
-                    >
-                      <View style={styles.sloRadio}>
-                        {selectedSLO === slo.id && (
-                          <View style={styles.sloRadioInner} />
-                        )}
-                      </View>
-                      <View style={styles.sloContent}>
-                        <Text style={styles.sloHeader}>Specific Learning Outcome</Text>
-                        <Text style={styles.sloName}>{slo.name}</Text>
-                        {slo.description && (
-                          <Text style={styles.sloDescription}>{slo.description}</Text>
-                        )}
-                      </View>
-                    </TouchableOpacity>
-                  ))
-                )}
-              </View>
+              {slos.length === 0 ? (
+                <Text style={styles.noDataText}>No SLOs available for this sub-strand</Text>
+              ) : (
+                <View style={styles.pickerWrapper}>
+                  <Picker
+                    selectedValue={selectedSLO}
+                    onValueChange={(value: string) => setSelectedSLO(value)}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label={`Select SLO (${slos.length} available)`} value="" />
+                    {slos.map((slo) => (
+                      <Picker.Item key={slo.id} label={slo.name} value={slo.id} />
+                    ))}
+                  </Picker>
+                </View>
+              )}
+              {selectedSLO && slos.find((s: any) => s.id === selectedSLO)?.description && (
+                <View style={styles.sloPreview}>
+                  <Text style={styles.sloPreviewLabel}>Description:</Text>
+                  <Text style={styles.sloPreviewText}>
+                    {slos.find((s: any) => s.id === selectedSLO)?.description}
+                  </Text>
+                </View>
+              )}
             </View>
           )}
 
@@ -849,63 +844,24 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#92400E'
   },
-  // SLO Card Styles
-  sloListContainer: {
-    gap: 12
+  // SLO Preview Styles
+  sloPreview: {
+    marginTop: 8,
+    backgroundColor: '#F0F4FF',
+    borderRadius: 8,
+    padding: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: '#6366F1'
   },
-  sloCard: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 2,
-    borderColor: '#E5E7EB',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1
-  },
-  sloCardSelected: {
-    borderColor: '#6366F1',
-    backgroundColor: '#EEF2FF'
-  },
-  sloRadio: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: '#D1D5DB',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-    marginTop: 2
-  },
-  sloRadioInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#6366F1'
-  },
-  sloContent: {
-    flex: 1
-  },
-  sloHeader: {
-    fontSize: 13,
+  sloPreviewLabel: {
+    fontSize: 12,
     fontWeight: '600',
     color: '#6366F1',
-    marginBottom: 6
+    marginBottom: 4
   },
-  sloName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 6,
-    lineHeight: 22
-  },
-  sloDescription: {
+  sloPreviewText: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#374151',
     lineHeight: 20
   },
   noDataText: {
