@@ -5,6 +5,7 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import time
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict, Any
@@ -23,7 +24,8 @@ from app.production_utils import (
     ProductionLogger, IdempotencyManager, InputValidator, 
     RateLimiter, TransactionLock, get_user_error, SECURITY_HEADERS,
     SAFARICOM_IPS, MPESA_RESULT_CODES, get_mpesa_result_message,
-    is_safaricom_ip, get_client_ip
+    is_safaricom_ip, get_client_ip, RateLimitManager, RequestLogger,
+    get_cors_origins, PRODUCTION_CORS_ORIGINS, DEVELOPMENT_CORS_ORIGINS
 )
 
 # ===========================================
@@ -77,12 +79,26 @@ else:
 # ===========================================
 # FASTAPI APPLICATION SETUP
 # ===========================================
+# FastAPI app with OpenAPI documentation
+# Docs available at /api/docs (Swagger) and /api/redoc
+ENABLE_DOCS = os.getenv('ENABLE_API_DOCS', 'true').lower() == 'true'
+
 app = FastAPI(
     title="CBE Lesson Planner API",
-    description="Competency-Based Education Lesson Planning System for Kenyan Teachers",
+    description="Competency-Based Education Lesson Planning System for Kenyan Teachers. \n\n"
+                "## Features\n"
+                "- User Authentication (Firebase)\n"
+                "- Curriculum Management (Grades, Subjects, Strands, SLOs)\n"
+                "- Lesson Plan Generation\n"
+                "- M-Pesa Wallet Integration\n"
+                "- Admin Panel\n\n"
+                "## Authentication\n"
+                "Most endpoints require Firebase ID token in the Authorization header:\n"
+                "`Authorization: Bearer <firebase_id_token>`",
     version="1.0.0",
-    docs_url="/api/docs" if ENVIRONMENT != "production" else None,
-    redoc_url="/api/redoc" if ENVIRONMENT != "production" else None
+    docs_url="/api/docs" if ENABLE_DOCS else None,
+    redoc_url="/api/redoc" if ENABLE_DOCS else None,
+    openapi_url="/api/openapi.json" if ENABLE_DOCS else None
 )
 
 # ===========================================
@@ -97,6 +113,63 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Add security headers
         for header, value in SECURITY_HEADERS.items():
             response.headers[header] = value
+        return response
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    """Rate limiting middleware to prevent abuse"""
+    async def dispatch(self, request: Request, call_next):
+        # Skip rate limiting for health checks
+        if request.url.path in ["/health", "/api/health"]:
+            return await call_next(request)
+        
+        client_ip = get_client_ip(request)
+        
+        # Determine endpoint type for rate limit config
+        path = request.url.path
+        if "/auth/" in path:
+            endpoint_type = "auth"
+        elif "/payments/" in path:
+            endpoint_type = "payment"
+        elif "/admin/" in path:
+            endpoint_type = "admin"
+        else:
+            endpoint_type = "default"
+        
+        # Check rate limit
+        if RateLimitManager.is_rate_limited(client_ip, endpoint_type):
+            retry_after = RateLimitManager.get_retry_after(client_ip, endpoint_type)
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "success": False,
+                    "error": get_user_error("rate_limited"),
+                    "retry_after": retry_after
+                },
+                headers={"Retry-After": str(retry_after)}
+            )
+        
+        return await call_next(request)
+
+class RequestLoggingMiddleware(BaseHTTPMiddleware):
+    """Log all API requests for monitoring"""
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.time()
+        
+        response = await call_next(request)
+        
+        # Calculate duration
+        duration_ms = (time.time() - start_time) * 1000
+        
+        # Log if not excluded
+        if RequestLogger.should_log(request.url.path):
+            RequestLogger.log_request(
+                method=request.method,
+                path=request.url.path,
+                status_code=response.status_code,
+                duration_ms=duration_ms,
+                ip=get_client_ip(request)
+            )
+        
         return response
 
 class GlobalErrorHandlerMiddleware(BaseHTTPMiddleware):
@@ -130,12 +203,15 @@ class GlobalErrorHandlerMiddleware(BaseHTTPMiddleware):
 
 # Add custom middleware (order matters - first added = last executed)
 app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RequestLoggingMiddleware)
+app.add_middleware(RateLimitMiddleware)
 app.add_middleware(GlobalErrorHandlerMiddleware)
 
-# Add CORS middleware
+# Add CORS middleware with proper production origins
+cors_origins = get_cors_origins(ENVIRONMENT) if ENVIRONMENT == "production" else ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS if ENVIRONMENT == "production" else ["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

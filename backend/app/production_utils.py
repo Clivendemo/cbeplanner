@@ -378,3 +378,129 @@ def add_security_headers(response):
     for header, value in SECURITY_HEADERS.items():
         response.headers[header] = value
     return response
+
+
+# ===========================================
+# RATE LIMITING
+# ===========================================
+class RateLimitManager:
+    """
+    Simple in-memory rate limiter for API endpoints.
+    For production clusters, use Redis-based rate limiting.
+    """
+    
+    _requests: Dict[str, list] = {}  # ip -> list of timestamps
+    
+    # Rate limit configurations (requests per window)
+    LIMITS = {
+        "default": {"requests": 100, "window": 60},      # 100 requests per minute
+        "auth": {"requests": 10, "window": 60},          # 10 auth attempts per minute
+        "payment": {"requests": 5, "window": 60},        # 5 payment attempts per minute
+        "admin": {"requests": 200, "window": 60},        # 200 admin requests per minute
+    }
+    
+    @classmethod
+    def is_rate_limited(cls, ip: str, endpoint_type: str = "default") -> bool:
+        """Check if IP is rate limited"""
+        current_time = time.time()
+        config = cls.LIMITS.get(endpoint_type, cls.LIMITS["default"])
+        window = config["window"]
+        max_requests = config["requests"]
+        
+        # Initialize if not exists
+        if ip not in cls._requests:
+            cls._requests[ip] = []
+        
+        # Clean old requests outside window
+        cls._requests[ip] = [
+            ts for ts in cls._requests[ip] 
+            if current_time - ts < window
+        ]
+        
+        # Check if over limit
+        if len(cls._requests[ip]) >= max_requests:
+            return True
+        
+        # Record this request
+        cls._requests[ip].append(current_time)
+        return False
+    
+    @classmethod
+    def get_retry_after(cls, ip: str, endpoint_type: str = "default") -> int:
+        """Get seconds until rate limit resets"""
+        if ip not in cls._requests or not cls._requests[ip]:
+            return 0
+        
+        config = cls.LIMITS.get(endpoint_type, cls.LIMITS["default"])
+        oldest_request = min(cls._requests[ip])
+        return max(0, int(config["window"] - (time.time() - oldest_request)))
+    
+    @classmethod
+    def cleanup(cls):
+        """Remove old entries to prevent memory bloat"""
+        current_time = time.time()
+        max_window = max(c["window"] for c in cls.LIMITS.values())
+        
+        for ip in list(cls._requests.keys()):
+            cls._requests[ip] = [
+                ts for ts in cls._requests[ip]
+                if current_time - ts < max_window
+            ]
+            if not cls._requests[ip]:
+                del cls._requests[ip]
+
+
+# ===========================================
+# REQUEST LOGGING
+# ===========================================
+class RequestLogger:
+    """Log API requests for monitoring and debugging"""
+    
+    # Paths to exclude from logging (health checks, static files)
+    EXCLUDED_PATHS = {"/health", "/api/health", "/favicon.ico"}
+    
+    @staticmethod
+    def should_log(path: str) -> bool:
+        """Check if request should be logged"""
+        return path not in RequestLogger.EXCLUDED_PATHS
+    
+    @staticmethod
+    def log_request(
+        method: str,
+        path: str,
+        status_code: int,
+        duration_ms: float,
+        ip: str,
+        user_id: str = None
+    ):
+        """Log request details"""
+        user_info = f"user={user_id[:8]}..." if user_id else "user=anonymous"
+        logger.info(
+            f"REQUEST: {method} {path} status={status_code} "
+            f"duration={duration_ms:.2f}ms ip={ip} {user_info}"
+        )
+
+
+# ===========================================
+# PRODUCTION CORS ORIGINS
+# ===========================================
+PRODUCTION_CORS_ORIGINS = [
+    "https://cbeplanner.vercel.app",
+    "https://www.cbeplanner.vercel.app",
+    "https://cbeplanner.onrender.com",
+    # Add your custom domain here when you have one
+]
+
+DEVELOPMENT_CORS_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:8081",
+    "http://localhost:19006",
+    "http://localhost:19000",
+    "https://cbe-lesson-planner.preview.emergentagent.com",
+]
+
+def get_cors_origins(environment: str) -> list:
+    """Get CORS origins based on environment"""
+    if environment == "production":
+        return PRODUCTION_CORS_ORIGINS
+    return DEVELOPMENT_CORS_ORIGINS + PRODUCTION_CORS_ORIGINS
