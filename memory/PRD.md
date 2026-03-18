@@ -54,6 +54,7 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - **Idempotency:** Duplicate payment prevention
 - **Transaction Locking:** Race condition prevention for wallet operations
 - **IP Whitelisting:** Safaricom IP validation for M-Pesa callbacks
+- **CORS Cleanup:** Removed duplicate CORS middleware, single properly-configured instance
 
 ### M-Pesa Integration (DONE - production credentials configured)
 - STK Push initiation with split-shortcode (BusinessShortCode: 4978540, PartyB: 8336258)
@@ -61,10 +62,29 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - Payment status polling
 - Wallet ledger (source of truth) with atomic balance updates
 
+### Grade 10 Data Seeding (DONE - Mar 2026)
+- **Batch 1 (5 subjects):** Arabic, Aviation Technology, Building Construction, Business Studies, Chemistry
+- **Batch 2 (5 subjects):** Biology, CRE, Electrical Technology, English, Fasihi ya Kiswahili
+- **Total:** 10 subjects, 36 strands, 184 substrands, 831 SLOs, 831 SLO mappings
+- **Data Integrity:** All SLO mappings linked to competencies (7), values (8), PCIs (5)
+- **Database Migration:** Fixed DB name mismatch (cbe_lesson_planner → cbeplanner), all data verified
+- **Cleanup:** All one-off seeding scripts removed from codebase
+
+### Session Management (DONE - Feb 2026)
+- "Remember Me" checkbox (unchecked by default)
+- Persistent sessions via AsyncStorage when checked
+- 20-minute inactivity timeout when unchecked
+- Auto-redirect to teacher dashboard on login
+
+### UI/UX Improvements (DONE)
+- SLO selection dropdown (replaced radio buttons)
+- Wallet balance auto-refresh on dashboard focus
+- Free lessons badge shows correct remaining count
+
 ## Architecture
 - **Backend:** FastAPI (Python) on port 8001
 - **Frontend:** React Native (Expo) on port 3000
-- **Database:** MongoDB
+- **Database:** MongoDB (DB_NAME: cbeplanner)
 - **Auth:** Firebase
 - **Payments:** Safaricom Daraja API (M-Pesa)
 
@@ -85,10 +105,11 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - **Grade 8 Data:** May be incomplete or inaccurate (P2)
 
 ## Backlog / Future Tasks
+- Download Lesson Plan as PDF
+- Refactor `curriculum.tsx` (3000+ lines → smaller components)
 - Full codebase audit (remove dead code)
 - API versioning (`/api/v1/...`)
-- Testing suite (unit & integration)
-- User support flow (in-app channel)
-- Refactor `curriculum.tsx` (3000+ lines → smaller components)
+- Backend testing suite (unit & integration)
+- Lock down CORS for production (set ENVIRONMENT=production on Render)
 - Mobile navigation stability check
 - Grade 8 data audit
