@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 const tileWidth = (width - 48) / 2;
@@ -56,7 +57,16 @@ const Tile: React.FC<TileProps> = ({ title, subtitle, icon, color, onPress, disa
 
 export default function Dashboard() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
+
+  // Refresh profile every time dashboard comes into focus (e.g. after top-up)
+  useFocusEffect(
+    useCallback(() => {
+      refreshProfile();
+    }, [])
+  );
+
+  const freeLessonsRemaining = user?.freeLessonsRemaining ?? 0;
 
   const tiles = [
     {
@@ -66,7 +76,7 @@ export default function Dashboard() {
       color: '#6366F1',
       route: '/(teacher)/home',
       disabled: false,
-      badge: user?.freeLessonUsed ? undefined : '1 Free'
+      badge: freeLessonsRemaining > 0 ? `${freeLessonsRemaining} Free` : undefined
     },
     {
       title: 'Generate Notes',
@@ -137,8 +147,8 @@ export default function Dashboard() {
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
             <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-            <Text style={styles.statValue}>{user?.freeLessonUsed ? 'Used' : 'Available'}</Text>
-            <Text style={styles.statLabel}>Free Lesson</Text>
+            <Text style={styles.statValue}>{freeLessonsRemaining > 0 ? `${freeLessonsRemaining} Left` : 'Used'}</Text>
+            <Text style={styles.statLabel}>Free Lessons</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
