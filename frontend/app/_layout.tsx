@@ -37,13 +37,13 @@ function AuthGate({ children }: { children: React.ReactNode }) {
           console.log('Redirecting admin to admin dashboard');
           router.replace('/(admin)/dashboard');
         } else {
-          console.log('Redirecting user to teacher home');
-          router.replace('/(teacher)/home');
+          console.log('Redirecting user to teacher dashboard');
+          router.replace('/(teacher)/dashboard');
         }
       } else if (inAdminGroup && !isAdmin) {
         // Non-admin trying to access admin routes
         console.log('Non-admin trying to access admin - redirecting');
-        router.replace('/(teacher)/home');
+        router.replace('/(teacher)/dashboard');
       }
     }
   }, [user, segments, authChecked, navigationState?.key, isAdmin]);

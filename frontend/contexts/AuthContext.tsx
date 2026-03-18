@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback, useRef } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import { auth } from '../firebaseConfig';
 import {
   signInWithEmailAndPassword,
@@ -15,6 +16,9 @@ const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 // The ONLY admin email - must match backend
 const ADMIN_EMAIL = 'mail2clive@gmail.com';
+
+// Inactivity timeout: 20 minutes (in milliseconds)
+const INACTIVITY_TIMEOUT_MS = 20 * 60 * 1000;
 
 interface User {
   id: string;
@@ -36,12 +40,13 @@ interface AuthContextType {
   isAdmin: boolean;
   isNewUser: boolean;
   authChecked: boolean;
-  signIn: (email: string, password: string) => Promise<User | null>;
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<User | null>;
   signUp: (email: string, password: string, firstName: string, lastName: string, schoolName: string) => Promise<User | null>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   clearNewUserFlag: () => void;
+  recordActivity: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -52,6 +57,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
+  const lastActivityRef = useRef<number>(Date.now());
+  const rememberMeRef = useRef<boolean>(false);
 
   // Check if user is admin by email (client-side check, backend also enforces)
   const isAdmin = user?.email?.toLowerCase().trim() === ADMIN_EMAIL;
@@ -60,6 +67,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearNewUserFlag = useCallback(() => {
     setIsNewUser(false);
   }, []);
+
+  // Record user activity (resets the inactivity timer)
+  const recordActivity = useCallback(() => {
+    lastActivityRef.current = Date.now();
+  }, []);
+
+  // Load rememberMe preference on mount
+  useEffect(() => {
+    AsyncStorage.getItem('rememberMe').then((val) => {
+      rememberMeRef.current = val === 'true';
+    });
+  }, []);
+
+  // Inactivity timeout: check on app foreground
+  useEffect(() => {
+    const handleAppStateChange = async (nextState: AppStateStatus) => {
+      if (nextState === 'active' && firebaseUser && user) {
+        // Reload rememberMe in case it changed
+        const rememberMe = await AsyncStorage.getItem('rememberMe');
+        if (rememberMe === 'true') {
+          // User chose "Remember Me" — no timeout
+          return;
+        }
+
+        const elapsed = Date.now() - lastActivityRef.current;
+        if (elapsed >= INACTIVITY_TIMEOUT_MS) {
+          console.log(`Inactivity timeout: ${Math.floor(elapsed / 60000)} min elapsed, signing out`);
+          await handleSignOut();
+        }
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription.remove();
+  }, [firebaseUser, user]);
+
+  // Also run a periodic check every 60s while app is active
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (!firebaseUser || !user) return;
+
+      const rememberMe = await AsyncStorage.getItem('rememberMe');
+      if (rememberMe === 'true') return;
+
+      const elapsed = Date.now() - lastActivityRef.current;
+      if (elapsed >= INACTIVITY_TIMEOUT_MS) {
+        console.log(`Periodic inactivity check: ${Math.floor(elapsed / 60000)} min elapsed, signing out`);
+        await handleSignOut();
+      }
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [firebaseUser, user]);
 
   const verifyAndSetUser = useCallback(async (fbUser: FirebaseUser, isSignUp: boolean = false) => {
     try {
@@ -78,6 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (response.data.isNewUser || isSignUp) {
           setIsNewUser(true);
         }
+        lastActivityRef.current = Date.now();
         return response.data.user;
       }
       return null;
@@ -96,6 +157,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setFirebaseUser(fbUser);
       
       if (fbUser) {
+        // Check if rememberMe is set — if not, check if session expired
+        const rememberMe = await AsyncStorage.getItem('rememberMe');
+        if (rememberMe !== 'true') {
+          const lastActive = await AsyncStorage.getItem('lastActivityTime');
+          if (lastActive) {
+            const elapsed = Date.now() - parseInt(lastActive, 10);
+            if (elapsed >= INACTIVITY_TIMEOUT_MS) {
+              console.log('Session expired during app close, signing out');
+              await firebaseSignOut(auth);
+              await AsyncStorage.removeItem('userToken');
+              await AsyncStorage.removeItem('lastActivityTime');
+              setUser(null);
+              setFirebaseUser(null);
+              setLoading(false);
+              setAuthChecked(true);
+              return;
+            }
+          }
+        }
         await verifyAndSetUser(fbUser);
       } else {
         await AsyncStorage.removeItem('userToken');
@@ -109,12 +189,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, [verifyAndSetUser]);
 
-  const signIn = async (email: string, password: string): Promise<User | null> => {
-    console.log('Attempting sign in for:', email);
+  // Save lastActivityTime periodically so we can check on next app open
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (user) {
+        AsyncStorage.setItem('lastActivityTime', String(lastActivityRef.current));
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const signIn = async (email: string, password: string, rememberMe: boolean = false): Promise<User | null> => {
+    console.log('Attempting sign in for:', email, 'rememberMe:', rememberMe);
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log('Firebase sign in successful');
+      
+      // Store rememberMe preference
+      await AsyncStorage.setItem('rememberMe', rememberMe ? 'true' : 'false');
+      rememberMeRef.current = rememberMe;
+      lastActivityRef.current = Date.now();
+      await AsyncStorage.setItem('lastActivityTime', String(Date.now()));
       
       const verifiedUser = await verifyAndSetUser(userCredential.user);
       setLoading(false);
@@ -141,6 +237,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log('Firebase sign up successful');
+      
+      // New users get rememberMe by default
+      await AsyncStorage.setItem('rememberMe', 'true');
+      rememberMeRef.current = true;
+      lastActivityRef.current = Date.now();
       
       const idToken = await userCredential.user.getIdToken();
       const response = await axios.post(`${BACKEND_URL}/api/auth/verify`, {
@@ -175,21 +276,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signOut = async () => {
+  const handleSignOut = async () => {
     console.log('Signing out...');
     try {
       await firebaseSignOut(auth);
       await AsyncStorage.removeItem('userToken');
+      await AsyncStorage.removeItem('lastActivityTime');
+      // Keep rememberMe preference — only clear it if user explicitly unchecks
       setUser(null);
       setFirebaseUser(null);
     } catch (error: any) {
       console.error('Sign out error:', error);
-      // Force clear state even on error
       setUser(null);
       setFirebaseUser(null);
       await AsyncStorage.removeItem('userToken');
-      throw new Error(error.message);
+      await AsyncStorage.removeItem('lastActivityTime');
     }
+  };
+
+  const signOutExposed = async () => {
+    // When user explicitly signs out, clear rememberMe
+    await AsyncStorage.setItem('rememberMe', 'false');
+    rememberMeRef.current = false;
+    await handleSignOut();
   };
 
   const refreshProfile = async () => {
@@ -227,10 +336,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       authChecked,
       signIn, 
       signUp, 
-      signOut, 
+      signOut: signOutExposed, 
       refreshProfile, 
       resetPassword,
-      clearNewUserFlag
+      clearNewUserFlag,
+      recordActivity
     }}>
       {children}
     </AuthContext.Provider>

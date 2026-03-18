@@ -9,7 +9,8 @@ import {
   Platform,
   ScrollView,
   Alert,
-  Modal
+  Modal,
+  Pressable
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
@@ -18,6 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [resetModalVisible, setResetModalVisible] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
@@ -33,9 +35,9 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const verifiedUser = await signIn(email, password);
+      const verifiedUser = await signIn(email, password, rememberMe);
       if (verifiedUser) {
-        // Navigate based on role
+        // Navigate based on role — always to dashboard
         if (verifiedUser.role === 'admin') {
           router.replace('/(admin)/dashboard');
         } else {
@@ -117,6 +119,17 @@ export default function Login() {
               placeholderTextColor="#9CA3AF"
             />
           </View>
+
+          {/* Remember Me Toggle */}
+          <Pressable
+            onPress={() => setRememberMe(!rememberMe)}
+            style={styles.rememberMeRow}
+          >
+            <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+              {rememberMe && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+            </View>
+            <Text style={styles.rememberMeText}>Remember me</Text>
+          </Pressable>
 
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
@@ -354,5 +367,32 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontWeight: '500',
     textAlign: 'center'
+  },
+  rememberMeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    marginBottom: 4,
+    paddingVertical: 8,
+    cursor: 'pointer'
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+    backgroundColor: '#FFFFFF'
+  },
+  checkboxChecked: {
+    backgroundColor: '#6366F1',
+    borderColor: '#6366F1'
+  },
+  rememberMeText: {
+    fontSize: 14,
+    color: '#374151'
   }
 });
