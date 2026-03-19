@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,9 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  RefreshControl
+  RefreshControl,
+  Animated,
+  Dimensions
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
@@ -52,6 +54,29 @@ export default function Profile() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Marquee animation for About modal
+  const screenWidth = Dimensions.get('window').width;
+  const marqueeAnim = useRef(new Animated.Value(screenWidth)).current;
+  
+  useEffect(() => {
+    if (showAboutModal) {
+      // Reset position to start from right side
+      marqueeAnim.setValue(screenWidth);
+      
+      // Animate slowly across the screen (20 seconds for full traverse)
+      const animation = Animated.loop(
+        Animated.timing(marqueeAnim, {
+          toValue: -500, // Move past the left edge
+          duration: 20000, // 20 seconds - very slow
+          useNativeDriver: true,
+        })
+      );
+      animation.start();
+      
+      return () => animation.stop();
+    }
+  }, [showAboutModal, screenWidth]);
 
   // Fetch transaction history
   const fetchTransactions = useCallback(async () => {
@@ -598,6 +623,20 @@ export default function Profile() {
                 </View>
                 <Text style={styles.aboutHeroTitle}>CBE Lesson Planner</Text>
                 <Text style={styles.aboutHeroSubtitle}>Empowering Kenyan Educators</Text>
+              </View>
+
+              {/* Marquee Tagline */}
+              <View style={styles.marqueeContainer}>
+                <Animated.View 
+                  style={[
+                    styles.marqueeContent,
+                    { transform: [{ translateX: marqueeAnim }] }
+                  ]}
+                >
+                  <Text style={styles.marqueeText}>
+                    Every lesson mapped.  Every outcome measurable.
+                  </Text>
+                </Animated.View>
               </View>
 
               {/* Introduction */}
@@ -1239,6 +1278,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6366F1',
     fontWeight: '500'
+  },
+  marqueeContainer: {
+    height: 44,
+    backgroundColor: '#F0FDF4',
+    borderRadius: 8,
+    marginHorizontal: 0,
+    marginBottom: 20,
+    overflow: 'hidden',
+    justifyContent: 'center'
+  },
+  marqueeContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'absolute'
+  },
+  marqueeText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#166534',
+    fontStyle: 'italic',
+    letterSpacing: 0.5
   },
   aboutSection: {
     marginBottom: 24
