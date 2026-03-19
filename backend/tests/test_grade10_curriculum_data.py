@@ -16,7 +16,7 @@ from pymongo import MongoClient
 # Get API URL from environment
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
-    BASE_URL = "https://competency-planner.preview.emergentagent.com"
+    BASE_URL = "https://repo-analyzer-200.preview.emergentagent.com"
 
 # MongoDB connection for direct database verification
 MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')

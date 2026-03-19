@@ -73,7 +73,7 @@ else:
         "http://localhost:19006",
         "http://localhost:19000",
         "https://*.vercel.app",
-        "https://competency-planner.preview.emergentagent.com"
+        "https://repo-analyzer-200.preview.emergentagent.com"
     ]
 
 # ===========================================
