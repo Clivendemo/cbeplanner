@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,9 @@ import {
   ScrollView,
   Alert,
   Modal,
-  Pressable
+  Pressable,
+  Animated,
+  Dimensions
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
@@ -26,6 +28,22 @@ export default function Login() {
   const [resetting, setResetting] = useState(false);
   const { signIn, resetPassword } = useAuth();
   const router = useRouter();
+
+  // Marquee animation
+  const screenWidth = Dimensions.get('window').width;
+  const marqueeAnim = useRef(new Animated.Value(screenWidth)).current;
+  
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.timing(marqueeAnim, {
+        toValue: -450,
+        duration: 18000, // 18 seconds - slow and smooth
+        useNativeDriver: true,
+      })
+    );
+    animation.start();
+    return () => animation.stop();
+  }, []);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -92,6 +110,20 @@ export default function Login() {
           <Ionicons name="school" size={64} color="#6366F1" />
           <Text style={styles.title}>CBE Planner</Text>
           <Text style={styles.subtitle}>Kenyan Teacher Lesson Planning</Text>
+          
+          {/* Marquee Tagline */}
+          <View style={styles.marqueeContainer}>
+            <Animated.View 
+              style={[
+                styles.marqueeContent,
+                { transform: [{ translateX: marqueeAnim }] }
+              ]}
+            >
+              <Text style={styles.marqueeText}>
+                Every lesson mapped.  Every outcome measurable.
+              </Text>
+            </Animated.View>
+          </View>
         </View>
 
         <View style={styles.form}>
@@ -238,6 +270,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     marginTop: 8
+  },
+  marqueeContainer: {
+    height: 36,
+    width: '100%',
+    marginTop: 16,
+    overflow: 'hidden',
+    justifyContent: 'center'
+  },
+  marqueeContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'absolute'
+  },
+  marqueeText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#10B981',
+    fontStyle: 'italic',
+    letterSpacing: 0.3
   },
   form: {
     width: '100%'
