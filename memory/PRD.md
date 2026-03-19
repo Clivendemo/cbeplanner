@@ -81,6 +81,12 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - Wallet balance auto-refresh on dashboard focus
 - Free lessons badge shows correct remaining count
 
+### About Section (DONE - Mar 2026)
+- **About Modal:** Added comprehensive About section to teacher profile page
+- **Content:** App introduction, target users (Teachers, Administrators), key features, benefits, mission statement
+- **Features Highlighted:** Lesson Plan Generator, Study Notes Generator, Schemes of Work, Structured Curriculum Mapping, Competency & Values Integration
+- **Developer Credit:** LEGIT LAB branding with version info
+
 ## Architecture
 - **Backend:** FastAPI (Python) on port 8001
 - **Frontend:** React Native (Expo) on port 3000
