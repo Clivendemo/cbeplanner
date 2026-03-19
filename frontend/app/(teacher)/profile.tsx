@@ -36,6 +36,9 @@ export default function Profile() {
   const { user, firebaseUser, signOut, refreshProfile, isAdmin } = useAuth();
   const router = useRouter();
   
+  // About modal state
+  const [showAboutModal, setShowAboutModal] = useState(false);
+  
   // M-Pesa Top-up state
   const [showTopUpModal, setShowTopUpModal] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -421,7 +424,11 @@ export default function Profile() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Account</Text>
         
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity 
+          style={styles.menuItem}
+          onPress={() => setShowAboutModal(true)}
+          data-testid="about-cbe-planner-btn"
+        >
           <Ionicons name="information-circle-outline" size={24} color="#6B7280" />
           <Text style={styles.menuText}>About CBE Planner</Text>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
@@ -559,6 +566,183 @@ export default function Profile() {
             </View>
           </View>
         </KeyboardAvoidingView>
+      </Modal>
+
+      {/* About Modal */}
+      <Modal
+        visible={showAboutModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowAboutModal(false)}
+      >
+        <View style={styles.aboutModalOverlay}>
+          <View style={styles.aboutModalContent}>
+            <View style={styles.aboutModalHeader}>
+              <Text style={styles.aboutModalTitle}>About CBE Lesson Planner</Text>
+              <TouchableOpacity 
+                onPress={() => setShowAboutModal(false)}
+                data-testid="close-about-modal-btn"
+              >
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView 
+              style={styles.aboutScrollView}
+              showsVerticalScrollIndicator={false}
+            >
+              {/* Hero Section */}
+              <View style={styles.aboutHero}>
+                <View style={styles.aboutLogoContainer}>
+                  <Ionicons name="book" size={40} color="#FFFFFF" />
+                </View>
+                <Text style={styles.aboutHeroTitle}>CBE Lesson Planner</Text>
+                <Text style={styles.aboutHeroSubtitle}>Empowering Kenyan Educators</Text>
+              </View>
+
+              {/* Introduction */}
+              <View style={styles.aboutSection}>
+                <Text style={styles.aboutText}>
+                  CBE Lesson Planner is a curriculum-based learning platform designed specifically for Kenyan teachers. 
+                  It helps educators create KICD-aligned lesson plans, study notes, and schemes of work that follow 
+                  the Competency-Based Curriculum (CBC) framework.
+                </Text>
+              </View>
+
+              {/* Who It's For */}
+              <View style={styles.aboutSection}>
+                <Text style={styles.aboutSectionTitle}>Who Is It For?</Text>
+                <View style={styles.aboutUserCard}>
+                  <View style={styles.aboutUserIcon}>
+                    <Ionicons name="school-outline" size={24} color="#6366F1" />
+                  </View>
+                  <View style={styles.aboutUserInfo}>
+                    <Text style={styles.aboutUserTitle}>Teachers and Educators</Text>
+                    <Text style={styles.aboutUserDesc}>
+                      Save time creating structured, curriculum-aligned lesson materials
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.aboutUserCard}>
+                  <View style={styles.aboutUserIcon}>
+                    <Ionicons name="people-outline" size={24} color="#10B981" />
+                  </View>
+                  <View style={styles.aboutUserInfo}>
+                    <Text style={styles.aboutUserTitle}>School Administrators</Text>
+                    <Text style={styles.aboutUserDesc}>
+                      Ensure teaching materials meet national curriculum standards
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Key Features */}
+              <View style={styles.aboutSection}>
+                <Text style={styles.aboutSectionTitle}>Key Features</Text>
+                
+                <View style={styles.aboutFeatureItem}>
+                  <View style={styles.aboutFeatureBullet}>
+                    <Ionicons name="document-text-outline" size={18} color="#6366F1" />
+                  </View>
+                  <View style={styles.aboutFeatureContent}>
+                    <Text style={styles.aboutFeatureTitle}>Lesson Plan Generator</Text>
+                    <Text style={styles.aboutFeatureDesc}>
+                      Create detailed, time-aware lesson plans (25-80 minutes) aligned with specific learning outcomes
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.aboutFeatureItem}>
+                  <View style={styles.aboutFeatureBullet}>
+                    <Ionicons name="library-outline" size={18} color="#10B981" />
+                  </View>
+                  <View style={styles.aboutFeatureContent}>
+                    <Text style={styles.aboutFeatureTitle}>Study Notes Generator</Text>
+                    <Text style={styles.aboutFeatureDesc}>
+                      Generate comprehensive teaching notes for any topic in your curriculum
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.aboutFeatureItem}>
+                  <View style={styles.aboutFeatureBullet}>
+                    <Ionicons name="calendar-outline" size={18} color="#F59E0B" />
+                  </View>
+                  <View style={styles.aboutFeatureContent}>
+                    <Text style={styles.aboutFeatureTitle}>Schemes of Work</Text>
+                    <Text style={styles.aboutFeatureDesc}>
+                      Plan your entire term with structured schemes including breaks and assessments
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.aboutFeatureItem}>
+                  <View style={styles.aboutFeatureBullet}>
+                    <Ionicons name="git-branch-outline" size={18} color="#EC4899" />
+                  </View>
+                  <View style={styles.aboutFeatureContent}>
+                    <Text style={styles.aboutFeatureTitle}>Structured Curriculum Mapping</Text>
+                    <Text style={styles.aboutFeatureDesc}>
+                      Content organized by Grades, Subjects, Strands, Sub-Strands, and Specific Learning Outcomes (SLOs)
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.aboutFeatureItem}>
+                  <View style={styles.aboutFeatureBullet}>
+                    <Ionicons name="analytics-outline" size={18} color="#3B82F6" />
+                  </View>
+                  <View style={styles.aboutFeatureContent}>
+                    <Text style={styles.aboutFeatureTitle}>Competency & Values Integration</Text>
+                    <Text style={styles.aboutFeatureDesc}>
+                      Each SLO is mapped to core competencies, values, and pertinent and contemporary issues (PCIs)
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Benefits */}
+              <View style={styles.aboutSection}>
+                <Text style={styles.aboutSectionTitle}>How It Helps</Text>
+                <View style={styles.aboutBenefitsList}>
+                  <View style={styles.aboutBenefitItem}>
+                    <Ionicons name="time-outline" size={20} color="#10B981" />
+                    <Text style={styles.aboutBenefitText}>Save hours of lesson preparation time</Text>
+                  </View>
+                  <View style={styles.aboutBenefitItem}>
+                    <Ionicons name="checkmark-circle-outline" size={20} color="#10B981" />
+                    <Text style={styles.aboutBenefitText}>Ensure KICD curriculum alignment</Text>
+                  </View>
+                  <View style={styles.aboutBenefitItem}>
+                    <Ionicons name="trending-up-outline" size={20} color="#10B981" />
+                    <Text style={styles.aboutBenefitText}>Improve teaching consistency and quality</Text>
+                  </View>
+                  <View style={styles.aboutBenefitItem}>
+                    <Ionicons name="phone-portrait-outline" size={20} color="#10B981" />
+                    <Text style={styles.aboutBenefitText}>Access materials anytime, anywhere</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Mission */}
+              <View style={styles.aboutMission}>
+                <Ionicons name="flag-outline" size={24} color="#6366F1" style={{ marginBottom: 12 }} />
+                <Text style={styles.aboutMissionTitle}>Our Mission</Text>
+                <Text style={styles.aboutMissionText}>
+                  To empower Kenyan educators with tools that simplify lesson planning, 
+                  ensure curriculum compliance, and ultimately improve learning outcomes for students across the nation.
+                </Text>
+              </View>
+
+              {/* Developer Credit */}
+              <View style={styles.aboutFooter}>
+                <Text style={styles.aboutDeveloper}>Developed by LEGIT LAB</Text>
+                <Text style={styles.aboutVersion}>Version 1.0.0</Text>
+                <Text style={styles.aboutCopyright}>2025 LEGIT LAB. All rights reserved.</Text>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
       </Modal>
     </ScrollView>
   );
@@ -999,6 +1183,187 @@ const styles = StyleSheet.create({
     color: '#6366F1'
   },
   versionText: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginTop: 4
+  },
+  // About Modal Styles
+  aboutModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end'
+  },
+  aboutModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '90%'
+  },
+  aboutModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6'
+  },
+  aboutModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#111827'
+  },
+  aboutScrollView: {
+    paddingHorizontal: 20
+  },
+  aboutHero: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    marginBottom: 8
+  },
+  aboutLogoContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#6366F1',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16
+  },
+  aboutHeroTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 4
+  },
+  aboutHeroSubtitle: {
+    fontSize: 14,
+    color: '#6366F1',
+    fontWeight: '500'
+  },
+  aboutSection: {
+    marginBottom: 24
+  },
+  aboutSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 12
+  },
+  aboutText: {
+    fontSize: 14,
+    color: '#4B5563',
+    lineHeight: 22
+  },
+  aboutUserCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10
+  },
+  aboutUserIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12
+  },
+  aboutUserInfo: {
+    flex: 1
+  },
+  aboutUserTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 2
+  },
+  aboutUserDesc: {
+    fontSize: 13,
+    color: '#6B7280'
+  },
+  aboutFeatureItem: {
+    flexDirection: 'row',
+    marginBottom: 16
+  },
+  aboutFeatureBullet: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12
+  },
+  aboutFeatureContent: {
+    flex: 1
+  },
+  aboutFeatureTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 2
+  },
+  aboutFeatureDesc: {
+    fontSize: 13,
+    color: '#6B7280',
+    lineHeight: 19
+  },
+  aboutBenefitsList: {
+    backgroundColor: '#F0FDF4',
+    borderRadius: 12,
+    padding: 16
+  },
+  aboutBenefitItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12
+  },
+  aboutBenefitText: {
+    fontSize: 14,
+    color: '#166534',
+    marginLeft: 10,
+    flex: 1
+  },
+  aboutMission: {
+    backgroundColor: '#EEF2FF',
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
+    marginBottom: 24
+  },
+  aboutMissionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#4338CA',
+    marginBottom: 8
+  },
+  aboutMissionText: {
+    fontSize: 14,
+    color: '#4B5563',
+    textAlign: 'center',
+    lineHeight: 22
+  },
+  aboutFooter: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    marginBottom: 20
+  },
+  aboutDeveloper: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6366F1'
+  },
+  aboutVersion: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    marginTop: 4
+  },
+  aboutCopyright: {
     fontSize: 11,
     color: '#9CA3AF',
     marginTop: 4

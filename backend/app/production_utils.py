@@ -499,7 +499,7 @@ DEVELOPMENT_CORS_ORIGINS = [
     "http://localhost:8081",
     "http://localhost:19006",
     "http://localhost:19000",
-    "https://repo-analyzer-200.preview.emergentagent.com",
+    "https://teach-align.preview.emergentagent.com",
 ]
 
 def get_cors_origins(environment: str) -> list:
