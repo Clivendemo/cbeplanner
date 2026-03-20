@@ -1,0 +1,1884 @@
+{
+  "grade": "Grade 1",
+  "source": "KICD CBC Curriculum Designs 2024 (Revised)",
+  "extraction_date": "2026-01",
+  "weekly_lessons_allocation": {
+    "Mathematical_Activities": 5,
+    "English_Language_Activities": 5,
+    "Kiswahili_Activities": 3,
+    "Environmental_Activities": 4,
+    "Creative_Activities": 6,
+    "Religious_Education_Activities": 3,
+    "total_lessons_per_week": 31
+  },
+  "subjects": [
+    {
+      "subject_name": "Mathematical Activities",
+      "total_lessons": 150,
+      "strands": [
+        {
+          "strand_number": "1.0",
+          "strand_name": "NUMBERS",
+          "total_lessons": 90,
+          "sub_strands": [
+            {
+              "sub_strand_number": "1.1",
+              "sub_strand_name": "Pre-Number Activities",
+              "lessons": 20,
+              "specific_learning_outcomes": [
+                "a) sort objects according to similar attributes in different situations",
+                "b) match objects with similar attributes in the environment",
+                "c) order objects according to given criteria in different situations",
+                "d) create patterns of different sizes and shapes using real objects",
+                "e) appreciate the use of sorting and grouping items in day-to-day activities"
+              ],
+              "suggested_learning_experiences": [
+                "Collect different types of safe objects from the immediate environment",
+                "Group objects according to attributes such as size, colour, use, shape, and texture",
+                "In teams, pair objects with similar attributes such as size, colour, use, shape, and texture",
+                "Arrange objects according to size from smallest to biggest and from biggest to smallest",
+                "Make patterns of different shapes and sizes using real objects",
+                "Assist in arranging items like fruits and cereals, for example, beans, maize, and rice according to size, colour, shape, and storage at home"
+              ],
+              "key_inquiry_questions": [
+                "Why should we sort items?"
+              ],
+              "core_competencies": ["Communication and Collaboration", "Critical Thinking and Problem Solving"],
+              "values": ["Responsibility", "Unity"],
+              "pcis": ["Safety", "Social Cohesion"],
+              "suggested_assessment": {
+                "methods": ["Observation", "Rating scales", "Projects", "Portfolio"],
+                "rubric_indicators": [
+                  "Ability to sort, group, and match objects according to similar attributes (size, shape, colour, use, texture)",
+                  "Ability to create patterns by ordering objects and numbers according to different criteria"
+                ]
+              }
+            },
+            {
+              "sub_strand_number": "1.2",
+              "sub_strand_name": "Whole Numbers",
+              "lessons": 25,
+              "specific_learning_outcomes": [
+                "a) count numbers forward up to 50",
+                "b) count numbers backward from 30",
+                "c) represent numbers 1 to 30 using concrete objects",
+                "d) read and write numbers 1 to 50 in symbols",
+                "e) read and write numbers 1 to 10 in words",
+                "f) identify missing numbers in number patterns up to 20",
+                "g) create patterns with numbers up to 20 and extend patterns during play activities"
+              ],
+              "suggested_learning_experiences": [
+                "Collect concrete objects from the immediate environment to use in counting activities",
+                "Count by 1's and 2's up to 20 starting from any point using concrete objects such as number cards, as well as body parts",
+                "Take turns in counting numbers forward up to 50",
+                "Count numbers backward from 30",
+                "Play games that involve representing numbers 1 to 30 using concrete objects",
+                "Read and write numbers 1 to 50 in symbols",
+                "Practise writing numbers 1 to 10 in words",
+                "Fill in missing numbers in number patterns up to 20",
+                "Create patterns with numbers up to 20 and share them with other groups",
+                "Play games involving whole numbers using digital devices or other resources"
+              ],
+              "key_inquiry_questions": [
+                "How do we count numbers?",
+                "Why do we write numbers?"
+              ],
+              "core_competencies": ["Communication and Collaboration", "Digital Literacy", "Learning to Learn"],
+              "values": ["Responsibility", "Unity"],
+              "pcis": ["Creative Thinking"],
+              "suggested_assessment": {
+                "methods": ["Observation", "Written tests and quizzes", "Rating scales", "Projects"],
+                "rubric_indicators": [
+                  "Ability to count numbers forward up to 50 and backward from 30",
+                  "Ability to read and write numbers 1 to 50 in symbols and numbers 1 to 10 in words",
+                  "Ability to identify missing numbers in number patterns up to 20"
+                ]
+              }
+            },
+            {
+              "sub_strand_number": "1.3",
+              "sub_strand_name": "Addition",
+              "lessons": 25,
+              "specific_learning_outcomes": [
+                "a) model addition as putting objects together",
+                "b) use '+' and '=' signs in writing addition statements",
+                "c) add 2 single-digit numbers in different situations",
+                "d) add 3 single-digit numbers in different contexts",
+                "e) add a 2-digit number to a 1-digit number without regrouping with sum not exceeding 50",
+                "f) work out missing numbers in patterns involving the addition of whole numbers up to 50",
+                "g) play games involving addition using digital devices or other resources"
+              ],
+              "suggested_learning_experiences": [
+                "Safely put two groups of objects together and count to get the total",
+                "Create scenarios where addition is relevant, e.g., there are two apples on the table, add three more, how many apples are there",
+                "Use flashcards with addition problems to practise quick recall of basic facts",
+                "Roll dice to add numbers together",
+                "Use number cards or abacus to add a 2-digit number to a 1-digit number without regrouping horizontally and vertically with a sum not exceeding 50",
+                "Make number patterns involving addition with numbers up to 50",
+                "Play games involving addition using digital devices and other resources"
+              ],
+              "key_inquiry_questions": [
+                "How do we add numbers?"
+              ],
+              "core_competencies": ["Critical Thinking and Problem Solving", "Digital Literacy"],
+              "values": ["Responsibility"],
+              "pcis": ["Financial literacy"],
+              "suggested_assessment": {
+                "methods": ["Observation", "Rating scales", "Projects", "Portfolio"],
+                "rubric_indicators": [
+                  "Ability to add a 2-digit number to a 1-digit number without regrouping with a sum not exceeding 50",
+                  "Ability to work out missing numbers in patterns involving the addition of whole numbers up to 50"
+                ]
+              }
+            },
+            {
+              "sub_strand_number": "1.4",
+              "sub_strand_name": "Subtraction",
+              "lessons": 20,
+              "specific_learning_outcomes": [
+                "a) model subtraction as 'taking away' using concrete objects",
+                "b) use the '-' and '=' signs in writing subtraction sentences",
+                "c) subtract single digit numbers",
+                "d) subtract a 1-digit number from a 2-digit number without regrouping",
+                "e) work out missing numbers in patterns involving subtraction of whole numbers up to 50",
+                "f) play games involving subtraction using digital devices and other resources"
+              ],
+              "suggested_learning_experiences": [
+                "Model subtraction using concrete objects",
+                "Use '-' and '=' signs in writing subtraction sentences",
+                "Subtract by counting backward",
+                "Subtract using concrete objects",
+                "Make subtraction sentences related to basic addition facts",
+                "Use number cards or charts safely to work out subtraction of a 1-digit number from a 2-digit number",
+                "Work with peers to create patterns involving subtraction"
+              ],
+              "key_inquiry_questions": [
+                "How do we subtract numbers?"
+              ],
+              "core_competencies": ["Critical Thinking and Problem Solving", "Communication and Collaboration"],
+              "values": ["Responsibility", "Unity"],
+              "pcis": ["Financial literacy"],
+              "suggested_assessment": {
+                "methods": ["Observation", "Written tests and quizzes", "Rating scales"],
+                "rubric_indicators": [
+                  "Ability to subtract a 1-digit number from a 2-digit number up to 50 without regrouping",
+                  "Ability to work out missing numbers in patterns involving the addition and subtraction of whole numbers up to 50"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "strand_number": "2.0",
+          "strand_name": "MEASUREMENT",
+          "total_lessons": 48,
+          "sub_strands": [
+            {
+              "sub_strand_number": "2.1",
+              "sub_strand_name": "Length",
+              "lessons": 10,
+              "specific_learning_outcomes": [
+                "a) collect objects of different lengths from the immediate environment",
+                "b) compare the length of objects using longer than, shorter than, and same as",
+                "c) measure length using arbitrary units",
+                "d) appreciate measuring length using arbitrary units"
+              ],
+              "suggested_learning_experiences": [
+                "Collect objects of different lengths from the immediate environment",
+                "Compare objects directly to identify objects that are longer than, shorter than or the same as other objects",
+                "In teams, measure lengths using arbitrary units such as hand spans or walking steps and discuss the measurements",
+                "Use arbitrary units to measure the length of different objects in their immediate environment"
+              ],
+              "key_inquiry_questions": [
+                "How do we compare lengths of objects?"
+              ],
+              "core_competencies": ["Communication and Collaboration", "Critical Thinking"],
+              "values": ["Unity"],
+              "pcis": ["Safety"],
+              "suggested_assessment": {
+                "methods": ["Observation", "Rating scales", "Projects"],
+                "rubric_indicators": [
+                  "Ability to compare lengths of objects using longer than, shorter than and same as"
+                ]
+              }
+            },
+            {
+              "sub_strand_number": "2.2",
+              "sub_strand_name": "Mass",
+              "lessons": 10,
+              "specific_learning_outcomes": [
+                "a) collect objects with different masses from the immediate environment",
+                "b) compare the mass of two objects using heavier than, lighter than, or same as",
+                "c) measure mass using arbitrary units",
+                "d) appreciate measuring mass using arbitrary units in the environment"
+              ],
+              "suggested_learning_experiences": [
+                "Collect safe objects of different mass from their immediate environment",
+                "In turn, use safe objects to identify those heavier than, lighter than, or same as",
+                "Use an identified empty container of known mass to measure the mass of other objects such as mass of beans, maize or flour as accurately as possible",
+                "Play games involving mass using digital devices"
+              ],
+              "key_inquiry_questions": [
+                "How do we compare the mass of objects?"
+              ],
+              "core_competencies": ["Critical Thinking", "Digital Literacy"],
+              "values": ["Responsibility"],
+              "pcis": ["Safety"],
+              "suggested_assessment": {
+                "methods": ["Observation", "Rating scales"],
+                "rubric_indicators": [
+                  "Ability to compare mass of two objects using heavier than, lighter than and same as"
+                ]
+              }
+            },
+            {
+              "sub_strand_number": "2.3",
+              "sub_strand_name": "Capacity",
+              "lessons": 12,
+              "specific_learning_outcomes": [
+                "a) collect containers of different capacities from the immediate environment",
+                "b) compare the capacity of two containers using more than, less than, and same as",
+                "c) measure capacity using arbitrary units",
+                "d) re-use empty containers of different capacities to keep items"
+              ],
+              "suggested_learning_experiences": [
+                "Collect safe containers of different sizes from the environment",
+                "Empty and fill water in different containers to establish which holds more, which holds less, and which holds the same",
+                "Jointly fill basins with water using different small containers. Learners count the number of small containers they use to fill the basin",
+                "Re-use containers of different capacities at home and school to keep items"
+              ],
+              "key_inquiry_questions": [
+                "How do we compare the capacity of containers?"
+              ],
+              "core_competencies": ["Critical Thinking", "Communication and Collaboration"],
+              "values": ["Responsibility"],
+              "pcis": ["Environmental Awareness", "Sustainable Consumption"],
+              "suggested_assessment": {
+                "methods": ["Observation", "Rating scales"],
+                "rubric_indicators": [
+                  "Ability to compare the capacity of two containers using more than, less than, and same as"
+                ]
+              }
+            },
+            {
+              "sub_strand_number": "2.4",
+              "sub_strand_name": "Time",
+              "lessons": 8,
+              "specific_learning_outcomes": [
+                "a) identify days of the week",
+                "b) relate days of the week to various activities",
+                "c) identify months of the year",
+                "d) appreciate activities that are done on different days of the week"
+              ],
+              "suggested_learning_experiences": [
+                "Sing songs/rhymes related to days of the week",
+                "Tell and write days of the week the way they follow each other",
+                "Name activities that take place during the days of the week such as raising flag on Monday and Friday",
+                "Sing songs/rhymes related to the months of the year",
+                "Discuss and tell their birth month to peers"
+              ],
+              "key_inquiry_questions": [
+                "Why do we need to know the days of the week?",
+                "Why is it important to know the months of the year?"
+              ],
+              "core_competencies": ["Communication and Collaboration", "Learning to Learn"],
+              "values": ["Responsibility"],
+              "pcis": ["Life Skills"],
+              "suggested_assessment": {
+                "methods": ["Observation", "Written tests and quizzes", "Rating scales"],
+                "rubric_indicators": [
+                  "Ability to identify and relate days of the week to various activities",
+                  "Ability to identify months of the year"
+                ]
+              }
+            },
+            {
+              "sub_strand_number": "2.5",
+              "sub_strand_name": "Money",
+              "lessons": 8,
+              "specific_learning_outcomes": [
+                "a) identify Kenyan currency coins",
+                "b) identify the sh.50 Kenyan currency note",
+                "c) count Kenyan currency coins one at a time",
+                "d) use money to buy up to 2 items without balance",
+                "e) appreciate the use of money in buying items from shops"
+              ],
+              "suggested_learning_experiences": [
+                "Recognise and sort out different Kenyan currency coins sh.1, sh.5, sh.10, sh.20, and sh.40 according to their value",
+                "Recognise a sh.50 note and tell its value",
+                "Tell how many coins of sh.1, sh.5, sh.10, sh.20, sh.40 by counting",
+                "Discuss the price of items in the model classroom shop up to sh.50",
+                "Role play buying up to 2 items from the model classroom shop without balance"
+              ],
+              "key_inquiry_questions": [
+                "Why do we use money?"
+              ],
+              "core_competencies": ["Citizenship", "Critical Thinking"],
+              "values": ["Integrity", "Patriotism"],
+              "pcis": ["Financial literacy"],
+              "suggested_assessment": {
+                "methods": ["Observation", "Projects", "Role-playing"],
+                "rubric_indicators": [
+                  "Ability to identify Kenyan currency coins sh.1, sh.5, sh.10, sh.20, sh.40, and sh.50 note",
+                  "Ability to count currency coins of sh.1, sh.5, sh.10, sh.20, and sh.40 one at a time"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "strand_number": "3.0",
+          "strand_name": "GEOMETRY",
+          "total_lessons": 12,
+          "sub_strands": [
+            {
+              "sub_strand_number": "3.1",
+              "sub_strand_name": "Lines",
+              "lessons": 6,
+              "specific_learning_outcomes": [
+                "a) identify straight lines in different situations",
+                "b) draw straight lines on different surfaces",
+                "c) identify curved lines in different situations",
+                "d) draw curved lines on different surfaces",
+                "e) recognise straight and curved lines from real objects in the environment"
+              ],
+              "suggested_learning_experiences": [
+                "Stand behind one another facing the same side and identify what they have formed as a straight line",
+                "In teams, mark two points on the ground and use a stick to join the two points to make a straight line",
+                "Practise drawing straight lines on the ground and in their books",
+                "In teams, form a semicircle, draw a line around it and identify the line drawn as a curved line",
+                "Practise drawing curved lines on the ground and in their books",
+                "Observe and name lines from different objects in the environment"
+              ],
+              "key_inquiry_questions": [
+                "Where do we see straight and curved lines?"
+              ],
+              "core_competencies": ["Creativity and Imagination", "Communication and Collaboration"],
+              "values": ["Unity"],
+              "pcis": ["Environmental Awareness"],
+              "suggested_assessment": {
+                "methods": ["Observation", "Projects"],
+                "rubric_indicators": [
+                  "Ability to draw straight and curved lines"
+                ]
+              }
+            },
+            {
+              "sub_strand_number": "3.2",
+              "sub_strand_name": "Shapes",
+              "lessons": 6,
+              "specific_learning_outcomes": [
+                "a) identify rectangles, triangles, and circles in objects from the environment",
+                "b) make patterns involving rectangles, triangles, circles, and ovals",
+                "c) appreciate the beauty of patterns in different fabrics"
+              ],
+              "suggested_learning_experiences": [
+                "Use safe objects from the environment to recognise different shapes such as rectangles, triangles, circles, and oval",
+                "Make patterns of their choice using the three shapes",
+                "Make patterns, colour them and share with classmates"
+              ],
+              "key_inquiry_questions": [
+                "Where do we see different shapes?"
+              ],
+              "core_competencies": ["Creativity and Imagination", "Communication and Collaboration"],
+              "values": ["Unity", "Responsibility"],
+              "pcis": ["Creative Thinking"],
+              "suggested_assessment": {
+                "methods": ["Observation", "Projects", "Portfolio"],
+                "rubric_indicators": [
+                  "Ability to identify shapes in an object (rectangles, triangles, circles, ovals)",
+                  "Ability to make patterns involving three shapes (rectangles, triangles, circles, ovals)"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "subject_name": "Environmental Activities",
+      "total_lessons": 120,
+      "strands": [
+        {
+          "strand_number": "1.0",
+          "strand_name": "SOCIAL ENVIRONMENT",
+          "total_lessons": 52,
+          "sub_strands": [
+            {
+              "sub_strand_number": "1.1",
+              "sub_strand_name": "Cleaning My Body",
+              "lessons": 13,
+              "specific_learning_outcomes": [
+                "a) identify materials used to clean different parts of the body",
+                "b) wash face, teeth, hands, feet, and hair using locally available materials",
+                "c) appreciate the importance of a clean body for personal hygiene"
+              ],
+              "suggested_learning_experiences": [
+                "Observe pictures and name materials used to clean different parts of the body",
+                "Draw and colour materials used to clean different parts of the body",
+                "Match cleaning materials with pictures of body parts they are used to clean",
+                "Watch a video clip or observe pictures on oral hygiene practises for personal well-being",
+                "Share information on problems related to oral hygiene",
+                "Practise brushing teeth for proper oral hygiene and personal well-being",
+                "Observe a demonstration on cleaning parts of the body",
+                "Follow appropriate steps to wash own face, hands, feet, and hair by careful use (no wastage) of cleaning agents and water",
+                "Sing a song or recite a poem on cleaning different parts of the body",
+                "Make and maintain a journal on cleaning different parts of the body for one week",
+                "Make a healthy habit poster showing the importance of oral habits"
+              ],
+              "key_inquiry_questions": [
+                "How do you clean your body parts?",
+                "Why should we clean our body parts?"
+              ],
+              "core_competencies": ["Creativity and Imagination", "Self-efficacy"],
+              "values": ["Responsibility"],
+              "pcis": ["Life Skills", "Health Promotion Issues"],
+              "link_to_other_learning_areas": "Journaling in English Language Activities",
+              "suggested_assessment": {
+                "methods": ["Observation", "Oral questions", "Projects"],
+                "rubric_indicators": [
+                  "Ability to practise proper hygiene using locally available materials"
+                ]
+              }
+            },
+            {
+              "sub_strand_number": "1.2",
+              "sub_strand_name": "Our Home",
+              "lessons": 8,
+              "specific_learning_outcomes": [
+                "a) identify materials used to clean a home environment",
+                "b) state common accidents at home for personal and others' safety",
+                "c) carry out activities to ensure cleanliness in the home",
+                "d) reflect on the importance of living in a clean home environment"
+              ],
+              "suggested_learning_experiences": [
+                "Share ideas on different materials used to sweep, wipe, dust and collect litter at home",
+                "Draw and colour materials used to sweep, wipe, dust and collect litter at home",
+                "Share information on common accidents that occur at home",
+                "Select places at home or school where common accidents are likely to occur and share with peers",
+                "Practise appropriate pedestrian crossing",
+                "Manipulate digital devices to watch videos or observe pictures on ways of preventing accidents at home",
+                "Manipulate a digital device to watch a video, or observe pictures on ways of ensuring cleanliness in the home",
+                "Practise cleaning places and assorted items using different suitable cleaning materials at home or school"
+              ],
+              "key_inquiry_questions": [
+                "How can you make your home environment clean and safe?"
+              ],
+              "core_competencies": ["Learning to Learn", "Digital Literacy"],
+              "values": ["Responsibility"],
+              "pcis": ["Disaster risk reduction", "Safety"],
+              "link_to_other_learning_areas": "Materials used for cleaning relate to items used in Creative Activities to clean self after finger painting activities",
+              "suggested_assessment": {
+                "methods": ["Observation", "Oral questions", "Self-assessment"],
+                "rubric_indicators": [
+                  "Ability to practise proper hygiene using locally available materials",
+                  "Ability to practise good healthy habits at home and school",
+                  "Ability to identify safety precautions at home and school"
+                ]
+              }
+            },
+            {
+              "sub_strand_number": "1.3",
+              "sub_strand_name": "Family Needs",
+              "lessons": 13,
+              "specific_learning_outcomes": [
+                "a) identify basic needs in the family",
+                "b) classify items and structures as basic needs in the family",
+                "c) categorise food from plants and animals eaten at home",
+                "d) select suitable food for a healthy body",
+                "e) appreciate different needs in the family"
+              ],
+              "suggested_learning_experiences": [
+                "Share information on different family needs",
+                "Manipulate a digital device to watch a video clip or observe pictures of different basic family needs",
+                "Draw and colour items that represent family needs",
+                "Observe pictures of food items used by family members",
+                "Match pictures of food items with their names",
+                "Recite poems or sing songs on different family needs",
+                "Manipulate digital devices when recording poems and songs on different family needs",
+                "Make picture cut-outs of food items and structures as basic needs in the family",
+                "Sort and group locally assorted food items into types of tastes",
+                "Create a one-week journal of healthy foods eaten",
+                "Make a nature corner with different food items found in the locality"
+              ],
+              "key_inquiry_questions": [
+                "Which things do you use as a family at home?",
+                "How do you choose the food you eat?"
+              ],
+              "core_competencies": ["Digital Literacy", "Self-efficacy"],
+              "values": ["Respect"],
+              "pcis": ["Life Skills", "Health Promotion"],
+              "link_to_other_learning_areas": "Basic needs of the family such as water relates to filling and emptying activities in Mathematical Activities",
+              "suggested_assessment": {
+                "methods": ["Observation", "Projects", "Portfolio"],
+                "rubric_indicators": [
+                  "Ability to record the uses of water at home and school"
+                ]
+              }
+            },
+            {
+              "sub_strand_number": "1.4",
+              "sub_strand_name": "Our School",
+              "lessons": 9,
+              "specific_learning_outcomes": [
+                "a) identify the main physical features between home and school",
+                "b) draw main physical features between home and school",
+                "c) apply personal safety on the way to school",
+                "d) acknowledge the significance of identifying places using key features"
+              ],
+              "suggested_learning_experiences": [
+                "Manipulate a digital device to watch videos or observe pictures of the main physical features between home and school",
+                "Draw and colour the main physical features found between home and school",
+                "Interact with digital technology when playing educative games on locating main features between home and school",
+                "Role play safety measures to take on the way to school"
+              ],
+              "key_inquiry_questions": [
+                "How do you identify your way to school?",
+                "How can you be safe while coming to school?"
+              ],
+              "core_competencies": ["Digital Literacy", "Self-efficacy"],
+              "values": ["Unity"],
+              "pcis": ["Safety"],
+              "link_to_other_learning_areas": "Drawing physical features between home and school relates to the skill of drawing and colouring in Creative Activities",
+              "suggested_assessment": {
+                "methods": ["Observation", "Oral questions", "Projects"],
+                "rubric_indicators": [
+                  "Ability to identify safety precautions at home and school"
+                ]
+              }
+            },
+            {
+              "sub_strand_number": "1.5",
+              "sub_strand_name": "Our Market",
+              "lessons": 9,
+              "specific_learning_outcomes": [
+                "a) identify roles of people found in a market",
+                "b) list food items found in a market",
+                "c) categorise food items found in a market into fruits and vegetables",
+                "d) appreciate activities that are carried out in a market"
+              ],
+              "suggested_learning_experiences": [
+                "Observe pictures or videos of people found in a market",
+                "Share information with peers on the roles of people found in a market",
+                "Use pictures or flashcards to pick out food items found in a local market",
+                "Draw and colour different food items found in a market",
+                "Use flashcards to sort and group food items into fruits and vegetables",
+                "Sort and group picture cut-outs of food items found in a market and make a portfolio",
+                "Recite poems and sing songs on food items found in the market"
+              ],
+              "key_inquiry_questions": [
+                "Why do we have markets?"
+              ],
+              "core_competencies": ["Communication and Collaboration"],
+              "values": ["Unity"],
+              "pcis": ["Social-economic issues", "Financial literacy"],
+              "link_to_other_learning_areas": "Food items found in a market relate to concepts of sorting and grouping in Mathematical Activities",
+              "suggested_assessment": {
+                "methods": ["Observation", "Oral questions", "Portfolio"],
+                "rubric_indicators": [
+                  "Ability to practise proper hygiene using locally available materials",
+                  "Ability to practise good healthy habits at home and school"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "strand_number": "2.0",
+          "strand_name": "NATURAL ENVIRONMENT",
+          "total_lessons": 34,
+          "sub_strands": [
+            {
+              "sub_strand_number": "2.1",
+              "sub_strand_name": "Weather and the Sky",
+              "lessons": 12,
+              "specific_learning_outcomes": [
+                "a) describe the appearance of the sky during the day and at night",
+                "b) identify weather conditions in the locality",
+                "c) record different weather conditions in the locality",
+                "d) appreciate differences in weather conditions at different times of the day"
+              ],
+              "suggested_learning_experiences": [
+                "Observe the sky during the day and at night and share observations with peers",
+                "Manipulate a digital device to watch video clips or observe pictures showing the appearance of the sky during the day and at night",
+                "Draw features appearing in the sky during the day and at night",
+                "Manipulate a digital device to watch video clips or observe pictures of different weather conditions",
+                "Draw symbols of different weather conditions in the locality",
+                "Observe prevailing weather conditions as an outdoor activity",
+                "Share ideas on prevailing weather conditions and make a simple weather chart",
+                "Tell age-appropriate stories about weather and weather conditions"
+              ],
+              "key_inquiry_questions": [
+                "How does the sky appear at night and during the day?"
+              ],
+              "core_competencies": ["Communication", "Digital Literacy"],
+              "values": ["Responsibility"],
+              "pcis": ["Life Skills", "Environmental Awareness"],
+              "link_to_other_learning_areas": "Appearance of the sky and conditions can be used when learning about creation in Religious Activities",
+              "suggested_assessment": {
+                "methods": ["Observation", "Oral questions", "Projects"],
+                "rubric_indicators": [
+                  "Ability to observe safety precautions in the immediate environment",
+                  "Ability to record weather conditions in the locality"
+                ]
+              }
+            },
+            {
+              "sub_strand_number": "2.2",
+              "sub_strand_name": "Soil",
+              "lessons": 10,
+              "specific_learning_outcomes": [
+                "a) identify ways of playing with soil for enjoyment",
+                "b) play with soil for enjoyment",
+                "c) model objects using soil at school",
+                "d) develop curiosity in playing with soil for enjoyment"
+              ],
+              "suggested_learning_experiences": [
+                "Share ideas on ways of playing with soil for enjoyment",
+                "Share tasks when filling and emptying cans with soil in turns",
+                "Make different patterns using soil as paint",
+                "Manipulate a digital device to watch videos or observe pictures of objects made from soil",
+                "Model different objects using soil",
+                "Sing relevant songs to peers while playing with soil for fun",
+                "Clean or tidy up the working space after modelling activities and wash hands with soap and clean running water"
+              ],
+              "key_inquiry_questions": [
+                "Why is playing with soil important to us?"
+              ],
+              "core_competencies": ["Self-efficacy", "Creativity and Imagination"],
+              "values": ["Social Justice"],
+              "pcis": ["Health Promotion Issues"],
+              "link_to_other_learning_areas": "Aspects of soil relate to modelling items using soil in Creative Activities",
+              "suggested_assessment": {
+                "methods": ["Observation", "Projects"],
+                "rubric_indicators": [
+                  "Ability to identify ways of playing with soil and sounds"
+                ]
+              }
+            },
+            {
+              "sub_strand_number": "2.3",
+              "sub_strand_name": "Sound",
+              "lessons": 12,
+              "specific_learning_outcomes": [
+                "a) identify sounds in the immediate environment",
+                "b) create sounds from objects for enjoyment",
+                "c) discriminate sounds that alert on danger for an appropriate response",
+                "d) acknowledge sounds that alert us to dangers"
+              ],
+              "suggested_learning_experiences": [
+                "Take a sound walk in the immediate environment to identify sounds from humans, animals, machines and natural sources and share with peers",
+                "Manipulate digital devices to watch a video clip on ways of creating sound using the body, objects and voice",
+                "Listen to an audio clip on ways of creating sound using the body, objects and voice",
+                "Imitate and record videos or audio sounds from people, animals, machines and natural sources",
+                "Use video clips or audio files to listen to various sounds that alert people to danger",
+                "Role play sounds that alert people to danger",
+                "Role play on appropriate responses to vehicle sounds (horn sounds, bells, sirens) to keep safe in the environment",
+                "Explore sources of loud sounds in the immediate environment",
+                "Talk about what happens to a person when near loud sounds",
+                "Observe pictures or videos that show how to protect oneself from loud sounds",
+                "Practise obeying sounds that alert us to danger for appropriate response"
+              ],
+              "key_inquiry_questions": [
+                "How do animals and other objects in our environment produce sounds?",
+                "Why are sounds important in our lives?"
+              ],
+              "core_competencies": ["Self-efficacy", "Digital Literacy"],
+              "values": ["Patriotism"],
+              "pcis": ["Life Skills", "Safety"],
+              "link_to_other_learning_areas": "Sounds in the immediate environment draw concepts in Creative Activities",
+              "suggested_assessment": {
+                "methods": ["Observation", "Oral questions", "Role play"],
+                "rubric_indicators": [
+                  "Ability to observe safety precautions in the immediate environment",
+                  "Ability to identify ways of playing with soil and sounds"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "strand_number": "3.0",
+          "strand_name": "RESOURCES IN OUR ENVIRONMENT",
+          "total_lessons": 34,
+          "sub_strands": [
+            {
+              "sub_strand_number": "3.1",
+              "sub_strand_name": "Water",
+              "lessons": 14,
+              "specific_learning_outcomes": [
+                "a) identify sources of water in the immediate environment",
+                "b) record uses of water at home and school",
+                "c) conserve water at home and school",
+                "d) acknowledge different sources of water in the immediate environment"
+              ],
+              "suggested_learning_experiences": [
+                "Manipulate digital devices to watch videos or observe pictures of different sources of water",
+                "Develop originality skills when drawing and colouring different sources of water",
+                "Complete a simple word puzzle on sources of water at home and school",
+                "Collaboratively model sources of water in class learning spaces or corners using locally available materials",
+                "Observe and write uses of water at home and school",
+                "Share experiences with peers on the careful use of water in the home and school",
+                "Role play water conservation activities that can be used at home and school",
+                "Make a poster on water conservation (reducing the use of water) at home and school"
+              ],
+              "key_inquiry_questions": [
+                "How can you use water without wasting it?",
+                "Why do we care for water sources?"
+              ],
+              "core_competencies": ["Learning to Learn", "Creativity and Imagination"],
+              "values": ["Unity"],
+              "pcis": ["Health promotion issues", "Environmental conservation"],
+              "link_to_other_learning_areas": "Making a poster on water conservation at home and school draws knowledge from writing skills in English Language Activities",
+              "suggested_assessment": {
+                "methods": ["Observation", "Projects", "Peer assessment"],
+                "rubric_indicators": [
+                  "Ability to record the uses of water at home and school",
+                  "Ability to conserve water and plants in the immediate environment"
+                ]
+              }
+            },
+            {
+              "sub_strand_number": "3.2",
+              "sub_strand_name": "Plants",
+              "lessons": 10,
+              "specific_learning_outcomes": [
+                "a) identify parts of a plant found in the school garden or compound",
+                "b) draw different parts of a plant found at school",
+                "c) carry out activities that conserve plants in the immediate environment",
+                "d) advocate for the conservation of plants in the immediate environment"
+              ],
+              "suggested_learning_experiences": [
+                "Take a nature walk to explore parts of plants",
+                "Manipulate a digital device to watch video clips or observe pictures and photographs to identify different parts of a plant",
+                "Observe safety during collecting and observing young plants in the locality",
+                "Indicate parts of a plant (flower, leaves, stem, roots) using real plants or pictures",
+                "Colour parts of a plant and display own work for further learning and peer assessment",
+                "Plant seeds in the nature corner of the class, in a school garden or flowerbed",
+                "Practise watering plants found in the immediate environment"
+              ],
+              "key_inquiry_questions": [
+                "How can you care for plants in your environment?"
+              ],
+              "core_competencies": ["Learning to Learn", "Self-efficacy"],
+              "values": ["Patriotism"],
+              "pcis": ["Environmental education and climate change"],
+              "link_to_other_learning_areas": "Plants relate to the concept of creation in Religious Activities",
+              "suggested_assessment": {
+                "methods": ["Observation", "Projects", "Peer assessment"],
+                "rubric_indicators": [
+                  "Ability to conserve water and plants in the immediate environment"
+                ]
+              }
+            },
+            {
+              "sub_strand_number": "3.3",
+              "sub_strand_name": "Animals",
+              "lessons": 10,
+              "specific_learning_outcomes": [
+                "a) identify domestic animals in the immediate environment",
+                "b) list domestic animals used as food in the locality",
+                "c) carry out basic care activities for small domestic animals",
+                "d) acknowledge the diversity of animals in the immediate environment"
+              ],
+              "suggested_learning_experiences": [
+                "Manipulate a digital device to watch or observe pictures of domestic animals",
+                "Take a nature walk in the immediate environment to observe and write the names of domestic animals",
+                "Draw and colour domestic animals used as food in the locality",
+                "Manipulate a digital device to watch video clips of domestic animals being watered, fed and treated",
+                "Share with peers on safety precautions taken when feeding and watering domestic animals",
+                "Water and feed some domestic animals in the immediate environment accompanied by a caregiver",
+                "Wash hands using clean running water after interacting with animals for personal hygiene",
+                "Make a journal on basic care activities done to domestic animals at home or school",
+                "Listen to stories on animals for enjoyment",
+                "Gather more information on care for domestic animals from parents or guardians and write them clearly and correctly"
+              ],
+              "key_inquiry_questions": [
+                "How can you care for animals in your immediate environment?"
+              ],
+              "core_competencies": ["Learning to Learn", "Communication and Collaboration"],
+              "values": ["Love", "Unity"],
+              "pcis": ["Health promotion issues", "Life Skills"],
+              "link_to_other_learning_areas": "Listening to stories on animals for enjoyment relates to active listening in English Language Activities",
+              "suggested_assessment": {
+                "methods": ["Observation", "Projects", "Portfolio"],
+                "rubric_indicators": [
+                  "Ability to care for domestic animals in the immediate environment"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "subject_name": "Creative Activities",
+      "total_lessons": 180,
+      "strands": [
+        {
+          "strand_number": "1.0",
+          "strand_name": "CREATING AND EXECUTING",
+          "total_lessons": 94,
+          "sub_strands": [
+            {
+              "sub_strand_number": "1.1",
+              "sub_strand_name": "Jumping",
+              "lessons": 14,
+              "specific_learning_outcomes": [
+                "a) identify different ways of jumping for body agility",
+                "b) improvise objects to be used for jumping",
+                "c) jump in different ways for coordination",
+                "d) sing songs while jumping for fun",
+                "e) appreciate jumping for enjoyment while observing safety"
+              ],
+              "suggested_learning_experiences": [
+                "Watch a video clip or a demonstration on jumping activities",
+                "Practise different ways of jumping with peers",
+                "Identify and collect locally available materials for improvising objects to be used in jumping while observing safety",
+                "Jump high for height and far in different directions",
+                "Collaboratively sing songs while jumping high and far in different ways",
+                "Talk about their own and others' performance in jumping activities"
+              ],
+              "key_inquiry_questions": [
+                "Why do we jump?"
+              ],
+              "core_competencies": ["Communication and Collaboration", "Self-efficacy"],
+              "values": ["Unity"],
+              "pcis": ["Safety", "Health Promotion"],
+              "suggested_assessment": {
+                "methods": ["Oral tests", "Practical tests", "Fieldwork reports", "Peer Assessment"]
+              }
+            },
+            {
+              "sub_strand_number": "1.2",
+              "sub_strand_name": "Rhythm",
+              "lessons": 14,
+              "specific_learning_outcomes": [
+                "a) identify items that maintain a steady pulse for beat articulation",
+                "b) play a steady beat on a percussion instrument while singing",
+                "c) create a rhythmic accompaniment to a song using body percussion",
+                "d) appreciate the use of percussions in creating rhythm"
+              ],
+              "suggested_learning_experiences": [
+                "Identify and imitate objects that maintain a constant beat such as a ticking clock",
+                "Collaboratively tap/clap the beat using body percussion; clapping/tapping/marching/stamping the foot while singing simple songs",
+                "Watch live or recorded performances to identify body percussion accompaniments to songs",
+                "Explore their body and use body percussions to accompany familiar topical songs",
+                "Improvise body percussion accompaniments to songs",
+                "Record performances using a digital device or present to peers for feedback"
+              ],
+              "key_inquiry_questions": [
+                "How do we create rhythm?"
+              ],
+              "core_competencies": ["Digital Literacy", "Creativity and Imagination"],
+              "values": ["Unity"],
+              "pcis": ["Life Skills"],
+              "suggested_assessment": {
+                "methods": ["Oral tests", "Aural test", "Written tests", "Peer assessment"]
+              }
+            },
+            {
+              "sub_strand_number": "1.3",
+              "sub_strand_name": "Drawing",
+              "lessons": 14,
+              "specific_learning_outcomes": [
+                "a) identify lines for familiarity",
+                "b) draw lines in different directions",
+                "c) draw patterns using lines in different directions",
+                "d) appreciate drawing pictures for expression"
+              ],
+              "suggested_learning_experiences": [
+                "Observe actual and virtual pictures and identify lines",
+                "Collaboratively, recognise straight, wavy, curved and zigzag lines within the environment",
+                "Select appropriate materials for drawing such as coloured pencils, crayons, and charcoal among others",
+                "Draw various lines; straight, wavy, curved and zigzag",
+                "Draw the lines in different directions; vertical, diagonal and horizontal",
+                "Create a pattern by drawing lines in different directions",
+                "Draw simple pictures using lines for enjoyment",
+                "Show and speak clearly about own and others' drawing for feedback"
+              ],
+              "key_inquiry_questions": [
+                "Where do we see lines?"
+              ],
+              "core_competencies": ["Creativity and Imagination", "Communication"],
+              "values": ["Responsibility"],
+              "pcis": ["Environmental Awareness"],
+              "suggested_assessment": {
+                "methods": ["Practical tests", "Fieldwork reports", "Oral tests", "Peer Assessment"]
+              }
+            },
+            {
+              "sub_strand_number": "1.4",
+              "sub_strand_name": "Stretching",
+              "lessons": 14,
+              "specific_learning_outcomes": [
+                "a) identify body parts involved in stretching",
+                "b) perform stretching in different directions for flexibility",
+                "c) enjoy stretching in different directions for body fitness"
+              ],
+              "suggested_learning_experiences": [
+                "Talk about body parts involved in stretching",
+                "Demonstrate stretching in different directions with peers",
+                "Practise stretching in different directions",
+                "Practise stretching in different positions",
+                "Collaboratively, play appropriate games involving stretching while observing safety",
+                "Sing action songs on body parts involved in stretching",
+                "Team up to use digital devices to record performances on stretching for future reference"
+              ],
+              "key_inquiry_questions": [
+                "Why do we stretch our body?"
+              ],
+              "core_competencies": ["Communication and Collaboration", "Digital Literacy"],
+              "values": ["Unity"],
+              "pcis": ["Health Promotion"],
+              "suggested_assessment": {
+                "methods": ["Oral tests", "Practical tests", "Fieldwork reports", "Peer Assessment"]
+              }
+            },
+            {
+              "sub_strand_number": "1.5",
+              "sub_strand_name": "Painting and Colouring",
+              "lessons": 14,
+              "specific_learning_outcomes": [
+                "a) identify materials and tools for painting and colouring",
+                "b) colour a picture to imitate the environment",
+                "c) paint shapes using a brush",
+                "d) paint using fingers on a surface",
+                "e) paint using a sponge on a surface",
+                "f) enjoy painting and colouring as a form of expression"
+              ],
+              "suggested_learning_experiences": [
+                "Observe actual and virtual environment to identify materials and tools for painting and colouring",
+                "Apply colour within the pictures using dry media to represent colours of objects in the environment",
+                "Paint using a brush within the shapes of the picture on paper",
+                "Paint using fingers on a paper or fabric",
+                "Use sponge to paint within drawn forms on a paper or fabric, take note; clean hands after painting",
+                "Display the pictures and talk about them with your peers"
+              ],
+              "key_inquiry_questions": [
+                "Why do we paint and colour pictures?"
+              ],
+              "core_competencies": ["Creativity and Imagination", "Self-efficacy"],
+              "values": ["Responsibility"],
+              "pcis": ["Environmental Awareness"],
+              "suggested_assessment": {
+                "methods": ["Practical tests", "Peer assessment", "Oral test", "Aural tests", "Written tests"]
+              }
+            },
+            {
+              "sub_strand_number": "1.6",
+              "sub_strand_name": "Melody",
+              "lessons": 14,
+              "specific_learning_outcomes": [
+                "a) identify sounds as melodic or non-melodic for aural discrimination",
+                "b) aurally recognise like and unlike passages in short melodies",
+                "c) echo simple melodic patterns by singing or humming for aural skill development",
+                "d) enjoy replicating melodic passages for aural discrimination"
+              ],
+              "suggested_learning_experiences": [
+                "Collaboratively listen to a variety of sounds and identify them as melodic or non-melodic",
+                "Listen to songs and aurally identify the passages as like or unlike",
+                "Listen to age-appropriate live or recorded melodic patterns and imitate through singing or humming with pitch accuracy",
+                "Comment on peers' imitation of melodies using polite language"
+              ],
+              "key_inquiry_questions": [
+                "How do we identify melodies?"
+              ],
+              "core_competencies": ["Communication and Collaboration", "Learning to Learn"],
+              "values": ["Respect"],
+              "pcis": ["Life Skills"],
+              "suggested_assessment": {
+                "methods": ["Oral test", "Aural tests", "Written tests", "Practical tests", "Peer assessment"]
+              }
+            },
+            {
+              "sub_strand_number": "1.7",
+              "sub_strand_name": "Pattern Making",
+              "lessons": 10,
+              "specific_learning_outcomes": [
+                "a) recognise patterns made using numeral and letters",
+                "b) create patterns using letters",
+                "c) make a pattern using numerals",
+                "d) enjoy making patterns for expression"
+              ],
+              "suggested_learning_experiences": [
+                "Explore virtual and actual source to identify letter and numeral patterns",
+                "Use letters to create a line pattern",
+                "Use numerals to create a line pattern",
+                "Take turns to show and talk about patterns created by self and others"
+              ],
+              "key_inquiry_questions": [
+                "How do we make patterns?"
+              ],
+              "core_competencies": ["Creativity and Imagination", "Digital Literacy"],
+              "values": ["Responsibility"],
+              "pcis": ["Creative Thinking"],
+              "suggested_assessment": {
+                "methods": ["Oral test", "Written tests", "Practical tests", "Peer assessment"]
+              }
+            }
+          ]
+        },
+        {
+          "strand_number": "2.0",
+          "strand_name": "PERFORMING AND DISPLAYING",
+          "total_lessons": 78,
+          "sub_strands": [
+            {
+              "sub_strand_number": "2.1",
+              "sub_strand_name": "Singing Games - Kenyan style",
+              "lessons": 13,
+              "specific_learning_outcomes": [
+                "a) identify props used in the performance of a singing game from a Kenyan community",
+                "b) improvise a simple prop for use in performing a singing game",
+                "c) perform singing games drawn from local cultures in Kenya for enjoyment",
+                "d) enjoy performing singing games from Kenyan local cultures"
+              ],
+              "suggested_learning_experiences": [
+                "Watch live or recorded performances of singing games drawn from Kenyan local cultures and talk about them",
+                "Identify props used in a singing game performance by name",
+                "Collect relevant locally available materials and improvise a prop for use in singing games",
+                "Performance observing safety",
+                "Take a role and perform age-appropriate singing games with peers focussing on performance aspects; singing, game activities, pattern formations, the use of props, observance of safety and appropriate etiquette (behaviour)"
+              ],
+              "key_inquiry_questions": [
+                "Why do we perform singing games?"
+              ],
+              "core_competencies": ["Communication and Collaboration", "Citizenship"],
+              "values": ["Unity", "Patriotism"],
+              "pcis": ["Cultural Awareness"],
+              "suggested_assessment": {
+                "methods": ["Oral tests", "Aural test", "Written tests", "Fieldwork reports", "Participatory assessment", "Peer assessment"]
+              }
+            },
+            {
+              "sub_strand_number": "2.2",
+              "sub_strand_name": "Throwing and Catching",
+              "lessons": 14,
+              "specific_learning_outcomes": [
+                "a) identify materials used to improvise a ball",
+                "b) improvise a ball from locally available materials",
+                "c) perform throwing and catching activities for skill acquisition",
+                "d) appreciate throwing and catching activities for enjoyment"
+              ],
+              "suggested_learning_experiences": [
+                "Collect locally available reusable materials to be used for making a ball while observing hygiene",
+                "Make an appropriate ball using collected materials",
+                "Practise throwing and catching activities using the ball with peers while observing safety",
+                "Play simple games on throwing and catching a ball",
+                "Talk about own and others effort while playing games involving throwing and catching"
+              ],
+              "key_inquiry_questions": [
+                "Why do we throw and catch objects?"
+              ],
+              "core_competencies": ["Self-efficacy", "Communication and Collaboration"],
+              "values": ["Unity"],
+              "pcis": ["Health Promotion", "Environmental Sustainability"],
+              "suggested_assessment": {
+                "methods": ["Practical demonstration", "Participatory assessment", "Oral presentations", "Self-assessment"]
+              }
+            },
+            {
+              "sub_strand_number": "2.3",
+              "sub_strand_name": "Paper Craft",
+              "lessons": 10,
+              "specific_learning_outcomes": [
+                "a) identify items made using paper craft",
+                "b) make paper items using the pleating technique",
+                "c) make paper items using the folding technique",
+                "d) play using the paper items for enjoyment"
+              ],
+              "suggested_learning_experiences": [
+                "Observe virtual or actual pictures of items made out of paper",
+                "Collect varied recyclable papers for craft",
+                "Create paper toys using the pleating technique such as animals, fan among others",
+                "Use the folding technique to make toy items to imitate things in the environment",
+                "Narrate to peers about and/or play with the paper item"
+              ],
+              "key_inquiry_questions": [
+                "What can we make using paper?"
+              ],
+              "core_competencies": ["Creativity and Imagination", "Self-efficacy"],
+              "values": ["Responsibility"],
+              "pcis": ["Environmental Sustainability"],
+              "suggested_assessment": {
+                "methods": ["Oral tests", "Practical tests", "Participatory assessment", "Peer assessment"]
+              }
+            },
+            {
+              "sub_strand_number": "2.4",
+              "sub_strand_name": "Log Roll and T-Balance",
+              "lessons": 14,
+              "specific_learning_outcomes": [
+                "a) identify log roll and T-balance through practice",
+                "b) make markers for use during log rolls and T-balance performance",
+                "c) perform a log roll for coordination",
+                "d) perform the T-balance for flexibility",
+                "e) appreciate performing the log roll and T-balance for enjoyment"
+              ],
+              "suggested_learning_experiences": [
+                "Watch a video clip or a demonstration of a log roll",
+                "Watch a video clip or demonstration of a T-balance",
+                "Collect and share reusable materials for making markers to be used during the log roll and T-balance performance with peers",
+                "Work collaboratively to make markers and mark the open space using improvised markers",
+                "Perform the log roll in different directions while observing safety",
+                "Perform the T-balance in different with peers while observing safety",
+                "Sing action songs while performing log roll and T-balance",
+                "Talk about own and others performance of the log roll and T - balance"
+              ],
+              "key_inquiry_questions": [
+                "Why do we perform log roll and T-balance?"
+              ],
+              "core_competencies": ["Communication and Collaboration", "Self-efficacy"],
+              "values": ["Unity"],
+              "pcis": ["Health Promotion", "Safety"],
+              "suggested_assessment": {
+                "methods": ["Demonstrations", "Practical tests", "Participatory assessment", "Peer assessment"]
+              }
+            },
+            {
+              "sub_strand_number": "2.5",
+              "sub_strand_name": "Songs",
+              "lessons": 13,
+              "specific_learning_outcomes": [
+                "a) describe the message in an action song",
+                "b) sing action songs in unison applying performance techniques",
+                "c) enjoy singing action songs for self-expression"
+              ],
+              "suggested_learning_experiences": [
+                "Watch live or recorded performances of age-appropriate action songs and imitate the performances",
+                "Collaboratively listen to or perform action songs based on pertinent issues and talk about the message in the action songs",
+                "Sing action songs in unison focusing on performance techniques",
+                "Respectfully talk about peers' performances for improvement"
+              ],
+              "key_inquiry_questions": [
+                "Why do we sing action songs?"
+              ],
+              "core_competencies": ["Communication and Collaboration", "Self-efficacy"],
+              "values": ["Respect", "Unity"],
+              "pcis": ["Life Skills"],
+              "suggested_assessment": {
+                "methods": ["Oral tests", "Aural tests", "Observation schedule"]
+              }
+            },
+            {
+              "sub_strand_number": "2.6",
+              "sub_strand_name": "Modelling",
+              "lessons": 14,
+              "specific_learning_outcomes": [
+                "a) identify items modelled using the pinch method",
+                "b) identify materials and tools used in modelling",
+                "c) model items using the pinch method",
+                "d) enjoy modelling items using the pinch method"
+              ],
+              "suggested_learning_experiences": [
+                "Observe actual or virtual items modelled using the pinch method",
+                "Collect materials and tools for use in the pinch method modelling",
+                "Model simple objects using the pinch method",
+                "Showcase, talk about own and others' work"
+              ],
+              "key_inquiry_questions": [
+                "What can we model using clay or plasticine?"
+              ],
+              "core_competencies": ["Creativity and Imagination", "Self-efficacy"],
+              "values": ["Responsibility"],
+              "pcis": ["Environmental Awareness"],
+              "suggested_assessment": {
+                "methods": ["Oral tests", "Peer assessment", "Practical tests", "Participatory assessment"]
+              }
+            },
+            {
+              "sub_strand_number": "2.7",
+              "sub_strand_name": "Percussion Musical Instruments",
+              "lessons": 10,
+              "specific_learning_outcomes": [
+                "a) identify percussion musical instruments from diverse indigenous Kenyan communities",
+                "b) improvise a percussion musical instrument using locally available materials",
+                "c) play a percussion musical instrument for enjoyment",
+                "d) appreciate percussion musical instruments from diverse Kenyan cultural communities"
+              ],
+              "suggested_learning_experiences": [
+                "Search for percussion instruments from print and electronic media and identify them by name",
+                "Responsibly collect appropriate available materials and improvise a shaker or jingle",
+                "Display and positively talk about percussion instruments improvised by peers and self and store them for future use",
+                "Visit actual or virtual sites to watch or observe how percussion instruments are played",
+                "Practice the methods of playing shakers, jingles and drums",
+                "Play a percussion musical instrument to accompany singing"
+              ],
+              "key_inquiry_questions": [
+                "How do we play percussion instruments?"
+              ],
+              "core_competencies": ["Creativity and Imagination", "Citizenship"],
+              "values": ["Patriotism", "Unity"],
+              "pcis": ["Cultural Awareness"],
+              "suggested_assessment": {
+                "methods": ["Oral presentations", "Written tests", "Peer assessment", "Practical tests", "Participatory assessment"]
+              }
+            }
+          ]
+        },
+        {
+          "strand_number": "3.0",
+          "strand_name": "APPRECIATION",
+          "total_lessons": 28,
+          "sub_strands": [
+            {
+              "sub_strand_number": "3.1",
+              "sub_strand_name": "Musical Sounds",
+              "lessons": 14,
+              "specific_learning_outcomes": [
+                "a) identify sounds in the local environment for aural discrimination",
+                "b) describe the elements of music as used in a song",
+                "c) respond to sounds in the environment for self-expression",
+                "d) describe the mood of songs for emotional expression",
+                "e) enjoy listening to and talking about music"
+              ],
+              "suggested_learning_experiences": [
+                "Keenly listen to sounds (birds, humans, animals, objects) within the school environment and identify their sources",
+                "Identify high and low sounds from the environment",
+                "Collaboratively listen to live/recorded music and describe its volume, speed and pitch, using appropriate terminology such as; loud/soft, fast/slow and high/low",
+                "Listen to and respond imaginatively to sounds in the environment through; movement, imitation or talking about it",
+                "Talk about the mood of selected pieces of short music either as happy or sad"
+              ],
+              "key_inquiry_questions": [
+                "What sounds do we hear around us?",
+                "How do sounds make us feel?"
+              ],
+              "core_competencies": ["Communication and Collaboration", "Learning to Learn"],
+              "values": ["Respect"],
+              "pcis": ["Environmental Awareness", "Life Skills"],
+              "suggested_assessment": {
+                "methods": ["Oral tests", "Aural tests", "Written tests", "Peer assessment"]
+              }
+            },
+            {
+              "sub_strand_number": "3.2",
+              "sub_strand_name": "Water Safety Awareness",
+              "lessons": 14,
+              "specific_learning_outcomes": [
+                "a) recognise different water points around the home environment",
+                "b) identify water dangers arising from water points at home",
+                "c) make a montage of water points around the home environment",
+                "d) narrate ways of applying safety around water points at home",
+                "e) appreciate water safety at home for life skills"
+              ],
+              "suggested_learning_experiences": [
+                "Observe pictures of different water points at home and share with peers",
+                "Talk about water points at home",
+                "Talk about the dangers of water points at home with peers",
+                "Collect pictures of familiar water points from magazines, newspapers among others",
+                "Sort and cut out the pictures",
+                "Stick using glue side by side the pictures on a stiff paper to make a simple montage",
+                "Perform a singing game about the dangers of water",
+                "Show the montage work and talk about ways to be safe around water points at homes",
+                "Observe safety measures around water points at home by exercising self-discipline"
+              ],
+              "key_inquiry_questions": [
+                "Why should we be careful around water points?"
+              ],
+              "core_competencies": ["Communication and Collaboration", "Self-efficacy"],
+              "values": ["Responsibility"],
+              "pcis": ["Safety", "Life Skills"],
+              "suggested_assessment": {
+                "methods": ["Oral presentations", "Peer assessment", "Practical tests", "Field work reports", "Participatory assessment"]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "subject_name": "Christian Religious Education (CRE) Activities",
+      "total_lessons": 90,
+      "strands": [
+        {
+          "strand_number": "1.0",
+          "strand_name": "CREATION",
+          "total_lessons": 15,
+          "sub_strands": [
+            {
+              "sub_strand_number": "1.1",
+              "sub_strand_name": "Self Awareness",
+              "lessons": 5,
+              "specific_learning_outcomes": [
+                "a) identify their uniqueness as guided by the word of God",
+                "b) state their gender according to Genesis 1:27",
+                "c) appreciate that God knows them by their names"
+              ],
+              "suggested_learning_experiences": [
+                "In pairs read Genesis 1:27",
+                "Say why they are a special creation",
+                "Sing songs related to their uniqueness",
+                "State their gender as guided by Genesis 1:27",
+                "Draw and colour a picture of a boy and a girl",
+                "In turns read Isaiah 43:1",
+                "Write their names on flashcards and display them in class",
+                "Sing songs related to their names",
+                "Watch a clip of a palm of a hand with a name on it",
+                "Draw the palm of a hand and write their names",
+                "Sing the song, 'I am fearfully and wonderfully made'",
+                "Memorise Isaiah 49:16"
+              ],
+              "key_inquiry_questions": [
+                "What makes you a special creation?"
+              ],
+              "core_competencies": ["Self-efficacy", "Communication"],
+              "values": ["Love"],
+              "pcis": ["Gender issues"],
+              "link_to_other_learning_areas": "Language Activities: they learn new vocabulary. Creative Activities: creative skills are enhanced as they sing and draw",
+              "suggested_assessment": {
+                "methods": ["Observation", "Oral questions", "Written quizzes"]
+              }
+            },
+            {
+              "sub_strand_number": "1.2",
+              "sub_strand_name": "My Family",
+              "lessons": 5,
+              "specific_learning_outcomes": [
+                "a) name members of their family",
+                "b) pray with family members to foster unity",
+                "c) identify five items they share at home",
+                "d) appreciate family members by praying with them"
+              ],
+              "suggested_learning_experiences": [
+                "List names of family members on flashcards",
+                "Draw and colour family members",
+                "Demonstrate how they pray at home",
+                "List the number of times they pray at home as a family",
+                "Mention instances they lead prayers at home",
+                "In groups or pairs, list items they share at home",
+                "Colour a picture of a family sharing a meal",
+                "Sing the song, 'Read your Bible pray every day'",
+                "Memorise Matthew 7:7"
+              ],
+              "key_inquiry_questions": [
+                "How do you relate with members of your family?"
+              ],
+              "core_competencies": ["Communication", "Learning to Learn"],
+              "values": ["Unity"],
+              "pcis": ["Social cohesion"],
+              "link_to_other_learning_areas": "Mathematical Activities: learners list the number of times they pray. Language Activities: reading skills are applied as learners read the Bible",
+              "suggested_assessment": {
+                "methods": ["Observation", "Oral questions", "Projects"]
+              }
+            },
+            {
+              "sub_strand_number": "1.3",
+              "sub_strand_name": "Creation of Plants and Animals",
+              "lessons": 5,
+              "specific_learning_outcomes": [
+                "a) name plants and animals in the environment",
+                "b) take part in keeping the home environment clean",
+                "c) appreciate God's creation by caring for plants and animals"
+              ],
+              "suggested_learning_experiences": [
+                "Picture-read Genesis 1:11, 24",
+                "Name various plants and animals created by God and write them on flashcards",
+                "Take a nature walk and identify different plants and animals in their environment",
+                "Draw and colour some plants and animals in the school environment",
+                "Say how they participate in keeping the home environment clean",
+                "Model some animals and display their work in class"
+              ],
+              "key_inquiry_questions": [
+                "Why should you take care of plants and animals?"
+              ],
+              "core_competencies": ["Learning to Learn", "Imagination and Creativity"],
+              "values": ["Responsibility"],
+              "pcis": ["Environmental Awareness"],
+              "link_to_other_learning_areas": "Environmental Activities: learners participate in keeping the home environment clean",
+              "suggested_assessment": {
+                "methods": ["Observation", "Projects", "Oral questions"]
+              }
+            }
+          ]
+        },
+        {
+          "strand_number": "2.0",
+          "strand_name": "THE HOLY BIBLE",
+          "total_lessons": 20,
+          "sub_strands": [
+            {
+              "sub_strand_number": "2.1",
+              "sub_strand_name": "The Word of God",
+              "lessons": 4,
+              "specific_learning_outcomes": [
+                "a) identify five ways of handling the Holy Bible",
+                "b) mention the two divisions of the Holy Bible",
+                "c) name the first two books in the New Testament",
+                "d) desire to handle the Holy Bible with respect"
+              ],
+              "suggested_learning_experiences": [
+                "Say how they take care of the Holy Bible",
+                "Tell why they should respect the Holy Bible",
+                "Role-play handling the Holy Bible with care and respect",
+                "In small groups mention the two divisions of the Holy Bible (Old and New Testament)",
+                "Name the first two Gospel books (Matthew and Mark)",
+                "Listen to and sing a song about the Bible",
+                "Sing a song on 'read your Bible pray every day'"
+              ],
+              "key_inquiry_questions": [
+                "Why should you handle the Holy Bible with respect?"
+              ],
+              "core_competencies": ["Digital Literacy"],
+              "values": ["Responsibility"],
+              "pcis": ["Spiritual Awareness"],
+              "link_to_other_learning_areas": "Mathematical Activities skills are reinforced through the aspect of division and the number of books in the Holy Bible. Creative Activities: creative skills are nurtured as learners role-play handling the Holy Bible with care and respect",
+              "suggested_assessment": {
+                "methods": ["Observation", "Oral questions", "Role play"]
+              }
+            },
+            {
+              "sub_strand_number": "2.2",
+              "sub_strand_name": "Bible Story: Joseph and his brothers",
+              "lessons": 8,
+              "specific_learning_outcomes": [
+                "a) narrate the story of Joseph and his brothers",
+                "b) discuss ways they treat their siblings",
+                "c) identify three values needed for peaceful co-existence",
+                "d) desire to live harmoniously with family members"
+              ],
+              "suggested_learning_experiences": [
+                "Watch a video on Joseph's coat of many colours in Genesis 37:3-4",
+                "Draw a coat and colour it",
+                "In turns, picture-read Joseph's dream in Genesis 37:5-8, in groups, picture-read Genesis 37:9-11",
+                "Role-play the story of Joseph",
+                "Say why Joseph's brothers hated him",
+                "In groups, share experiences of how they should treat their brothers and sisters",
+                "List values needed to live well with others",
+                "Sing a song about Joseph and his coat of many colours"
+              ],
+              "key_inquiry_questions": [
+                "How did Joseph relate with his brothers?"
+              ],
+              "core_competencies": ["Digital Literacy", "Imagination and Creativity"],
+              "values": ["Love"],
+              "pcis": ["Social Cohesion"],
+              "link_to_other_learning_areas": "Language Activities: learners picture-read Bible texts. Creative Activities: learners draw, colour and role-play the story of Joseph",
+              "suggested_assessment": {
+                "methods": ["Observation", "Oral questions", "Role play", "Projects"]
+              }
+            },
+            {
+              "sub_strand_number": "2.3",
+              "sub_strand_name": "Bible Story: The chariot of fire",
+              "lessons": 8,
+              "specific_learning_outcomes": [
+                "a) retell the story of Elijah and the chariot of fire",
+                "b) list three ways of having a good relationship with God",
+                "c) desire to respect God and their parents"
+              ],
+              "suggested_learning_experiences": [
+                "Picture-read 2 Kings 2:1,11-12",
+                "In groups draw and colour the chariot of fire",
+                "Watch a video clip of Elijah and the Chariot of fire",
+                "In pairs, tell their friend three ways of pleasing God",
+                "Sing a song about Elijah and the Chariot of Fire",
+                "Write 2 Kings 2:12 on flashcards and display it in the Christian Religious Education learning corner",
+                "In groups, tell ways they respect their parents or guardians at home"
+              ],
+              "key_inquiry_questions": [
+                "How did Elijah honour God?"
+              ],
+              "core_competencies": ["Imagination and Creativity", "Communication"],
+              "values": ["Love"],
+              "pcis": ["Social Cohesion"],
+              "link_to_other_learning_areas": "Language Activities: they learn new words such as 'a chariot.' Creative Activities: learners sing about Elijah and the Chariot of Fire",
+              "suggested_assessment": {
+                "methods": ["Observation", "Oral questions", "Projects"]
+              }
+            }
+          ]
+        },
+        {
+          "strand_number": "3.0",
+          "strand_name": "THE EARLY LIFE OF JESUS CHRIST",
+          "total_lessons": 31,
+          "sub_strands": [
+            {
+              "sub_strand_number": "3.1",
+              "sub_strand_name": "The Birth of Jesus Christ",
+              "lessons": 8,
+              "specific_learning_outcomes": [
+                "a) retell the birth of Jesus Christ",
+                "b) dramatise the birth of Jesus Christ",
+                "c) express the joy of the angels through song and dance",
+                "d) appreciate the birth of Jesus by participating in Christmas celebrations"
+              ],
+              "suggested_learning_experiences": [
+                "Picture-read the birth of Jesus according to Luke 2:4-13 and retell the story",
+                "Role-play the birth of Jesus Christ",
+                "Listen and dance to a recorded Christmas carol 'We wish you a Merry Christmas'",
+                "Sing a song related to Luke 2:13-14",
+                "Observe pictures of Jesus Christ's parents and name each of them as they point at the pictures",
+                "Observe pictures or watch a video clip of angels worshipping Baby Jesus",
+                "Sing and dance to the song of the angels (Luke 2:13-14)"
+              ],
+              "key_inquiry_questions": [
+                "Why do we celebrate the birth of Jesus Christ?"
+              ],
+              "core_competencies": ["Communication", "Imagination and Creativity", "Digital Literacy"],
+              "values": ["Unity"],
+              "pcis": ["Social cohesion"],
+              "link_to_other_learning_areas": "Creative Activities: creative skills are reinforced as learners sing and role-play the birth of Jesus Christ. Language Activities: learner's picture-read the Bible text and retell the story",
+              "suggested_assessment": {
+                "methods": ["Observation", "Role play", "Oral questions"]
+              }
+            },
+            {
+              "sub_strand_number": "3.2",
+              "sub_strand_name": "Jesus Christ in the Temple",
+              "lessons": 4,
+              "specific_learning_outcomes": [
+                "a) retell the story of Jesus Christ in the Temple",
+                "b) obey their parents as portrayed by Jesus Christ",
+                "c) take part in Sunday or Sabbath school activities",
+                "d) desire to accompany their parents to church as portrayed by Jesus Christ"
+              ],
+              "suggested_learning_experiences": [
+                "Draw and colour the church",
+                "In turns picture read Luke 2: 42-49",
+                "Observe pictures of Jesus Christ in the temple",
+                "Sequentially arrange flashcards on the events that took place when Jesus was left in the temple",
+                "Tell how Jesus Christ obeyed His parents",
+                "Share experiences of how they obey their parents at home",
+                "List activities they engage in at Sunday or Sabbath School"
+              ],
+              "key_inquiry_questions": [
+                "Why did Jesus Christ visit the temple?"
+              ],
+              "core_competencies": ["Communication and Collaboration"],
+              "values": ["Peace"],
+              "pcis": ["Peace Education"],
+              "link_to_other_learning_areas": "Creative Activities: learners draw and colour the church",
+              "suggested_assessment": {
+                "methods": ["Observation", "Oral questions", "Projects"]
+              }
+            },
+            {
+              "sub_strand_number": "3.3",
+              "sub_strand_name": "Baptism of Jesus Christ",
+              "lessons": 5,
+              "specific_learning_outcomes": [
+                "a) name the place where Jesus Christ was baptised",
+                "b) identify the person who baptised Jesus Christ",
+                "c) practise humility in their interaction with others"
+              ],
+              "suggested_learning_experiences": [
+                "Mention occasions, they witnessed people being baptised in their churches",
+                "In turns, picture-read Matthew 3:13-15",
+                "Watch a video clip on the Baptism of Jesus Christ",
+                "Mention the place where Jesus was baptised",
+                "Name the person who baptised Jesus Christ",
+                "In groups draw and colour Jesus being baptised",
+                "Tell how Jesus showed humility during His baptism",
+                "Sing baptismal songs familiar to them"
+              ],
+              "key_inquiry_questions": [
+                "Why is the baptism of Jesus Christ important to Christians today?"
+              ],
+              "core_competencies": ["Digital Literacy"],
+              "values": ["Respect"],
+              "pcis": ["Social Cohesion"],
+              "link_to_other_learning_areas": "Creative Activities: learners draw, colour and sing baptismal songs familiar to them",
+              "suggested_assessment": {
+                "methods": ["Observation", "Oral questions", "Projects"]
+              }
+            },
+            {
+              "sub_strand_number": "3.4",
+              "sub_strand_name": "Wedding at Cana of Galilee",
+              "lessons": 8,
+              "specific_learning_outcomes": [
+                "a) retell how Jesus changed water into wine",
+                "b) obey instructions as portrayed in the wedding at Cana",
+                "c) desire to be obedient in their interaction with others"
+              ],
+              "suggested_learning_experiences": [
+                "In groups, tell a story of a wedding that they attended and what they liked most",
+                "Picture-read the story of changing water into wine; John 2:1-10",
+                "Watch a video clip on the miracle of changing water into wine",
+                "Tell how the servants responded to Jesus' instructions in John 2:7-9",
+                "Sing a song related to this miracle",
+                "Share experiences of how they depend on God to provide for their needs",
+                "In groups, role-play how they obey their parents and teachers",
+                "Draw and colour the six jars of water"
+              ],
+              "key_inquiry_questions": [
+                "What happened at Cana of Galilee?"
+              ],
+              "core_competencies": ["Imagination and Creativity", "Self-efficacy"],
+              "values": ["Peace"],
+              "pcis": ["Peace Education"],
+              "link_to_other_learning_areas": "Creative Activities: learners sing, draw and role-play. Mathematical Activities: learners draw six jars of water. Language Activities: learners read the Bible text and learn new words",
+              "suggested_assessment": {
+                "methods": ["Observation", "Role play", "Projects"]
+              }
+            },
+            {
+              "sub_strand_number": "3.5",
+              "sub_strand_name": "Healing of Simon's mother-in-law",
+              "lessons": 6,
+              "specific_learning_outcomes": [
+                "a) retell the healing of Simon's mother in-law",
+                "b) show gratitude to others as portrayed by Simon's mother-in-law",
+                "c) appreciate Jesus's power to heal the sick"
+              ],
+              "suggested_learning_experiences": [
+                "Share experiences of how they help learners in need",
+                "Role-play an instance where they helped a learner in need",
+                "Picture-read the miracle according to Luke 4:38-39",
+                "Arrange pictures based on the miracle sequentially",
+                "Retell the miracle after watching a video clip",
+                "Role-play the healing of Simon's mother-in-law",
+                "Write a thank you note to parents and others who help them in their daily lives",
+                "Sing thanksgiving songs to express gratitude to God"
+              ],
+              "key_inquiry_questions": [
+                "How did Simon's mother-in-law express gratitude?"
+              ],
+              "core_competencies": ["Self-efficacy"],
+              "values": ["Love"],
+              "pcis": ["Problem-solving"],
+              "link_to_other_learning_areas": "Creative Arts: creative skills are applied as learners role-play the healing of Simon's mother-in-law",
+              "suggested_assessment": {
+                "methods": ["Observation", "Role play", "Projects"]
+              }
+            }
+          ]
+        },
+        {
+          "strand_number": "4.0",
+          "strand_name": "CHRISTIAN VALUES",
+          "total_lessons": 16,
+          "sub_strands": [
+            {
+              "sub_strand_number": "4.1",
+              "sub_strand_name": "Sharing",
+              "lessons": 4,
+              "specific_learning_outcomes": [
+                "a) identify items they share at home as a family",
+                "b) practise the value of sharing at home and school",
+                "c) retell the story of the little boy with two fish and five loaves",
+                "d) desire to keep the environment clean and avoid wastage"
+              ],
+              "suggested_learning_experiences": [
+                "Identify items that can be shared at home",
+                "In pairs mention items shared at home and school",
+                "Watch or listen to the miracle in John 6:1-14",
+                "Role-play the story of the little boy with two fish and five loaves",
+                "Draw and colour the two fish and five loaves",
+                "Sing a song on sharing",
+                "Keep the environment clean (John 6:12-13)"
+              ],
+              "key_inquiry_questions": [
+                "Why is it important to share with others?"
+              ],
+              "core_competencies": ["Learning to Learn", "Imagination and Creativity"],
+              "values": ["Unity"],
+              "pcis": ["Social cohesion"],
+              "link_to_other_learning_areas": "Creative Activities: learners sing a song on sharing. They also role-play the story of the little boy with two fish and five loaves",
+              "suggested_assessment": {
+                "methods": ["Observation", "Role play", "Projects"]
+              }
+            },
+            {
+              "sub_strand_number": "4.2",
+              "sub_strand_name": "Obedience",
+              "lessons": 4,
+              "specific_learning_outcomes": [
+                "a) list the importance of obeying parents",
+                "b) practise obedience at home as guided by the scriptures",
+                "c) exercise obedience in day-to-day life"
+              ],
+              "suggested_learning_experiences": [
+                "In pairs read Ephesians 6:1-3",
+                "In groups mention why they should obey their parents",
+                "Say the benefits of obeying parents",
+                "In pairs tell how they obey their parents at home",
+                "Listen to and sing a song on obedience",
+                "Memorise Ephesians 6:2-3"
+              ],
+              "key_inquiry_questions": [
+                "Why should you obey your parents?"
+              ],
+              "core_competencies": ["Communication and Collaboration", "Learning to Learn"],
+              "values": ["Respect"],
+              "pcis": ["Social Cohesion"],
+              "link_to_other_learning_areas": "Creative Activities are reinforced as learners listen and sing songs on obedience. Language Activities: speaking skills are enhanced as learners engage in activities such as mentioning why they should obey their parents",
+              "suggested_assessment": {
+                "methods": ["Observation", "Oral questions"]
+              }
+            },
+            {
+              "sub_strand_number": "4.3",
+              "sub_strand_name": "Honesty",
+              "lessons": 4,
+              "specific_learning_outcomes": [
+                "a) state reasons for telling the truth",
+                "b) demonstrate honesty by not stealing other people's items",
+                "c) practise punctuality at school and home",
+                "d) desire to be truthful in their daily lives"
+              ],
+              "suggested_learning_experiences": [
+                "Game read Ephesians 4:25",
+                "In groups say why they should always speak the truth",
+                "Say why they should not steal or pick items that do not belong to them",
+                "Role-play situations of honesty while dealing with other people's items",
+                "Sing a song on truthfulness",
+                "Story tell instances they took lost and found items to the teacher",
+                "Mention reasons for getting home and school on time (punctuality)"
+              ],
+              "key_inquiry_questions": [
+                "Why is it bad to lie?"
+              ],
+              "core_competencies": ["Citizenship"],
+              "values": ["Responsibility", "Peace"],
+              "pcis": ["Social Cohesion", "Integrity"],
+              "link_to_other_learning_areas": "Language Activities: learners speak clearly and effectively when telling stories on instances took lost and found items to the teacher",
+              "suggested_assessment": {
+                "methods": ["Observation", "Role play", "Oral questions"]
+              }
+            },
+            {
+              "sub_strand_number": "4.4",
+              "sub_strand_name": "Thankfulness",
+              "lessons": 4,
+              "specific_learning_outcomes": [
+                "a) mention three ways of expressing gratitude to their parents or guardians",
+                "b) practise thankfulness at home as guided by the Bible",
+                "c) desire to be thankful in daily life"
+              ],
+              "suggested_learning_experiences": [
+                "Say why they should thank their parents",
+                "In pairs share when to thank parents",
+                "Role-play how to thank parents",
+                "Compose and recite a poem on thanking their parents",
+                "Sing a song about praising God for the gift of parents or guardians",
+                "Write 1Thessalonians 5:18 on flashcards and recite it",
+                "Write flashcards on why they should be thankful to their parents or guardians and display the cards in class"
+              ],
+              "key_inquiry_questions": [
+                "Why should you thank your parents or guardians?"
+              ],
+              "core_competencies": ["Imagination and Creativity", "Communication and Collaboration"],
+              "values": ["Respect"],
+              "pcis": ["Social cohesion"],
+              "link_to_other_learning_areas": "Language Activities: learners recite the Bible verses and learn new words",
+              "suggested_assessment": {
+                "methods": ["Observation", "Role play", "Projects"]
+              }
+            }
+          ]
+        },
+        {
+          "strand_number": "5.0",
+          "strand_name": "THE CHURCH",
+          "total_lessons": 8,
+          "sub_strands": [
+            {
+              "sub_strand_number": "5.1",
+              "sub_strand_name": "A House of God",
+              "lessons": 4,
+              "specific_learning_outcomes": [
+                "a) recognise the Church as a place of worship and respect it",
+                "b) demonstrate responsibility by serving God in Church",
+                "c) desire to grow in faith by attending Sunday or Sabbath School"
+              ],
+              "suggested_learning_experiences": [
+                "In pairs mention ways they respect the church as a place of worship",
+                "List the benefits of going to church",
+                "List the number of times they go to church",
+                "Role-play activities they do in church (e.g. praying, reading the Bible, singing, dancing)",
+                "Sing and dance to the song in Psalms 100:4 (I will enter His gates with thanksgiving…..)"
+              ],
+              "key_inquiry_questions": [
+                "Why do you go to Church?",
+                "Why should you respect the Church?"
+              ],
+              "core_competencies": ["Imagination and Creativity"],
+              "values": ["Responsibility"],
+              "pcis": ["Spiritual Awareness"],
+              "link_to_other_learning_areas": "Mathematical Activities: learners record the number of times they go to church. Creative Activities: learner's role play, sing and dance to the song in Psalms 100:4",
+              "suggested_assessment": {
+                "methods": ["Observation", "Role play", "Oral questions"]
+              }
+            },
+            {
+              "sub_strand_number": "5.2",
+              "sub_strand_name": "A House of Prayer",
+              "lessons": 4,
+              "specific_learning_outcomes": [
+                "a) recite simple thanksgiving prayers",
+                "b) practise saying simple prayers at different times of the day",
+                "c) desire to pray always as taught by Jesus Christ"
+              ],
+              "suggested_learning_experiences": [
+                "Picture-read Mathew 21:13",
+                "In groups compose and recite simple prayers",
+                "Pray for family members",
+                "List the number of times they pray at home or in Sunday or /Sabbath School",
+                "Say simple prayers before and after taking meals and before they leave for home"
+              ],
+              "key_inquiry_questions": [
+                "Why is it important to pray always?"
+              ],
+              "core_competencies": ["Communication and Collaboration", "Imagination and Creativity"],
+              "values": ["Love"],
+              "pcis": ["Social Cohesion"],
+              "link_to_other_learning_areas": "Creative Activities: creative skills are reinforced as learners compose simple prayers. Mathematical Activities: learners record the number of times they pray at home or in Sunday school",
+              "suggested_assessment": {
+                "methods": ["Observation", "Oral questions", "Projects"]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "general_assessment_methods": [
+    "Observation",
+    "Oral questions",
+    "Written tests and quizzes",
+    "Rating scales",
+    "Projects",
+    "Portfolio",
+    "Self-assessment",
+    "Peer assessment",
+    "Role play",
+    "Practical tests",
+    "Checklists",
+    "Word search/puzzle",
+    "Anecdotal Notes"
+  ],
+  "core_competencies_developed": [
+    "Communication and Collaboration",
+    "Critical Thinking and Problem Solving",
+    "Creativity and Imagination",
+    "Citizenship",
+    "Digital Literacy",
+    "Learning to Learn",
+    "Self-efficacy"
+  ],
+  "values_integrated": [
+    "Responsibility",
+    "Respect",
+    "Love",
+    "Unity",
+    "Peace",
+    "Patriotism",
+    "Integrity",
+    "Social Justice"
+  ],
+  "pertinent_contemporary_issues": [
+    "Safety",
+    "Health Promotion",
+    "Environmental Awareness/Conservation",
+    "Life Skills",
+    "Financial Literacy",
+    "Social Cohesion",
+    "Disaster Risk Reduction",
+    "Gender Issues",
+    "Cultural Awareness",
+    "Digital Citizenship"
+  ]
+}
