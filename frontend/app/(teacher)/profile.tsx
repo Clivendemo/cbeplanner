@@ -11,7 +11,9 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  RefreshControl
+  RefreshControl,
+  Share,
+  Linking
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
@@ -20,6 +22,7 @@ import axios from 'axios';
 import { getErrorMessage, isRateLimitError } from '../../utils/errorHandler';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.legitlab.cbeplanner';
 
 interface Transaction {
   id: string;
@@ -262,6 +265,28 @@ export default function Profile() {
     });
   };
 
+  // Share app with others
+  const handleShareApp = async () => {
+    try {
+      const message = `📚 Check out CBE Lesson Planner!\n\nA great app for Kenyan teachers to create KICD-aligned lesson plans, study notes, and schemes of work.\n\n✅ Easy to use\n✅ Curriculum aligned\n✅ Saves time\n\nDownload now: ${PLAY_STORE_URL}`;
+      
+      const result = await Share.share({
+        message: message,
+        title: 'Share CBE Lesson Planner'
+      });
+      
+      if (result.action === Share.sharedAction) {
+        console.log('App shared successfully');
+      }
+    } catch (error: any) {
+      console.error('Error sharing app:', error);
+      // Fallback: Open Play Store link
+      Linking.openURL(PLAY_STORE_URL).catch(() => {
+        Alert.alert('Error', 'Could not open Play Store link');
+      });
+    }
+  };
+
   const renderTransaction = (item: Transaction) => (
     <View key={item.id} style={styles.transactionItem}>
       <View style={styles.transactionLeft}>
@@ -438,6 +463,17 @@ export default function Profile() {
           <Ionicons name="help-circle-outline" size={24} color="#6B7280" />
           <Text style={styles.menuText}>Help & Support</Text>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+        </TouchableOpacity>
+
+        {/* Share App Button */}
+        <TouchableOpacity 
+          style={[styles.menuItem, styles.shareAppButton]}
+          onPress={handleShareApp}
+          data-testid="share-app-btn"
+        >
+          <Ionicons name="share-social-outline" size={24} color="#10B981" />
+          <Text style={[styles.menuText, styles.shareAppText]}>Share App with Colleagues</Text>
+          <Ionicons name="chevron-forward" size={20} color="#10B981" />
         </TouchableOpacity>
 
         {/* Admin Panel - ONLY for mail2clive@gmail.com */}
@@ -1015,6 +1051,14 @@ const styles = StyleSheet.create({
   },
   adminText: {
     color: '#F59E0B'
+  },
+  shareAppButton: {
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#BBF7D0'
+  },
+  shareAppText: {
+    color: '#10B981'
   },
   modalOverlay: {
     flex: 1,
