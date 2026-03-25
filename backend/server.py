@@ -1,5 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Header, Request, UploadFile, File
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -12,12 +12,16 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone, timedelta
 from bson import ObjectId
 import httpx
+from io import BytesIO
 
 # Import curriculum import utilities
 from curriculum_import import (
     parse_csv_content, extract_curriculum_from_pdf, extract_curriculum_from_docx,
     generate_csv_template, rows_to_csv, CSV_TEMPLATE_HEADERS
 )
+
+# Import PDF generator
+from pdf_generator import generate_lesson_plan_pdf
 
 # Import production utilities
 from app.production_utils import (
@@ -1828,6 +1832,55 @@ async def delete_lesson_plan(plan_id: str, user: dict = Depends(verify_token)):
     except Exception as e:
         logger.error(f"Error deleting lesson plan: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to delete lesson plan")
+
+@api_router.get("/lesson-plans/{plan_id}/pdf")
+async def generate_lesson_plan_pdf_endpoint(plan_id: str, user: dict = Depends(verify_token)):
+    """Generate and return a PDF for a lesson plan"""
+    try:
+        # Get the lesson plan
+        plan = await db.lesson_plans.find_one({
+            "_id": ObjectId(plan_id),
+            "teacherId": user["id"]
+        })
+        
+        if not plan:
+            raise HTTPException(status_code=404, detail="Lesson plan not found")
+        
+        # Check if expired
+        current_time = datetime.utcnow()
+        if "expiresAt" in plan and plan["expiresAt"] and plan["expiresAt"] < current_time:
+            raise HTTPException(status_code=410, detail="This lesson plan has expired")
+        
+        # Convert ObjectId to string and datetime to ISO format
+        plan_dict = serialize_doc(plan)
+        if "createdAt" in plan and plan["createdAt"]:
+            plan_dict["createdAt"] = plan["createdAt"].isoformat()
+        
+        # Generate PDF
+        pdf_bytes = generate_lesson_plan_pdf(plan_dict)
+        
+        # Create filename
+        subject = plan.get("subjectName", "Lesson")
+        grade = plan.get("gradeName", "Plan")
+        date_str = datetime.now().strftime("%Y%m%d")
+        filename = f"LessonPlan_{subject}_{grade}_{date_str}.pdf"
+        filename = filename.replace(" ", "_")
+        
+        # Return as streaming response
+        return StreamingResponse(
+            BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "Content-Length": str(len(pdf_bytes))
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate PDF")
 
 @api_router.post("/admin/cleanup-expired-plans")
 async def cleanup_expired_plans(user: dict = Depends(verify_admin)):

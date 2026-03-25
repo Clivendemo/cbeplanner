@@ -54,6 +54,14 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - **Delete:** Users can manually delete lesson plans
 - **Admin Cleanup:** `POST /api/admin/cleanup-expired-plans` for manual cleanup
 
+### Share Features (DONE - Dec 2026)
+- **Share Lesson Plan as PDF:** Generate and share professional PDF documents
+  - Backend: `GET /api/lesson-plans/{id}/pdf` generates PDF using ReportLab
+  - PDF includes: Grade, Subject, Strand, SLO, Introduction, Development, Conclusion, Assessment, Competencies, Values, PCIs
+  - Frontend: Uses expo-file-system to download, expo-sharing to share
+- **Share as Text:** Fallback option to share as formatted text message
+- **Share App with Colleagues:** Share Play Store download link from profile page
+
 ### Production Hardening (DONE - Feb 2026)
 - **Security Headers:** HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Permissions-Policy, Referrer-Policy
 - **Rate Limiting:** IP-based rate limiting middleware (auth: 10/min, payment: 5/min, default: 100/min)

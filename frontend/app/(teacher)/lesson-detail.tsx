@@ -14,6 +14,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import { LessonPlanDisplay } from '../../components/LessonPlanDisplay';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -161,21 +163,86 @@ export default function LessonDetail() {
     return text;
   };
 
-  // Share lesson plan
-  const handleShare = async () => {
+  // State for PDF generation
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+
+  // Share lesson plan as PDF
+  const handleSharePdf = async () => {
+    if (!id || !firebaseUser) return;
+    
+    try {
+      setGeneratingPdf(true);
+      
+      // Get auth token
+      const token = await firebaseUser.getIdToken();
+      
+      // Generate filename
+      const subject = lessonPlan?.subjectName || 'Lesson';
+      const grade = lessonPlan?.gradeName || 'Plan';
+      const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const filename = `LessonPlan_${subject}_${grade}_${dateStr}.pdf`.replace(/\s+/g, '_');
+      const fileUri = `${FileSystem.cacheDirectory}${filename}`;
+      
+      // Download PDF from backend
+      const downloadResult = await FileSystem.downloadAsync(
+        `${BACKEND_URL}/api/lesson-plans/${id}/pdf`,
+        fileUri,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      
+      if (downloadResult.status !== 200) {
+        throw new Error('Failed to generate PDF');
+      }
+      
+      // Check if sharing is available
+      const isAvailable = await Sharing.isAvailableAsync();
+      
+      if (isAvailable) {
+        // Share the PDF file
+        await Sharing.shareAsync(downloadResult.uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Share Lesson Plan PDF',
+          UTI: 'com.adobe.pdf'
+        });
+      } else {
+        // Fallback to text sharing if PDF sharing not available
+        Alert.alert(
+          'Sharing Unavailable',
+          'PDF sharing is not available on this device. Would you like to share as text instead?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Share as Text', onPress: handleShareText }
+          ]
+        );
+      }
+    } catch (error: any) {
+      console.error('PDF share error:', error);
+      Alert.alert(
+        'Error',
+        'Failed to generate PDF. Would you like to share as text instead?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Share as Text', onPress: handleShareText }
+        ]
+      );
+    } finally {
+      setGeneratingPdf(false);
+    }
+  };
+
+  // Share as text fallback
+  const handleShareText = async () => {
     try {
       const content = formatLessonPlanText();
       
-      const result = await Share.share({
+      await Share.share({
         message: content,
-        title: `Lesson Plan - ${lessonPlan?.subject || 'CBE'}`
+        title: `Lesson Plan - ${lessonPlan?.subjectName || 'CBE'}`
       });
-      
-      if (result.action === Share.sharedAction) {
-        if (result.activityType) {
-          console.log('Shared with activity type:', result.activityType);
-        }
-      }
     } catch (error: any) {
       Alert.alert('Error', 'Failed to share lesson plan');
       console.error('Share error:', error);
@@ -241,12 +308,31 @@ export default function LessonDetail() {
       {/* Action buttons */}
       <View style={styles.actionBar}>
         <TouchableOpacity
-          style={styles.shareButton}
-          onPress={handleShare}
-          data-testid="share-lesson-plan-btn"
+          style={[styles.shareButton, generatingPdf && styles.shareButtonDisabled]}
+          onPress={handleSharePdf}
+          disabled={generatingPdf}
+          data-testid="share-lesson-plan-pdf-btn"
         >
-          <Ionicons name="share-social-outline" size={16} color="#6366F1" />
-          <Text style={styles.shareButtonText}>Share</Text>
+          {generatingPdf ? (
+            <>
+              <ActivityIndicator size={14} color="#6366F1" />
+              <Text style={styles.shareButtonText}>Generating...</Text>
+            </>
+          ) : (
+            <>
+              <Ionicons name="document-text-outline" size={16} color="#6366F1" />
+              <Text style={styles.shareButtonText}>Share PDF</Text>
+            </>
+          )}
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={styles.textShareButton}
+          onPress={handleShareText}
+          data-testid="share-lesson-plan-text-btn"
+        >
+          <Ionicons name="chatbubble-outline" size={16} color="#10B981" />
+          <Text style={styles.textShareButtonText}>Text</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
@@ -330,9 +416,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#EEF2FF',
     borderRadius: 16
   },
+  shareButtonDisabled: {
+    opacity: 0.7
+  },
   shareButtonText: {
     fontSize: 13,
     color: '#6366F1',
+    fontWeight: '500'
+  },
+  textShareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#F0FDF4',
+    borderRadius: 16
+  },
+  textShareButtonText: {
+    fontSize: 13,
+    color: '#10B981',
     fontWeight: '500'
   },
   deleteButton: {
