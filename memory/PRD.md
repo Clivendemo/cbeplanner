@@ -35,8 +35,16 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - Move items (strands, substrands, SLOs) with cascade
 - Bulk add (text/table input modes)
 - Bulk editing & reordering
-- Data import system (CSV/PDF)
+- Data import system (CSV/PDF/Word)
 - Import history tracking
+- **Auto-refresh:** Data auto-refreshes after add/edit/delete/reorder operations
+- **Back buttons:** Navigation back buttons on subjects, strands, substrands, SLOs pages
+
+### Data Import Features (DONE - Dec 2026)
+- **CSV Upload:** Download template, upload filled CSV, preview and import
+- **PDF Extraction:** Upload KICD curriculum PDFs, AI extracts structure
+- **Word Document Extraction (NEW):** Upload .docx files, extract from paragraphs and tables
+- **Import History:** Track all import operations
 
 ### Lesson Plan Viewing & Expiration (DONE - Feb 2026)
 - **Lesson Detail Page:** `lesson-detail.tsx` displays full lesson plan using `LessonPlanDisplay` component
@@ -62,13 +70,11 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - Payment status polling
 - Wallet ledger (source of truth) with atomic balance updates
 
-### Grade 10 Data Seeding (DONE - Mar 2026)
-- **Batch 1 (5 subjects):** Arabic, Aviation Technology, Building Construction, Business Studies, Chemistry
-- **Batch 2 (5 subjects):** Biology, CRE, Electrical Technology, English, Fasihi ya Kiswahili
-- **Total:** 10 subjects, 36 strands, 184 substrands, 831 SLOs, 831 SLO mappings
-- **Data Integrity:** All SLO mappings linked to competencies (7), values (8), PCIs (5)
-- **Database Migration:** Fixed DB name mismatch (cbe_lesson_planner → cbeplanner), all data verified
-- **Cleanup:** All one-off seeding scripts removed from codebase
+### Curriculum Data Seeding (DONE - Dec 2026)
+- **Grade 1:** Mathematics, Environmental Activities, Creative Activities, CRE (33 strands, 79 substrands)
+- **Grade 10:** French, German, Indigenous Language, Mandarin, Power Mechanics
+- **Seeding Script:** `python seed_curriculum.py --all` imports all extracted JSON data
+- **Data Integrity:** All SLO mappings linked to competencies, values, PCIs
 
 ### Session Management (DONE - Feb 2026)
 - "Remember Me" checkbox (unchecked by default)
@@ -80,6 +86,12 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - SLO selection dropdown (replaced radio buttons)
 - Wallet balance auto-refresh on dashboard focus
 - Free lessons badge shows correct remaining count
+
+### Mobile Navigation Improvements (DONE - Dec 2026)
+- **Gesture Navigation:** Enabled horizontal swipe to go back on all screens
+- **Back Buttons:** Custom back buttons in header for consistent navigation
+- **Animation:** Improved slide animation (250ms duration)
+- **iOS Full-screen Gesture:** Enabled for smoother navigation on iOS
 
 ### About Section (DONE - Mar 2026)
 - **About Modal:** Added comprehensive About section to teacher profile page
@@ -94,6 +106,14 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - **Auth:** Firebase
 - **Payments:** Safaricom Daraja API (M-Pesa)
 
+## Key Files
+- `/app/backend/server.py` - Main FastAPI application
+- `/app/backend/curriculum_import.py` - CSV/PDF/Word import utilities
+- `/app/backend/seed_curriculum.py` - Database seeding script
+- `/app/frontend/app/(admin)/curriculum.tsx` - Admin curriculum management
+- `/app/frontend/app/(admin)/data-import.tsx` - Data import UI
+- `/app/frontend/app/(teacher)/dashboard.tsx` - Teacher dashboard
+
 ## Key API Endpoints
 - `POST /api/auth/verify` - Firebase token verification
 - `GET /api/lesson-plans` - List user's active lesson plans
@@ -104,11 +124,14 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - `POST /api/payments/mpesa/initiate` - Initiate M-Pesa STK Push
 - `POST /api/payments/mpesa/callback` - M-Pesa callback
 - `GET /api/payments/mpesa/status/{id}` - Payment status check
+- `POST /api/admin/import/extract-pdf` - Extract curriculum from PDF
+- `POST /api/admin/import/extract-docx` - Extract curriculum from Word document
 
 ## Pending Issues
 - **M-Pesa Production:** User reports it's now sorted (needs verification on production)
 - **Lesson Plan Generation Failures:** Intermittent "button does nothing" on production
 - **Grade 8 Data:** May be incomplete or inaccurate (P2)
+- **Grade 1 Data Incomplete:** English & Kiswahili extraction blocked (broken PDF links)
 
 ## Backlog / Future Tasks
 - Download Lesson Plan as PDF
@@ -117,5 +140,6 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - API versioning (`/api/v1/...`)
 - Backend testing suite (unit & integration)
 - Lock down CORS for production (set ENVIRONMENT=production on Render)
-- Mobile navigation stability check
 - Grade 8 data audit
+- Admin bulk import API for curriculum data
+- "Share" feature for educators

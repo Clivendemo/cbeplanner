@@ -11,12 +11,14 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 export default function AdminDashboard() {
   const { firebaseUser } = useAuth();
   const [seeding, setSeeding] = useState(false);
+  const router = useRouter();
 
   const handleSeedData = async () => {
     Alert.alert(
@@ -57,7 +59,7 @@ export default function AdminDashboard() {
       <View style={styles.header}>
         <Ionicons name="shield-checkmark" size={48} color="#6366F1" />
         <Text style={styles.headerTitle}>Admin Dashboard</Text>
-        <Text style={styles.headerSubtitle}>Manage CBE Curriculum Data</Text>
+        <Text style={styles.headerSubtitle}>CBE Lesson Planner - Curriculum Management</Text>
       </View>
 
       <View style={styles.card}>
@@ -66,10 +68,10 @@ export default function AdminDashboard() {
           <Text style={styles.cardTitle}>Welcome Admin!</Text>
         </View>
         <Text style={styles.cardText}>
-          Use this admin panel to manage the Kenyan CBC curriculum structure. You can add and organize:
+          Use this admin panel to manage the Kenyan CBC (Competency-Based Curriculum) structure. You can add and organize:
         </Text>
         <View style={styles.list}>
-          <Text style={styles.listItem}>• Grades (1-6)</Text>
+          <Text style={styles.listItem}>• Grades (PP1 to Grade 9+)</Text>
           <Text style={styles.listItem}>• Subjects/Learning Areas</Text>
           <Text style={styles.listItem}>• Strands and Sub-strands</Text>
           <Text style={styles.listItem}>• Specific Learning Outcomes (SLOs)</Text>
@@ -80,15 +82,36 @@ export default function AdminDashboard() {
 
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <Ionicons name="download" size={24} color="#10B981" />
+          <Ionicons name="cloud-upload" size={24} color="#10B981" />
+          <Text style={styles.cardTitle}>Data Import Features</Text>
+        </View>
+        <Text style={styles.cardText}>
+          Import curriculum data in multiple formats:
+        </Text>
+        <View style={styles.list}>
+          <Text style={styles.listItem}>• CSV Upload - Recommended for bulk data</Text>
+          <Text style={styles.listItem}>• PDF Extraction - Extract from KICD documents</Text>
+          <Text style={styles.listItem}>• Word Document (.docx) - Extract from Word files</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.importButton}
+          onPress={() => router.push('/(admin)/data-import')}
+        >
+          <Ionicons name="cloud-upload-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.importButtonText}>Go to Data Import</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Ionicons name="download" size={24} color="#F59E0B" />
           <Text style={styles.cardTitle}>Sample Data</Text>
         </View>
         <Text style={styles.cardText}>
           Load sample curriculum data to get started quickly. This includes:
         </Text>
         <View style={styles.list}>
-          <Text style={styles.listItem}>• Grades 1-6</Text>
-          <Text style={styles.listItem}>• Sample subjects (Math, English, Science, etc.)</Text>
+          <Text style={styles.listItem}>• Sample grades and subjects</Text>
           <Text style={styles.listItem}>• Sample strands and learning outcomes</Text>
           <Text style={styles.listItem}>• Pre-configured competencies and values</Text>
         </View>
@@ -110,7 +133,10 @@ export default function AdminDashboard() {
 
       <View style={styles.quickLinks}>
         <Text style={styles.quickLinksTitle}>Quick Access</Text>
-        <TouchableOpacity style={styles.quickLink}>
+        <TouchableOpacity 
+          style={styles.quickLink}
+          onPress={() => router.push('/(admin)/curriculum')}
+        >
           <View style={styles.quickLinkIcon}>
             <Ionicons name="layers" size={20} color="#6366F1" />
           </View>
@@ -118,19 +144,25 @@ export default function AdminDashboard() {
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.quickLink}>
+        <TouchableOpacity 
+          style={styles.quickLink}
+          onPress={() => router.push('/(admin)/data-import')}
+        >
           <View style={styles.quickLinkIcon}>
-            <Ionicons name="people" size={20} color="#6366F1" />
+            <Ionicons name="cloud-upload" size={20} color="#6366F1" />
           </View>
-          <Text style={styles.quickLinkText}>View Users</Text>
+          <Text style={styles.quickLinkText}>Import Data</Text>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.quickLink}>
+        <TouchableOpacity 
+          style={styles.quickLink}
+          onPress={() => router.push('/(admin)/profile')}
+        >
           <View style={styles.quickLinkIcon}>
-            <Ionicons name="settings" size={20} color="#6366F1" />
+            <Ionicons name="person" size={20} color="#6366F1" />
           </View>
-          <Text style={styles.quickLinkText}>Settings</Text>
+          <Text style={styles.quickLinkText}>Admin Profile</Text>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </TouchableOpacity>
       </View>
@@ -245,5 +277,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#374151',
     fontWeight: '500'
+  },
+  importButton: {
+    flexDirection: 'row',
+    backgroundColor: '#6366F1',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 8
+  },
+  importButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600'
   }
 });

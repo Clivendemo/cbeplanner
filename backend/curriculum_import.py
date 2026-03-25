@@ -1,6 +1,6 @@
 """
 Curriculum Data Import Module
-Handles CSV upload and PDF extraction for bulk curriculum data import.
+Handles CSV upload, PDF extraction, and Word document extraction for bulk curriculum data import.
 """
 
 import csv
@@ -11,6 +11,7 @@ from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from pydantic import BaseModel
 import fitz  # PyMuPDF
+from docx import Document  # python-docx for Word document support
 
 router = APIRouter()
 
@@ -173,7 +174,7 @@ def parse_csv_content(content: str) -> CurriculumImportPreview:
         # Try to detect delimiter
         dialect = csv.Sniffer().sniff(content[:2048], delimiters=',;\t')
         reader = csv.DictReader(io.StringIO(content), dialect=dialect)
-    except:
+    except Exception:
         # Default to comma
         reader = csv.DictReader(io.StringIO(content))
     
@@ -583,3 +584,237 @@ def rows_to_csv(rows: List[Dict[str, Any]]) -> str:
         writer.writerow(csv_row)
     
     return output.getvalue()
+
+# ==================== WORD DOCUMENT EXTRACTION ====================
+
+def extract_curriculum_from_docx(docx_content: bytes) -> CurriculumImportPreview:
+    """Extract curriculum data from Word document (.docx) and convert to CSV format"""
+    rows = []
+    errors = []
+    warnings = []
+    
+    try:
+        doc = Document(io.BytesIO(docx_content))
+    except Exception as e:
+        errors.append(f"Failed to open Word document: {str(e)}")
+        return CurriculumImportPreview(rows=[], summary={}, errors=errors, warnings=[])
+    
+    # Extract all text from paragraphs
+    full_text = ""
+    for para in doc.paragraphs:
+        full_text += para.text + "\n"
+    
+    # Also extract text from tables
+    table_text = ""
+    for table in doc.tables:
+        for row in table.rows:
+            row_text = []
+            for cell in row.cells:
+                row_text.append(cell.text.strip())
+            table_text += " | ".join(row_text) + "\n"
+    
+    full_text += "\n---TABLES---\n" + table_text
+    
+    # Extract strands using same patterns as PDF
+    strand_pattern = re.compile(r'STRAND\s+(\d+\.?\d*)\s*[:\.]?\s*([A-Z][A-Z\s\-&]+?)(?:\s+(?:THEME|Sub|$)|\s*\n)', re.IGNORECASE)
+    strand_matches = list(strand_pattern.finditer(full_text))
+    
+    if not strand_matches:
+        # Try alternative pattern
+        strand_pattern = re.compile(r'(\d+\.0)\s+([A-Z][A-Z\s\-&]+?)(?:\n|$)', re.IGNORECASE)
+        strand_matches = list(strand_pattern.finditer(full_text))
+    
+    if not strand_matches:
+        warnings.append("No strands found in document. The document may have a different format.")
+    
+    strands_found = set()
+    substrands_found = set()
+    
+    for i, strand_match in enumerate(strand_matches):
+        strand_name = strand_match.group(2).strip().upper()
+        if len(strand_name) < 3:
+            continue
+        
+        strands_found.add(strand_name)
+        
+        # Get text for this strand
+        start_pos = strand_match.end()
+        end_pos = strand_matches[i+1].start() if i+1 < len(strand_matches) else len(full_text)
+        strand_text = full_text[start_pos:end_pos]
+        
+        # Find substrands
+        substrand_pattern = re.compile(r'(?:Sub[\s-]?Strand|SUB[\s-]?STRAND)\s*(\d+\.\d+)\s*[:\.]?\s*(.+?)(?:\n|$)', re.IGNORECASE)
+        substrand_matches = list(substrand_pattern.finditer(strand_text))
+        
+        if not substrand_matches:
+            # Try numbered pattern
+            substrand_pattern = re.compile(r'(\d+\.\d+)\s+([A-Za-z][^:\n]{5,60})(?::|$)', re.MULTILINE)
+            substrand_matches = list(substrand_pattern.finditer(strand_text))
+        
+        for j, ss_match in enumerate(substrand_matches):
+            substrand_name = ss_match.group(2).strip()
+            if len(substrand_name) < 3 or len(substrand_name) > 100:
+                continue
+            
+            # Clean substrand name
+            substrand_name = re.sub(r'\s+', ' ', substrand_name)
+            substrands_found.add(f"{strand_name}|{substrand_name}")
+            
+            # Get substrand text
+            ss_start = ss_match.end()
+            ss_end = substrand_matches[j+1].start() if j+1 < len(substrand_matches) else len(strand_text)
+            ss_text = strand_text[ss_start:ss_end]
+            
+            # Extract SLOs using same functions as PDF
+            slos = extract_slos_from_text(ss_text)
+            
+            # Extract learning activities
+            activities = extract_activities_from_text(ss_text)
+            
+            # Extract competencies, values, PCIs
+            competencies = extract_competencies_from_text(ss_text)
+            values = extract_values_from_text(ss_text)
+            pcis = extract_pcis_from_text(ss_text)
+            assessment = extract_assessment_from_text(ss_text)
+            resources = extract_resources_from_text(ss_text)
+            
+            # If no SLOs found, create one generic row
+            if not slos:
+                slos = [{"name": f"Complete {substrand_name} activities", "description": ""}]
+                warnings.append(f"No SLOs found for {substrand_name}")
+            
+            for slo in slos:
+                row = {
+                    "row_number": len(rows) + 1,
+                    "strand_name": strand_name,
+                    "substrand_name": substrand_name,
+                    "slo_name": slo["name"],
+                    "slo_description": slo.get("description", slo["name"]),
+                    "introduction_activities": activities.get("introduction", []),
+                    "development_activities": activities.get("development", []),
+                    "conclusion_activities": activities.get("conclusion", []),
+                    "extended_activities": activities.get("extended", []),
+                    "competencies": competencies,
+                    "values": values,
+                    "pcis": pcis,
+                    "assessment_methods": assessment,
+                    "learning_resources": resources
+                }
+                rows.append(row)
+    
+    # If no strands found through patterns, try extracting from tables
+    if not rows and doc.tables:
+        warnings.append("Attempting to extract data from tables...")
+        rows, table_errors = extract_from_tables(doc)
+        errors.extend(table_errors)
+        
+        # Update strand/substrand counts
+        for row in rows:
+            strands_found.add(row.get("strand_name", ""))
+            substrands_found.add(f"{row.get('strand_name', '')}|{row.get('substrand_name', '')}")
+    
+    summary = {
+        "total_rows": len(rows),
+        "strands": len(strands_found),
+        "substrands": len(substrands_found),
+        "slos": len(rows),
+        "errors": len(errors),
+        "warnings": len(warnings)
+    }
+    
+    return CurriculumImportPreview(
+        rows=rows,
+        summary=summary,
+        errors=errors[:20],
+        warnings=warnings[:20]
+    )
+
+def extract_from_tables(doc: Document) -> tuple:
+    """Extract curriculum data from Word document tables"""
+    rows = []
+    errors = []
+    
+    for table in doc.tables:
+        # Check if this looks like a curriculum table
+        if len(table.rows) < 2:
+            continue
+        
+        # Get headers from first row
+        headers = [cell.text.strip().lower() for cell in table.rows[0].cells]
+        
+        # Check if it has curriculum-like columns
+        has_strand = any('strand' in h for h in headers)
+        has_slo = any('slo' in h or 'outcome' in h or 'learning' in h for h in headers)
+        
+        if not (has_strand or has_slo):
+            continue
+        
+        # Map column indices
+        col_map = {}
+        for idx, header in enumerate(headers):
+            if 'strand' in header and 'sub' not in header:
+                col_map['strand'] = idx
+            elif 'sub' in header and 'strand' in header:
+                col_map['substrand'] = idx
+            elif 'slo' in header or 'outcome' in header:
+                col_map['slo'] = idx
+            elif 'description' in header:
+                col_map['description'] = idx
+            elif 'competenc' in header:
+                col_map['competencies'] = idx
+            elif 'value' in header:
+                col_map['values'] = idx
+            elif 'pci' in header:
+                col_map['pcis'] = idx
+            elif 'activit' in header:
+                col_map['activities'] = idx
+            elif 'resource' in header:
+                col_map['resources'] = idx
+            elif 'assess' in header:
+                col_map['assessment'] = idx
+        
+        # Extract data from rows
+        current_strand = ""
+        current_substrand = ""
+        
+        for row_idx, row in enumerate(table.rows[1:], start=2):
+            cells = [cell.text.strip() for cell in row.cells]
+            
+            # Update strand if present
+            if 'strand' in col_map and cells[col_map['strand']]:
+                current_strand = cells[col_map['strand']]
+            
+            # Update substrand if present
+            if 'substrand' in col_map and cells[col_map['substrand']]:
+                current_substrand = cells[col_map['substrand']]
+            
+            # Get SLO
+            slo_name = ""
+            if 'slo' in col_map:
+                slo_name = cells[col_map['slo']]
+            
+            if not slo_name:
+                continue
+            
+            # Build row
+            curriculum_row = {
+                "row_number": len(rows) + 1,
+                "strand_name": current_strand,
+                "substrand_name": current_substrand,
+                "slo_name": slo_name,
+                "slo_description": cells[col_map['description']] if 'description' in col_map and len(cells) > col_map['description'] else slo_name,
+                "introduction_activities": [],
+                "development_activities": parse_list_field(cells[col_map['activities']]) if 'activities' in col_map and len(cells) > col_map['activities'] else [],
+                "conclusion_activities": [],
+                "extended_activities": [],
+                "competencies": parse_list_field(cells[col_map['competencies']]) if 'competencies' in col_map and len(cells) > col_map['competencies'] else [],
+                "values": parse_list_field(cells[col_map['values']]) if 'values' in col_map and len(cells) > col_map['values'] else [],
+                "pcis": parse_list_field(cells[col_map['pcis']]) if 'pcis' in col_map and len(cells) > col_map['pcis'] else [],
+                "assessment_methods": parse_list_field(cells[col_map['assessment']]) if 'assessment' in col_map and len(cells) > col_map['assessment'] else [],
+                "learning_resources": parse_list_field(cells[col_map['resources']]) if 'resources' in col_map and len(cells) > col_map['resources'] else []
+            }
+            
+            rows.append(curriculum_row)
+    
+    return rows, errors
+

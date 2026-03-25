@@ -79,7 +79,7 @@ export default function DataImport() {
   const { firebaseUser } = useAuth();
   
   // State
-  const [activeTab, setActiveTab] = useState<'csv' | 'pdf'>('csv');
+  const [activeTab, setActiveTab] = useState<'csv' | 'pdf' | 'docx'>('csv');
   const [loading, setLoading] = useState(false);
   const [previewData, setPreviewData] = useState<PreviewData | null>(null);
   const [csvContent, setCsvContent] = useState<string>('');
@@ -391,6 +391,99 @@ export default function DataImport() {
     }
   };
 
+  // Handle Word document upload and extraction
+  const handleDocxUpload = async () => {
+    try {
+      // Check if we're on web
+      if (typeof window !== 'undefined' && window.document) {
+        // Create a hidden file input for web
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        
+        input.onchange = async (e: any) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          
+          setSelectedFile(file.name);
+          setLoading(true);
+          
+          try {
+            const headers = await getHeaders();
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const extractResponse = await axios.post(
+              `${BACKEND_URL}/api/admin/import/extract-docx`,
+              formData,
+              { 
+                headers: {
+                  ...headers,
+                  'Content-Type': 'multipart/form-data'
+                }
+              }
+            );
+            
+            if (extractResponse.data.success) {
+              setPreviewData(extractResponse.data.preview);
+              setCsvContent(extractResponse.data.csv_content);
+              setShowPreviewModal(true);
+            }
+          } catch (error: any) {
+            console.error('Error extracting Word document:', error);
+            alert(error.response?.data?.detail || 'Failed to extract Word document');
+          } finally {
+            setLoading(false);
+          }
+        };
+        
+        input.click();
+      } else {
+        // Use expo-document-picker for native
+        const result = await DocumentPicker.getDocumentAsync({
+          type: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+          copyToCacheDirectory: true
+        });
+        
+        if (result.canceled) return;
+        
+        const file = result.assets[0];
+        setSelectedFile(file.name);
+        setLoading(true);
+        
+        const headers = await getHeaders();
+        const formData = new FormData();
+        formData.append('file', {
+          uri: file.uri,
+          type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          name: file.name
+        } as any);
+        
+        const extractResponse = await axios.post(
+          `${BACKEND_URL}/api/admin/import/extract-docx`,
+          formData,
+          { 
+            headers: {
+              ...headers,
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        );
+        
+        if (extractResponse.data.success) {
+          setPreviewData(extractResponse.data.preview);
+          setCsvContent(extractResponse.data.csv_content);
+          setShowPreviewModal(true);
+        }
+      }
+    } catch (error: any) {
+      console.error('Error extracting Word document:', error);
+      alert(error.response?.data?.detail || 'Failed to extract Word document');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Download extracted CSV
   const handleDownloadExtractedCsv = () => {
     if (!csvContent) return;
@@ -502,6 +595,21 @@ export default function DataImport() {
             PDF Extract
           </Text>
           <Text style={styles.tabDesc}>Helper Tool</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'docx' && styles.tabActive]}
+          onPress={() => setActiveTab('docx')}
+        >
+          <Ionicons 
+            name="document-attach" 
+            size={24} 
+            color={activeTab === 'docx' ? '#6366F1' : '#6B7280'} 
+          />
+          <Text style={[styles.tabText, activeTab === 'docx' && styles.tabTextActive]}>
+            Word Extract
+          </Text>
+          <Text style={styles.tabDesc}>New Feature</Text>
         </TouchableOpacity>
       </View>
 
@@ -621,6 +729,72 @@ export default function DataImport() {
                   </>
                 )}
               </TouchableOpacity>
+            </View>
+          </View>
+        ) : activeTab === 'docx' ? (
+          <View>
+            {/* Word Document Instructions */}
+            <View style={styles.instructionCard}>
+              <View style={styles.instructionHeader}>
+                <Ionicons name="document-attach" size={24} color="#10B981" />
+                <Text style={styles.instructionTitle}>Word Document Extraction</Text>
+              </View>
+              <View style={styles.instructionSteps}>
+                <Text style={styles.stepText}>
+                  <Text style={styles.stepNumber}>1.</Text> Upload a Word document (.docx) with curriculum data
+                </Text>
+                <Text style={styles.stepText}>
+                  <Text style={styles.stepNumber}>2.</Text> AI will extract strands, sub-strands, and SLOs
+                </Text>
+                <Text style={styles.stepText}>
+                  <Text style={styles.stepNumber}>3.</Text> Review extracted data and download as CSV
+                </Text>
+                <Text style={styles.stepText}>
+                  <Text style={styles.stepNumber}>4.</Text> Edit if needed and import via CSV Upload tab
+                </Text>
+              </View>
+              
+              <View style={styles.noteBox}>
+                <Ionicons name="bulb" size={20} color="#F59E0B" />
+                <Text style={styles.noteText}>
+                  Word documents with tables work best. The extractor looks for curriculum structure patterns.
+                </Text>
+              </View>
+            </View>
+
+            {/* Word Document Upload Area */}
+            <View style={styles.uploadCard}>
+              <Text style={styles.uploadTitle}>Upload Word Document</Text>
+              <Text style={styles.uploadDesc}>
+                Select a .docx file to extract curriculum structure
+              </Text>
+              
+              <TouchableOpacity 
+                style={styles.uploadBtn}
+                onPress={handleDocxUpload}
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <ActivityIndicator color="#6366F1" />
+                    <Text style={styles.uploadBtnText}>Extracting...</Text>
+                    <Text style={styles.uploadBtnHint}>This may take a moment</Text>
+                  </>
+                ) : (
+                  <>
+                    <Ionicons name="document-attach" size={32} color="#10B981" />
+                    <Text style={styles.uploadBtnText}>Select Word Document</Text>
+                    <Text style={styles.uploadBtnHint}>.docx files only</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+              
+              {selectedFile && activeTab === 'docx' && (
+                <View style={styles.selectedFile}>
+                  <Ionicons name="document-attach" size={20} color="#10B981" />
+                  <Text style={styles.selectedFileName}>{selectedFile}</Text>
+                </View>
+              )}
             </View>
           </View>
         )}
@@ -996,6 +1170,21 @@ const styles = StyleSheet.create({
     color: '#92400E',
     lineHeight: 18,
     marginBottom: 12
+  },
+  noteBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FEF3C7',
+    padding: 12,
+    borderRadius: 8,
+    gap: 10,
+    marginTop: 8
+  },
+  noteText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#92400E',
+    lineHeight: 18
   },
   templateBtn: {
     flexDirection: 'row',

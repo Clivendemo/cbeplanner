@@ -15,7 +15,7 @@ import httpx
 
 # Import curriculum import utilities
 from curriculum_import import (
-    parse_csv_content, extract_curriculum_from_pdf, 
+    parse_csv_content, extract_curriculum_from_pdf, extract_curriculum_from_docx,
     generate_csv_template, rows_to_csv, CSV_TEMPLATE_HEADERS
 )
 
@@ -3058,6 +3058,25 @@ async def extract_pdf_to_csv(file: UploadFile = File(...), user: dict = Depends(
         "success": True,
         "preview": result.dict(),
         "csv_content": csv_content
+    }
+
+@api_router.post("/admin/import/extract-docx")
+async def extract_docx_to_csv(file: UploadFile = File(...), user: dict = Depends(verify_admin)):
+    """Extract curriculum data from Word document (.docx) and return as previewable data"""
+    if not file.filename.endswith(('.docx', '.DOCX')):
+        raise HTTPException(status_code=400, detail="File must be a Word document (.docx)")
+    
+    content = await file.read()
+    result = extract_curriculum_from_docx(content)
+    
+    # Also generate downloadable CSV
+    csv_content = rows_to_csv(result.rows)
+    
+    return {
+        "success": True,
+        "preview": result.dict(),
+        "csv_content": csv_content,
+        "filename": file.filename
     }
 
 @api_router.post("/admin/import/save")

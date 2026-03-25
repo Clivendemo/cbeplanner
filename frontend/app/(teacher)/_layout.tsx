@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { TouchableOpacity, View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { TouchableOpacity, View, Text, StyleSheet, ActivityIndicator, Platform } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
@@ -24,6 +24,21 @@ function HeaderRight() {
         </View>
       </TouchableOpacity>
     </View>
+  );
+}
+
+// Custom back button for consistent navigation
+function HeaderBack() {
+  const router = useRouter();
+  
+  return (
+    <TouchableOpacity 
+      style={styles.backButton}
+      onPress={() => router.back()}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+    >
+      <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+    </TouchableOpacity>
   );
 }
 
@@ -78,8 +93,14 @@ export default function TeacherLayout() {
           fontWeight: 'bold'
         },
         headerRight: HeaderRight,
+        headerLeft: HeaderBack,
         animation: 'slide_from_right',
-        gestureEnabled: true
+        gestureEnabled: true,
+        gestureDirection: 'horizontal',
+        // Improve animation performance
+        animationDuration: 250,
+        // Better gesture settings for mobile
+        fullScreenGestureEnabled: Platform.OS === 'ios'
       }}
     >
       <Stack.Screen
@@ -87,7 +108,8 @@ export default function TeacherLayout() {
         options={{
           title: 'CBE Planner',
           headerShown: true,
-          gestureEnabled: false
+          gestureEnabled: false,
+          headerLeft: EmptyHeader // No back button on dashboard
         }}
       />
       <Stack.Screen
@@ -178,6 +200,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '600',
+    marginLeft: 4
+  },
+  backButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     marginLeft: 4
   }
 });

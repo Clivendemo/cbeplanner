@@ -172,6 +172,52 @@ export default function Curriculum() {
     }
   }, [selectedEntity, currentView]);
 
+  // Auto-refresh: Universal refresh function for current view
+  const refreshCurrentView = async () => {
+    setLoading(true);
+    try {
+      const headers = await getHeaders();
+      
+      if (currentView === 'main') {
+        // In main view, reload all data for current entity type
+        await loadData();
+      } else if (currentView === 'hierarchy') {
+        // In hierarchy view, reload data based on current level
+        if (selectedEntity === 'grades') {
+          const gradesRes = await axios.get(`${BACKEND_URL}/api/admin/grades`, { headers });
+          if (gradesRes.data.success) {
+            setData(gradesRes.data.grades);
+            setGrades(gradesRes.data.grades);
+          }
+        } else if (selectedEntity === 'subjects' && currentParentId) {
+          const response = await axios.get(`${BACKEND_URL}/api/admin/subjects?gradeId=${currentParentId}`, { headers });
+          if (response.data.success) {
+            setData(response.data.subjects);
+          }
+        } else if (selectedEntity === 'strands' && currentParentId) {
+          const response = await axios.get(`${BACKEND_URL}/api/admin/strands?subjectId=${currentParentId}`, { headers });
+          if (response.data.success) {
+            setData(response.data.strands);
+          }
+        } else if (selectedEntity === 'substrands' && currentParentId) {
+          const response = await axios.get(`${BACKEND_URL}/api/admin/substrands?strandId=${currentParentId}`, { headers });
+          if (response.data.success) {
+            setData(response.data.substrands);
+          }
+        } else if (selectedEntity === 'slos' && currentParentId) {
+          const response = await axios.get(`${BACKEND_URL}/api/admin/slos?substrandId=${currentParentId}`, { headers });
+          if (response.data.success) {
+            setData(response.data.slos);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing view:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const loadGrades = async () => {
     try {
       const headers = await getHeaders();
@@ -376,6 +422,54 @@ export default function Curriculum() {
       navigateToStrands({ id: crumb.id, name: crumb.name });
     } else if (crumb.type === 'strands') {
       navigateToSubstrands({ id: crumb.id, name: crumb.name });
+    }
+  };
+
+  // Back button navigation - goes to previous level in hierarchy
+  const navigateBack = () => {
+    if (breadcrumbs.length === 0) {
+      // Already at grades, do nothing
+      return;
+    }
+    
+    if (breadcrumbs.length === 1) {
+      // On subjects, go back to grades
+      setBreadcrumbs([]);
+      setSelectedEntity('grades');
+      setCurrentParentId('');
+      setData(grades);
+    } else {
+      // Go back one level
+      const previousCrumb = breadcrumbs[breadcrumbs.length - 2];
+      const newBreadcrumbs = breadcrumbs.slice(0, -1);
+      setBreadcrumbs(newBreadcrumbs);
+      
+      // Navigate to the previous level
+      if (selectedEntity === 'slos') {
+        // Going back from SLOs to substrands
+        const strand = newBreadcrumbs.find(b => b.type === 'strands');
+        if (strand) {
+          navigateToSubstrands({ id: strand.id, name: strand.name });
+        }
+      } else if (selectedEntity === 'substrands') {
+        // Going back from substrands to strands
+        const subject = newBreadcrumbs.find(b => b.type === 'subjects');
+        if (subject) {
+          navigateToStrands({ id: subject.id, name: subject.name });
+        }
+      } else if (selectedEntity === 'strands') {
+        // Going back from strands to subjects
+        const grade = newBreadcrumbs.find(b => b.type === 'grades');
+        if (grade) {
+          navigateToSubjects({ id: grade.id, name: grade.name });
+        }
+      } else if (selectedEntity === 'subjects') {
+        // Going back from subjects to grades
+        setBreadcrumbs([]);
+        setSelectedEntity('grades');
+        setCurrentParentId('');
+        setData(grades);
+      }
     }
   };
 
@@ -1127,7 +1221,8 @@ export default function Curriculum() {
       );
       
       if (response.data.success) {
-        loadData();
+        // Auto-refresh: Use refreshCurrentView for proper refresh in all views
+        await refreshCurrentView();
       } else {
         showAlert('Info', response.data.message);
       }
@@ -1368,6 +1463,13 @@ export default function Curriculum() {
 
       {/* Header */}
       <View style={styles.header}>
+        {/* Back Button - Show in hierarchy view when not on grades */}
+        {currentView === 'hierarchy' && selectedEntity !== 'grades' && (
+          <TouchableOpacity style={styles.backButton} onPress={navigateBack}>
+            <Ionicons name="arrow-back" size={20} color="#6366F1" />
+          </TouchableOpacity>
+        )}
+        
         <Text style={styles.headerTitle}>{ENTITY_CONFIG[selectedEntity].title}</Text>
         <Text style={styles.headerCount}>{data.length} items</Text>
         
@@ -2410,6 +2512,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center'
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#EEF2FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12
   },
   learningActivitiesButton: {
     flex: 1,
