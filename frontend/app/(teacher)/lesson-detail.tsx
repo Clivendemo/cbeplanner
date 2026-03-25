@@ -26,6 +26,7 @@ export default function LessonDetail() {
   const [lessonPlan, setLessonPlan] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -162,9 +163,6 @@ export default function LessonDetail() {
     
     return text;
   };
-
-  // State for PDF generation
-  const [generatingPdf, setGeneratingPdf] = useState(false);
 
   // Share lesson plan as PDF
   const handleSharePdf = async () => {
