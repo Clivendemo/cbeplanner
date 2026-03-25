@@ -675,7 +675,7 @@ export default function DataImport() {
               )}
             </View>
           </View>
-        ) : (
+        ) : activeTab === 'pdf' ? (
           <View>
             {/* PDF Instructions */}
             <View style={[styles.instructionCard, { backgroundColor: '#FEF3C7', borderColor: '#F59E0B' }]}>
@@ -797,7 +797,7 @@ export default function DataImport() {
               )}
             </View>
           </View>
-        )}
+        ) : null}
 
         {/* CSV Column Guide */}
         <View style={styles.guideCard}>
