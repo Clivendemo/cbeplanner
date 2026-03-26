@@ -1,39 +1,60 @@
 import pdfplumber
 import os
 import re
+import json
+import hashlib
 from bson import ObjectId
-from bson.json_util import dumps
+from pymongo import MongoClient
+from datetime import datetime
 
 # =========================
-# PATH CONFIG
+# CONFIG (EDIT THIS)
+# =========================
+
+MONGO_URI = "mongodb+srv://clive_db_admin:n1ruhu5u@cbeplanner.jtshzub.mongodb.net/cbeplanner?retryWrites=true&w=majority&appName=cbeplanner
+DB_NAME	cbeplanner"
+DB_NAME = "cbeplanner"
+
+# =========================
+# PATHS (MATCH YOUR PROJECT)
 # =========================
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-INPUT_DIR = os.path.join(BASE_DIR, "data", "pdfs")
-OUTPUT_DIR = os.path.join(BASE_DIR, "data", "output")
 
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+PDF_DIR = os.path.join(BASE_DIR, "pdfs")
+PROCESSED_DIR = os.path.join(BASE_DIR, "pdfs_processed")
+TRACK_FILE = os.path.join(BASE_DIR, "curriculum_data", "processed_files.json")
 
-# =========================
-# GLOBAL STORAGE
-# =========================
-
-grades = []
-subjects = []
-strands = []
-substrands = []
-slos = []
-slo_mappings = []
-learning_activities = []
+os.makedirs(PROCESSED_DIR, exist_ok=True)
+os.makedirs(os.path.dirname(TRACK_FILE), exist_ok=True)
 
 # =========================
-# LOOKUP CACHE (PREVENT DUPLICATES)
+# DB CONNECTION
 # =========================
 
-grade_map = {}
-subject_map = {}
-strand_map = {}
-substrand_map = {}
+client = MongoClient(mongodb+srv://clive_db_admin:n1ruhu5u@cbeplanner.jtshzub.mongodb.net/cbeplanner?retryWrites=true&w=majority&appName=cbeplanner
+DB_NAME	cbeplanner)
+db = client[cbeplanner]
+
+# =========================
+# TRACKING SYSTEM
+# =========================
+
+def load_tracking():
+    if os.path.exists(TRACK_FILE):
+        with open(TRACK_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_tracking(data):
+    with open(TRACK_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+def file_hash(path):
+    with open(path, "rb") as f:
+        return hashlib.md5(f.read()).hexdigest()
+
+tracking = load_tracking()
 
 # =========================
 # HELPERS
@@ -60,112 +81,129 @@ def split_activities(items):
     return intro, dev, concl, ext
 
 # =========================
+# UPSERT FUNCTIONS
+# =========================
+
+def upsert_grade(name, order):
+    result = db.grades.find_one_and_update(
+        {"name": name},
+        {"$set": {"order": order}},
+        upsert=True,
+        return_document=True
+    )
+    return result["_id"]
+
+def upsert_subject(name, grade_id):
+    result = db.subjects.find_one_and_update(
+        {"name": name},
+        {"$set": {"gradeIds": [str(grade_id)]}},
+        upsert=True,
+        return_document=True
+    )
+    return result["_id"]
+
+def upsert_strand(name, subject_id):
+    result = db.strands.find_one_and_update(
+        {"name": name, "subjectId": str(subject_id)},
+        {"$set": {}},
+        upsert=True,
+        return_document=True
+    )
+    return result["_id"]
+
+def insert_substrand(name, strand_id):
+    doc = {
+        "_id": ObjectId(),
+        "name": name,
+        "strandId": str(strand_id)
+    }
+    db.substrands.insert_one(doc)
+    return doc["_id"]
+
+def upsert_slo(name, substrand_id):
+    result = db.slos.find_one_and_update(
+        {
+            "name": name,
+            "substrandId": str(substrand_id)
+        },
+        {"$set": {"description": name}},
+        upsert=True,
+        return_document=True
+    )
+    return result["_id"]
+
+def upsert_mapping(slo_id):
+    db.slo_mappings.update_one(
+        {"sloId": str(slo_id)},
+        {"$set": {
+            "competencyIds": [],
+            "valueIds": [],
+            "pciIds": [],
+            "assessmentIds": []
+        }},
+        upsert=True
+    )
+
+def replace_learning_activities(substrand_id, data):
+    db.learning_activities.delete_many({"substrandId": substrand_id})
+
+    data["substrandId"] = substrand_id
+
+    db.learning_activities.insert_one(data)
+
+# =========================
 # CORE PROCESSOR
 # =========================
 
 def process_pdf(file_path):
 
-    print(f"📄 Processing: {file_path}")
+    filename = os.path.basename(file_path)
+    print(f"\n📄 Processing: {filename}")
 
-    grade_name = "Grade 10"
-    subject_name = "English"
-
-    # GRADE
-    if grade_name not in grade_map:
-        gid = ObjectId()
-        grade_map[grade_name] = gid
-        grades.append({
-            "_id": gid,
-            "name": grade_name,
-            "order": 10
-        })
-
-    # SUBJECT
-    if subject_name not in subject_map:
-        sid = ObjectId()
-        subject_map[subject_name] = sid
-        subjects.append({
-            "_id": sid,
-            "name": subject_name,
-            "gradeIds": [str(grade_map[grade_name])]
-        })
+    grade_id = upsert_grade("Grade 10", 10)
+    subject_id = upsert_subject("English", grade_id)
 
     current_strand = None
     current_substrand = None
 
     with pdfplumber.open(file_path) as pdf:
 
-        for page in pdf.pages:
+        for i, page in enumerate(pdf.pages):
+
             text = clean(page.extract_text())
 
             if not text:
                 continue
 
+            print(f"   ➤ Page {i+1}")
+
             # STRAND DETECTION
             strand_match = re.search(r"\d\.\d\s+([A-Za-z\s]+)", text)
             if strand_match:
                 name = clean(strand_match.group(1))
-
-                if name not in strand_map:
-                    sid = ObjectId()
-                    strand_map[name] = sid
-
-                    strands.append({
-                        "_id": sid,
-                        "name": name,
-                        "subjectId": str(subject_map[subject_name])
-                    })
-
-                current_strand = strand_map[name]
+                current_strand = upsert_strand(name, subject_id)
 
             # SUBSTRAND DETECTION
             substrand_match = re.search(r"\d\.\d\.\d\s+([A-Za-z\s:/\-]+)", text)
             if substrand_match:
                 name = clean(substrand_match.group(1))
+                current_substrand = insert_substrand(name, current_strand)
 
-                # IMPORTANT: allow duplicates (order matters)
-                sid = ObjectId()
-
-                substrands.append({
-                    "_id": sid,
-                    "name": name,
-                    "strandId": str(current_strand)
-                })
-
-                current_substrand = sid
-
-            # SLOS
+            # SLO EXTRACTION
             if "By the end of the sub strand" in text:
-                extracted = extract_slos(text)
+                slos_found = extract_slos(text)
 
-                for item in extracted:
-                    sid = ObjectId()
-
-                    slos.append({
-                        "_id": sid,
-                        "name": clean(item),
-                        "description": clean(item),
-                        "substrandId": str(current_substrand)
-                    })
-
-                    slo_mappings.append({
-                        "_id": ObjectId(),
-                        "sloId": str(sid),
-                        "competencyIds": [],
-                        "valueIds": [],
-                        "pciIds": [],
-                        "assessmentIds": []
-                    })
+                for item in slos_found:
+                    slo_id = upsert_slo(clean(item), current_substrand)
+                    upsert_mapping(slo_id)
 
             # ACTIVITIES
             if "The learner is guided to" in text:
                 bullets = extract_bullets(text)
-
                 intro, dev, concl, ext = split_activities(bullets)
 
-                learning_activities.append({
+                replace_learning_activities(current_substrand, {
                     "_id": ObjectId(),
-                    "substrandId": current_substrand,  # ObjectId
                     "introduction_activities": intro,
                     "development_activities": dev,
                     "conclusion_activities": concl,
@@ -174,39 +212,48 @@ def process_pdf(file_path):
                     "assessment_methods": []
                 })
 
-# =========================
-# SAVE
-# =========================
-
-def save_all():
-
-    collections = {
-        "grades.json": grades,
-        "subjects.json": subjects,
-        "strands.json": strands,
-        "substrands.json": substrands,
-        "slos.json": slos,
-        "slo_mappings.json": slo_mappings,
-        "learning_activities.json": learning_activities
-    }
-
-    for name, data in collections.items():
-        path = os.path.join(OUTPUT_DIR, name)
-        with open(path, "w") as f:
-            f.write(dumps(data, indent=2))
-
-    print("✅ All files saved to:", OUTPUT_DIR)
+    print(f"✅ Finished: {filename}")
 
 # =========================
-# RUN ALL PDFs
+# MAIN RUNNER
 # =========================
 
 def run():
-    for file in os.listdir(INPUT_DIR):
-        if file.endswith(".pdf"):
-            process_pdf(os.path.join(INPUT_DIR, file))
 
-    save_all()
+    print("\n🚀 Starting Curriculum Pipeline...\n")
+
+    for file in os.listdir(PDF_DIR):
+
+        if not file.endswith(".pdf"):
+            continue
+
+        path = os.path.join(PDF_DIR, file)
+        h = file_hash(path)
+
+        # DUPLICATE CHECK
+        if h in tracking:
+            print(f"⏭ Skipping duplicate: {file}")
+            continue
+
+        # PROCESS FILE
+        process_pdf(path)
+
+        # TRACK FILE
+        tracking[h] = {
+            "file": file,
+            "processed_at": str(datetime.now())
+        }
+
+        # MOVE FILE
+        os.rename(path, os.path.join(PROCESSED_DIR, file))
+
+        print(f"📦 Moved to processed: {file}")
+
+    save_tracking(tracking)
+
+    print("\n🎉 ALL DONE — Pipeline Complete")
+
+# =========================
 
 if __name__ == "__main__":
     run()
