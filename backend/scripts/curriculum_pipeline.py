@@ -26,6 +26,7 @@ os.makedirs(os.path.dirname(TRACK_FILE), exist_ok=True)
 client = MongoClient(mongodb+srv://clive_db_admin:n1ruhu5u@cbeplanner.jtshzub.mongodb.net/cbeplanner?retryWrites=true&w=majority&appName=cbeplanner)
 db = client[cbeplanner]
 
+
 # =========================
 # TRACKING
 # =========================
