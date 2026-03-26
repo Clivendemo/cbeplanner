@@ -8,16 +8,12 @@ from pymongo import MongoClient
 from datetime import datetime
 
 # =========================
-# CONFIG (EDIT THIS)
+# CONFIG
 # =========================
 
 MONGO_URI = "mongodb+srv://clive_db_admin:n1ruhu5u@cbeplanner.jtshzub.mongodb.net/cbeplanner?retryWrites=true&w=majority&appName=cbeplanner
 DB_NAME	cbeplanner"
 DB_NAME = "cbeplanner"
-
-# =========================
-# PATHS (MATCH YOUR PROJECT)
-# =========================
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -28,16 +24,12 @@ TRACK_FILE = os.path.join(BASE_DIR, "curriculum_data", "processed_files.json")
 os.makedirs(PROCESSED_DIR, exist_ok=True)
 os.makedirs(os.path.dirname(TRACK_FILE), exist_ok=True)
 
-# =========================
-# DB CONNECTION
-# =========================
-
 client = MongoClient(mongodb+srv://clive_db_admin:n1ruhu5u@cbeplanner.jtshzub.mongodb.net/cbeplanner?retryWrites=true&w=majority&appName=cbeplanner
 DB_NAME	cbeplanner)
 db = client[cbeplanner]
 
 # =========================
-# TRACKING SYSTEM
+# TRACKING
 # =========================
 
 def load_tracking():
@@ -55,6 +47,57 @@ def file_hash(path):
         return hashlib.md5(f.read()).hexdigest()
 
 tracking = load_tracking()
+
+# =========================
+# SMART METADATA DETECTION
+# =========================
+
+def extract_metadata(file_path):
+
+    grade = None
+    subject = None
+
+    # 1. Try folder name
+    parts = file_path.lower().split(os.sep)
+    for part in parts:
+        if "grade" in part:
+            grade = re.findall(r"\d+", part)
+            if grade:
+                grade = grade[0]
+
+    # 2. Try filename
+    filename = os.path.basename(file_path).lower().replace(".pdf", "")
+    subject = filename.replace("_", " ").strip()
+
+    return grade, subject
+
+
+def extract_metadata_from_pdf(file_path):
+
+    grade = None
+    subject = None
+
+    try:
+        with pdfplumber.open(file_path) as pdf:
+            first_page = pdf.pages[0].extract_text()
+
+            if first_page:
+                first_page = first_page.lower()
+
+                # detect grade
+                g = re.search(r"grade\s*(\d+)", first_page)
+                if g:
+                    grade = g.group(1)
+
+                # detect subject
+                s = re.search(r"\n([a-z\s]+)\n", first_page)
+                if s:
+                    subject = s.group(1).strip()
+
+    except:
+        pass
+
+    return grade, subject
 
 # =========================
 # HELPERS
@@ -81,7 +124,7 @@ def split_activities(items):
     return intro, dev, concl, ext
 
 # =========================
-# UPSERT FUNCTIONS
+# UPSERTS
 # =========================
 
 def upsert_grade(name, order):
@@ -146,9 +189,7 @@ def upsert_mapping(slo_id):
 
 def replace_learning_activities(substrand_id, data):
     db.learning_activities.delete_many({"substrandId": substrand_id})
-
     data["substrandId"] = substrand_id
-
     db.learning_activities.insert_one(data)
 
 # =========================
@@ -158,10 +199,29 @@ def replace_learning_activities(substrand_id, data):
 def process_pdf(file_path):
 
     filename = os.path.basename(file_path)
+
     print(f"\n📄 Processing: {filename}")
 
-    grade_id = upsert_grade("Grade 10", 10)
-    subject_id = upsert_subject("English", grade_id)
+    # FIRST: folder/filename metadata
+    grade, subject = extract_metadata(file_path)
+
+    # FALLBACK: PDF content
+    if not grade or not subject:
+        g2, s2 = extract_metadata_from_pdf(file_path)
+        grade = grade or g2
+        subject = subject or s2
+
+    # FINAL DEFAULT (safety)
+    grade = grade or "10"
+    subject = subject or "English"
+
+    grade_name = f"Grade {grade}"
+    subject_name = subject.title()
+
+    print(f"   🎯 Detected → {grade_name} | {subject_name}")
+
+    grade_id = upsert_grade(grade_name, int(grade))
+    subject_id = upsert_subject(subject_name, grade_id)
 
     current_strand = None
     current_substrand = None
@@ -177,23 +237,21 @@ def process_pdf(file_path):
 
             print(f"   ➤ Page {i+1}")
 
-            # STRAND DETECTION
+            # STRAND
             strand_match = re.search(r"\d\.\d\s+([A-Za-z\s]+)", text)
             if strand_match:
                 name = clean(strand_match.group(1))
                 current_strand = upsert_strand(name, subject_id)
 
-            # SUBSTRAND DETECTION
+            # SUBSTRAND
             substrand_match = re.search(r"\d\.\d\.\d\s+([A-Za-z\s:/\-]+)", text)
             if substrand_match:
                 name = clean(substrand_match.group(1))
                 current_substrand = insert_substrand(name, current_strand)
 
-            # SLO EXTRACTION
+            # SLOS
             if "By the end of the sub strand" in text:
-                slos_found = extract_slos(text)
-
-                for item in slos_found:
+                for item in extract_slos(text):
                     slo_id = upsert_slo(clean(item), current_substrand)
                     upsert_mapping(slo_id)
 
@@ -215,43 +273,41 @@ def process_pdf(file_path):
     print(f"✅ Finished: {filename}")
 
 # =========================
-# MAIN RUNNER
+# RUNNER
 # =========================
 
 def run():
 
-    print("\n🚀 Starting Curriculum Pipeline...\n")
+    print("\n🚀 Starting Smart Curriculum Pipeline...\n")
 
-    for file in os.listdir(PDF_DIR):
+    for root, _, files in os.walk(PDF_DIR):
 
-        if not file.endswith(".pdf"):
-            continue
+        for file in files:
 
-        path = os.path.join(PDF_DIR, file)
-        h = file_hash(path)
+            if not file.endswith(".pdf"):
+                continue
 
-        # DUPLICATE CHECK
-        if h in tracking:
-            print(f"⏭ Skipping duplicate: {file}")
-            continue
+            path = os.path.join(root, file)
+            h = file_hash(path)
 
-        # PROCESS FILE
-        process_pdf(path)
+            if h in tracking:
+                print(f"⏭ Skipping duplicate: {file}")
+                continue
 
-        # TRACK FILE
-        tracking[h] = {
-            "file": file,
-            "processed_at": str(datetime.now())
-        }
+            process_pdf(path)
 
-        # MOVE FILE
-        os.rename(path, os.path.join(PROCESSED_DIR, file))
+            tracking[h] = {
+                "file": file,
+                "processed_at": str(datetime.now())
+            }
 
-        print(f"📦 Moved to processed: {file}")
+            os.rename(path, os.path.join(PROCESSED_DIR, file))
+
+            print(f"📦 Moved to processed: {file}")
 
     save_tracking(tracking)
 
-    print("\n🎉 ALL DONE — Pipeline Complete")
+    print("\n🎉 ALL DONE — Smart Pipeline Complete")
 
 # =========================
 
