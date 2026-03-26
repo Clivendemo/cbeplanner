@@ -11,8 +11,7 @@ from datetime import datetime
 # CONFIG
 # =========================
 
-MONGO_URI = "mongodb+srv://clive_db_admin:n1ruhu5u@cbeplanner.jtshzub.mongodb.net/cbeplanner?retryWrites=true&w=majority&appName=cbeplanner
-DB_NAME	cbeplanner"
+MONGO_URI = "mongodb+srv://clive_db_admin:n1ruhu5u@cbeplanner.jtshzub.mongodb.net/cbeplanner?retryWrites=true&w=majority&appName=cbeplanner DB_NAME = "cbeplanner""
 DB_NAME = "cbeplanner"
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
