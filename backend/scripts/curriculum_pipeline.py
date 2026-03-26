@@ -5,7 +5,7 @@ import hashlib
 from bson import ObjectId
 from pymongo import MongoClient
 from datetime import datetime
-from scripts.ai_extractor import extract_with_ai
+from ai_extractor import extract_with_ai
 
 # =========================
 # CONFIG
