@@ -307,6 +307,7 @@ def run():
     save_tracking(tracking)
 
     print("\n🎉 ALL DONE — Smart Pipeline Complete")
+    print("SLO count:", db.slos.count_documents({}))
 
 # =========================
 
