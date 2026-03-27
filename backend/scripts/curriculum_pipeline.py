@@ -6,6 +6,8 @@ from bson import ObjectId
 from pymongo import MongoClient
 from datetime import datetime
 from ai_extractor import extract_with_ai
+PREVIEW_MODE = True
+
 
 # =========================
 # CONFIG
