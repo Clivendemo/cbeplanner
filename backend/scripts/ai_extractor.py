@@ -43,7 +43,7 @@ TEXT:
 """
 
     response = client.responses.create(
-        model="gpt-5.3-mini",
+        model="GPT-5.4 nano",
         input=prompt
     )
 
