@@ -23,6 +23,12 @@ from curriculum_import import (
 # Import PDF generator
 from pdf_generator import generate_lesson_plan_pdf
 
+# Import Scheme of Work generator
+from scheme_generator import (
+    generate_scheme_pdf, get_lessons_per_week, get_assessment_for_slo,
+    generate_inquiry_questions, generate_learning_experiences, generate_learning_resources
+)
+
 # Import production utilities
 from app.production_utils import (
     ProductionLogger, IdempotencyManager, InputValidator, 
@@ -100,10 +106,11 @@ app = FastAPI(
                 "Most endpoints require Firebase ID token in the Authorization header:\n"
                 "`Authorization: Bearer <firebase_id_token>`",
     version="1.0.0",
-    docs_url="/api/docs" if ENABLE_DOCS else None,
-    redoc_url="/api/redoc" if ENABLE_DOCS else None,
-    openapi_url="/api/openapi.json" if ENABLE_DOCS else None
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json"
 )
+
 
 # ===========================================
 # PRODUCTION MIDDLEWARE
@@ -1193,6 +1200,23 @@ async def get_user_transactions(
         "offset": offset
     }
 
+@api_router.get("/wallet/balance")
+async def get_wallet_balance(user: dict = Depends(verify_token)):
+    """Get current wallet balance for user"""
+    firebase_uid = user.get("firebaseUid", user.get("id", ""))
+    
+    user_profile = await db.users.find_one({"firebaseUid": firebase_uid})
+    if not user_profile:
+        # Try by user ID
+        user_profile = await db.users.find_one({"_id": ObjectId(user["id"])})
+    
+    if not user_profile:
+        return {"balance": 0}
+    
+    return {
+        "balance": user_profile.get("walletBalance", 0)
+    }
+
 
 # ===========================================
 # ADMIN WALLET/PAYMENT ENDPOINTS
@@ -2213,84 +2237,148 @@ async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Dep
     return {"success": True, "scheme": scheme}
 
 # Helper functions for generating scheme content
-def generate_inquiry_questions(strand: str, substrand: str, slo: str) -> str:
+def generate_inquiry_questions(strand: str, substrand: str, slo: str, is_kiswahili: bool = False) -> str:
     """Generate relevant key inquiry questions based on the topic"""
     questions = []
     
-    # Generic patterns based on topic
-    if "evolution" in substrand.lower() or "history" in substrand.lower():
-        questions.append(f"How has {substrand} developed over time?")
-        questions.append(f"What are the key milestones in the development of {substrand}?")
-    elif "architecture" in substrand.lower() or "structure" in substrand.lower():
-        questions.append(f"What are the main components of {substrand}?")
-        questions.append(f"How do the different parts of {substrand} work together?")
-    elif "network" in substrand.lower() or "communication" in substrand.lower():
-        questions.append(f"How is data transmitted in {substrand}?")
-        questions.append(f"What factors affect {substrand} performance?")
-    elif "programming" in substrand.lower() or "code" in substrand.lower():
-        questions.append(f"How do we implement {substrand} in programming?")
-        questions.append(f"What are the best practices for {substrand}?")
+    if is_kiswahili:
+        # Kiswahili inquiry questions
+        if "fasihi" in substrand.lower() or "hadithi" in substrand.lower():
+            questions.append(f"Umuhimu wa {substrand} ni upi katika jamii?")
+            questions.append(f"Tunajifunza nini kutoka kwa {substrand}?")
+        elif "sarufi" in substrand.lower() or "lugha" in substrand.lower():
+            questions.append(f"Kanuni za {substrand} ni zipi?")
+            questions.append(f"Tunatumia vipi {substrand} katika mawasiliano?")
+        elif "uandishi" in substrand.lower() or "insha" in substrand.lower():
+            questions.append(f"Hatua za kuandika {substrand} ni zipi?")
+            questions.append(f"Sifa za {substrand} bora ni zipi?")
+        elif "usomaji" in substrand.lower() or "kusoma" in substrand.lower():
+            questions.append(f"Mbinu za kusoma {substrand} kwa ufanisi ni zipi?")
+            questions.append(f"Tunaelewaje maana ya {substrand}?")
+        else:
+            questions.append(f"Umuhimu wa {substrand} ni upi?")
+            questions.append(f"Tunatumia vipi {substrand} katika maisha ya kila siku?")
     else:
-        questions.append(f"What is the importance of {substrand}?")
-        questions.append(f"How do we apply {substrand} in real-world situations?")
+        # English inquiry questions
+        if "evolution" in substrand.lower() or "history" in substrand.lower():
+            questions.append(f"How has {substrand} developed over time?")
+            questions.append(f"What are the key milestones in the development of {substrand}?")
+        elif "architecture" in substrand.lower() or "structure" in substrand.lower():
+            questions.append(f"What are the main components of {substrand}?")
+            questions.append(f"How do the different parts of {substrand} work together?")
+        elif "network" in substrand.lower() or "communication" in substrand.lower():
+            questions.append(f"How is data transmitted in {substrand}?")
+            questions.append(f"What factors affect {substrand} performance?")
+        elif "programming" in substrand.lower() or "code" in substrand.lower():
+            questions.append(f"How do we implement {substrand} in programming?")
+            questions.append(f"What are the best practices for {substrand}?")
+        else:
+            questions.append(f"What is the importance of {substrand}?")
+            questions.append(f"How do we apply {substrand} in real-world situations?")
     
     return " ".join([f"{i+1}. {q}" for i, q in enumerate(questions)])
 
-def generate_learning_experiences(strand: str, substrand: str, slo: str) -> str:
+def generate_learning_experiences(strand: str, substrand: str, slo: str, is_kiswahili: bool = False) -> str:
     """Generate appropriate learning experiences"""
     slo_lower = slo.lower()
     
-    if "identify" in slo_lower or "describe" in slo_lower:
-        return f"The learner is guided to search for information on {substrand} using reference materials and digital resources."
-    elif "create" in slo_lower or "make" in slo_lower or "design" in slo_lower:
-        return f"The learner is guided to create/design a model or project demonstrating {substrand} using locally available materials."
-    elif "compare" in slo_lower or "differentiate" in slo_lower:
-        return f"The learner is guided to compare and contrast different aspects of {substrand} through group discussions and research."
-    elif "explain" in slo_lower or "discuss" in slo_lower:
-        return f"The learner is guided to discuss and explain concepts related to {substrand} through collaborative learning."
-    elif "apply" in slo_lower or "use" in slo_lower:
-        return f"The learner is guided to apply {substrand} concepts through practical exercises and problem-solving activities."
-    elif "analyze" in slo_lower or "evaluate" in slo_lower:
-        return f"The learner is guided to analyze case studies and evaluate different approaches to {substrand}."
+    if is_kiswahili:
+        # Kiswahili learning experiences
+        if "tambua" in slo_lower or "eleza" in slo_lower or "ainisha" in slo_lower:
+            return f"Mwanafunzi anaongozwa kutafuta habari kuhusu {substrand} kwa kutumia vitabu na nyenzo za kidijitali."
+        elif "tunga" in slo_lower or "andika" in slo_lower or "buni" in slo_lower:
+            return f"Mwanafunzi anaongozwa kutunga/kuandika kazi inayoonyesha ujuzi wa {substrand}."
+        elif "linganisha" in slo_lower or "tofautisha" in slo_lower:
+            return f"Mwanafunzi anaongozwa kulinganisha na kutofautisha vipengele vya {substrand} kupitia majadiliano ya vikundi."
+        elif "jadili" in slo_lower or "fafanua" in slo_lower:
+            return f"Mwanafunzi anaongozwa kujadili na kufafanua dhana za {substrand} kupitia ujifunzaji shirikishi."
+        elif "tumia" in slo_lower or "tekeleza" in slo_lower:
+            return f"Mwanafunzi anaongozwa kutumia dhana za {substrand} kupitia mazoezi ya vitendo."
+        elif "changanua" in slo_lower or "tathmini" in slo_lower:
+            return f"Mwanafunzi anaongozwa kuchanganua na kutathmini mifano ya {substrand}."
+        else:
+            return f"Mwanafunzi anaongozwa kuchunguza na kuelewa {substrand} kupitia shughuli za kujifunza."
     else:
-        return f"The learner is guided to explore and understand {substrand} through interactive learning activities."
+        # English learning experiences
+        if "identify" in slo_lower or "describe" in slo_lower:
+            return f"The learner is guided to search for information on {substrand} using reference materials and digital resources."
+        elif "create" in slo_lower or "make" in slo_lower or "design" in slo_lower:
+            return f"The learner is guided to create/design a model or project demonstrating {substrand} using locally available materials."
+        elif "compare" in slo_lower or "differentiate" in slo_lower:
+            return f"The learner is guided to compare and contrast different aspects of {substrand} through group discussions and research."
+        elif "explain" in slo_lower or "discuss" in slo_lower:
+            return f"The learner is guided to discuss and explain concepts related to {substrand} through collaborative learning."
+        elif "apply" in slo_lower or "use" in slo_lower:
+            return f"The learner is guided to apply {substrand} concepts through practical exercises and problem-solving activities."
+        elif "analyze" in slo_lower or "evaluate" in slo_lower:
+            return f"The learner is guided to analyze case studies and evaluate different approaches to {substrand}."
+        else:
+            return f"The learner is guided to explore and understand {substrand} through interactive learning activities."
 
-def generate_learning_resources(strand: str, substrand: str) -> str:
+def generate_learning_resources(strand: str, substrand: str, is_kiswahili: bool = False) -> str:
     """Generate appropriate learning resources"""
-    resources = ["Reference materials"]
     
-    strand_lower = strand.lower()
-    substrand_lower = substrand.lower()
-    
-    if "computer" in strand_lower or "technology" in strand_lower:
-        resources.extend(["Computers", "Digital devices", "Internet"])
-    if "network" in strand_lower or "communication" in substrand_lower:
-        resources.extend(["Network cables", "Networking equipment diagrams"])
-    if "programming" in strand_lower or "code" in substrand_lower:
-        resources.extend(["Programming IDE", "Code samples"])
-    if "model" in substrand_lower or "architecture" in substrand_lower:
-        resources.extend(["Modeling materials", "Charts", "Diagrams"])
-    
-    resources.append("Textbooks")
-    
-    return ", ".join(resources[:5])
+    if is_kiswahili:
+        resources = ["Vitabu vya kiada"]
+        strand_lower = strand.lower()
+        substrand_lower = substrand.lower()
+        
+        if "fasihi" in strand_lower or "hadithi" in substrand_lower:
+            resources.extend(["Vitabu vya fasihi", "Hadithi", "Mashairi"])
+        if "sarufi" in strand_lower or "lugha" in substrand_lower:
+            resources.extend(["Kamusi", "Chati za sarufi"])
+        if "uandishi" in substrand_lower or "insha" in substrand_lower:
+            resources.extend(["Sampuli za insha", "Karatasi", "Kalamu"])
+        if "usomaji" in substrand_lower:
+            resources.extend(["Vifungu vya kusoma", "Magazeti", "Majarida"])
+        
+        resources.append("Nyenzo za kidijitali")
+        return ", ".join(resources[:5])
+    else:
+        resources = ["Reference materials"]
+        strand_lower = strand.lower()
+        substrand_lower = substrand.lower()
+        
+        if "computer" in strand_lower or "technology" in strand_lower:
+            resources.extend(["Computers", "Digital devices", "Internet"])
+        if "network" in strand_lower or "communication" in substrand_lower:
+            resources.extend(["Network cables", "Networking equipment diagrams"])
+        if "programming" in strand_lower or "code" in substrand_lower:
+            resources.extend(["Programming IDE", "Code samples"])
+        if "model" in substrand_lower or "architecture" in substrand_lower:
+            resources.extend(["Modeling materials", "Charts", "Diagrams"])
+        
+        resources.append("Textbooks")
+        return ", ".join(resources[:5])
 
-def generate_assessment_methods(slo: str) -> str:
+def generate_assessment_methods(slo: str, is_kiswahili: bool = False) -> str:
     """Generate appropriate assessment methods based on SLO"""
     slo_lower = slo.lower()
     
-    if "identify" in slo_lower or "describe" in slo_lower or "explain" in slo_lower:
-        return "Oral questions"
-    elif "create" in slo_lower or "make" in slo_lower or "design" in slo_lower:
-        return "Project"
-    elif "compare" in slo_lower or "analyze" in slo_lower:
-        return "Written assignment"
-    elif "discuss" in slo_lower:
-        return "Discussion"
-    elif "demonstrate" in slo_lower or "apply" in slo_lower:
-        return "Practical assessment"
+    if is_kiswahili:
+        if "tambua" in slo_lower or "eleza" in slo_lower or "fafanua" in slo_lower:
+            return "Maswali ya mdomo"
+        elif "tunga" in slo_lower or "andika" in slo_lower or "buni" in slo_lower:
+            return "Kazi ya uandishi"
+        elif "linganisha" in slo_lower or "changanua" in slo_lower:
+            return "Kazi ya maandishi"
+        elif "soma" in slo_lower or "kariri" in slo_lower:
+            return "Usomaji"
+        else:
+            return "Uchunguzi"
     else:
-        return "Oral questions"
+        if "identify" in slo_lower or "describe" in slo_lower or "explain" in slo_lower:
+            return "Oral questions"
+        elif "create" in slo_lower or "make" in slo_lower or "design" in slo_lower:
+            return "Project"
+        elif "compare" in slo_lower or "analyze" in slo_lower:
+            return "Written assignment"
+        elif "discuss" in slo_lower:
+            return "Discussion"
+        elif "demonstrate" in slo_lower or "apply" in slo_lower:
+            return "Practical assessment"
+        else:
+            return "Oral questions"
 
 @api_router.get("/schemes")
 async def get_schemes(user: dict = Depends(verify_token)):
@@ -2303,6 +2391,519 @@ async def get_scheme(scheme_id: str, user: dict = Depends(verify_token)):
     if not scheme:
         raise HTTPException(status_code=404, detail="Scheme not found")
     return {"success": True, "scheme": serialize_doc(scheme)}
+
+# ==================== NEW SCHEME ENDPOINTS ====================
+
+@api_router.get("/schemes/config/lessons-per-week")
+async def get_lessons_per_week_config(
+    gradeId: str,
+    subjectId: str,
+    user: dict = Depends(verify_token)
+):
+    """Get the default lessons per week for a subject in a grade"""
+    grade = await db.grades.find_one({"_id": ObjectId(gradeId)})
+    subject = await db.subjects.find_one({"_id": ObjectId(subjectId)})
+    
+    if not grade or not subject:
+        raise HTTPException(status_code=404, detail="Invalid grade or subject")
+    
+    lessons = get_lessons_per_week(grade["name"], subject["name"])
+    
+    return {
+        "success": True,
+        "lessonsPerWeek": lessons,
+        "gradeName": grade["name"],
+        "subjectName": subject["name"]
+    }
+
+@api_router.get("/schemes/topics/{subjectId}")
+async def get_scheme_topics(subjectId: str, user: dict = Depends(verify_token)):
+    """Get all topics (strands/substrands) for topic selection UI"""
+    
+    # Get all strands for the subject
+    strands = await db.strands.find({"subjectId": subjectId}).sort("order", 1).to_list(100)
+    
+    topics = []
+    for strand in strands:
+        strand_id = str(strand["_id"])
+        
+        # Get substrands for this strand
+        substrands = await db.substrands.find({"strandId": strand_id}).sort("order", 1).to_list(100)
+        
+        substrand_items = []
+        for ss in substrands:
+            ss_id = str(ss["_id"])
+            
+            # Count SLOs for this substrand
+            slo_count = await db.slos.count_documents({"substrandId": ss_id})
+            
+            substrand_items.append({
+                "id": ss_id,
+                "name": ss["name"],
+                "sloCount": slo_count
+            })
+        
+        topics.append({
+            "id": strand_id,
+            "name": strand["name"],
+            "substrands": substrand_items,
+            "totalSlos": sum(s["sloCount"] for s in substrand_items)
+        })
+    
+    return {"success": True, "topics": topics}
+
+class SchemeGenerateRequest(BaseModel):
+    gradeId: str
+    subjectId: str
+    term: int
+    year: int = datetime.now().year
+    totalWeeks: int = 12
+    lessonsPerWeek: Optional[int] = None  # Auto-calculated if not provided
+    selectedTopics: List[str]  # List of substrand IDs
+    breaks: List[Dict[str, Any]] = []
+    doubleLesson: Optional[Dict[str, Any]] = None  # { enabled: bool, position: "2-3" }
+    includeCarryOver: bool = False  # Compression mode for uncovered content
+
+# Safe integer conversion helper
+def to_int(value, default: int = 0) -> int:
+    """Safely convert any value to integer"""
+    try:
+        if value is None:
+            return default
+        return int(value)
+    except (ValueError, TypeError):
+        return default
+
+# Validate break input
+def validate_break(brk: Dict[str, Any], lessons_per_week: int, total_weeks: int) -> Dict[str, Any]:
+    """Validate and normalize break data"""
+    start_week = to_int(brk.get("startWeek"), 1)
+    start_lesson = to_int(brk.get("startLesson"), 1)
+    end_week = to_int(brk.get("endWeek"), start_week)
+    end_lesson = to_int(brk.get("endLesson"), lessons_per_week)
+    
+    # Clamp values to valid ranges
+    start_week = max(1, min(start_week, total_weeks))
+    end_week = max(start_week, min(end_week, total_weeks))
+    start_lesson = max(1, min(start_lesson, lessons_per_week))
+    end_lesson = max(1, min(end_lesson, lessons_per_week))
+    
+    # Ensure end is after start
+    if end_week == start_week and end_lesson < start_lesson:
+        end_lesson = start_lesson
+    
+    return {
+        "breakType": brk.get("breakType", "Break"),
+        "startWeek": start_week,
+        "startLesson": start_lesson,
+        "endWeek": end_week,
+        "endLesson": end_lesson,
+        "startDate": brk.get("startDate")  # Optional calendar date
+    }
+
+# Calculate break duration in lessons
+def calculate_break_duration(start_week: int, start_lesson: int, end_week: int, end_lesson: int, lessons_per_week: int) -> int:
+    """Calculate total lessons covered by a break"""
+    if start_week == end_week:
+        return (end_lesson - start_lesson) + 1
+    else:
+        # Lessons in first week + full weeks in between + lessons in last week
+        first_week_lessons = lessons_per_week - start_lesson + 1
+        full_weeks = (end_week - start_week - 1) * lessons_per_week
+        last_week_lessons = end_lesson
+        return first_week_lessons + full_weeks + last_week_lessons
+
+@api_router.post("/schemes/generate-v2")
+async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depends(verify_token)):
+    """Generate scheme of work from selected topics"""
+    try:
+        # Fetch grade and subject
+        grade = await db.grades.find_one({"_id": ObjectId(request.gradeId)})
+        subject = await db.subjects.find_one({"_id": ObjectId(request.subjectId)})
+        
+        if not grade or not subject:
+            raise HTTPException(status_code=404, detail="Invalid grade or subject")
+        
+        # Ensure numeric values are integers
+        total_weeks = to_int(request.totalWeeks, 12)
+        lessons_per_week = to_int(request.lessonsPerWeek) if request.lessonsPerWeek else get_lessons_per_week(grade["name"], subject["name"])
+        
+        # Get user's school name
+        user_profile = await db.users.find_one({"firebaseUid": user.get("firebaseUid", user.get("id", ""))})
+        school_name = user_profile.get("schoolName", "") if user_profile else ""
+        
+        # Collect all curriculum content from selected topics
+        curriculum_content = []
+    
+        for substrand_id in request.selectedTopics:
+            # Get substrand
+            substrand = await db.substrands.find_one({"_id": ObjectId(substrand_id)})
+            if not substrand:
+                continue
+        
+            # Get parent strand
+            strand = await db.strands.find_one({"_id": ObjectId(substrand["strandId"])})
+            if not strand:
+                continue
+        
+            # Get all SLOs for this substrand
+            slos = await db.slos.find({"substrandId": substrand_id}).sort("order", 1).to_list(100)
+        
+            for slo in slos:
+                slo_id = str(slo["_id"])
+            
+                # Get SLO mapping for competencies and values
+                mapping = await db.slo_mappings.find_one({"sloId": slo_id})
+                competencies = []
+                values = []
+                pcis = []
+            
+                if mapping:
+                    for comp_id in mapping.get("competencyIds", []):
+                        comp = await db.competencies.find_one({"_id": ObjectId(comp_id)})
+                        if comp:
+                            competencies.append(comp["name"])
+                
+                    for val_id in mapping.get("valueIds", []):
+                        val = await db.values.find_one({"_id": ObjectId(val_id)})
+                        if val:
+                            values.append(val["name"])
+                
+                    for pci_id in mapping.get("pciIds", []):
+                        pci = await db.pcis.find_one({"_id": ObjectId(pci_id)})
+                        if pci:
+                            pcis.append(pci["name"])
+            
+                # Get learning activities if available
+                learning_act = await db.learning_activities.find_one({"substrandId": substrand_id})
+            
+                curriculum_content.append({
+                    "strandId": str(strand["_id"]),
+                    "strand": strand["name"],
+                    "substrandId": substrand_id,
+                    "substrand": substrand["name"],
+                    "sloId": slo_id,
+                    "slo": slo["name"],
+                    "sloDescription": slo.get("description", slo["name"]),
+                    "competencies": competencies or ["Critical Thinking", "Communication"],
+                    "values": values or ["Responsibility", "Respect"],
+                    "pcis": pcis,
+                    "learningActivities": learning_act.get("development_activities", []) if learning_act else [],
+                    "resources": learning_act.get("learning_resources", []) if learning_act else [],
+                    "assessmentMethods": learning_act.get("assessment_methods", []) if learning_act else []
+                })
+    
+        if not curriculum_content:
+            raise HTTPException(status_code=400, detail="No valid topics selected")
+    
+        # Process breaks with safe integer conversion
+        breaks_map = {}
+        validated_breaks = []
+    
+        for brk in request.breaks:
+            # Validate and normalize break data
+            validated = validate_break(brk, lessons_per_week, total_weeks)
+            validated_breaks.append(validated)
+        
+            start_week = validated["startWeek"]
+            start_lesson = validated["startLesson"]
+            end_week = validated["endWeek"]
+            end_lesson = validated["endLesson"]
+        
+            # Mark all lessons from start to end as breaks
+            current_week = start_week
+            current_lesson = start_lesson
+            is_first = True
+        
+            while True:
+                breaks_map[(current_week, current_lesson)] = {
+                    "type": validated["breakType"],
+                    "isFirst": is_first,
+                    "startDate": validated.get("startDate")
+                }
+                is_first = False
+            
+                # Check if we've reached the end
+                if current_week == end_week and current_lesson == end_lesson:
+                    break
+            
+                # Move to next lesson
+                current_lesson += 1
+                if current_lesson > lessons_per_week:
+                    current_lesson = 1
+                    current_week += 1
+            
+                # Safety check to prevent infinite loop
+                if current_week > total_weeks:
+                    break
+    
+        # Generate lessons
+        lessons = []
+        content_index = 0
+        total_lessons_count = total_weeks * lessons_per_week
+    
+        # Parse double lesson configuration with safe conversion
+        double_lesson_enabled = False
+        double_lesson_start = 2
+        double_lesson_end = 3
+        if request.doubleLesson and request.doubleLesson.get("enabled"):
+            double_lesson_enabled = True
+            pos = str(request.doubleLesson.get("position", "2-3"))
+            parts = pos.split("-")
+            if len(parts) == 2:
+                double_lesson_start = to_int(parts[0], 2)
+                double_lesson_end = to_int(parts[1], 3)
+    
+        # Compression factor for carry-over content
+        compression_factor = 0.7 if request.includeCarryOver else 1.0
+        
+        # Check if this is a Kiswahili subject
+        is_kiswahili = 'kiswahili' in subject["name"].lower() or 'fasihi' in subject["name"].lower()
+    
+        for week in range(1, total_weeks + 1):
+            lesson_num = 1
+            while lesson_num <= lessons_per_week:
+                # Check for break
+                if (week, lesson_num) in breaks_map:
+                    brk_info = breaks_map[(week, lesson_num)]
+                    if brk_info["isFirst"]:
+                        # Find the end of this break to show lesson range
+                        break_end_week = week
+                        break_end_lesson = lesson_num
+                        
+                        # Look ahead to find the last lesson of this break
+                        temp_week = week
+                        temp_lesson = lesson_num
+                        while (temp_week, temp_lesson) in breaks_map and breaks_map[(temp_week, temp_lesson)]["type"] == brk_info["type"]:
+                            break_end_week = temp_week
+                            break_end_lesson = temp_lesson
+                            temp_lesson += 1
+                            if temp_lesson > lessons_per_week:
+                                temp_lesson = 1
+                                temp_week += 1
+                            if temp_week > total_weeks:
+                                break
+                        
+                        # Format lesson range
+                        if week == break_end_week:
+                            lesson_range = f"{lesson_num}-{break_end_lesson}" if lesson_num != break_end_lesson else str(lesson_num)
+                        else:
+                            lesson_range = f"Wk{week}L{lesson_num} to Wk{break_end_week}L{break_end_lesson}"
+                        
+                        lessons.append({
+                            "isBreak": True,
+                            "breakType": brk_info["type"],
+                            "week": week,
+                            "lesson": lesson_num,
+                            "endWeek": break_end_week,
+                            "endLesson": break_end_lesson,
+                            "lessonRange": lesson_range
+                        })
+                    lesson_num += 1
+                    continue
+            
+                # Check if this is a double lesson position
+                is_double = double_lesson_enabled and lesson_num == double_lesson_start
+                lesson_display = f"{double_lesson_start}-{double_lesson_end}" if is_double else str(lesson_num)
+            
+                # Add curriculum content
+                if content_index < len(curriculum_content):
+                    content = curriculum_content[content_index]
+                
+                    # Generate inquiry questions
+                    inquiry_qs = generate_inquiry_questions(
+                        content["strand"], 
+                        content["substrand"], 
+                        content["slo"]
+                    )
+                
+                    # Generate learning experiences
+                    experiences = content.get("learningActivities", [])
+                    if not experiences:
+                        experiences = generate_learning_experiences(
+                            content["strand"],
+                            content["substrand"],
+                            content["slo"]
+                        )
+                
+                    # Generate resources
+                    resources = content.get("resources", [])
+                    if not resources:
+                        resources = generate_learning_resources(
+                            content["strand"],
+                            content["substrand"]
+                        )
+                
+                    # Get assessment
+                    assessment = content.get("assessmentMethods", [])
+                    if not assessment:
+                        assessment = get_assessment_for_slo(content["slo"])
+                
+                    lessons.append({
+                        "week": week,
+                        "lesson": lesson_display,
+                        "isDouble": is_double,
+                        "strand": content["strand"],
+                        "substrand": content["substrand"],
+                        "slo": f"By the end of the lesson, the learner should be able to {content['slo'].lower()}.",
+                        "keyInquiryQuestions": inquiry_qs,
+                        "learningExperiences": experiences[:4] if isinstance(experiences, list) else [experiences],
+                        "learningResources": resources[:4] if isinstance(resources, list) else [resources],
+                        "assessmentMethods": assessment[:2] if isinstance(assessment, list) else [assessment],
+                        "competencies": content["competencies"],
+                        "values": content["values"],
+                        "pcis": content.get("pcis", [])
+                    })
+                
+                    content_index += 1
+                
+                    # For double lessons, skip the next lesson number
+                    if is_double:
+                        lesson_num += 2
+                    else:
+                        lesson_num += 1
+                else:
+                    # Repeat content if needed (or stop if compression mode)
+                    if request.includeCarryOver:
+                        break  # Stop if we run out of content in compression mode
+                    content_index = 0
+                    lesson_num += 1
+    
+        # Build scheme data
+        scheme_data = {
+            "teacherId": user.get("id", ""),
+            "gradeId": request.gradeId,
+            "gradeName": grade["name"],
+            "subjectId": request.subjectId,
+            "subjectName": subject["name"],
+            "term": request.term,
+            "year": request.year,
+            "totalWeeks": total_weeks,
+            "lessonsPerWeek": lessons_per_week,
+            "schoolName": school_name,
+            "selectedTopics": request.selectedTopics,
+            "lessons": lessons,
+            "breaks": validated_breaks,
+            "doubleLesson": request.doubleLesson,
+            "includeCarryOver": request.includeCarryOver,
+            "createdAt": datetime.utcnow()
+        }
+    
+        return {
+            "success": True,
+            "scheme": scheme_data,
+            "summary": {
+                "totalLessons": len([l for l in lessons if not l.get("isBreak")]),
+                "totalBreaks": len([l for l in lessons if l.get("isBreak")]),
+                "doubleLessons": len([l for l in lessons if l.get("isDouble")]),
+                "topics": len(request.selectedTopics)
+            }
+        }
+    
+    except Exception as e:
+        logger.error(f"Error generating scheme: {str(e)}")
+        raise HTTPException(
+            status_code=500, 
+            detail={
+                "message": "Failed to generate scheme",
+                "error": str(e)
+            }
+        )
+
+@api_router.post("/schemes/preview")
+async def preview_scheme(scheme_data: Dict[str, Any], user: dict = Depends(verify_token)):
+    """Generate PDF preview (no wallet charge)"""
+    logger.info("Preview scheme route hit")
+    try:
+        pdf_bytes = generate_scheme_pdf(scheme_data)
+        
+        return StreamingResponse(
+            BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": 'inline; filename="scheme_preview.pdf"',
+                "Content-Length": str(len(pdf_bytes))
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error generating scheme preview: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate preview")
+
+SCHEME_DOWNLOAD_COST = 15  # KES
+
+@api_router.post("/schemes/download")
+async def download_scheme(scheme_data: Dict[str, Any], user: dict = Depends(verify_token)):
+    """Download scheme PDF (costs KES 15)"""
+    logger.info("Download scheme route hit")
+    
+    # Check wallet balance - use firebaseUid from user object
+    firebase_uid = user.get("firebaseUid")
+    if not firebase_uid:
+        raise HTTPException(status_code=401, detail="Invalid user session")
+    
+    user_profile = await db.users.find_one({"firebaseUid": firebase_uid})
+    if not user_profile:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    current_balance = user_profile.get("walletBalance", 0)
+    
+    if current_balance < SCHEME_DOWNLOAD_COST:
+        raise HTTPException(
+            status_code=402, 
+            detail={
+                "message": "Insufficient wallet balance",
+                "required": SCHEME_DOWNLOAD_COST,
+                "current": current_balance
+            }
+        )
+    
+    # Deduct from wallet
+    new_balance = current_balance - SCHEME_DOWNLOAD_COST
+    await db.users.update_one(
+        {"firebaseUid": firebase_uid},
+        {"$set": {"walletBalance": new_balance}}
+    )
+    
+    # Record transaction with unique tx_ref
+    import uuid
+    tx_ref = f"SCHEME_{uuid.uuid4().hex[:12].upper()}"
+    await db.wallet_transactions.insert_one({
+        "userId": user["id"],
+        "tx_ref": tx_ref,
+        "type": "debit",
+        "amount": SCHEME_DOWNLOAD_COST,
+        "description": f"Scheme of Work - {scheme_data.get('subjectName', 'Subject')} Term {scheme_data.get('term', 1)}",
+        "status": "successful",
+        "createdAt": datetime.utcnow()
+    })
+    
+    # Generate PDF
+    try:
+        pdf_bytes = generate_scheme_pdf(scheme_data)
+        
+        # Create filename
+        subject = scheme_data.get('subjectName', 'Subject').replace(' ', '_')
+        grade = scheme_data.get('gradeName', 'Grade').replace(' ', '_')
+        term = scheme_data.get('term', 1)
+        filename = f"Scheme_{subject}_{grade}_Term{term}.pdf"
+        
+        return StreamingResponse(
+            BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "Content-Length": str(len(pdf_bytes)),
+                "X-New-Balance": str(new_balance)
+            }
+        )
+    except Exception as e:
+        # Refund if PDF generation fails
+        await db.users.update_one(
+            {"firebaseUid": firebase_uid},
+            {"$set": {"walletBalance": current_balance}}
+        )
+        logger.error(f"Error generating scheme PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate PDF")
 
 # ==================== ADMIN ENDPOINTS ====================
 

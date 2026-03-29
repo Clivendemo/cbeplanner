@@ -68,7 +68,18 @@ export default function Dashboard() {
 
   const freeLessonsRemaining = user?.freeLessonsRemaining ?? 0;
 
-  const tiles = [
+  // Dashboard tiles - arranged in two columns
+  // LEFT: Schemes of Work, Create Lesson Plan, My Profile
+  // RIGHT: Generate Notes, My Plans, Past Papers
+  const leftColumnTiles = [
+    {
+      title: 'Schemes of Work',
+      subtitle: 'Term planning documents',
+      icon: 'calendar',
+      color: '#8B5CF6',
+      route: '/(teacher)/schemes',
+      disabled: false
+    },
     {
       title: 'Create Lesson Plan',
       subtitle: 'Generate KICD-aligned lesson plans',
@@ -79,13 +90,24 @@ export default function Dashboard() {
       badge: freeLessonsRemaining > 0 ? `${freeLessonsRemaining} Free` : undefined
     },
     {
+      title: 'My Profile',
+      subtitle: 'Settings & account',
+      icon: 'person-circle',
+      color: '#06B6D4',
+      route: '/(teacher)/profile',
+      disabled: false
+    }
+  ];
+  
+  const rightColumnTiles = [
+    {
       title: 'Generate Notes',
       subtitle: 'Create learner-friendly notes',
       icon: 'create',
       color: '#10B981',
       route: '/(teacher)/notes',
       disabled: true,
-      badge: undefined
+      badge: 'Coming Soon'
     },
     {
       title: 'My Lesson Plans',
@@ -96,28 +118,13 @@ export default function Dashboard() {
       disabled: false
     },
     {
-      title: 'Schemes of Work',
-      subtitle: 'Term planning documents',
-      icon: 'calendar',
-      color: '#8B5CF6',
-      route: '/(teacher)/schemes',
-      disabled: true
-    },
-    {
-      title: 'Revision Papers',
+      title: 'Past Papers',
       subtitle: 'Assessment materials',
       icon: 'school',
       color: '#EF4444',
       route: '/(teacher)/revision',
-      disabled: true
-    },
-    {
-      title: 'My Profile',
-      subtitle: 'Settings & account',
-      icon: 'person-circle',
-      color: '#06B6D4',
-      route: '/(teacher)/profile',
-      disabled: false
+      disabled: true,
+      badge: 'Coming Soon'
     }
   ];
 
@@ -158,21 +165,40 @@ export default function Dashboard() {
           </View>
         </View>
 
-        {/* Tiles Grid */}
+        {/* Tiles Grid - Two Columns */}
         <Text style={styles.sectionTitle}>What would you like to do?</Text>
-        <View style={styles.tilesContainer}>
-          {tiles.map((tile, index) => (
-            <Tile
-              key={index}
-              title={tile.title}
-              subtitle={tile.subtitle}
-              icon={tile.icon}
-              color={tile.color}
-              onPress={() => router.push(tile.route as any)}
-              disabled={tile.disabled}
-              badge={tile.badge}
-            />
-          ))}
+        <View style={styles.twoColumnContainer}>
+          {/* Left Column */}
+          <View style={styles.column}>
+            {leftColumnTiles.map((tile, index) => (
+              <Tile
+                key={`left-${index}`}
+                title={tile.title}
+                subtitle={tile.subtitle}
+                icon={tile.icon}
+                color={tile.color}
+                onPress={() => router.push(tile.route as any)}
+                disabled={tile.disabled}
+                badge={tile.badge}
+              />
+            ))}
+          </View>
+          
+          {/* Right Column */}
+          <View style={styles.column}>
+            {rightColumnTiles.map((tile, index) => (
+              <Tile
+                key={`right-${index}`}
+                title={tile.title}
+                subtitle={tile.subtitle}
+                icon={tile.icon}
+                color={tile.color}
+                onPress={() => router.push(tile.route as any)}
+                disabled={tile.disabled}
+                badge={tile.badge}
+              />
+            ))}
+          </View>
         </View>
 
         {/* Footer */}
@@ -283,17 +309,25 @@ const styles = StyleSheet.create({
     color: '#374151',
     marginBottom: 12
   },
+  twoColumnContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10
+  },
+  column: {
+    flex: 1,
+    gap: 12
+  },
   tilesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between'
   },
   tile: {
-    width: tileWidth,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 0,
     borderLeftWidth: 4,
     position: 'relative'
   },

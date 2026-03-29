@@ -371,7 +371,10 @@ SECURITY_HEADERS = {
     "Cache-Control": "no-store, no-cache, must-revalidate",
     "Pragma": "no-cache",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
-    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.vercel.app https://*.onrender.com https://*.emergentagent.com https://*.googleapis.com; font-src 'self' data:; frame-ancestors 'none'",
+    "Content-Security-Policy": "default-src 'self'; "
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; "
+    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+    "img-src 'self' data: https://cdn.jsdelivr.net; ",
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()"
 }
 

@@ -10,10 +10,12 @@ import {
   TextInput,
   Modal,
   FlatList,
-  Platform
+  Platform,
+  RefreshControl
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
+import { useFocusEffect } from 'expo-router';
 import axios from 'axios';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -152,6 +154,9 @@ export default function Curriculum() {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [bulkEditModalVisible, setBulkEditModalVisible] = useState(false);
   const [bulkEditFormData, setBulkEditFormData] = useState<Record<string, any>>({});
+  
+  // Pull-to-refresh state
+  const [refreshing, setRefreshing] = useState(false);
 
   const getHeaders = async () => {
     if (firebaseUser) {
@@ -171,6 +176,25 @@ export default function Curriculum() {
       loadData();
     }
   }, [selectedEntity, currentView]);
+
+  // Auto-refresh when screen comes into focus (detects external DB changes)
+  useFocusEffect(
+    useCallback(() => {
+      // Refresh data when screen is focused
+      console.log('Curriculum screen focused - refreshing data...');
+      refreshCurrentView();
+    }, [currentView, selectedEntity, currentParentId])
+  );
+
+  // Pull-to-refresh handler
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refreshCurrentView();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [currentView, selectedEntity, currentParentId]);
 
   // Auto-refresh: Universal refresh function for current view
   const refreshCurrentView = async () => {
@@ -1473,6 +1497,19 @@ export default function Curriculum() {
         <Text style={styles.headerTitle}>{ENTITY_CONFIG[selectedEntity].title}</Text>
         <Text style={styles.headerCount}>{data.length} items</Text>
         
+        {/* Refresh Button */}
+        <TouchableOpacity 
+          style={styles.refreshButton} 
+          onPress={onRefresh}
+          disabled={refreshing}
+        >
+          <Ionicons 
+            name="refresh" 
+            size={18} 
+            color={refreshing ? "#9CA3AF" : "#6366F1"} 
+          />
+        </TouchableOpacity>
+        
         {/* Bulk Edit Mode Toggle - Only for strands, substrands, slos */}
         {canReorder && (
           <TouchableOpacity 
@@ -1574,7 +1611,7 @@ export default function Curriculum() {
       )}
 
       {/* Data List */}
-      {loading ? (
+      {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#6366F1" />
         </View>
@@ -1584,11 +1621,21 @@ export default function Curriculum() {
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#6366F1']}
+              tintColor="#6366F1"
+              title="Pull to refresh from database..."
+              titleColor="#6B7280"
+            />
+          }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="folder-open-outline" size={64} color="#D1D5DB" />
               <Text style={styles.emptyText}>No {ENTITY_CONFIG[selectedEntity].title.toLowerCase()} found</Text>
-              <Text style={styles.emptySubtext}>Tap + to add one</Text>
+              <Text style={styles.emptySubtext}>Tap + to add one, or pull down to refresh</Text>
             </View>
           }
         />
@@ -2521,6 +2568,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12
+  },
+  refreshButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#EEF2FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8
   },
   learningActivitiesButton: {
     flex: 1,

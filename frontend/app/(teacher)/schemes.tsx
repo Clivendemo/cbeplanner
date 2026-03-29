@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,61 +7,90 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
-  TextInput,
   Modal,
-  FlatList
+  FlatList,
+  Platform,
+  TextInput
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
-import * as Print from 'expo-print';
+import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-
-interface Break {
-  id: string;
-  breakType: string;
-  startWeek: number;
-  startLesson?: number;
-  durationType: string;
-  durationValue: number;
-  description?: string;
-}
+const SCHEME_DOWNLOAD_COST = 15;
 
 interface Grade { id: string; name: string; }
 interface Subject { id: string; name: string; }
+interface Substrand { id: string; name: string; sloCount: number; }
+interface Topic { id: string; name: string; substrands: Substrand[]; totalSlos: number; }
+interface Break {
+  breakType: string;
+  startWeek: number;
+  startLesson: number;
+  endWeek: number;
+  endLesson: number;
+  startDate?: string; // Optional calendar date in ISO format
+}
+
+interface DoubleLesson {
+  enabled: boolean;
+  position: string; // e.g., "2-3", "3-4", "4-5"
+}
+
+type Step = 'select' | 'topics' | 'breaks' | 'preview';
 
 export default function SchemesOfWork() {
   const { user, firebaseUser } = useAuth();
-  const [generating, setGenerating] = useState(false);
   
-  // Form state
+  // Step management
+  const [currentStep, setCurrentStep] = useState<Step>('select');
+  
+  // Step 1: Basic selection
   const [grades, setGrades] = useState<Grade[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedGrade, setSelectedGrade] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('');
   const [term, setTerm] = useState(1);
   const [year, setYear] = useState(new Date().getFullYear());
-  const [school, setSchool] = useState(user?.schoolName || '');
-  const [teacherName, setTeacherName] = useState(`${user?.firstName || ''} ${user?.lastName || ''}`.trim());
-  const [totalWeeks, setTotalWeeks] = useState(14);
-  const [lessonsPerWeek, setLessonsPerWeek] = useState(5);
+  const [totalWeeks, setTotalWeeks] = useState(12);
+  const [lessonsPerWeek, setLessonsPerWeek] = useState<number | null>(null);
+  const [showLessonsOverride, setShowLessonsOverride] = useState(false);
   
-  // Breaks
-  const [breaks, setBreaks] = useState<Break[]>([]);
+  // Double lesson support
+  const [doubleLesson, setDoubleLesson] = useState<DoubleLesson>({ enabled: false, position: '2-3' });
+  
+  // Carry-over/compression mode
+  const [includeCarryOver, setIncludeCarryOver] = useState(false);
+  
+  // PDF preview modal
+  const [showPdfModal, setShowPdfModal] = useState(false);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+  
+  // Step 2: Topic selection
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [selectedTopics, setSelectedTopics] = useState<Set<string>>(new Set());
+  const [expandedStrands, setExpandedStrands] = useState<Set<string>>(new Set());
+  const [loadingTopics, setLoadingTopics] = useState(false);
+  
+  // Step 3: Breaks
+  const [breaks, setBreaks] = useState<Break[]>([
+    { breakType: 'Mid-Term Break', startWeek: 5, startLesson: 1, endWeek: 5, endLesson: 5 },
+    { breakType: 'End Term Exams', startWeek: 13, startLesson: 1, endWeek: 14, endLesson: 5 }
+  ]);
   const [breakModalVisible, setBreakModalVisible] = useState(false);
-  const [newBreak, setNewBreak] = useState<Partial<Break>>({
-    breakType: 'Half-Term',
-    startWeek: 1,
-    durationType: 'weeks',
-    durationValue: 1
-  });
+  const [editingBreak, setEditingBreak] = useState<Break | null>(null);
   
-  // Generated scheme
+  // Step 4: Preview & Download
   const [generatedScheme, setGeneratedScheme] = useState<any>(null);
+  const [generating, setGenerating] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
+  
+  // Insufficient funds modal
+  const [showFundsModal, setShowFundsModal] = useState(false);
   
   const getHeaders = async () => {
     if (firebaseUser) {
@@ -71,6 +100,7 @@ export default function SchemesOfWork() {
     return {};
   };
 
+  // Load grades on mount
   useEffect(() => {
     loadGrades();
   }, []);
@@ -87,12 +117,14 @@ export default function SchemesOfWork() {
     }
   };
 
+  // Load subjects when grade changes
   useEffect(() => {
     if (selectedGrade) {
       loadSubjects();
     } else {
       setSubjects([]);
       setSelectedSubject('');
+      setLessonsPerWeek(null);
     }
   }, [selectedGrade]);
 
@@ -108,867 +140,1894 @@ export default function SchemesOfWork() {
     }
   };
 
-  const addBreak = () => {
-    if (!newBreak.breakType || !newBreak.startWeek || !newBreak.durationValue) {
-      Alert.alert('Error', 'Please fill in all break fields');
-      return;
+  // Auto-fetch lessons per week when subject changes
+  useEffect(() => {
+    if (selectedGrade && selectedSubject) {
+      fetchLessonsPerWeek();
+    }
+  }, [selectedGrade, selectedSubject]);
+
+  const fetchLessonsPerWeek = async () => {
+    try {
+      const headers = await getHeaders();
+      const response = await axios.get(
+        `${BACKEND_URL}/api/schemes/config/lessons-per-week?gradeId=${selectedGrade}&subjectId=${selectedSubject}`,
+        { headers }
+      );
+      if (response.data.success) {
+        setLessonsPerWeek(response.data.lessonsPerWeek);
+      }
+    } catch (error) {
+      console.error('Error fetching lessons per week:', error);
+      setLessonsPerWeek(5); // Default fallback
+    }
+  };
+
+  // Load topics for step 2
+  const loadTopics = async () => {
+    setLoadingTopics(true);
+    try {
+      const headers = await getHeaders();
+      const response = await axios.get(
+        `${BACKEND_URL}/api/schemes/topics/${selectedSubject}`,
+        { headers }
+      );
+      if (response.data.success) {
+        setTopics(response.data.topics);
+        // Expand first strand by default
+        if (response.data.topics.length > 0) {
+          setExpandedStrands(new Set([response.data.topics[0].id]));
+        }
+      }
+    } catch (error) {
+      console.error('Error loading topics:', error);
+      Alert.alert('Error', 'Failed to load topics');
+    } finally {
+      setLoadingTopics(false);
+    }
+  };
+
+  // Navigation handlers
+  const handleNext = () => {
+    if (currentStep === 'select') {
+      if (!selectedGrade || !selectedSubject) {
+        Alert.alert('Required', 'Please select a grade and subject');
+        return;
+      }
+      loadTopics();
+      setCurrentStep('topics');
+    } else if (currentStep === 'topics') {
+      if (selectedTopics.size === 0) {
+        Alert.alert('Required', 'Please select at least one topic');
+        return;
+      }
+      setCurrentStep('breaks');
+    } else if (currentStep === 'breaks') {
+      generateScheme();
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep === 'topics') setCurrentStep('select');
+    else if (currentStep === 'breaks') setCurrentStep('topics');
+    else if (currentStep === 'preview') setCurrentStep('breaks');
+  };
+
+  // Calculate break duration display text
+  const calculateBreakDuration = (brk: Break | null) => {
+    if (!brk) return 'Select start and end points';
+    
+    const startWeek = brk.startWeek || 1;
+    const startLesson = brk.startLesson || 1;
+    const endWeek = brk.endWeek || startWeek;
+    const endLesson = brk.endLesson || (lessonsPerWeek || 5);
+    const lpw = lessonsPerWeek || 5;
+    
+    // Calculate total lessons
+    const startPosition = (startWeek - 1) * lpw + startLesson;
+    const endPosition = (endWeek - 1) * lpw + endLesson;
+    const totalLessons = endPosition - startPosition + 1;
+    
+    if (totalLessons <= 0) return 'Invalid range';
+    
+    const weeks = Math.floor(totalLessons / lpw);
+    const extraLessons = totalLessons % lpw;
+    
+    let duration = '';
+    if (weeks > 0) {
+      duration += `${weeks} week${weeks > 1 ? 's' : ''}`;
+    }
+    if (extraLessons > 0) {
+      duration += (weeks > 0 ? ' and ' : '') + `${extraLessons} lesson${extraLessons > 1 ? 's' : ''}`;
     }
     
-    setBreaks([...breaks, {
-      id: Date.now().toString(),
-      breakType: newBreak.breakType!,
-      startWeek: newBreak.startWeek!,
-      startLesson: newBreak.startLesson,
-      durationType: newBreak.durationType!,
-      durationValue: newBreak.durationValue!,
-      description: newBreak.description
-    }]);
-    
-    setNewBreak({
-      breakType: 'Half-Term',
-      startWeek: 1,
-      durationType: 'weeks',
-      durationValue: 1
+    return `Duration: ${duration} (${totalLessons} total lesson${totalLessons > 1 ? 's' : ''})`;
+  };
+
+  // Topic selection handlers
+  const toggleStrandExpand = (strandId: string) => {
+    setExpandedStrands(prev => {
+      const next = new Set(prev);
+      if (next.has(strandId)) {
+        next.delete(strandId);
+      } else {
+        next.add(strandId);
+      }
+      return next;
     });
-    setBreakModalVisible(false);
   };
 
-  const removeBreak = (id: string) => {
-    setBreaks(breaks.filter(b => b.id !== id));
+  const toggleTopicSelection = (substrandId: string) => {
+    setSelectedTopics(prev => {
+      const next = new Set(prev);
+      if (next.has(substrandId)) {
+        next.delete(substrandId);
+      } else {
+        next.add(substrandId);
+      }
+      return next;
+    });
   };
 
-  const handleGenerate = async () => {
-    if (!selectedGrade || !selectedSubject) {
-      Alert.alert('Error', 'Please select grade and subject');
-      return;
-    }
+  const selectAllTopics = () => {
+    const allIds = new Set<string>();
+    topics.forEach(strand => {
+      strand.substrands.forEach(ss => allIds.add(ss.id));
+    });
+    setSelectedTopics(allIds);
+  };
 
+  const deselectAllTopics = () => {
+    setSelectedTopics(new Set());
+  };
+
+  const isStrandFullySelected = (strand: Topic) => {
+    return strand.substrands.every(ss => selectedTopics.has(ss.id));
+  };
+
+  const toggleStrandSelection = (strand: Topic) => {
+    const allSelected = isStrandFullySelected(strand);
+    setSelectedTopics(prev => {
+      const next = new Set(prev);
+      strand.substrands.forEach(ss => {
+        if (allSelected) {
+          next.delete(ss.id);
+        } else {
+          next.add(ss.id);
+        }
+      });
+      return next;
+    });
+  };
+
+  // Generate scheme
+  const generateScheme = async () => {
     setGenerating(true);
     try {
       const headers = await getHeaders();
       const response = await axios.post(
-        `${BACKEND_URL}/api/schemes/generate`,
+        `${BACKEND_URL}/api/schemes/generate-v2`,
         {
-          subjectId: selectedSubject,
           gradeId: selectedGrade,
+          subjectId: selectedSubject,
           term,
           year,
-          school,
-          teacherName,
-          curriculumStandard: 'KICD CBC',
           totalWeeks,
-          lessonsPerWeek,
+          lessonsPerWeek: lessonsPerWeek || 5,
+          selectedTopics: Array.from(selectedTopics),
           breaks: breaks.map(b => ({
             breakType: b.breakType,
             startWeek: b.startWeek,
             startLesson: b.startLesson,
-            durationType: b.durationType,
-            durationValue: b.durationValue,
-            description: b.description
-          }))
+            endWeek: b.endWeek,
+            endLesson: b.endLesson
+          })),
+          doubleLesson: doubleLesson.enabled ? doubleLesson : null,
+          includeCarryOver
         },
         { headers }
       );
-
+      
       if (response.data.success) {
         setGeneratedScheme(response.data.scheme);
+        setCurrentStep('preview');
+      } else {
+        Alert.alert('Error', response.data.detail || 'Failed to generate scheme');
       }
     } catch (error: any) {
+      console.error('Error generating scheme:', error);
       Alert.alert('Error', error.response?.data?.detail || 'Failed to generate scheme');
     } finally {
       setGenerating(false);
     }
   };
 
-  const generatePDF = async () => {
+  // Preview PDF (in-app modal)
+  const handlePreview = async () => {
     if (!generatedScheme) return;
-
-    const lessonsHtml = generatedScheme.lessons.map((lesson: any) => {
-      if (lesson.isBreak) {
-        return `
-          <tr class="break-row">
-            <td colspan="12" class="break-cell">
-              <strong>${lesson.breakType?.toUpperCase()} — WEEK ${lesson.week}</strong><br/>
-              ${lesson.breakDescription || ''}
-            </td>
-          </tr>
-        `;
-      }
-      return `
-        <tr>
-          <td>${lesson.week}</td>
-          <td>${lesson.lessonNumber}</td>
-          <td>${lesson.strand || ''}</td>
-          <td>${lesson.substrand || ''}</td>
-          <td>${lesson.slo || ''}</td>
-          <td class="small-text">${lesson.coreCompetencies || ''}</td>
-          <td class="small-text">${lesson.coreValues || ''}</td>
-          <td>${lesson.keyInquiryQuestions || ''}</td>
-          <td>${lesson.learningExperiences || ''}</td>
-          <td>${lesson.learningResources || ''}</td>
-          <td>${lesson.assessmentMethods || ''}</td>
-          <td>${lesson.reflection || ''}</td>
-        </tr>
-      `;
-    }).join('');
-
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <title>Scheme of Work</title>
-        <style>
-          @page { size: A4 landscape; margin: 6mm; }
-          body { font-family: Arial, sans-serif; font-size: 8px; margin: 0; padding: 8px; }
-          .title { text-align: center; margin-bottom: 8px; }
-          .title h1 { font-size: 14px; margin: 0 0 4px 0; text-transform: uppercase; }
-          .title h2 { font-size: 12px; margin: 0; font-weight: normal; }
-          .header-info { margin-bottom: 8px; font-size: 9px; }
-          .header-row { display: flex; margin-bottom: 4px; }
-          .header-item { flex: 1; }
-          .header-label { font-weight: bold; display: inline; }
-          .header-dots { border-bottom: 1px dotted #000; display: inline-block; min-width: 150px; }
-          table { width: 100%; border-collapse: collapse; font-size: 7px; margin-top: 8px; }
-          th, td { border: 1px solid #000; padding: 3px; text-align: left; vertical-align: top; }
-          th { background: #f0f0f0; font-weight: bold; text-align: center; font-size: 7px; }
-          .break-row { background: #fff3cd !important; }
-          .break-cell { text-align: center; padding: 6px; font-weight: bold; }
-          .footer { margin-top: 8px; text-align: center; font-size: 7px; color: #666; }
-          .small-text { font-size: 6px; }
-          .col-week { width: 3%; }
-          .col-lsn { width: 2%; }
-          .col-strand { width: 8%; }
-          .col-substrand { width: 8%; }
-          .col-slo { width: 14%; }
-          .col-comp { width: 8%; }
-          .col-val { width: 7%; }
-          .col-inquiry { width: 12%; }
-          .col-exp { width: 14%; }
-          .col-res { width: 8%; }
-          .col-assess { width: 6%; }
-          .col-refl { width: 5%; }
-        </style>
-      </head>
-      <body>
-        <div class="title">
-          <h1>SCHEMES OF WORK FOR TERM ${generatedScheme.term}</h1>
-          <h2>${generatedScheme.gradeName.toUpperCase()} ${generatedScheme.subjectName.toUpperCase()}</h2>
-        </div>
-        
-        <div class="header-info">
-          <div class="header-row">
-            <div class="header-item">
-              <span class="header-label">SCHOOL:</span> 
-              <span class="header-dots">${generatedScheme.school}</span>
-            </div>
-            <div class="header-item">
-              <span class="header-label">YEAR:</span> 
-              <span class="header-dots">${generatedScheme.year}</span>
-            </div>
-            <div class="header-item">
-              <span class="header-label">TEACHER:</span> 
-              <span class="header-dots">${generatedScheme.teacherName}</span>
-            </div>
-          </div>
-        </div>
-        
-        <table>
-          <thead>
-            <tr>
-              <th class="col-week">Wk</th>
-              <th class="col-lsn">Ls</th>
-              <th class="col-strand">Strand</th>
-              <th class="col-substrand">Sub-strand</th>
-              <th class="col-slo">Specific Learning Outcomes</th>
-              <th class="col-comp">Core Competencies</th>
-              <th class="col-val">Core Values</th>
-              <th class="col-inquiry">Key Inquiry Question(s)</th>
-              <th class="col-exp">Learning Experiences</th>
-              <th class="col-res">Learning Resources</th>
-              <th class="col-assess">Assessment</th>
-              <th class="col-refl">Refl</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${lessonsHtml}
-          </tbody>
-        </table>
-        
-        <div class="footer">
-          <p>Generated by CBE Planner | KICD-Aligned CBC Curriculum | ${new Date().toLocaleDateString()}</p>
-        </div>
-      </body>
-      </html>
-    `;
-
+    
+    setPreviewing(true);
     try {
-      const { uri } = await Print.printToFileAsync({ html: htmlContent });
+      const headers = await getHeaders();
       
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri);
+      // For web, show in modal with iframe
+      if (Platform.OS === 'web') {
+        const response = await axios.post(
+          `${BACKEND_URL}/api/schemes/preview`,
+          generatedScheme,
+          { 
+            headers,
+            responseType: 'blob'
+          }
+        );
+        
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        setPdfPreviewUrl(url);
+        setShowPdfModal(true);
       } else {
-        Alert.alert('Success', `PDF saved to ${uri}`);
+        // For native (mobile), download and share directly
+        const token = await firebaseUser?.getIdToken();
+        const fileUri = `${FileSystem.cacheDirectory}scheme_preview_${Date.now()}.pdf`;
+        
+        // Download the file
+        const downloadResult = await FileSystem.downloadAsync(
+          `${BACKEND_URL}/api/schemes/preview`,
+          fileUri,
+          {
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            httpMethod: 'POST',
+            body: JSON.stringify(generatedScheme)
+          }
+        );
+        
+        if (downloadResult.status === 200) {
+          // Share the downloaded PDF
+          const canShare = await Sharing.isAvailableAsync();
+          if (canShare) {
+            await Sharing.shareAsync(downloadResult.uri, { 
+              mimeType: 'application/pdf',
+              dialogTitle: 'Preview Scheme of Work'
+            });
+          } else {
+            Alert.alert('Preview Ready', 'PDF saved. Check your files.');
+          }
+        } else {
+          throw new Error('Download failed');
+        }
       }
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      Alert.alert('Error', 'Failed to generate PDF');
+      console.error('Error previewing:', error);
+      Alert.alert('Error', 'Failed to generate preview');
+    } finally {
+      setPreviewing(false);
     }
   };
 
-  const breakTypes = ['Assessment', 'Half-Term', 'Examination', 'Holiday', 'Custom'];
-  const durationTypes = [
-    { label: 'Lessons', value: 'lessons' },
-    { label: 'Fraction of Week', value: 'fraction' },
-    { label: 'Weeks', value: 'weeks' }
-  ];
+  // Download PDF (with wallet check)
+  const handleDownload = async () => {
+    if (!generatedScheme) return;
+    
+    // Check wallet balance first
+    const currentBalance = user?.walletBalance || 0;
+    if (currentBalance < SCHEME_DOWNLOAD_COST) {
+      setShowFundsModal(true);
+      return;
+    }
+    
+    setDownloading(true);
+    try {
+      const headers = await getHeaders();
+      
+      // For web
+      if (Platform.OS === 'web') {
+        const response = await axios.post(
+          `${BACKEND_URL}/api/schemes/download`,
+          generatedScheme,
+          { 
+            headers,
+            responseType: 'blob'
+          }
+        );
+        
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Scheme_${generatedScheme.subjectName}_Term${generatedScheme.term}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        // Refresh wallet balance
+        await refreshWalletBalance();
+        
+        Alert.alert('Success', `Scheme downloaded! KES ${SCHEME_DOWNLOAD_COST} deducted from wallet.`);
+      } else {
+        // Native download
+        const token = await firebaseUser?.getIdToken();
+        const fileUri = `${FileSystem.documentDirectory}Scheme_${generatedScheme.subjectName}_Term${generatedScheme.term}.pdf`;
+        
+        const downloadResult = await FileSystem.downloadAsync(
+          `${BACKEND_URL}/api/schemes/download`,
+          fileUri,
+          {
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            httpMethod: 'POST',
+            body: JSON.stringify(generatedScheme)
+          }
+        );
+        
+        if (downloadResult.status === 200) {
+          await Sharing.shareAsync(downloadResult.uri, { mimeType: 'application/pdf' });
+          
+          // Refresh wallet balance
+          await refreshWalletBalance();
+          
+          Alert.alert('Success', `Scheme downloaded! KES ${SCHEME_DOWNLOAD_COST} deducted from wallet.`);
+        } else {
+          throw new Error('Download failed');
+        }
+      }
+    } catch (error: any) {
+      console.error('Error downloading:', error);
+      if (error.response?.status === 402) {
+        setShowFundsModal(true);
+      } else {
+        Alert.alert('Error', error.response?.data?.detail || 'Failed to download');
+      }
+    } finally {
+      setDownloading(false);
+    }
+  };
+  
+  // Refresh wallet balance after download
+  const refreshWalletBalance = async () => {
+    try {
+      const headers = await getHeaders();
+      const response = await axios.get(`${BACKEND_URL}/api/wallet/balance`, { headers });
+      if (response.data && typeof response.data.balance === 'number') {
+        // Update user context with new balance
+        if (user) {
+          user.walletBalance = response.data.balance;
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing wallet balance:', error);
+    }
+  };
 
-  if (generatedScheme) {
-    return (
-      <SafeAreaView style={styles.container} edges={['bottom']}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Scheme Header */}
-          <View style={styles.schemeHeader}>
-            <Text style={styles.schemeTitle}>Scheme of Work</Text>
-            <Text style={styles.schemeSubtitle}>
-              {generatedScheme.subjectName} • {generatedScheme.gradeName} • Term {generatedScheme.term}
-            </Text>
+  // Get selected grade/subject names
+  const selectedGradeName = grades.find(g => g.id === selectedGrade)?.name || '';
+  const selectedSubjectName = subjects.find(s => s.id === selectedSubject)?.name || '';
+
+  // Render Step 1: Basic Selection
+  const renderSelectionStep = () => (
+    <ScrollView style={styles.stepContent}>
+      <View style={styles.formSection}>
+        <Text style={styles.sectionTitle}>Basic Information</Text>
+        
+        {/* Grade Picker */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Grade *</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={selectedGrade}
+              onValueChange={setSelectedGrade}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select Grade..." value="" />
+              {grades.map(g => (
+                <Picker.Item key={g.id} label={g.name} value={g.id} />
+              ))}
+            </Picker>
           </View>
-
-          <View style={styles.schemeMeta}>
-            <View style={styles.metaRow}>
-              <View style={styles.metaItem}>
-                <Text style={styles.metaLabel}>School</Text>
-                <Text style={styles.metaValue}>{generatedScheme.school}</Text>
-              </View>
-              <View style={styles.metaItem}>
-                <Text style={styles.metaLabel}>Teacher</Text>
-                <Text style={styles.metaValue}>{generatedScheme.teacherName}</Text>
-              </View>
-            </View>
-            <View style={styles.metaRow}>
-              <View style={styles.metaItem}>
-                <Text style={styles.metaLabel}>Total Weeks</Text>
-                <Text style={styles.metaValue}>{generatedScheme.totalWeeks}</Text>
-              </View>
-              <View style={styles.metaItem}>
-                <Text style={styles.metaLabel}>Lessons/Week</Text>
-                <Text style={styles.metaValue}>{generatedScheme.lessonsPerWeek}</Text>
-              </View>
-            </View>
+        </View>
+        
+        {/* Subject Picker */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Subject *</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={selectedSubject}
+              onValueChange={setSelectedSubject}
+              style={styles.picker}
+              enabled={subjects.length > 0}
+            >
+              <Picker.Item label="Select Subject..." value="" />
+              {subjects.map(s => (
+                <Picker.Item key={s.id} label={s.name} value={s.id} />
+              ))}
+            </Picker>
           </View>
-
-          {/* Lessons List */}
-          <View style={styles.lessonsContainer}>
-            {generatedScheme.lessons.slice(0, 20).map((lesson: any, index: number) => (
-              <View 
-                key={index} 
-                style={[styles.lessonCard, lesson.isBreak && styles.breakCard]}
+        </View>
+        
+        {/* Term Picker */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Term</Text>
+          <View style={styles.termRow}>
+            {[1, 2, 3].map(t => (
+              <TouchableOpacity
+                key={t}
+                style={[styles.termButton, term === t && styles.termButtonActive]}
+                onPress={() => setTerm(t)}
               >
-                {lesson.isBreak ? (
-                  <View style={styles.breakContent}>
-                    <Ionicons name="pause-circle" size={24} color="#F59E0B" />
-                    <Text style={styles.breakTitle}>
-                      Week {lesson.week} — {lesson.breakType}
-                    </Text>
-                    <Text style={styles.breakDescription}>{lesson.breakDescription}</Text>
-                  </View>
-                ) : (
-                  <>
-                    <View style={styles.lessonHeader}>
-                      <Text style={styles.lessonWeek}>Week {lesson.week}</Text>
-                      <Text style={styles.lessonNum}>Lesson {lesson.lessonNumber}</Text>
-                    </View>
-                    <Text style={styles.lessonStrand}>{lesson.strand}</Text>
-                    <Text style={styles.lessonSubstrand}>{lesson.substrand}</Text>
-                    <Text style={styles.lessonSlo}>{lesson.slo}</Text>
-                  </>
-                )}
-              </View>
+                <Text style={[styles.termButtonText, term === t && styles.termButtonTextActive]}>
+                  Term {t}
+                </Text>
+              </TouchableOpacity>
             ))}
-            
-            {generatedScheme.lessons.length > 20 && (
-              <Text style={styles.moreText}>
-                + {generatedScheme.lessons.length - 20} more lessons (download PDF for full view)
-              </Text>
-            )}
-          </View>
-
-          {/* Action Buttons */}
-          <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.downloadButton} onPress={generatePDF}>
-              <Ionicons name="download" size={20} color="#FFFFFF" />
-              <Text style={styles.downloadButtonText}>Download PDF</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.newButton} 
-              onPress={() => setGeneratedScheme(null)}
-            >
-              <Ionicons name="add" size={20} color="#8B5CF6" />
-              <Text style={styles.newButtonText}>Create New</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    );
-  }
-
-  return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Basic Info Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Scheme of Work Details</Text>
-
-          <View style={styles.row}>
-            <View style={styles.halfInput}>
-              <Text style={styles.label}>Grade</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={selectedGrade}
-                  onValueChange={setSelectedGrade}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Select Grade" value="" />
-                  {grades.map((g) => (
-                    <Picker.Item key={g.id} label={g.name} value={g.id} />
-                  ))}
-                </Picker>
-              </View>
-            </View>
-            <View style={styles.halfInput}>
-              <Text style={styles.label}>Subject</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={selectedSubject}
-                  onValueChange={setSelectedSubject}
-                  style={styles.picker}
-                  enabled={subjects.length > 0}
-                >
-                  <Picker.Item label="Select Subject" value="" />
-                  {subjects.map((s) => (
-                    <Picker.Item key={s.id} label={s.name} value={s.id} />
-                  ))}
-                </Picker>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.row}>
-            <View style={styles.halfInput}>
-              <Text style={styles.label}>Term</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={term}
-                  onValueChange={setTerm}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Term 1" value={1} />
-                  <Picker.Item label="Term 2" value={2} />
-                  <Picker.Item label="Term 3" value={3} />
-                </Picker>
-              </View>
-            </View>
-            <View style={styles.halfInput}>
-              <Text style={styles.label}>Year</Text>
-              <TextInput
-                style={styles.textInput}
-                value={year.toString()}
-                onChangeText={(text) => setYear(parseInt(text) || new Date().getFullYear())}
-                keyboardType="numeric"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>School Name</Text>
-            <TextInput
-              style={styles.textInput}
-              value={school}
-              onChangeText={setSchool}
-              placeholder="Enter school name"
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Teacher Name</Text>
-            <TextInput
-              style={styles.textInput}
-              value={teacherName}
-              onChangeText={setTeacherName}
-              placeholder="Enter teacher name"
-            />
-          </View>
-
-          <View style={styles.row}>
-            <View style={styles.halfInput}>
-              <Text style={styles.label}>Total Weeks</Text>
-              <TextInput
-                style={styles.textInput}
-                value={totalWeeks.toString()}
-                onChangeText={(text) => setTotalWeeks(parseInt(text) || 14)}
-                keyboardType="numeric"
-              />
-            </View>
-            <View style={styles.halfInput}>
-              <Text style={styles.label}>Lessons/Week</Text>
-              <TextInput
-                style={styles.textInput}
-                value={lessonsPerWeek.toString()}
-                onChangeText={(text) => setLessonsPerWeek(parseInt(text) || 5)}
-                keyboardType="numeric"
-              />
-            </View>
           </View>
         </View>
-
-        {/* Breaks Card */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Breaks & Holidays</Text>
-            <TouchableOpacity 
-              style={styles.addBreakButton}
-              onPress={() => setBreakModalVisible(true)}
-            >
-              <Ionicons name="add" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
+        
+        {/* Lessons per Week (User Selectable with auto-default) */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Lessons per Week</Text>
+          <View style={styles.lessonsRow}>
+            {[4, 5, 6, 7, 8].map(l => (
+              <TouchableOpacity
+                key={l}
+                style={[styles.lessonButton, lessonsPerWeek === l && styles.lessonButtonActive]}
+                onPress={() => setLessonsPerWeek(l)}
+              >
+                <Text style={[styles.lessonButtonText, lessonsPerWeek === l && styles.lessonButtonTextActive]}>
+                  {l}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
-
-          {breaks.length === 0 ? (
-            <Text style={styles.noBreaksText}>No breaks added. Tap + to add breaks.</Text>
-          ) : (
-            breaks.map((brk) => (
-              <View key={brk.id} style={styles.breakItem}>
-                <View style={styles.breakInfo}>
-                  <Text style={styles.breakType}>{brk.breakType}</Text>
-                  <Text style={styles.breakDetails}>
-                    Week {brk.startWeek} • {brk.durationValue} {brk.durationType}
-                  </Text>
-                </View>
-                <TouchableOpacity onPress={() => removeBreak(brk.id)}>
-                  <Ionicons name="close-circle" size={24} color="#EF4444" />
-                </TouchableOpacity>
-              </View>
-            ))
+          {lessonsPerWeek && selectedSubjectName && (
+            <Text style={styles.autoHint}>
+              Default for {selectedSubjectName}: {lessonsPerWeek} lessons/week
+            </Text>
           )}
         </View>
-
-        {/* Generate Button */}
-        <TouchableOpacity
-          style={[styles.generateButton, generating && styles.buttonDisabled]}
-          onPress={handleGenerate}
-          disabled={generating}
-        >
-          {generating ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <>
-              <Ionicons name="calendar" size={20} color="#FFFFFF" />
-              <Text style={styles.generateButtonText}>Generate Scheme of Work</Text>
-            </>
-          )}
-        </TouchableOpacity>
-
-        {/* Break Modal */}
-        <Modal
-          visible={breakModalVisible}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => setBreakModalVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Add Break</Text>
-                <TouchableOpacity onPress={() => setBreakModalVisible(false)}>
-                  <Ionicons name="close" size={24} color="#6B7280" />
-                </TouchableOpacity>
+        
+        {/* Number of Weeks (8-14) */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Number of Weeks</Text>
+          <View style={styles.weeksRow}>
+            {[8, 9, 10, 11, 12, 13, 14].map(w => (
+              <TouchableOpacity
+                key={w}
+                style={[styles.weekButton, totalWeeks === w && styles.weekButtonActive]}
+                onPress={() => setTotalWeeks(w)}
+              >
+                <Text style={[styles.weekButtonText, totalWeeks === w && styles.weekButtonTextActive]}>
+                  {w}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+        
+        {/* Double Lesson Support */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Double Lesson</Text>
+          <View style={styles.doubleLessonRow}>
+            <TouchableOpacity
+              style={[styles.toggleBtn, !doubleLesson.enabled && styles.toggleBtnActive]}
+              onPress={() => setDoubleLesson(prev => ({ ...prev, enabled: false }))}
+            >
+              <Text style={[styles.toggleBtnText, !doubleLesson.enabled && styles.toggleBtnTextActive]}>No</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.toggleBtn, doubleLesson.enabled && styles.toggleBtnActive]}
+              onPress={() => setDoubleLesson(prev => ({ ...prev, enabled: true }))}
+            >
+              <Text style={[styles.toggleBtnText, doubleLesson.enabled && styles.toggleBtnTextActive]}>Yes</Text>
+            </TouchableOpacity>
+          </View>
+          
+          {doubleLesson.enabled && (
+            <View style={styles.doubleLessonPosition}>
+              <Text style={styles.subLabel}>Double lesson position:</Text>
+              <View style={styles.positionRow}>
+                {['2-3', '3-4', '4-5'].map(pos => (
+                  <TouchableOpacity
+                    key={pos}
+                    style={[styles.positionBtn, doubleLesson.position === pos && styles.positionBtnActive]}
+                    onPress={() => setDoubleLesson(prev => ({ ...prev, position: pos }))}
+                  >
+                    <Text style={[styles.positionBtnText, doubleLesson.position === pos && styles.positionBtnTextActive]}>
+                      Lesson {pos}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </View>
+            </View>
+          )}
+        </View>
+        
+        {/* Carry-over Content Option */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Include Previous Term Uncovered Content?</Text>
+          <Text style={styles.subHint}>Compresses scheduling to fit more topics</Text>
+          <View style={styles.doubleLessonRow}>
+            <TouchableOpacity
+              style={[styles.toggleBtn, !includeCarryOver && styles.toggleBtnActive]}
+              onPress={() => setIncludeCarryOver(false)}
+            >
+              <Text style={[styles.toggleBtnText, !includeCarryOver && styles.toggleBtnTextActive]}>No</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.toggleBtn, includeCarryOver && styles.toggleBtnActive]}
+              onPress={() => setIncludeCarryOver(true)}
+            >
+              <Text style={[styles.toggleBtnText, includeCarryOver && styles.toggleBtnTextActive]}>Yes</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </ScrollView>
+  );
 
-              <ScrollView style={styles.modalBody}>
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Break Type</Text>
-                  <View style={styles.pickerContainer}>
-                    <Picker
-                      selectedValue={newBreak.breakType}
-                      onValueChange={(val) => setNewBreak({...newBreak, breakType: val})}
-                      style={styles.picker}
-                    >
-                      {breakTypes.map((type) => (
-                        <Picker.Item key={type} label={type} value={type} />
-                      ))}
-                    </Picker>
-                  </View>
-                </View>
-
-                <View style={styles.row}>
-                  <View style={styles.halfInput}>
-                    <Text style={styles.label}>Start Week</Text>
-                    <TextInput
-                      style={styles.textInput}
-                      value={newBreak.startWeek?.toString()}
-                      onChangeText={(text) => setNewBreak({...newBreak, startWeek: parseInt(text) || 1})}
-                      keyboardType="numeric"
-                    />
-                  </View>
-                  <View style={styles.halfInput}>
-                    <Text style={styles.label}>Start Lesson (opt)</Text>
-                    <TextInput
-                      style={styles.textInput}
-                      value={newBreak.startLesson?.toString() || ''}
-                      onChangeText={(text) => setNewBreak({...newBreak, startLesson: parseInt(text) || undefined})}
-                      keyboardType="numeric"
-                      placeholder="Optional"
-                    />
-                  </View>
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Duration Type</Text>
-                  <View style={styles.pickerContainer}>
-                    <Picker
-                      selectedValue={newBreak.durationType}
-                      onValueChange={(val) => setNewBreak({...newBreak, durationType: val})}
-                      style={styles.picker}
-                    >
-                      {durationTypes.map((type) => (
-                        <Picker.Item key={type.value} label={type.label} value={type.value} />
-                      ))}
-                    </Picker>
-                  </View>
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Duration Value</Text>
-                  <TextInput
-                    style={styles.textInput}
-                    value={newBreak.durationValue?.toString()}
-                    onChangeText={(text) => setNewBreak({...newBreak, durationValue: parseFloat(text) || 1})}
-                    keyboardType="decimal-pad"
-                  />
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Description (optional)</Text>
-                  <TextInput
-                    style={[styles.textInput, styles.textArea]}
-                    value={newBreak.description || ''}
-                    onChangeText={(text) => setNewBreak({...newBreak, description: text})}
-                    placeholder="e.g., Mid-term break for student assessment"
-                    multiline
-                  />
-                </View>
-              </ScrollView>
-
-              <TouchableOpacity style={styles.addButton} onPress={addBreak}>
-                <Text style={styles.addButtonText}>Add Break</Text>
+  // Render Step 2: Topic Selection
+  const renderTopicsStep = () => (
+    <View style={styles.stepContent}>
+      {loadingTopics ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#6366F1" />
+          <Text style={styles.loadingText}>Loading topics...</Text>
+        </View>
+      ) : (
+        <>
+          {/* Selection header */}
+          <View style={styles.topicsHeader}>
+            <Text style={styles.topicsTitle}>
+              Select Topics ({selectedTopics.size} selected)
+            </Text>
+            <View style={styles.selectActions}>
+              <TouchableOpacity onPress={selectAllTopics} style={styles.selectAllBtn}>
+                <Text style={styles.selectAllText}>Select All</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={deselectAllTopics} style={styles.deselectAllBtn}>
+                <Text style={styles.deselectAllText}>Clear</Text>
               </TouchableOpacity>
             </View>
           </View>
-        </Modal>
-      </ScrollView>
-    </SafeAreaView>
+          
+          {/* Topics list */}
+          <FlatList
+            data={topics}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item: strand }) => (
+              <View style={styles.strandContainer}>
+                {/* Strand header */}
+                <TouchableOpacity
+                  style={styles.strandHeader}
+                  onPress={() => toggleStrandExpand(strand.id)}
+                >
+                  <TouchableOpacity
+                    style={styles.strandCheckbox}
+                    onPress={() => toggleStrandSelection(strand)}
+                  >
+                    <Ionicons
+                      name={isStrandFullySelected(strand) ? "checkbox" : 
+                            strand.substrands.some(ss => selectedTopics.has(ss.id)) ? "remove-circle" : "square-outline"}
+                      size={22}
+                      color={isStrandFullySelected(strand) ? "#6366F1" : "#9CA3AF"}
+                    />
+                  </TouchableOpacity>
+                  <View style={styles.strandInfo}>
+                    <Text style={styles.strandName}>{strand.name}</Text>
+                    <Text style={styles.strandMeta}>
+                      {strand.substrands.length} sub-topics • {strand.totalSlos} SLOs
+                    </Text>
+                  </View>
+                  <Ionicons
+                    name={expandedStrands.has(strand.id) ? "chevron-up" : "chevron-down"}
+                    size={20}
+                    color="#6B7280"
+                  />
+                </TouchableOpacity>
+                
+                {/* Substrands */}
+                {expandedStrands.has(strand.id) && (
+                  <View style={styles.substrandsContainer}>
+                    {strand.substrands.map(ss => (
+                      <TouchableOpacity
+                        key={ss.id}
+                        style={styles.substrandItem}
+                        onPress={() => toggleTopicSelection(ss.id)}
+                      >
+                        <Ionicons
+                          name={selectedTopics.has(ss.id) ? "checkbox" : "square-outline"}
+                          size={20}
+                          color={selectedTopics.has(ss.id) ? "#6366F1" : "#D1D5DB"}
+                        />
+                        <Text style={[
+                          styles.substrandName,
+                          selectedTopics.has(ss.id) && styles.substrandNameSelected
+                        ]}>
+                          {ss.name}
+                        </Text>
+                        <Text style={styles.sloCount}>{ss.sloCount} SLOs</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
+            contentContainerStyle={styles.topicsList}
+          />
+        </>
+      )}
+    </View>
+  );
+
+  // Render Step 3: Breaks
+  const renderBreaksStep = () => (
+    <ScrollView style={styles.stepContent}>
+      <View style={styles.formSection}>
+        <Text style={styles.sectionTitle}>Term Breaks</Text>
+        <Text style={styles.sectionSubtitle}>
+          Add breaks like mid-term, exams, or holidays
+        </Text>
+        
+        {breaks.map((brk, index) => (
+          <View key={index} style={styles.breakCard}>
+            <View style={styles.breakInfo}>
+              <Text style={styles.breakType}>{brk.breakType}</Text>
+              <Text style={styles.breakDetails}>
+                Week {brk.startWeek}, Lesson {brk.startLesson} → Week {brk.endWeek}, Lesson {brk.endLesson}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => {
+                const newBreaks = [...breaks];
+                newBreaks.splice(index, 1);
+                setBreaks(newBreaks);
+              }}
+            >
+              <Ionicons name="trash-outline" size={20} color="#EF4444" />
+            </TouchableOpacity>
+          </View>
+        ))}
+        
+        <TouchableOpacity
+          style={styles.addBreakBtn}
+          onPress={() => setBreakModalVisible(true)}
+        >
+          <Ionicons name="add" size={20} color="#6366F1" />
+          <Text style={styles.addBreakText}>Add Break</Text>
+        </TouchableOpacity>
+      </View>
+      
+      {/* Summary */}
+      <View style={styles.summaryCard}>
+        <Text style={styles.summaryTitle}>Summary</Text>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Grade & Subject</Text>
+          <Text style={styles.summaryValue}>{selectedGradeName} - {selectedSubjectName}</Text>
+        </View>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Term</Text>
+          <Text style={styles.summaryValue}>Term {term}, {year}</Text>
+        </View>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Duration</Text>
+          <Text style={styles.summaryValue}>{totalWeeks} weeks × {lessonsPerWeek} lessons/week</Text>
+        </View>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Topics Selected</Text>
+          <Text style={styles.summaryValue}>{selectedTopics.size} sub-topics</Text>
+        </View>
+      </View>
+    </ScrollView>
+  );
+
+  // Render Step 4: Preview
+  const renderPreviewStep = () => (
+    <ScrollView style={styles.stepContent}>
+      {generatedScheme && (
+        <>
+          <View style={styles.previewHeader}>
+            <Ionicons name="checkmark-circle" size={48} color="#10B981" />
+            <Text style={styles.previewTitle}>Scheme Generated!</Text>
+            <Text style={styles.previewSubtitle}>
+              {generatedScheme.subjectName} - Term {generatedScheme.term}
+            </Text>
+          </View>
+          
+          <View style={styles.previewStats}>
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>
+                {generatedScheme.lessons?.filter((l: any) => !l.isBreak).length || 0}
+              </Text>
+              <Text style={styles.statLabel}>Lessons</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>{totalWeeks}</Text>
+              <Text style={styles.statLabel}>Weeks</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>{selectedTopics.size}</Text>
+              <Text style={styles.statLabel}>Topics</Text>
+            </View>
+          </View>
+          
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              style={styles.previewBtn}
+              onPress={handlePreview}
+              disabled={previewing}
+            >
+              {previewing ? (
+                <ActivityIndicator size={18} color="#6366F1" />
+              ) : (
+                <Ionicons name="eye-outline" size={20} color="#6366F1" />
+              )}
+              <Text style={styles.previewBtnText}>Preview PDF</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.downloadBtn}
+              onPress={handleDownload}
+              disabled={downloading}
+            >
+              {downloading ? (
+                <ActivityIndicator size={18} color="#FFFFFF" />
+              ) : (
+                <Ionicons name="download-outline" size={20} color="#FFFFFF" />
+              )}
+              <Text style={styles.downloadBtnText}>
+                Download (KES {SCHEME_DOWNLOAD_COST})
+              </Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.walletInfo}>
+            <Ionicons name="wallet-outline" size={16} color="#6B7280" />
+            <Text style={styles.walletText}>
+              Wallet Balance: KES {user?.walletBalance || 0}
+            </Text>
+          </View>
+          
+          {/* Edit/Back button */}
+          <TouchableOpacity
+            style={styles.editSchemeBtn}
+            onPress={() => setCurrentStep('breaks')}
+          >
+            <Ionicons name="arrow-back" size={18} color="#6366F1" />
+            <Text style={styles.editSchemeBtnText}>Go Back & Edit</Text>
+          </TouchableOpacity>
+        </>
+      )}
+    </ScrollView>
+  );
+
+  // Insufficient Funds Modal
+  const renderFundsModal = () => (
+    <Modal visible={showFundsModal} transparent animationType="fade">
+      <View style={styles.modalOverlay}>
+        <View style={styles.fundsModal}>
+          <View style={styles.fundsModalHeader}>
+            <Ionicons name="wallet-outline" size={48} color="#F59E0B" />
+            <Text style={styles.fundsModalTitle}>You're almost there! 😊</Text>
+          </View>
+          
+          <Text style={styles.fundsModalText}>
+            To download this Scheme of Work, you need KES {SCHEME_DOWNLOAD_COST}.
+          </Text>
+          
+          <Text style={styles.fundsModalBalance}>
+            Your current balance: KES {user?.walletBalance || 0}
+          </Text>
+          
+          <Text style={styles.fundsModalHint}>
+            Please top up your wallet to continue.
+          </Text>
+          
+          <View style={styles.fundsModalButtons}>
+            <TouchableOpacity
+              style={styles.topUpBtn}
+              onPress={() => {
+                setShowFundsModal(false);
+                // Navigate to wallet/profile
+              }}
+            >
+              <Ionicons name="phone-portrait-outline" size={18} color="#FFFFFF" />
+              <Text style={styles.topUpBtnText}>Top Up via M-PESA</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={() => setShowFundsModal(false)}
+            >
+              <Text style={styles.cancelBtnText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  // Break Modal
+  const renderBreakModal = () => (
+    <Modal visible={breakModalVisible} transparent animationType="slide">
+      <View style={styles.modalOverlay}>
+        <View style={styles.breakModal}>
+          <Text style={styles.breakModalTitle}>
+            {editingBreak && breaks.some(b => b === editingBreak) ? 'Edit Break' : 'Add Break'}
+          </Text>
+          
+          <ScrollView style={styles.breakModalContent}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Break Type</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={editingBreak?.breakType || 'Half-Term Break'}
+                  onValueChange={(v) => setEditingBreak(prev => ({...prev, breakType: v} as Break))}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Opener CAT" value="Opener CAT" />
+                  <Picker.Item label="Half-Term Break" value="Half-Term Break" />
+                  <Picker.Item label="Mid-Term Break" value="Mid-Term Break" />
+                  <Picker.Item label="End Term Exams" value="End Term Exams" />
+                  <Picker.Item label="Holiday" value="Holiday" />
+                  <Picker.Item label="Public Holiday" value="Public Holiday" />
+                  <Picker.Item label="School Event" value="School Event" />
+                  <Picker.Item label="Sports Day" value="Sports Day" />
+                  <Picker.Item label="Staff Meeting" value="Staff Meeting" />
+                </Picker>
+              </View>
+            </View>
+            
+            <Text style={styles.breakSectionLabel}>Break Starts At:</Text>
+            
+            <View style={styles.breakRowPickers}>
+              <View style={styles.breakPickerHalf}>
+                <Text style={styles.label}>Week</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={editingBreak?.startWeek || 1}
+                    onValueChange={(v) => setEditingBreak(prev => ({
+                      ...prev, 
+                      startWeek: v,
+                      endWeek: Math.max(prev?.endWeek || v, v)
+                    } as Break))}
+                    style={styles.picker}
+                  >
+                    {Array.from({length: totalWeeks}, (_, i) => i + 1).map(w => (
+                      <Picker.Item key={w} label={`Week ${w}`} value={w} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+              
+              <View style={styles.breakPickerHalf}>
+                <Text style={styles.label}>Lesson</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={editingBreak?.startLesson || 1}
+                    onValueChange={(v) => setEditingBreak(prev => ({...prev, startLesson: v} as Break))}
+                    style={styles.picker}
+                  >
+                    {Array.from({length: lessonsPerWeek || 5}, (_, i) => i + 1).map(l => (
+                      <Picker.Item key={l} label={`Lesson ${l}`} value={l} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+            </View>
+            
+            <Text style={styles.breakSectionLabel}>Break Ends At:</Text>
+            
+            <View style={styles.breakRowPickers}>
+              <View style={styles.breakPickerHalf}>
+                <Text style={styles.label}>Week</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={editingBreak?.endWeek || editingBreak?.startWeek || 1}
+                    onValueChange={(v) => setEditingBreak(prev => ({...prev, endWeek: v} as Break))}
+                    style={styles.picker}
+                  >
+                    {Array.from({length: totalWeeks}, (_, i) => i + 1)
+                      .filter(w => w >= (editingBreak?.startWeek || 1))
+                      .map(w => (
+                        <Picker.Item key={w} label={`Week ${w}`} value={w} />
+                      ))}
+                  </Picker>
+                </View>
+              </View>
+              
+              <View style={styles.breakPickerHalf}>
+                <Text style={styles.label}>Lesson</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={editingBreak?.endLesson || lessonsPerWeek || 5}
+                    onValueChange={(v) => setEditingBreak(prev => ({...prev, endLesson: v} as Break))}
+                    style={styles.picker}
+                  >
+                    {Array.from({length: lessonsPerWeek || 5}, (_, i) => i + 1).map(l => (
+                      <Picker.Item key={l} label={`Lesson ${l}`} value={l} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+            </View>
+            
+            <View style={styles.breakDurationInfo}>
+              <Ionicons name="information-circle-outline" size={16} color="#6B7280" />
+              <Text style={styles.breakDurationText}>
+                {calculateBreakDuration(editingBreak)}
+              </Text>
+            </View>
+            
+            {/* Optional Calendar Date */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Calendar Date (Optional)</Text>
+              <TextInput
+                style={styles.dateInput}
+                placeholder="e.g., 2025-04-15"
+                placeholderTextColor="#9CA3AF"
+                value={editingBreak?.startDate || ''}
+                onChangeText={(text) => setEditingBreak(prev => ({...prev, startDate: text} as Break))}
+              />
+              <Text style={styles.dateHint}>Format: YYYY-MM-DD (for reference only)</Text>
+            </View>
+          </ScrollView>
+          
+          <View style={styles.breakModalButtons}>
+            <TouchableOpacity
+              style={styles.breakModalCancel}
+              onPress={() => {
+                setBreakModalVisible(false);
+                setEditingBreak(null);
+              }}
+            >
+              <Text style={styles.breakModalCancelText}>Cancel</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.breakModalAdd}
+              onPress={() => {
+                if (editingBreak && editingBreak.breakType) {
+                  const newBreak: Break = {
+                    breakType: editingBreak.breakType,
+                    startWeek: editingBreak.startWeek || 1,
+                    startLesson: editingBreak.startLesson || 1,
+                    endWeek: editingBreak.endWeek || editingBreak.startWeek || 1,
+                    endLesson: editingBreak.endLesson || (lessonsPerWeek || 5),
+                    startDate: editingBreak.startDate
+                  };
+                  setBreaks(prev => [...prev, newBreak]);
+                }
+                setBreakModalVisible(false);
+                setEditingBreak(null);
+              }}
+            >
+              <Text style={styles.breakModalAddText}>Add Break</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  // PDF Preview Modal (in-app viewer)
+  const renderPdfPreviewModal = () => (
+    <Modal visible={showPdfModal} transparent animationType="fade">
+      <View style={styles.pdfModalOverlay}>
+        <View style={styles.pdfModalContainer}>
+          <View style={styles.pdfModalHeader}>
+            <Text style={styles.pdfModalTitle}>Scheme Preview</Text>
+            <TouchableOpacity 
+              onPress={() => {
+                setShowPdfModal(false);
+                if (pdfPreviewUrl) {
+                  URL.revokeObjectURL(pdfPreviewUrl);
+                  setPdfPreviewUrl(null);
+                }
+              }} 
+              style={styles.pdfModalCloseBtn}
+            >
+              <Ionicons name="close" size={24} color="#374151" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.pdfModalContent}>
+            {Platform.OS === 'web' && pdfPreviewUrl ? (
+              <iframe
+                src={pdfPreviewUrl}
+                style={{ width: '100%', height: '100%', border: 'none' } as any}
+                title="PDF Preview"
+              />
+            ) : (
+              <View style={styles.pdfModalPlaceholder}>
+                <Ionicons name="document-text-outline" size={48} color="#9CA3AF" />
+                <Text style={styles.pdfModalPlaceholderText}>PDF Preview</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  return (
+    <View style={styles.container}>
+      {/* Step indicator */}
+      <View style={styles.stepIndicator}>
+        {(['select', 'topics', 'breaks', 'preview'] as Step[]).map((step, index) => (
+          <View key={step} style={styles.stepItem}>
+            <View style={[
+              styles.stepDot,
+              currentStep === step && styles.stepDotActive,
+              (['select', 'topics', 'breaks', 'preview'] as Step[]).indexOf(currentStep) > index && styles.stepDotComplete
+            ]}>
+              {(['select', 'topics', 'breaks', 'preview'] as Step[]).indexOf(currentStep) > index ? (
+                <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+              ) : (
+                <Text style={[
+                  styles.stepDotText,
+                  currentStep === step && styles.stepDotTextActive
+                ]}>{index + 1}</Text>
+              )}
+            </View>
+            <Text style={[
+              styles.stepLabel,
+              currentStep === step && styles.stepLabelActive
+            ]}>
+              {step === 'select' ? 'Select' : step === 'topics' ? 'Topics' : step === 'breaks' ? 'Breaks' : 'Preview'}
+            </Text>
+          </View>
+        ))}
+      </View>
+      
+      {/* Content */}
+      {currentStep === 'select' && renderSelectionStep()}
+      {currentStep === 'topics' && renderTopicsStep()}
+      {currentStep === 'breaks' && renderBreaksStep()}
+      {currentStep === 'preview' && renderPreviewStep()}
+      
+      {/* Footer buttons */}
+      {currentStep !== 'preview' && (
+        <View style={styles.footer}>
+          {currentStep !== 'select' && (
+            <TouchableOpacity style={styles.backBtn} onPress={handleBack}>
+              <Ionicons name="arrow-back" size={20} color="#6B7280" />
+              <Text style={styles.backBtnText}>Back</Text>
+            </TouchableOpacity>
+          )}
+          
+          <TouchableOpacity
+            style={[styles.nextBtn, generating && styles.nextBtnDisabled]}
+            onPress={handleNext}
+            disabled={generating}
+          >
+            {generating ? (
+              <ActivityIndicator size={18} color="#FFFFFF" />
+            ) : (
+              <>
+                <Text style={styles.nextBtnText}>
+                  {currentStep === 'breaks' ? 'Generate Scheme' : 'Next'}
+                </Text>
+                <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+      )}
+      
+      {/* New Scheme button on preview */}
+      {currentStep === 'preview' && (
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={styles.newSchemeBtn}
+            onPress={() => {
+              setCurrentStep('select');
+              setGeneratedScheme(null);
+              setSelectedTopics(new Set());
+            }}
+          >
+            <Ionicons name="add" size={20} color="#6366F1" />
+            <Text style={styles.newSchemeBtnText}>Create New Scheme</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      
+      {renderFundsModal()}
+      {renderBreakModal()}
+      {renderPdfPreviewModal()}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6'
+    backgroundColor: '#F9FAFB'
   },
-  scrollContent: {
-    padding: 16
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16
-  },
-  cardHeader: {
+  stepIndicator: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB'
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827'
+  stepItem: {
+    alignItems: 'center'
+  },
+  stepDot: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4
+  },
+  stepDotActive: {
+    backgroundColor: '#6366F1'
+  },
+  stepDotComplete: {
+    backgroundColor: '#10B981'
+  },
+  stepDotText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B7280'
+  },
+  stepDotTextActive: {
+    color: '#FFFFFF'
+  },
+  stepLabel: {
+    fontSize: 11,
+    color: '#9CA3AF'
+  },
+  stepLabelActive: {
+    color: '#6366F1',
+    fontWeight: '600'
+  },
+  stepContent: {
+    flex: 1
+  },
+  formSection: {
+    backgroundColor: '#FFFFFF',
+    margin: 16,
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 4
+  },
+  sectionSubtitle: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginBottom: 16
   },
   inputGroup: {
     marginBottom: 16
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '500',
     color: '#374151',
-    marginBottom: 8
+    marginBottom: 6
+  },
+  labelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6
+  },
+  overrideLink: {
+    fontSize: 12,
+    color: '#6366F1'
   },
   pickerContainer: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    overflow: 'hidden'
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF'
   },
   picker: {
-    height: 50
+    height: 48
   },
-  textInput: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: '#111827'
-  },
-  textArea: {
-    minHeight: 80,
-    textAlignVertical: 'top'
-  },
-  row: {
+  termRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16
+    gap: 8
   },
-  halfInput: {
-    flex: 1
+  termButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    alignItems: 'center'
   },
-  addBreakButton: {
-    backgroundColor: '#8B5CF6',
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  termButtonActive: {
+    backgroundColor: '#6366F1',
+    borderColor: '#6366F1'
+  },
+  termButtonText: {
+    fontSize: 14,
+    color: '#374151'
+  },
+  termButtonTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '600'
+  },
+  lessonsRow: {
+    flexDirection: 'row',
+    gap: 8
+  },
+  lessonButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
     justifyContent: 'center',
     alignItems: 'center'
   },
-  noBreaksText: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    textAlign: 'center',
-    paddingVertical: 20
+  lessonButtonActive: {
+    backgroundColor: '#6366F1',
+    borderColor: '#6366F1'
   },
-  breakItem: {
+  lessonButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151'
+  },
+  lessonButtonTextActive: {
+    color: '#FFFFFF'
+  },
+  autoValueContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FEF3C7',
+    gap: 8,
     padding: 12,
+    backgroundColor: '#F0FDF4',
+    borderRadius: 8
+  },
+  autoValueText: {
+    fontSize: 13,
+    color: '#166534'
+  },
+  weeksRow: {
+    flexDirection: 'row',
+    gap: 8
+  },
+  weekButton: {
+    flex: 1,
+    paddingVertical: 10,
     borderRadius: 8,
-    marginBottom: 8
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    alignItems: 'center'
+  },
+  weekButtonActive: {
+    backgroundColor: '#6366F1',
+    borderColor: '#6366F1'
+  },
+  weekButtonText: {
+    fontSize: 14,
+    color: '#374151'
+  },
+  weekButtonTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '600'
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#6B7280'
+  },
+  topicsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB'
+  },
+  topicsTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1F2937'
+  },
+  selectActions: {
+    flexDirection: 'row',
+    gap: 12
+  },
+  selectAllBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#EEF2FF',
+    borderRadius: 6
+  },
+  selectAllText: {
+    fontSize: 12,
+    color: '#6366F1',
+    fontWeight: '500'
+  },
+  deselectAllBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12
+  },
+  deselectAllText: {
+    fontSize: 12,
+    color: '#6B7280'
+  },
+  topicsList: {
+    padding: 16
+  },
+  strandContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    marginBottom: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E5E7EB'
+  },
+  strandHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    backgroundColor: '#F9FAFB'
+  },
+  strandCheckbox: {
+    marginRight: 12
+  },
+  strandInfo: {
+    flex: 1
+  },
+  strandName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 2
+  },
+  strandMeta: {
+    fontSize: 12,
+    color: '#6B7280'
+  },
+  substrandsContainer: {
+    paddingLeft: 48,
+    paddingRight: 14,
+    paddingBottom: 8
+  },
+  substrandItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6'
+  },
+  substrandName: {
+    flex: 1,
+    fontSize: 13,
+    color: '#374151',
+    marginLeft: 10
+  },
+  substrandNameSelected: {
+    color: '#6366F1',
+    fontWeight: '500'
+  },
+  sloCount: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10
+  },
+  breakCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    marginBottom: 10
   },
   breakInfo: {
     flex: 1
   },
   breakType: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#92400E'
+    fontWeight: '500',
+    color: '#1F2937'
   },
   breakDetails: {
     fontSize: 12,
-    color: '#B45309',
+    color: '#6B7280',
     marginTop: 2
   },
-  generateButton: {
-    backgroundColor: '#8B5CF6',
+  addBreakBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 18,
-    borderRadius: 12,
-    marginBottom: 20
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#6366F1',
+    borderStyle: 'dashed',
+    borderRadius: 8,
+    gap: 8
   },
-  buttonDisabled: {
+  addBreakText: {
+    fontSize: 14,
+    color: '#6366F1',
+    fontWeight: '500'
+  },
+  summaryCard: {
+    backgroundColor: '#FFFFFF',
+    margin: 16,
+    marginTop: 0,
+    padding: 16,
+    borderRadius: 12
+  },
+  summaryTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 12
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6'
+  },
+  summaryLabel: {
+    fontSize: 13,
+    color: '#6B7280'
+  },
+  summaryValue: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#1F2937'
+  },
+  previewHeader: {
+    alignItems: 'center',
+    paddingVertical: 32
+  },
+  previewTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1F2937',
+    marginTop: 12
+  },
+  previewSubtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginTop: 4
+  },
+  previewStats: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 16,
+    paddingHorizontal: 16
+  },
+  statCard: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    minWidth: 90
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#6366F1'
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2
+  },
+  actionButtons: {
+    padding: 16,
+    gap: 12
+  },
+  previewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    backgroundColor: '#EEF2FF',
+    borderRadius: 10,
+    gap: 8
+  },
+  previewBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#6366F1'
+  },
+  downloadBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    backgroundColor: '#6366F1',
+    borderRadius: 10,
+    gap: 8
+  },
+  downloadBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF'
+  },
+  walletInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8
+  },
+  walletText: {
+    fontSize: 13,
+    color: '#6B7280'
+  },
+  footer: {
+    flexDirection: 'row',
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    gap: 12
+  },
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    gap: 6
+  },
+  backBtnText: {
+    fontSize: 14,
+    color: '#6B7280'
+  },
+  nextBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    backgroundColor: '#6366F1',
+    borderRadius: 10,
+    gap: 8
+  },
+  nextBtnDisabled: {
     opacity: 0.7
   },
-  generateButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+  nextBtnText: {
+    fontSize: 15,
     fontWeight: '600',
-    marginLeft: 8
+    color: '#FFFFFF'
+  },
+  newSchemeBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    backgroundColor: '#EEF2FF',
+    borderRadius: 10,
+    gap: 8
+  },
+  newSchemeBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#6366F1'
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end'
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
-  modalContent: {
+  fundsModal: {
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '80%'
+    borderRadius: 16,
+    padding: 24,
+    margin: 20,
+    width: '90%',
+    maxWidth: 400
   },
-  modalHeader: {
+  fundsModalHeader: {
+    alignItems: 'center',
+    marginBottom: 16
+  },
+  fundsModalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1F2937',
+    marginTop: 12
+  },
+  fundsModalText: {
+    fontSize: 14,
+    color: '#4B5563',
+    textAlign: 'center',
+    marginBottom: 8
+  },
+  fundsModalBalance: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#EF4444',
+    textAlign: 'center',
+    marginBottom: 8
+  },
+  fundsModalHint: {
+    fontSize: 13,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 20
+  },
+  fundsModalButtons: {
+    gap: 10
+  },
+  topUpBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    backgroundColor: '#10B981',
+    borderRadius: 10,
+    gap: 8
+  },
+  topUpBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF'
+  },
+  cancelBtn: {
+    paddingVertical: 12,
+    alignItems: 'center'
+  },
+  cancelBtnText: {
+    fontSize: 14,
+    color: '#6B7280'
+  },
+  breakModal: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    margin: 20,
+    width: '90%',
+    maxWidth: 400
+  },
+  breakModalTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 16
+  },
+  breakModalContent: {
+    marginBottom: 16
+  },
+  breakModalButtons: {
+    flexDirection: 'row',
+    gap: 12
+  },
+  breakModalCancel: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    alignItems: 'center'
+  },
+  breakModalCancelText: {
+    fontSize: 14,
+    color: '#6B7280'
+  },
+  breakModalAdd: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: '#6366F1',
+    alignItems: 'center'
+  },
+  breakModalAddText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF'
+  },
+  breakSectionLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginTop: 12,
+    marginBottom: 8
+  },
+  breakRowPickers: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 8
+  },
+  breakPickerHalf: {
+    flex: 1
+  },
+  breakDurationInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 12,
+    gap: 8
+  },
+  breakDurationText: {
+    fontSize: 13,
+    color: '#4B5563',
+    flex: 1
+  },
+  editSchemeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    backgroundColor: '#EEF2FF',
+    borderRadius: 10,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    gap: 8
+  },
+  editSchemeBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#6366F1'
+  },
+  // Double lesson styles
+  doubleLessonRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8
+  },
+  toggleBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF'
+  },
+  toggleBtnActive: {
+    borderColor: '#6366F1',
+    backgroundColor: '#EEF2FF'
+  },
+  toggleBtnText: {
+    fontSize: 14,
+    color: '#6B7280'
+  },
+  toggleBtnTextActive: {
+    color: '#6366F1',
+    fontWeight: '600'
+  },
+  doubleLessonPosition: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB'
+  },
+  subLabel: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginBottom: 8
+  },
+  subHint: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    marginTop: 4,
+    marginBottom: 8
+  },
+  positionRow: {
+    flexDirection: 'row',
+    gap: 10
+  },
+  positionBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    backgroundColor: '#FFFFFF'
+  },
+  positionBtnActive: {
+    borderColor: '#6366F1',
+    backgroundColor: '#EEF2FF'
+  },
+  positionBtnText: {
+    fontSize: 13,
+    color: '#6B7280'
+  },
+  positionBtnTextActive: {
+    color: '#6366F1',
+    fontWeight: '600'
+  },
+  autoHint: {
+    fontSize: 12,
+    color: '#10B981',
+    marginTop: 6
+  },
+  // PDF Modal styles
+  pdfModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20
+  },
+  pdfModalContainer: {
+    width: '95%',
+    height: '90%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    overflow: 'hidden'
+  },
+  pdfModalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    borderBottomColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB'
   },
-  modalTitle: {
+  pdfModalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827'
+    fontWeight: '600',
+    color: '#1F2937'
   },
-  modalBody: {
-    padding: 16,
-    maxHeight: 400
+  pdfModalCloseBtn: {
+    padding: 4
   },
-  addButton: {
-    backgroundColor: '#8B5CF6',
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
+  pdfModalContent: {
+    flex: 1,
+    backgroundColor: '#F3F4F6'
+  },
+  pdfModalPlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center'
   },
-  addButtonText: {
-    color: '#FFFFFF',
+  pdfModalPlaceholderText: {
     fontSize: 16,
-    fontWeight: '600'
-  },
-  // Scheme display styles
-  schemeHeader: {
-    backgroundColor: '#8B5CF6',
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 16
-  },
-  schemeTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF'
-  },
-  schemeSubtitle: {
-    fontSize: 14,
-    color: '#E9D5FF',
-    marginTop: 4
-  },
-  schemeMeta: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16
-  },
-  metaRow: {
-    flexDirection: 'row',
-    marginBottom: 12
-  },
-  metaItem: {
-    flex: 1
-  },
-  metaLabel: {
-    fontSize: 12,
-    color: '#6B7280'
-  },
-  metaValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
-    marginTop: 2
-  },
-  lessonsContainer: {
-    marginBottom: 16
-  },
-  lessonCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#8B5CF6'
-  },
-  breakCard: {
-    borderLeftColor: '#F59E0B',
-    backgroundColor: '#FFFBEB'
-  },
-  breakContent: {
-    alignItems: 'center',
-    paddingVertical: 8
-  },
-  breakTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#92400E',
-    marginTop: 8
-  },
-  breakDescription: {
-    fontSize: 12,
-    color: '#B45309',
-    marginTop: 4
-  },
-  lessonHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8
-  },
-  lessonWeek: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#8B5CF6'
-  },
-  lessonNum: {
-    fontSize: 12,
-    color: '#6B7280'
-  },
-  lessonStrand: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#111827'
-  },
-  lessonSubstrand: {
-    fontSize: 13,
-    color: '#374151',
-    marginTop: 2
-  },
-  lessonSlo: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 4,
-    fontStyle: 'italic'
-  },
-  moreText: {
-    fontSize: 12,
     color: '#9CA3AF',
-    textAlign: 'center',
-    paddingVertical: 12
+    marginTop: 12
   },
-  actionButtons: {
-    flexDirection: 'row',
-    gap: 12
+  dateInput: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#374151',
+    backgroundColor: '#FFFFFF'
   },
-  downloadButton: {
-    flex: 1,
-    backgroundColor: '#8B5CF6',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    borderRadius: 12
-  },
-  downloadButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8
-  },
-  newButton: {
-    flex: 1,
-    backgroundColor: '#EDE9FE',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    borderRadius: 12
-  },
-  newButtonText: {
-    color: '#8B5CF6',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8
+  dateHint: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginTop: 4
   }
 });

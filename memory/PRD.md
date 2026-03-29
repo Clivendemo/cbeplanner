@@ -28,8 +28,51 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - **Business Logic:** 5 free lessons on signup, KES 2 per subsequent plan
 - **Lesson Plan Generator:** Duration-aware lesson plans (25-80 min)
 - **Notes Generator:** Duration-aware teaching notes
-- **Schemes of Work Generator:** Term-based curriculum planning
+- **Schemes of Work Generator:** Fully implemented multi-step wizard with PDF generation (DONE - Mar 2026)
 - **Admin Role:** Role-based access control (mail2clive@gmail.com only)
+
+### Schemes of Work Feature (ENHANCED - Mar 2026)
+- **Multi-step Wizard UI:** 4 steps (Select → Topics → Breaks → Preview)
+- **Step 1 - Select:** 
+  - Grade dropdown, Subject dropdown (auto-loads based on grade)
+  - Term selector (1, 2, 3)
+  - **Lessons per Week selector:** User-selectable (4, 5, 6, 7, 8) with auto-default
+  - **Number of Weeks selector:** Flexible range (8-14 weeks), default 12
+  - **Double Lesson support:** Toggle (No/Yes) with position selector (Lesson 2-3, 3-4, 4-5)
+  - **Carry-over Content:** Option to include previous term uncovered content with compression
+- **Step 2 - Topics:** Strands with expandable substrands, checkbox selection, Select All/Clear buttons
+- **Step 3 - Breaks:** 
+  - **Break Types:** Opener CAT (NEW), Half-Term, Mid-Term, End Term Exams, Holiday, Public Holiday, School Event, Sports Day, Staff Meeting
+  - Breaks can span less than or more than a week (flexible duration)
+  - **Same-week breaks supported:** e.g., Week 6 Lesson 1-5 = partial week break
+  - Start position (Week + Lesson) and End position (Week + Lesson) selectors
+  - Dynamic duration calculation displayed in modal
+  - **Calendar Date picker (Optional):** YYYY-MM-DD format for reference
+- **Step 4 - Preview:** 
+  - Generated scheme stats (Lessons, Weeks, Topics, Double Lessons)
+  - **In-app PDF Preview:** Modal viewer instead of opening new tab
+  - Preview PDF and Download (KES 15) buttons
+  - "Go Back & Edit" button to return to Breaks step for modifications
+  - Wallet balance displayed with **auto-refresh after download**
+  - Insufficient funds modal with M-PESA top-up prompt
+- **PDF Generation:** 
+  - A4 Landscape format using ReportLab
+  - **Clean professional styling:** Dark gray header (no purple)
+  - Double lessons display as "2-3", "3-4" etc.
+  - **Break rows show only break name** (no week/lesson numbers)
+- **Wallet Integration:** Download costs KES 15, auto-refresh after deduction
+- **Backend Endpoints:**
+  - `GET /api/schemes/config/lessons-per-week` - Auto-calculate lessons
+  - `GET /api/schemes/topics/{subjectId}` - Load strands/substrands for selection
+  - `POST /api/schemes/generate-v2` - Generate scheme (safe integer conversion, double lessons, carry-over, breaks)
+  - `POST /api/schemes/preview` - Generate PDF preview (free)
+  - `POST /api/schemes/download` - Generate PDF with wallet deduction (KES 15)
+  - `GET /api/wallet/balance` - Get current wallet balance (NEW)
+
+### Dashboard Layout (UPDATED - Mar 2026)
+- **Two-column layout:**
+  - **Left Column:** Schemes of Work, Create Lesson Plan, My Profile
+  - **Right Column:** Generate Notes (Coming Soon), My Lesson Plans, Past Papers (Coming Soon)
 
 ### Admin Panel (DONE)
 - Move items (strands, substrands, SLOs) with cascade
@@ -134,6 +177,11 @@ Build a production-ready Competency-Based Education (CBE) lesson planning system
 - `GET /api/payments/mpesa/status/{id}` - Payment status check
 - `POST /api/admin/import/extract-pdf` - Extract curriculum from PDF
 - `POST /api/admin/import/extract-docx` - Extract curriculum from Word document
+- `GET /api/schemes/config/lessons-per-week` - Auto-calculate lessons per week
+- `GET /api/schemes/topics/{subjectId}` - Load strands/substrands for schemes
+- `POST /api/schemes/generate-v2` - Generate scheme from selected topics
+- `POST /api/schemes/preview` - Generate PDF preview
+- `POST /api/schemes/download` - Download scheme PDF (KES 15)
 
 ## Pending Issues
 - **M-Pesa Production:** User reports it's now sorted (needs verification on production)
