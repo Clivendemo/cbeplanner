@@ -111,7 +111,6 @@ app = FastAPI(
     openapi_url="/openapi.json"
 )
 
-
 # ===========================================
 # PRODUCTION MIDDLEWARE
 # ===========================================
@@ -1317,6 +1316,7 @@ async def admin_reconciliation(
         "dailyStats": daily_stats,
         "totalWalletBalance": wallet_stats[0]["totalBalance"] if wallet_stats else 0,
         "totalUsers": wallet_stats[0]["userCount"] if wallet_stats else 0
+
     }
 
 
@@ -4223,6 +4223,7 @@ async def seed_sample_data_internal():
     await db.pcis.delete_many({})
     await db.assessments.delete_many({})
     await db.slo_mappings.delete_many({})
+
     
     # ==================== CREATE GRADES ====================
     grades_data = [
@@ -4595,3 +4596,4 @@ async def migrate_order_fields():
         logger.info("Order field migration completed")
     except Exception as e:
         logger.error(f"Error in order field migration: {str(e)}")
+app.include_router(api_router)
