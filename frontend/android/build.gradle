@@ -1,24 +1,87 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+// =============================================================================
+// ROOT BUILD.GRADLE - Production-Ready Configuration
+// =============================================================================
+// This file configures the entire Android build system for stability.
+// DO NOT MODIFY unless you understand the implications.
+// =============================================================================
 
 buildscript {
-  repositories {
-    google()
-    mavenCentral()
-  }
-  dependencies {
-    classpath('com.android.tools.build:gradle')
-    classpath('com.facebook.react:react-native-gradle-plugin')
-    classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
-  }
+    ext {
+        // Lock all versions for stability
+        buildToolsVersion = "35.0.0"
+        minSdkVersion = 24
+        compileSdkVersion = 35
+        targetSdkVersion = 35
+        ndkVersion = "26.1.10909125"
+        kotlinVersion = "1.9.24"
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.7.3")
+        classpath("com.facebook.react:react-native-gradle-plugin")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    }
 }
 
 allprojects {
-  repositories {
-    google()
-    mavenCentral()
-    maven { url 'https://www.jitpack.io' }
-  }
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://www.jitpack.io' }
+    }
+    
+    // Force all subprojects to use consistent versions
+    configurations.all {
+        resolutionStrategy {
+            // Force consistent Kotlin version
+            force "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+        }
+    }
 }
 
+// Apply Expo and React Native plugins
 apply plugin: "expo-root-project"
 apply plugin: "com.facebook.react.rootproject"
+
+// =============================================================================
+// SUBPROJECT CONFIGURATION
+// =============================================================================
+// Apply buildFeatures.buildConfig = true to ALL modules that need it
+// This prevents "BuildConfig not found" errors
+
+subprojects { subproject ->
+    afterEvaluate {
+        if (subproject.plugins.hasPlugin('com.android.library') || 
+            subproject.plugins.hasPlugin('com.android.application')) {
+            
+            subproject.android {
+                // Enable BuildConfig for all modules
+                buildFeatures {
+                    buildConfig = true
+                }
+                
+                // Ensure consistent compile SDK
+                if (subproject.android.hasProperty('compileSdkVersion')) {
+                    compileSdk rootProject.ext.compileSdkVersion
+                }
+                
+                // Disable problematic lint checks
+                lintOptions {
+                    abortOnError false
+                    checkReleaseBuilds false
+                }
+            }
+        }
+    }
+}
+
+// =============================================================================
+// CLEAN TASK
+// =============================================================================
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
+}

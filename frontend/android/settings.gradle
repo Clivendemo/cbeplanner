@@ -1,50 +1,121 @@
-import org.apache.tools.ant.taskdefs.condition.Os
-
-pluginManagement {
-  def reactNativeGradlePlugin = new File(
-    providers.exec {
-      workingDir(rootDir)
-      if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        commandLine('cmd', '/c', 'node --print "require.resolve(\'@react-native/gradle-plugin/package.json\', { paths: [require.resolve(\'react-native/package.json\')] })"')
-      } else {
-        commandLine('node', '--print', "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })")
-      }
-    }.standardOutput.asText.get().trim()
-  ).getParentFile().absolutePath
-  includeBuild(reactNativeGradlePlugin)
-  
-  def expoPluginsPath = new File(
-    providers.exec {
-      workingDir(rootDir)
-      if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        commandLine('cmd', '/c', 'node --print "require.resolve(\'expo-modules-autolinking/package.json\', { paths: [require.resolve(\'expo/package.json\')] })"')
-      } else {
-        commandLine('node', '--print', "require.resolve('expo-modules-autolinking/package.json', { paths: [require.resolve('expo/package.json')] })")
-      }
-    }.standardOutput.asText.get().trim(),
-    "../android/expo-gradle-plugin"
-  ).absolutePath
-  includeBuild(expoPluginsPath)
-}
-
-plugins {
-  id("com.facebook.react.settings")
-  id("expo-autolinking-settings")
-}
-
-extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
-  if (System.getenv('EXPO_USE_COMMUNITY_AUTOLINKING') == '1') {
-    ex.autolinkLibrariesFromCommand()
-  } else {
-    ex.autolinkLibrariesFromCommand(expoAutolinking.rnConfigCommand)
-  }
-}
-
-expoAutolinking.useExpoModules()
+// =============================================================================
+// SETTINGS.GRADLE - Production-Ready Configuration
+// =============================================================================
+// This file handles project configuration and module inclusion.
+// Cross-platform compatible (Windows, macOS, Linux)
+// =============================================================================
 
 rootProject.name = 'CBE Plan'
 
+// =============================================================================
+// HELPER: CROSS-PLATFORM NODE EXECUTION
+// =============================================================================
+def runNodeCommand(workDir, script) {
+    def isWindows = System.getProperty('os.name').toLowerCase().contains('windows')
+    def nodeCmd = isWindows ? 'node.exe' : 'node'
+    
+    try {
+        def process = new ProcessBuilder()
+            .command(nodeCmd, '--print', script)
+            .directory(workDir)
+            .redirectErrorStream(true)
+            .start()
+        
+        def result = process.inputStream.text.trim()
+        process.waitFor()
+        
+        if (process.exitValue() != 0 || result.isEmpty()) {
+            throw new GradleException("Node command failed: ${script}")
+        }
+        
+        return result
+    } catch (Exception e) {
+        // Fallback: try with full path resolution
+        try {
+            def process
+            if (isWindows) {
+                process = ['cmd', '/c', "node --print \"${script.replace('"', '\\"')}\""].execute(null, workDir)
+            } else {
+                process = ['sh', '-c', "node --print '${script}'"].execute(null, workDir)
+            }
+            def result = process.text.trim()
+            process.waitFor()
+            return result
+        } catch (Exception e2) {
+            throw new GradleException("Failed to execute node command. Ensure Node.js is installed and in PATH.\nError: ${e2.message}")
+        }
+    }
+}
+
+// =============================================================================
+// PLUGIN MANAGEMENT
+// =============================================================================
+pluginManagement {
+    // Use settings-level node command execution
+    def execNode = { String script ->
+        def isWindows = System.getProperty('os.name').toLowerCase().contains('windows')
+        def result = providers.exec {
+            workingDir(rootDir)
+            if (isWindows) {
+                commandLine('cmd', '/c', "node --print \"${script.replace('"', '\\"')}\"")
+            } else {
+                commandLine('node', '--print', script)
+            }
+        }.standardOutput.asText.get().trim()
+        return result
+    }
+    
+    // React Native Gradle Plugin
+    def rnGradlePluginPath
+    try {
+        rnGradlePluginPath = new File(
+            execNode("require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })")
+        ).getParentFile().absolutePath
+    } catch (Exception e) {
+        throw new GradleException("Failed to find React Native Gradle Plugin. Run 'yarn install' in the frontend directory first.\n${e.message}")
+    }
+    includeBuild(rnGradlePluginPath)
+
+    // Expo Gradle Plugin
+    def expoPluginsPath
+    try {
+        expoPluginsPath = new File(
+            execNode("require.resolve('expo-modules-autolinking/package.json', { paths: [require.resolve('expo/package.json')] })"),
+            "../android/expo-gradle-plugin"
+        ).absolutePath
+    } catch (Exception e) {
+        throw new GradleException("Failed to find Expo Gradle Plugin. Run 'yarn install' in the frontend directory first.\n${e.message}")
+    }
+    includeBuild(expoPluginsPath)
+}
+
+// =============================================================================
+// PLUGINS
+// =============================================================================
+plugins {
+    id("com.facebook.react.settings")
+    id("expo-autolinking-settings")
+}
+
+// =============================================================================
+// REACT NATIVE CONFIGURATION
+// =============================================================================
+extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
+    if (System.getenv('EXPO_USE_COMMUNITY_AUTOLINKING') == '1') {
+        ex.autolinkLibrariesFromCommand()
+    } else {
+        ex.autolinkLibrariesFromCommand(expoAutolinking.rnConfigCommand)
+    }
+}
+
+// =============================================================================
+// EXPO AUTOLINKING
+// =============================================================================
+expoAutolinking.useExpoModules()
 expoAutolinking.useExpoVersionCatalog()
 
+// =============================================================================
+// MODULE INCLUSION
+// =============================================================================
 include ':app'
 includeBuild(expoAutolinking.reactNativeGradlePlugin)
