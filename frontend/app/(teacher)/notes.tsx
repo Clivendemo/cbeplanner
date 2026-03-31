@@ -66,7 +66,7 @@ export default function Notes() {
         setGrades(response.data.grades);
       }
     } catch (error) {
-      console.error('Error loading grades:', error);
+      
     }
   };
 
@@ -88,7 +88,7 @@ export default function Notes() {
         setSubjects(response.data.subjects);
       }
     } catch (error) {
-      console.error('Error loading subjects:', error);
+      
     }
   };
 
@@ -110,7 +110,7 @@ export default function Notes() {
         setStrands(response.data.strands);
       }
     } catch (error) {
-      console.error('Error loading strands:', error);
+      
     }
   };
 
@@ -132,7 +132,7 @@ export default function Notes() {
         setSubstrands(response.data.substrands);
       }
     } catch (error) {
-      console.error('Error loading substrands:', error);
+      
     }
   };
 
@@ -249,7 +249,7 @@ export default function Notes() {
         Alert.alert('Success', `PDF saved to ${uri}`);
       }
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      
       Alert.alert('Error', 'Failed to generate PDF');
     }
   };

@@ -181,7 +181,7 @@ export default function Curriculum() {
   useFocusEffect(
     useCallback(() => {
       // Refresh data when screen is focused
-      console.log('Curriculum screen focused - refreshing data...');
+      
       refreshCurrentView();
     }, [currentView, selectedEntity, currentParentId])
   );
@@ -236,7 +236,7 @@ export default function Curriculum() {
         }
       }
     } catch (error) {
-      console.error('Error refreshing view:', error);
+      
     } finally {
       setLoading(false);
     }
@@ -250,7 +250,7 @@ export default function Curriculum() {
         setGrades(response.data.grades);
       }
     } catch (error) {
-      console.error('Error loading grades:', error);
+      
     }
   };
 
@@ -266,7 +266,7 @@ export default function Curriculum() {
         setSubjects(response.data.subjects);
       }
     } catch (error) {
-      console.error('Error loading subjects:', error);
+      
     }
   };
 
@@ -281,7 +281,7 @@ export default function Curriculum() {
         setStrands(response.data.strands);
       }
     } catch (error) {
-      console.error('Error loading strands:', error);
+      
     }
   };
 
@@ -296,7 +296,7 @@ export default function Curriculum() {
         setSubstrands(response.data.substrands);
       }
     } catch (error) {
-      console.error('Error loading substrands:', error);
+      
     }
   };
 
@@ -308,7 +308,7 @@ export default function Curriculum() {
         setData(response.data.slos);
       }
     } catch (error) {
-      console.error('Error loading SLOs:', error);
+      
     }
   };
 
@@ -336,7 +336,7 @@ export default function Curriculum() {
         loadSubstrands();
       }
     } catch (error: any) {
-      console.error('Error loading data:', error);
+      
       showAlert('Error', 'Failed to load data');
     } finally {
       setLoading(false);
@@ -365,7 +365,7 @@ export default function Curriculum() {
         setData(response.data.subjects);
       }
     } catch (error) {
-      console.error('Error:', error);
+      
     } finally {
       setLoading(false);
     }
@@ -384,7 +384,7 @@ export default function Curriculum() {
         setData(response.data.strands);
       }
     } catch (error) {
-      console.error('Error:', error);
+      
     } finally {
       setLoading(false);
     }
@@ -403,7 +403,7 @@ export default function Curriculum() {
         setData(response.data.substrands);
       }
     } catch (error) {
-      console.error('Error:', error);
+      
     } finally {
       setLoading(false);
     }
@@ -422,7 +422,7 @@ export default function Curriculum() {
         setData(response.data.slos);
       }
     } catch (error) {
-      console.error('Error:', error);
+      
     } finally {
       setLoading(false);
     }
@@ -551,7 +551,7 @@ export default function Curriculum() {
         });
       }
     } catch (error) {
-      console.error('Error loading activities:', error);
+      
       setExistingActivityId(null);
       setActivitiesFormData({
         introduction_activities: [''],
@@ -628,7 +628,7 @@ export default function Curriculum() {
         loadData();
       }
     } catch (error: any) {
-      console.error('Error saving:', error.response?.data || error);
+      
       showAlert('Error', error.response?.data?.detail || 'Failed to save');
     }
   };
@@ -658,7 +658,7 @@ export default function Curriculum() {
       showAlert('Success', 'Learning activities saved successfully');
       setLearningActivitiesModalVisible(false);
     } catch (error: any) {
-      console.error('Error saving activities:', error.response?.data || error);
+      
       showAlert('Error', error.response?.data?.detail || 'Failed to save learning activities');
     }
   };
@@ -729,7 +729,7 @@ export default function Curriculum() {
       setAllStrands(strandsRes.data.strands || []);
       setAllSubstrands(substrandsRes.data.substrands || []);
     } catch (error) {
-      console.error('Error loading curriculum data:', error);
+      
     }
   };
 
@@ -946,7 +946,7 @@ export default function Curriculum() {
         setAllPcis(response.data.pcis || []);
       }
     } catch (error) {
-      console.error('Error loading reference data:', error);
+      
     }
   };
 
@@ -970,7 +970,7 @@ export default function Curriculum() {
         setSelectedPcis(mapping.pciIds || []);
       }
     } catch (error) {
-      console.error('Error loading SLO mapping:', error);
+      
     }
     
     setMappingModalVisible(true);

@@ -50,7 +50,7 @@ export default function Lessons() {
         }
       }
     } catch (error) {
-      console.error('Error loading lessons:', error);
+      
     } finally {
       setLoading(false);
       setRefreshing(false);

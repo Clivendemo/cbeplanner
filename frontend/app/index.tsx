@@ -1,33 +1,7 @@
-import { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAuth } from '../contexts/AuthContext';
 
 export default function Index() {
-  const { user, loading, authChecked, isAdmin } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    // Wait until auth is fully checked
-    if (!authChecked) return;
-
-    // Small delay to ensure auth state is fully settled
-    const timeout = setTimeout(() => {
-      if (!user) {
-        console.log('Index: No user, redirecting to login');
-        router.replace('/auth/login');
-      } else if (isAdmin) {
-        console.log('Index: Admin user, going to admin dashboard');
-        router.replace('/(admin)/dashboard');
-      } else {
-        console.log('Index: Teacher user, going to teacher dashboard');
-        router.replace('/(teacher)/dashboard');
-      }
-    }, 100);
-
-    return () => clearTimeout(timeout);
-  }, [user, authChecked, isAdmin]);
-
+  // This is just a loading screen - AuthGate in _layout.tsx handles all redirects
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color="#6366F1" />

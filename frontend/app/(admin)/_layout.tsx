@@ -14,14 +14,12 @@ export default function AdminLayout() {
 
     // If no user, redirect to login
     if (!user) {
-      console.log('Admin layout: No user, redirecting to login');
       router.replace('/auth/login');
       return;
     }
 
     // If user is not admin, redirect to teacher home
     if (!isAdmin) {
-      console.log('Admin layout: Not admin, redirecting to teacher home');
       router.replace('/(teacher)/home');
       return;
     }

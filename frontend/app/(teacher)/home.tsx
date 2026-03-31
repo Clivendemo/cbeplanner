@@ -55,9 +55,7 @@ export default function Home() {
 
   // Effect to load substrands when selectedStrand changes
   useEffect(() => {
-    console.log('[DEBUG] selectedStrand changed to:', selectedStrand);
     if (selectedStrand) {
-      console.log('[DEBUG] Triggering loadSubstrands from useEffect');
       loadSubstrands(selectedStrand);
     } else {
       setSubstrands([]);
@@ -67,9 +65,7 @@ export default function Home() {
 
   // Effect to load SLOs when selectedSubstrand changes
   useEffect(() => {
-    console.log('[DEBUG] selectedSubstrand changed to:', selectedSubstrand);
     if (selectedSubstrand) {
-      console.log('[DEBUG] Triggering loadSLOs from useEffect');
       loadSLOs(selectedSubstrand);
     } else {
       setSlos([]);
@@ -92,7 +88,7 @@ export default function Home() {
         setGrades(response.data.grades);
       }
     } catch (error: any) {
-      console.error('Error loading grades:', error);
+      
       Alert.alert('Error', 'Failed to load grades');
     }
   };
@@ -108,14 +104,11 @@ export default function Home() {
         setAllSubjects(subjectsFromDb);
         setSubjects(subjectsFromDb);
         
-        console.log(`[Subjects] ${gradeName}: Loaded ${subjectsFromDb.length} subjects from database`);
-        
         setStrands([]);
         setSubstrands([]);
         setSlos([]);
       }
     } catch (error) {
-      console.error('Error loading subjects:', error);
       Alert.alert('Error', 'Failed to load subjects');
     } finally {
       setLoading(false);
@@ -126,11 +119,8 @@ export default function Home() {
     try {
       setLoading(true);
       const headers = await getHeaders();
-      console.log('Loading strands for subject:', subjectId);
       const response = await axios.get(`${BACKEND_URL}/api/strands?subjectId=${subjectId}`, { headers });
-      console.log('Strands response:', response.data);
       if (response.data.success) {
-        console.log('Strands loaded:', response.data.strands.length);
         setStrands(response.data.strands);
         setSubstrands([]);
         setSlos([]);
@@ -139,7 +129,6 @@ export default function Home() {
         }
       }
     } catch (error: any) {
-      console.error('Error loading strands:', error.response?.data || error.message);
       Alert.alert('Error', 'Failed to load strands. Please ensure sample data is loaded.');
     } finally {
       setLoading(false);
@@ -147,20 +136,15 @@ export default function Home() {
   };
 
   const loadSubstrands = async (strandId: string) => {
-    console.log('[DEBUG] loadSubstrands called with strandId:', strandId);
     try {
       setLoading(true);
       const headers = await getHeaders();
-      console.log('[DEBUG] Making substrand request to:', `${BACKEND_URL}/api/substrands?strandId=${strandId}`);
       const response = await axios.get(`${BACKEND_URL}/api/substrands?strandId=${strandId}`, { headers });
-      console.log('[DEBUG] Substrand response:', response.data);
       if (response.data.success) {
-        console.log('[DEBUG] Setting substrands:', response.data.substrands.length, 'items');
         setSubstrands(response.data.substrands);
         setSlos([]);
       }
     } catch (error) {
-      console.error('[DEBUG] Error loading substrands:', error);
       Alert.alert('Error', 'Failed to load sub-strands');
     } finally {
       setLoading(false);
@@ -176,7 +160,6 @@ export default function Home() {
         setSlos(response.data.slos);
       }
     } catch (error) {
-      console.error('Error loading SLOs:', error);
       Alert.alert('Error', 'Failed to load learning outcomes');
     } finally {
       setLoading(false);
@@ -222,7 +205,6 @@ export default function Home() {
   };
 
   const handleStrandChange = (strandId: string) => {
-    console.log('[DEBUG] handleStrandChange called with strandId:', strandId);
     setSelectedStrand(strandId);
     setSelectedSubstrand('');
     setSelectedSLO('');

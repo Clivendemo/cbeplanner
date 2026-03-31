@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -10,6 +10,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   const segments = useSegments();
   const router = useRouter();
   const navigationState = useRootNavigationState();
+  const hasNavigated = useRef(false);
 
   useEffect(() => {
     // Don't do anything until navigation is ready and auth is checked
@@ -20,33 +21,38 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     const inTeacherGroup = segments[0] === '(teacher)';
     const isIndex = segments.length === 0 || segments[0] === 'index';
 
-    console.log('AuthGate check:', { user: user?.email, inAuthGroup, inAdminGroup, inTeacherGroup, isIndex, segments });
+    // Prevent double navigation
+    if (hasNavigated.current) return;
 
     if (!user) {
       // User is not authenticated
       if (!inAuthGroup && !isIndex) {
         // Redirect to login using replace to prevent back navigation issues
-        console.log('Redirecting to login - no user');
+        hasNavigated.current = true;
         router.replace('/auth/login');
       }
     } else {
       // User is authenticated
       if (inAuthGroup || isIndex) {
         // Redirect to appropriate dashboard
+        hasNavigated.current = true;
         if (isAdmin) {
-          console.log('Redirecting admin to admin dashboard');
           router.replace('/(admin)/dashboard');
         } else {
-          console.log('Redirecting user to teacher dashboard');
           router.replace('/(teacher)/dashboard');
         }
       } else if (inAdminGroup && !isAdmin) {
         // Non-admin trying to access admin routes
-        console.log('Non-admin trying to access admin - redirecting');
+        hasNavigated.current = true;
         router.replace('/(teacher)/dashboard');
       }
     }
   }, [user, segments, authChecked, navigationState?.key, isAdmin]);
+
+  // Reset navigation flag when user changes (login/logout)
+  useEffect(() => {
+    hasNavigated.current = false;
+  }, [user]);
 
   // Show loading screen while checking auth
   if (loading || !authChecked) {

@@ -124,7 +124,7 @@ export default function DataImport() {
       setGrades(gradesRes.data.grades || []);
       setSubjects(subjectsRes.data.subjects || []);
     } catch (error) {
-      console.error('Error loading grades/subjects:', error);
+      
     }
   };
 
@@ -137,7 +137,7 @@ export default function DataImport() {
         setImportHistory(response.data.history || []);
       }
     } catch (error) {
-      console.error('Error loading import history:', error);
+      
     } finally {
       setLoadingHistory(false);
     }
@@ -159,15 +159,15 @@ export default function DataImport() {
   const handleDownloadTemplate = async () => {
     try {
       const headers = await getHeaders();
-      console.log('Downloading template...');
+      
       
       const response = await axios.get(`${BACKEND_URL}/api/admin/import/template`, {
         headers,
         responseType: 'text'
       });
       
-      console.log('Template response received:', response.status);
-      console.log('Template data length:', response.data?.length);
+      
+      
       
       if (!response.data || response.data.length === 0) {
         alert('Error: Received empty template from server');
@@ -189,14 +189,14 @@ export default function DataImport() {
           document.body.removeChild(link);
           URL.revokeObjectURL(url);
         }, 100);
-        console.log('Download triggered successfully');
+        
       } else {
         alert('Download not supported on this platform');
       }
     } catch (error: any) {
-      console.error('Error downloading template:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
+      
+      
+      
       const errorMsg = error.response?.data?.detail || error.message || 'Unknown error';
       alert(`Failed to download template: ${errorMsg}`);
     }
@@ -240,7 +240,7 @@ export default function DataImport() {
               setShowPreviewModal(true);
             }
           } catch (error: any) {
-            console.error('Error uploading CSV:', error);
+            
             alert(error.response?.data?.detail || 'Failed to process CSV file');
           } finally {
             setLoading(false);
@@ -291,7 +291,7 @@ export default function DataImport() {
         }
       }
     } catch (error: any) {
-      console.error('Error uploading CSV:', error);
+      
       alert(error.response?.data?.detail || 'Failed to process CSV file');
     } finally {
       setLoading(false);
@@ -337,7 +337,7 @@ export default function DataImport() {
               setShowPreviewModal(true);
             }
           } catch (error: any) {
-            console.error('Error extracting PDF:', error);
+            
             alert(error.response?.data?.detail || 'Failed to extract PDF');
           } finally {
             setLoading(false);
@@ -384,7 +384,7 @@ export default function DataImport() {
         }
       }
     } catch (error: any) {
-      console.error('Error extracting PDF:', error);
+      
       alert(error.response?.data?.detail || 'Failed to extract PDF');
     } finally {
       setLoading(false);
@@ -430,7 +430,7 @@ export default function DataImport() {
               setShowPreviewModal(true);
             }
           } catch (error: any) {
-            console.error('Error extracting Word document:', error);
+            
             alert(error.response?.data?.detail || 'Failed to extract Word document');
           } finally {
             setLoading(false);
@@ -477,7 +477,7 @@ export default function DataImport() {
         }
       }
     } catch (error: any) {
-      console.error('Error extracting Word document:', error);
+      
       alert(error.response?.data?.detail || 'Failed to extract Word document');
     } finally {
       setLoading(false);

@@ -56,7 +56,7 @@ export default function LessonDetail() {
       } else {
         setError('Failed to load lesson plan. Please try again.');
       }
-      console.error('Error loading lesson plan:', err);
+      
     } finally {
       setLoading(false);
     }
@@ -218,7 +218,7 @@ export default function LessonDetail() {
         );
       }
     } catch (error: any) {
-      console.error('PDF share error:', error);
+      
       Alert.alert(
         'Error',
         'Failed to generate PDF. Would you like to share as text instead?',
@@ -243,7 +243,7 @@ export default function LessonDetail() {
       });
     } catch (error: any) {
       Alert.alert('Error', 'Failed to share lesson plan');
-      console.error('Share error:', error);
+      
     }
   };
 

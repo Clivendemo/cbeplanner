@@ -18,6 +18,9 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const SCHEME_DOWNLOAD_COST = 15;
@@ -43,7 +46,8 @@ interface DoubleLesson {
 type Step = 'select' | 'topics' | 'breaks' | 'preview';
 
 export default function SchemesOfWork() {
-  const { user, firebaseUser } = useAuth();
+  const { user, firebaseUser, refreshProfile } = useAuth();
+  const router = useRouter();
   
   // Step management
   const [currentStep, setCurrentStep] = useState<Step>('select');
@@ -92,6 +96,26 @@ export default function SchemesOfWork() {
   // Insufficient funds modal
   const [showFundsModal, setShowFundsModal] = useState(false);
   
+  // Track if user was redirected to top-up
+  const [pendingDownload, setPendingDownload] = useState(false);
+  
+  // Refresh profile when screen comes into focus (after top-up)
+  useFocusEffect(
+    useCallback(() => {
+      refreshProfile();
+      // Check if we have a pending download and now have sufficient balance
+      if (pendingDownload && user && (user.walletBalance || 0) >= SCHEME_DOWNLOAD_COST) {
+        setPendingDownload(false);
+        // Show a message that they can now download
+        Alert.alert(
+          'Balance Updated! 🎉',
+          'Your wallet has been topped up. You can now download your scheme.',
+          [{ text: 'Great!' }]
+        );
+      }
+    }, [pendingDownload, user?.walletBalance])
+  );
+  
   const getHeaders = async () => {
     if (firebaseUser) {
       const token = await firebaseUser.getIdToken();
@@ -113,7 +137,7 @@ export default function SchemesOfWork() {
         setGrades(response.data.grades);
       }
     } catch (error) {
-      console.error('Error loading grades:', error);
+      
     }
   };
 
@@ -136,7 +160,7 @@ export default function SchemesOfWork() {
         setSubjects(response.data.subjects);
       }
     } catch (error) {
-      console.error('Error loading subjects:', error);
+      
     }
   };
 
@@ -158,7 +182,7 @@ export default function SchemesOfWork() {
         setLessonsPerWeek(response.data.lessonsPerWeek);
       }
     } catch (error) {
-      console.error('Error fetching lessons per week:', error);
+      
       setLessonsPerWeek(5); // Default fallback
     }
   };
@@ -180,7 +204,6 @@ export default function SchemesOfWork() {
         }
       }
     } catch (error) {
-      console.error('Error loading topics:', error);
       Alert.alert('Error', 'Failed to load topics');
     } finally {
       setLoadingTopics(false);
@@ -335,7 +358,7 @@ export default function SchemesOfWork() {
         Alert.alert('Error', response.data.detail || 'Failed to generate scheme');
       }
     } catch (error: any) {
-      console.error('Error generating scheme:', error);
+      
       Alert.alert('Error', error.response?.data?.detail || 'Failed to generate scheme');
     } finally {
       setGenerating(false);
@@ -400,7 +423,7 @@ export default function SchemesOfWork() {
         }
       }
     } catch (error) {
-      console.error('Error previewing:', error);
+      
       Alert.alert('Error', 'Failed to generate preview');
     } finally {
       setPreviewing(false);
@@ -477,7 +500,7 @@ export default function SchemesOfWork() {
         }
       }
     } catch (error: any) {
-      console.error('Error downloading:', error);
+      
       if (error.response?.status === 402) {
         setShowFundsModal(true);
       } else {
@@ -500,7 +523,7 @@ export default function SchemesOfWork() {
         }
       }
     } catch (error) {
-      console.error('Error refreshing wallet balance:', error);
+      
     }
   };
 
@@ -923,7 +946,7 @@ export default function SchemesOfWork() {
           </Text>
           
           <Text style={styles.fundsModalHint}>
-            Please top up your wallet to continue.
+            Top up your wallet and come back - your scheme will be waiting!
           </Text>
           
           <View style={styles.fundsModalButtons}>
@@ -931,8 +954,10 @@ export default function SchemesOfWork() {
               style={styles.topUpBtn}
               onPress={() => {
                 setShowFundsModal(false);
-                // Navigate to wallet/profile
+                setPendingDownload(true); // Mark that we have a pending download
+                router.push('/(teacher)/profile');
               }}
+              data-testid="top-up-mpesa-btn"
             >
               <Ionicons name="phone-portrait-outline" size={18} color="#FFFFFF" />
               <Text style={styles.topUpBtnText}>Top Up via M-PESA</Text>
@@ -941,8 +966,9 @@ export default function SchemesOfWork() {
             <TouchableOpacity
               style={styles.cancelBtn}
               onPress={() => setShowFundsModal(false)}
+              data-testid="cancel-funds-btn"
             >
-              <Text style={styles.cancelBtnText}>Cancel</Text>
+              <Text style={styles.cancelBtnText}>Maybe Later</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -71,7 +71,7 @@ export default function Profile() {
         setTransactions(response.data.transactions);
       }
     } catch (error) {
-      console.error('Error fetching transactions:', error);
+      
     } finally {
       setLoadingTransactions(false);
     }
@@ -201,7 +201,7 @@ export default function Profile() {
           }
         }
       } catch (error) {
-        console.error('Error checking status:', error);
+        
         attempts++;
         if (attempts < maxAttempts) {
           setTimeout(pollStatus, 5000);
@@ -224,7 +224,7 @@ export default function Profile() {
           await signOut();
           router.replace('/auth/login');
         } catch (error) {
-          console.error('Sign out error:', error);
+          
           router.replace('/auth/login');
         }
       }
@@ -244,7 +244,7 @@ export default function Profile() {
                   router.replace('/auth/login');
                 }, 100);
               } catch (error) {
-                console.error('Sign out error:', error);
+                
                 router.replace('/auth/login');
               }
             }
@@ -276,10 +276,9 @@ export default function Profile() {
       });
       
       if (result.action === Share.sharedAction) {
-        console.log('App shared successfully');
+        
       }
     } catch (error: any) {
-      console.error('Error sharing app:', error);
       // Fallback: Open Play Store link
       Linking.openURL(PLAY_STORE_URL).catch(() => {
         Alert.alert('Error', 'Could not open Play Store link');
@@ -459,10 +458,17 @@ export default function Profile() {
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity 
+          style={styles.menuItem}
+          onPress={() => Linking.openURL('mailto:legitlabs@outlook.com?subject=CBE%20Planner%20Support')}
+          data-testid="help-support-btn"
+        >
           <Ionicons name="help-circle-outline" size={24} color="#6B7280" />
-          <Text style={styles.menuText}>Help & Support</Text>
-          <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+          <View style={styles.menuTextContainer}>
+            <Text style={styles.menuText}>Help & Support</Text>
+            <Text style={styles.supportEmailText}>legitlabs@outlook.com</Text>
+          </View>
+          <Ionicons name="mail-outline" size={20} color="#9CA3AF" />
         </TouchableOpacity>
 
         {/* Share App Button */}
@@ -1037,6 +1043,15 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 16,
     color: '#374151'
+  },
+  menuTextContainer: {
+    flex: 1,
+    marginLeft: 12
+  },
+  supportEmailText: {
+    fontSize: 12,
+    color: '#6366F1',
+    marginTop: 2
   },
   signOutButton: {
     marginTop: 8

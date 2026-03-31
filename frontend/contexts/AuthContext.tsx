@@ -13,7 +13,6 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-console.log("BACKEND_URL USED:", BACKEND_URL);
 
 // The ONLY admin email - must match backend
 const ADMIN_EMAIL = 'mail2clive@gmail.com';
@@ -94,7 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const elapsed = Date.now() - lastActivityRef.current;
         if (elapsed >= INACTIVITY_TIMEOUT_MS) {
-          console.log(`Inactivity timeout: ${Math.floor(elapsed / 60000)} min elapsed, signing out`);
+          
           await handleSignOut();
         }
       }
@@ -114,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const elapsed = Date.now() - lastActivityRef.current;
       if (elapsed >= INACTIVITY_TIMEOUT_MS) {
-        console.log(`Periodic inactivity check: ${Math.floor(elapsed / 60000)} min elapsed, signing out`);
+        
         await handleSignOut();
       }
     }, 60000);
@@ -124,7 +123,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const verifyAndSetUser = useCallback(async (fbUser: FirebaseUser, isSignUp: boolean = false) => {
     try {
-      console.log('Verifying user with backend:', fbUser.email);
       const idToken = await fbUser.getIdToken(true);
       await AsyncStorage.setItem('userToken', idToken);
       
@@ -133,7 +131,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (response.data.success) {
-        console.log('User verified successfully:', response.data.user.email);
         setUser(response.data.user);
         // Set isNewUser flag based on backend response or if this is a signup
         if (response.data.isNewUser || isSignUp) {
@@ -144,7 +141,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return null;
     } catch (error: any) {
-      console.error('Error verifying token:', error.response?.data || error.message);
       await AsyncStorage.removeItem('userToken');
       setUser(null);
       return null;
@@ -152,9 +148,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
-    console.log('Setting up auth listener...');
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      console.log('Auth state changed:', fbUser?.email || 'No user');
       setFirebaseUser(fbUser);
       
       if (fbUser) {
@@ -165,7 +159,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (lastActive) {
             const elapsed = Date.now() - parseInt(lastActive, 10);
             if (elapsed >= INACTIVITY_TIMEOUT_MS) {
-              console.log('Session expired during app close, signing out');
               await firebaseSignOut(auth);
               await AsyncStorage.removeItem('userToken');
               await AsyncStorage.removeItem('lastActivityTime');
@@ -201,11 +194,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const signIn = async (email: string, password: string, rememberMe: boolean = false): Promise<User | null> => {
-    console.log('Attempting sign in for:', email, 'rememberMe:', rememberMe);
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log('Firebase sign in successful');
       
       // Store rememberMe preference
       await AsyncStorage.setItem('rememberMe', rememberMe ? 'true' : 'false');
@@ -217,7 +208,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
       return verifiedUser;
     } catch (error: any) {
-      console.error('Sign in error:', error.code, error.message);
       setLoading(false);
       
       let message = 'Login failed. Please try again.';
@@ -233,11 +223,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string, schoolName: string): Promise<User | null> => {
-    console.log('Attempting sign up for:', email);
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      console.log('Firebase sign up successful');
       
       // New users get rememberMe by default
       await AsyncStorage.setItem('rememberMe', 'true');
@@ -253,7 +241,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (response.data.success) {
-        console.log('User profile created:', response.data.user.email);
         setUser(response.data.user);
         setIsNewUser(true); // Always set for signups
         setLoading(false);
@@ -262,7 +249,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
       return null;
     } catch (error: any) {
-      console.error('Sign up error:', error.code, error.message);
       setLoading(false);
       
       let message = 'Sign up failed. Please try again.';
@@ -278,7 +264,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const handleSignOut = async () => {
-    console.log('Signing out...');
     try {
       await firebaseSignOut(auth);
       await AsyncStorage.removeItem('userToken');
@@ -287,7 +272,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setFirebaseUser(null);
     } catch (error: any) {
-      console.error('Sign out error:', error);
       setUser(null);
       setFirebaseUser(null);
       await AsyncStorage.removeItem('userToken');
@@ -314,7 +298,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(response.data.user);
         }
       } catch (error) {
-        console.error('Error refreshing profile:', error);
+        
       }
     }
   };

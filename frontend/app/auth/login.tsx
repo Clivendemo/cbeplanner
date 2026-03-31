@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,11 +12,14 @@ import {
   Modal,
   Pressable,
   Animated,
-  Dimensions
+  Dimensions,
+  Keyboard,
+  TouchableWithoutFeedback
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -28,6 +31,7 @@ export default function Login() {
   const [resetting, setResetting] = useState(false);
   const { signIn, resetPassword } = useAuth();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // Marquee animation
   const screenWidth = Dimensions.get('window').width;
@@ -37,7 +41,7 @@ export default function Login() {
     const animation = Animated.loop(
       Animated.timing(marqueeAnim, {
         toValue: -450,
-        duration: 18000, // 18 seconds - slow and smooth
+        duration: 18000,
         useNativeDriver: true,
       })
     );
@@ -55,7 +59,6 @@ export default function Login() {
     try {
       const verifiedUser = await signIn(email, password, rememberMe);
       if (verifiedUser) {
-        // Navigate based on role — always to dashboard
         if (verifiedUser.role === 'admin') {
           router.replace('/(admin)/dashboard');
         } else {
@@ -69,7 +72,7 @@ export default function Login() {
   };
 
   const handleForgotPassword = () => {
-    setResetEmail(email); // Pre-fill with login email if available
+    setResetEmail(email);
     setResetModalVisible(true);
   };
 
@@ -100,153 +103,170 @@ export default function Login() {
     }
   };
 
+  const dismissKeyboard = useCallback(() => {
+    Keyboard.dismiss();
+  }, []);
+
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <Ionicons name="school" size={64} color="#6366F1" />
-          <Text style={styles.title}>CBE Planner</Text>
-          <Text style={styles.subtitle}>Kenyan Teacher Lesson Planning</Text>
-          
-          {/* Marquee Tagline */}
-          <View style={styles.marqueeContainer}>
-            <Animated.View 
-              style={[
-                styles.marqueeContent,
-                { transform: [{ translateX: marqueeAnim }] }
-              ]}
-            >
-              <Text style={styles.marqueeText}>
-                Every lesson mapped.  Every outcome measurable.
-              </Text>
-            </Animated.View>
-          </View>
-        </View>
-
-        <View style={styles.form}>
-          <View style={styles.inputContainer}>
-            <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              placeholderTextColor="#9CA3AF"
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              placeholderTextColor="#9CA3AF"
-            />
-          </View>
-
-          {/* Remember Me Toggle */}
-          <Pressable
-            onPress={() => setRememberMe(!rememberMe)}
-            style={styles.rememberMeRow}
-          >
-            <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-              {rememberMe && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
-            </View>
-            <Text style={styles.rememberMeText}>Remember me</Text>
-          </Pressable>
-
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={loading}
-          >
-            <Text style={styles.buttonText}>
-              {loading ? 'Signing In...' : 'Sign In'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.forgotPasswordButton}
-            onPress={handleForgotPassword}
-          >
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.linkButton}
-            onPress={() => router.push('/auth/signup')}
-          >
-            <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>KICD-Aligned Lesson Planning</Text>
-          <Text style={styles.footerText}>For Kenyan Teachers</Text>
-          <View style={{ width: '100%', alignItems: 'center' }}>
-            <Text style={styles.developerText}>Developed by LEGIT LAB</Text>
-          </View>
-        </View>
-
-        {/* Password Reset Modal */}
-        <Modal
-          visible={resetModalVisible}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => setResetModalVisible(false)}
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <TouchableWithoutFeedback onPress={dismissKeyboard} accessible={false}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.container}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Reset Password</Text>
-                <TouchableOpacity onPress={() => setResetModalVisible(false)}>
-                  <Ionicons name="close" size={24} color="#6B7280" />
-                </TouchableOpacity>
+          <ScrollView 
+            contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom, 24) }]}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.header}>
+              <Ionicons name="school" size={64} color="#6366F1" />
+              <Text style={styles.title}>CBE Planner</Text>
+              <Text style={styles.subtitle}>Kenyan Teacher Lesson Planning</Text>
+              
+              <View style={styles.marqueeContainer}>
+                <Animated.View 
+                  style={[
+                    styles.marqueeContent,
+                    { transform: [{ translateX: marqueeAnim }] }
+                  ]}
+                >
+                  <Text style={styles.marqueeText}>
+                    Every lesson mapped.  Every outcome measurable.
+                  </Text>
+                </Animated.View>
               </View>
+            </View>
 
-              <Text style={styles.modalDescription}>
-                Enter your email address and we'll send you a link to reset your password.
-              </Text>
-
-              <View style={styles.modalInputContainer}>
+            <View style={styles.form}>
+              <View style={styles.inputContainer}>
                 <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
                 <TextInput
-                  style={styles.modalInput}
-                  placeholder="Email address"
-                  value={resetEmail}
-                  onChangeText={setResetEmail}
+                  style={styles.input}
+                  placeholder="Email"
+                  value={email}
+                  onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   placeholderTextColor="#9CA3AF"
+                  data-testid="login-email-input"
                 />
               </View>
 
-              <TouchableOpacity
-                style={[styles.resetButton, resetting && styles.buttonDisabled]}
-                onPress={handleResetPassword}
-                disabled={resetting}
+              <View style={styles.inputContainer}>
+                <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Password"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  placeholderTextColor="#9CA3AF"
+                  data-testid="login-password-input"
+                />
+              </View>
+
+              <Pressable
+                onPress={() => setRememberMe(!rememberMe)}
+                style={styles.rememberMeRow}
               >
-                <Text style={styles.resetButtonText}>
-                  {resetting ? 'Sending...' : 'Send Reset Link'}
+                <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                  {rememberMe && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+                </View>
+                <Text style={styles.rememberMeText}>Remember me</Text>
+              </Pressable>
+
+              <TouchableOpacity
+                style={[styles.button, loading && styles.buttonDisabled]}
+                onPress={handleLogin}
+                disabled={loading}
+                data-testid="login-submit-btn"
+              >
+                <Text style={styles.buttonText}>
+                  {loading ? 'Signing In...' : 'Sign In'}
                 </Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.forgotPasswordButton}
+                onPress={handleForgotPassword}
+              >
+                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.linkButton}
+                onPress={() => router.push('/auth/signup')}
+              >
+                <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
+              </TouchableOpacity>
             </View>
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>KICD-Aligned Lesson Planning</Text>
+              <Text style={styles.footerText}>For Kenyan Teachers</Text>
+              <View style={{ width: '100%', alignItems: 'center' }}>
+                <Text style={styles.developerText}>Developed by LEGIT LAB</Text>
+              </View>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
+
+      {/* Password Reset Modal */}
+      <Modal
+        visible={resetModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setResetModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Reset Password</Text>
+              <TouchableOpacity onPress={() => setResetModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalDescription}>
+              Enter your email address and we'll send you a link to reset your password.
+            </Text>
+
+            <View style={styles.modalInputContainer}>
+              <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+              <TextInput
+                style={styles.modalInput}
+                placeholder="Email address"
+                value={resetEmail}
+                onChangeText={setResetEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholderTextColor="#9CA3AF"
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.resetButton, resetting && styles.buttonDisabled]}
+              onPress={handleResetPassword}
+              disabled={resetting}
+            >
+              <Text style={styles.resetButtonText}>
+                {resetting ? 'Sending...' : 'Send Reset Link'}
+              </Text>
+            </TouchableOpacity>
           </View>
-        </Modal>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F9FAFB'
+  },
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB'
@@ -424,8 +444,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 12,
     marginBottom: 4,
-    paddingVertical: 8,
-    cursor: 'pointer'
+    paddingVertical: 8
   },
   checkbox: {
     width: 20,

@@ -57,7 +57,6 @@ export default function TeacherLayout() {
 
     // If no user, redirect to login
     if (!user) {
-      console.log('Teacher layout: No user, redirecting to login');
       router.replace('/auth/login');
     }
   }, [user, authChecked]);
