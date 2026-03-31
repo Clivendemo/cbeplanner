@@ -9,7 +9,12 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "build": "expo export -p web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "prebuild": "expo prebuild",
+    "prebuild:android": "expo prebuild --platform android",
+    "build:apk": "eas build --platform android --profile apk",
+    "build:aab": "eas build --platform android --profile production",
+    "build:preview": "eas build --platform android --profile preview"
   },
   "dependencies": {
     "@expo/ngrok": "^4.1.3",

@@ -105,3 +105,45 @@ A competency-based education lesson planning system for Kenyan teachers with M-P
 3. Submit for M-Pesa production environment verification
 4. Prepare Play Store listing assets
 5. Build production APK/AAB using `eas build`
+
+## Android Studio APK Generation (NEW)
+
+### Project Structure
+```
+frontend/
+├── android/                    # Native Android project
+│   ├── app/
+│   │   ├── build.gradle       # App-level build config
+│   │   ├── src/main/
+│   │   │   └── AndroidManifest.xml
+│   │   └── debug.keystore     # Debug signing key
+│   ├── build.gradle           # Project-level build config
+│   ├── gradle.properties      # Build settings
+│   └── gradlew                # Gradle wrapper
+├── eas.json                   # EAS Build profiles
+├── app.json                   # Expo configuration
+└── ANDROID_BUILD_GUIDE.md     # Detailed build instructions
+```
+
+### Build Commands
+```bash
+# Debug APK (for testing)
+cd android && ./gradlew assembleDebug
+
+# Release APK (for distribution)
+cd android && ./gradlew assembleRelease
+
+# App Bundle (for Play Store)
+cd android && ./gradlew bundleRelease
+
+# Using EAS (cloud build)
+eas build --platform android --profile apk
+```
+
+### App Configuration
+- **Package Name:** `com.legitlab.cbeplanner`
+- **Version:** 1.0.0 (versionCode: 1)
+- **Min SDK:** 24 (Android 7.0)
+- **Target SDK:** 35 (Android 15)
+- **Hermes:** Enabled
+- **Edge-to-Edge:** Enabled

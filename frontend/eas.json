@@ -6,6 +6,10 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
+      },
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "http://localhost:8001",
         "EXPO_PUBLIC_BACKEND_URL": "http://localhost:8001"
@@ -13,6 +17,10 @@
     },
     "preview": {
       "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      },
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://cbeplanner.onrender.com",
         "EXPO_PUBLIC_BACKEND_URL": "https://cbeplanner.onrender.com"
@@ -24,10 +32,22 @@
         "EXPO_PUBLIC_BACKEND_URL": "https://cbeplanner.onrender.com"
       },
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "gradleCommand": ":app:bundleRelease"
       },
       "ios": {
         "resourceClass": "m1-medium"
+      }
+    },
+    "apk": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://cbeplanner.onrender.com",
+        "EXPO_PUBLIC_BACKEND_URL": "https://cbeplanner.onrender.com"
       }
     }
   },
