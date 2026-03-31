@@ -16,7 +16,7 @@ import requests
 import os
 import json
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://be518031-b59f-4d70-b8c4-b9d51851b23c.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://magical-shannon-6.preview.emergentagent.com')
 
 # Test credentials
 TEST_EMAIL = "demo2@example.com"

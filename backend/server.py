@@ -83,7 +83,7 @@ else:
         "http://localhost:19006",
         "http://localhost:19000",
         "https://*.vercel.app",
-        "https://teach-align.preview.emergentagent.com"
+        "https://magical-shannon-6.preview.emergentagent.com"
     ]
 
 # ===========================================
