@@ -376,8 +376,8 @@ export default function SchemesOfWork() {
     try {
       const headers = await getHeaders();
       
-      // For web, show in modal with iframe
       if (Platform.OS === 'web') {
+        // For web, show in modal with iframe
         const response = await axios.post(
           `${BACKEND_URL}/api/schemes/preview`,
           generatedScheme,
@@ -392,32 +392,49 @@ export default function SchemesOfWork() {
         setPdfPreviewUrl(url);
         setShowPdfModal(true);
       } else {
-        // For native (mobile), download and show in WebView modal
+        // For native (mobile), use axios to POST and save manually
         const token = await firebaseUser?.getIdToken();
-        const fileUri = `${FileSystem.documentDirectory}scheme_preview_${Date.now()}.pdf`;
         
-        // Download the file
-        const downloadResult = await FileSystem.downloadAsync(
+        const response = await axios.post(
           `${BACKEND_URL}/api/schemes/preview`,
-          fileUri,
-          {
-            headers: { 
+          generatedScheme,
+          { 
+            headers: {
               Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json'
-            }
+            },
+            responseType: 'arraybuffer'
           }
         );
         
-        if (downloadResult.status === 200) {
-          // Show the PDF in modal using WebView
-          setPdfPreviewUrl(downloadResult.uri);
-          setShowPdfModal(true);
+        // Convert arraybuffer to base64
+        const base64 = btoa(
+          new Uint8Array(response.data).reduce(
+            (data, byte) => data + String.fromCharCode(byte),
+            ''
+          )
+        );
+        
+        // Save to file
+        const fileUri = `${FileSystem.documentDirectory}scheme_preview_${Date.now()}.pdf`;
+        await FileSystem.writeAsStringAsync(fileUri, base64, {
+          encoding: FileSystem.EncodingType.Base64
+        });
+        
+        // Share the file (most reliable way to view PDF on mobile)
+        const canShare = await Sharing.isAvailableAsync();
+        if (canShare) {
+          await Sharing.shareAsync(fileUri, {
+            mimeType: 'application/pdf',
+            dialogTitle: 'Preview Scheme of Work',
+            UTI: 'com.adobe.pdf'
+          });
         } else {
-          throw new Error('Download failed');
+          Alert.alert('Preview Ready', 'PDF has been saved to your device.');
         }
       }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to generate preview');
+    } catch (error: any) {
+      Alert.alert('Error', 'Failed to generate preview. Please try again.');
     } finally {
       setPreviewing(false);
     }

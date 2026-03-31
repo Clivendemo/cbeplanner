@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
-  Keyboard,
-  TouchableWithoutFeedback
+  Alert
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
@@ -28,6 +26,13 @@ export default function SignUp() {
   const { signUp } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  // Refs for inputs to manage focus
+  const lastNameRef = useRef<TextInput>(null);
+  const schoolRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
+  const confirmPasswordRef = useRef<TextInput>(null);
 
   const handleSignUp = async () => {
     if (!firstName || !lastName || !schoolName || !email || !password || !confirmPassword) {
@@ -57,143 +62,154 @@ export default function SignUp() {
     }
   };
 
-  const dismissKeyboard = useCallback(() => {
-    if (Platform.OS !== 'web') {
-      Keyboard.dismiss();
-    }
-  }, []);
-
-  // Wrapper component - only use TouchableWithoutFeedback on native
-  const KeyboardDismissWrapper = ({ children }: { children: React.ReactNode }) => {
-    if (Platform.OS === 'web') {
-      return <>{children}</>;
-    }
-    return (
-      <TouchableWithoutFeedback onPress={dismissKeyboard} accessible={false}>
-        {children}
-      </TouchableWithoutFeedback>
-    );
-  };
-
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <KeyboardDismissWrapper>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.container}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView 
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom, 24) }]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <ScrollView 
-            contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom, 24) }]}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.header}>
-              <Ionicons name="school" size={64} color="#6366F1" />
-              <Text style={styles.title}>Create Account</Text>
-              <Text style={styles.subtitle}>Join CBE Planner today</Text>
+          <View style={styles.header}>
+            <Ionicons name="school" size={64} color="#6366F1" />
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>Join CBE Planner today</Text>
+          </View>
+
+          <View style={styles.form}>
+            <View style={styles.inputContainer}>
+              <Ionicons name="person-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="First Name"
+                value={firstName}
+                onChangeText={setFirstName}
+                autoCapitalize="words"
+                autoCorrect={false}
+                placeholderTextColor="#9CA3AF"
+                returnKeyType="next"
+                onSubmitEditing={() => lastNameRef.current?.focus()}
+                blurOnSubmit={false}
+                testID="signup-firstname-input"
+              />
             </View>
 
-            <View style={styles.form}>
-              <View style={styles.inputContainer}>
-                <Ionicons name="person-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="First Name"
-                  value={firstName}
-                  onChangeText={setFirstName}
-                  autoCapitalize="words"
-                  placeholderTextColor="#9CA3AF"
-                  data-testid="signup-firstname-input"
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Ionicons name="person-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Last Name"
-                  value={lastName}
-                  onChangeText={setLastName}
-                  autoCapitalize="words"
-                  placeholderTextColor="#9CA3AF"
-                  data-testid="signup-lastname-input"
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Ionicons name="business-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="School Name"
-                  value={schoolName}
-                  onChangeText={setSchoolName}
-                  autoCapitalize="words"
-                  placeholderTextColor="#9CA3AF"
-                  data-testid="signup-school-input"
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  placeholderTextColor="#9CA3AF"
-                  data-testid="signup-email-input"
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Password"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  placeholderTextColor="#9CA3AF"
-                  data-testid="signup-password-input"
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Confirm Password"
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry
-                  placeholderTextColor="#9CA3AF"
-                  data-testid="signup-confirm-password-input"
-                />
-              </View>
-
-              <TouchableOpacity
-                style={[styles.button, loading && styles.buttonDisabled]}
-                onPress={handleSignUp}
-                disabled={loading}
-                data-testid="signup-submit-btn"
-              >
-                <Text style={styles.buttonText}>
-                  {loading ? 'Creating Account...' : 'Sign Up'}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.linkButton}
-                onPress={() => router.push('/auth/login')}
-              >
-                <Text style={styles.linkText}>Already have an account? Sign In</Text>
-              </TouchableOpacity>
+            <View style={styles.inputContainer}>
+              <Ionicons name="person-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+              <TextInput
+                ref={lastNameRef}
+                style={styles.input}
+                placeholder="Last Name"
+                value={lastName}
+                onChangeText={setLastName}
+                autoCapitalize="words"
+                autoCorrect={false}
+                placeholderTextColor="#9CA3AF"
+                returnKeyType="next"
+                onSubmitEditing={() => schoolRef.current?.focus()}
+                blurOnSubmit={false}
+                testID="signup-lastname-input"
+              />
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </KeyboardDismissWrapper>
+
+            <View style={styles.inputContainer}>
+              <Ionicons name="business-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+              <TextInput
+                ref={schoolRef}
+                style={styles.input}
+                placeholder="School Name"
+                value={schoolName}
+                onChangeText={setSchoolName}
+                autoCapitalize="words"
+                autoCorrect={false}
+                placeholderTextColor="#9CA3AF"
+                returnKeyType="next"
+                onSubmitEditing={() => emailRef.current?.focus()}
+                blurOnSubmit={false}
+                testID="signup-school-input"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+              <TextInput
+                ref={emailRef}
+                style={styles.input}
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                placeholderTextColor="#9CA3AF"
+                returnKeyType="next"
+                onSubmitEditing={() => passwordRef.current?.focus()}
+                blurOnSubmit={false}
+                testID="signup-email-input"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+              <TextInput
+                ref={passwordRef}
+                style={styles.input}
+                placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                placeholderTextColor="#9CA3AF"
+                returnKeyType="next"
+                onSubmitEditing={() => confirmPasswordRef.current?.focus()}
+                blurOnSubmit={false}
+                testID="signup-password-input"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+              <TextInput
+                ref={confirmPasswordRef}
+                style={styles.input}
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                placeholderTextColor="#9CA3AF"
+                returnKeyType="done"
+                onSubmitEditing={handleSignUp}
+                testID="signup-confirm-password-input"
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleSignUp}
+              disabled={loading}
+              testID="signup-submit-btn"
+            >
+              <Text style={styles.buttonText}>
+                {loading ? 'Creating Account...' : 'Sign Up'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.linkButton}
+              onPress={() => router.push('/auth/login')}
+            >
+              <Text style={styles.linkText}>Already have an account? Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -247,8 +263,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     fontSize: 16,
-    color: '#111827',
-    outlineStyle: 'none'
+    color: '#111827'
   },
   button: {
     backgroundColor: '#6366F1',

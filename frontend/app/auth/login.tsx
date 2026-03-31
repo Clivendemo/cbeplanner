@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,9 +12,7 @@ import {
   Modal,
   Pressable,
   Animated,
-  Dimensions,
-  Keyboard,
-  TouchableWithoutFeedback
+  Dimensions
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
@@ -32,6 +30,10 @@ export default function Login() {
   const { signIn, resetPassword } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  // Refs for inputs to manage focus
+  const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
 
   // Marquee animation
   const screenWidth = Dimensions.get('window').width;
@@ -103,129 +105,120 @@ export default function Login() {
     }
   };
 
-  const dismissKeyboard = useCallback(() => {
-    if (Platform.OS !== 'web') {
-      Keyboard.dismiss();
-    }
-  }, []);
-
-  // Wrapper component - only use TouchableWithoutFeedback on native
-  const KeyboardDismissWrapper = ({ children }: { children: React.ReactNode }) => {
-    if (Platform.OS === 'web') {
-      return <>{children}</>;
-    }
-    return (
-      <TouchableWithoutFeedback onPress={dismissKeyboard} accessible={false}>
-        {children}
-      </TouchableWithoutFeedback>
-    );
-  };
-
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <KeyboardDismissWrapper>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.container}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView 
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom, 24) }]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <ScrollView 
-            contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom, 24) }]}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.header}>
-              <Ionicons name="school" size={64} color="#6366F1" />
-              <Text style={styles.title}>CBE Planner</Text>
-              <Text style={styles.subtitle}>Kenyan Teacher Lesson Planning</Text>
-              
-              <View style={styles.marqueeContainer}>
-                <Animated.View 
-                  style={[
-                    styles.marqueeContent,
-                    { transform: [{ translateX: marqueeAnim }] }
-                  ]}
-                >
-                  <Text style={styles.marqueeText}>
-                    Every lesson mapped.  Every outcome measurable.
-                  </Text>
-                </Animated.View>
-              </View>
-            </View>
-
-            <View style={styles.form}>
-              <View style={styles.inputContainer}>
-                <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  placeholderTextColor="#9CA3AF"
-                  data-testid="login-email-input"
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Password"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  placeholderTextColor="#9CA3AF"
-                  data-testid="login-password-input"
-                />
-              </View>
-
-              <Pressable
-                onPress={() => setRememberMe(!rememberMe)}
-                style={styles.rememberMeRow}
+          <View style={styles.header}>
+            <Ionicons name="school" size={64} color="#6366F1" />
+            <Text style={styles.title}>CBE Planner</Text>
+            <Text style={styles.subtitle}>Kenyan Teacher Lesson Planning</Text>
+            
+            <View style={styles.marqueeContainer}>
+              <Animated.View 
+                style={[
+                  styles.marqueeContent,
+                  { transform: [{ translateX: marqueeAnim }] }
+                ]}
               >
-                <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                  {rememberMe && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
-                </View>
-                <Text style={styles.rememberMeText}>Remember me</Text>
-              </Pressable>
-
-              <TouchableOpacity
-                style={[styles.button, loading && styles.buttonDisabled]}
-                onPress={handleLogin}
-                disabled={loading}
-                data-testid="login-submit-btn"
-              >
-                <Text style={styles.buttonText}>
-                  {loading ? 'Signing In...' : 'Sign In'}
+                <Text style={styles.marqueeText}>
+                  Every lesson mapped.  Every outcome measurable.
                 </Text>
-              </TouchableOpacity>
+              </Animated.View>
+            </View>
+          </View>
 
-              <TouchableOpacity
-                style={styles.forgotPasswordButton}
-                onPress={handleForgotPassword}
-              >
-                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.linkButton}
-                onPress={() => router.push('/auth/signup')}
-              >
-                <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
-              </TouchableOpacity>
+          <View style={styles.form}>
+            <View style={styles.inputContainer}>
+              <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+              <TextInput
+                ref={emailRef}
+                style={styles.input}
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                placeholderTextColor="#9CA3AF"
+                returnKeyType="next"
+                onSubmitEditing={() => passwordRef.current?.focus()}
+                blurOnSubmit={false}
+                testID="login-email-input"
+              />
             </View>
 
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>KICD-Aligned Lesson Planning</Text>
-              <Text style={styles.footerText}>For Kenyan Teachers</Text>
-              <View style={{ width: '100%', alignItems: 'center' }}>
-                <Text style={styles.developerText}>Developed by LEGIT LAB</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+              <TextInput
+                ref={passwordRef}
+                style={styles.input}
+                placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                placeholderTextColor="#9CA3AF"
+                returnKeyType="done"
+                onSubmitEditing={handleLogin}
+                testID="login-password-input"
+              />
+            </View>
+
+            <Pressable
+              onPress={() => setRememberMe(!rememberMe)}
+              style={styles.rememberMeRow}
+            >
+              <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                {rememberMe && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
               </View>
+              <Text style={styles.rememberMeText}>Remember me</Text>
+            </Pressable>
+
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleLogin}
+              disabled={loading}
+              testID="login-submit-btn"
+            >
+              <Text style={styles.buttonText}>
+                {loading ? 'Signing In...' : 'Sign In'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.forgotPasswordButton}
+              onPress={handleForgotPassword}
+            >
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.linkButton}
+              onPress={() => router.push('/auth/signup')}
+            >
+              <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>KICD-Aligned Lesson Planning</Text>
+            <Text style={styles.footerText}>For Kenyan Teachers</Text>
+            <View style={{ width: '100%', alignItems: 'center' }}>
+              <Text style={styles.developerText}>Developed by LEGIT LAB</Text>
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </KeyboardDismissWrapper>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Password Reset Modal */}
       <Modal
@@ -256,6 +249,7 @@ export default function Login() {
                 onChangeText={setResetEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoCorrect={false}
                 placeholderTextColor="#9CA3AF"
               />
             </View>
@@ -344,8 +338,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     fontSize: 16,
-    color: '#111827',
-    outlineStyle: 'none' // Remove focus outline on web
+    color: '#111827'
   },
   button: {
     backgroundColor: '#6366F1',
@@ -434,8 +427,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     fontSize: 16,
-    color: '#111827',
-    outlineStyle: 'none'
+    color: '#111827'
   },
   resetButton: {
     backgroundColor: '#6366F1',
