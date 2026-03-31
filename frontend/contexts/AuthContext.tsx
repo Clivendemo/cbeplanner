@@ -161,47 +161,65 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
+    
+    // Fallback timeout to prevent infinite loading (especially on web)
+    // Set this FIRST before onAuthStateChanged
+    const timeout = setTimeout(() => {
+      if (isMounted && !authCheckedRef.current) {
+        console.log('Auth timeout - forcing completion');
+        setLoading(false);
+        setAuthChecked(true);
+      }
+    }, 3000); // Reduced to 3 seconds
+
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      if (!isMounted) return;
+      
+      console.log('onAuthStateChanged fired:', fbUser?.email || 'no user');
       setFirebaseUser(fbUser);
       
       if (fbUser) {
         // Check if rememberMe is set — if not, check if session expired
-        const rememberMe = await AsyncStorage.getItem('rememberMe');
-        if (rememberMe !== 'true') {
-          const lastActive = await AsyncStorage.getItem('lastActivityTime');
-          if (lastActive) {
-            const elapsed = Date.now() - parseInt(lastActive, 10);
-            if (elapsed >= INACTIVITY_TIMEOUT_MS) {
-              await firebaseSignOut(auth);
-              await AsyncStorage.removeItem('userToken');
-              await AsyncStorage.removeItem('lastActivityTime');
-              setUser(null);
-              setFirebaseUser(null);
-              setLoading(false);
-              setAuthChecked(true);
-              return;
+        try {
+          const rememberMe = await AsyncStorage.getItem('rememberMe');
+          if (rememberMe !== 'true') {
+            const lastActive = await AsyncStorage.getItem('lastActivityTime');
+            if (lastActive) {
+              const elapsed = Date.now() - parseInt(lastActive, 10);
+              if (elapsed >= INACTIVITY_TIMEOUT_MS) {
+                await firebaseSignOut(auth);
+                await AsyncStorage.removeItem('userToken');
+                await AsyncStorage.removeItem('lastActivityTime');
+                if (isMounted) {
+                  setUser(null);
+                  setFirebaseUser(null);
+                  setLoading(false);
+                  setAuthChecked(true);
+                }
+                return;
+              }
             }
           }
+          await verifyAndSetUser(fbUser);
+        } catch (error) {
+          console.log('Auth check error:', error);
         }
-        await verifyAndSetUser(fbUser);
       } else {
-        await AsyncStorage.removeItem('userToken');
+        try {
+          await AsyncStorage.removeItem('userToken');
+        } catch (e) {}
         setUser(null);
       }
       
-      setLoading(false);
-      setAuthChecked(true);
-    });
-
-    // Fallback timeout to prevent infinite loading (especially on web)
-    const timeout = setTimeout(() => {
-      if (!authCheckedRef.current) {
+      if (isMounted) {
         setLoading(false);
         setAuthChecked(true);
       }
-    }, 5000);
+    });
 
     return () => {
+      isMounted = false;
       unsubscribe();
       clearTimeout(timeout);
     };

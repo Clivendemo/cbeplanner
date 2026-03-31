@@ -9,61 +9,49 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading, authChecked, isAdmin } = useAuth();
   const segments = useSegments();
   const router = useRouter();
-  const navigationState = useRootNavigationState();
   const hasNavigated = useRef(false);
-  const [isReady, setIsReady] = useState(false);
-
-  // Handle navigation readiness for both web and native
-  useEffect(() => {
-    // On web, navigationState might not have a key immediately
-    if (Platform.OS === 'web') {
-      // Give a small delay for web to initialize
-      const timer = setTimeout(() => setIsReady(true), 100);
-      return () => clearTimeout(timer);
-    } else {
-      // On native, wait for navigation state
-      if (navigationState?.key) {
-        setIsReady(true);
-      }
-    }
-  }, [navigationState?.key]);
 
   useEffect(() => {
-    // Don't do anything until ready and auth is checked
-    if (!isReady || !authChecked) return;
+    // Don't do anything until auth is checked
+    if (!authChecked) return;
 
     const inAuthGroup = segments[0] === 'auth';
     const inAdminGroup = segments[0] === '(admin)';
-    const inTeacherGroup = segments[0] === '(teacher)';
     const isIndex = segments.length === 0 || segments[0] === 'index';
 
     // Prevent double navigation
     if (hasNavigated.current) return;
 
-    if (!user) {
-      // User is not authenticated
-      if (!inAuthGroup && !isIndex) {
-        // Redirect to login using replace to prevent back navigation issues
-        hasNavigated.current = true;
-        router.replace('/auth/login');
-      }
-    } else {
-      // User is authenticated
-      if (inAuthGroup || isIndex) {
-        // Redirect to appropriate dashboard
-        hasNavigated.current = true;
-        if (isAdmin) {
-          router.replace('/(admin)/dashboard');
-        } else {
+    // Small delay for web to ensure router is ready
+    const timer = setTimeout(() => {
+      if (hasNavigated.current) return;
+      
+      if (!user) {
+        // User is not authenticated - redirect to login if not already there
+        if (!inAuthGroup) {
+          hasNavigated.current = true;
+          router.replace('/auth/login');
+        }
+      } else {
+        // User is authenticated
+        if (inAuthGroup || isIndex) {
+          // Redirect to appropriate dashboard
+          hasNavigated.current = true;
+          if (isAdmin) {
+            router.replace('/(admin)/dashboard');
+          } else {
+            router.replace('/(teacher)/dashboard');
+          }
+        } else if (inAdminGroup && !isAdmin) {
+          // Non-admin trying to access admin routes
+          hasNavigated.current = true;
           router.replace('/(teacher)/dashboard');
         }
-      } else if (inAdminGroup && !isAdmin) {
-        // Non-admin trying to access admin routes
-        hasNavigated.current = true;
-        router.replace('/(teacher)/dashboard');
       }
-    }
-  }, [user, segments, authChecked, isReady, isAdmin]);
+    }, Platform.OS === 'web' ? 100 : 0);
+
+    return () => clearTimeout(timer);
+  }, [user, segments, authChecked, isAdmin]);
 
   // Reset navigation flag when user changes (login/logout)
   useEffect(() => {

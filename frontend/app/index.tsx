@@ -1,7 +1,40 @@
-import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
+import { useEffect } from 'react';
+import { View, ActivityIndicator, StyleSheet, Text, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Index() {
-  // This is just a loading screen - AuthGate in _layout.tsx handles all redirects
+  const { user, authChecked, isAdmin } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Once auth is checked, redirect appropriately
+    if (authChecked) {
+      if (user) {
+        if (isAdmin) {
+          router.replace('/(admin)/dashboard');
+        } else {
+          router.replace('/(teacher)/dashboard');
+        }
+      } else {
+        router.replace('/auth/login');
+      }
+    }
+  }, [authChecked, user, isAdmin]);
+
+  // Fallback redirect for web if auth takes too long
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const timer = setTimeout(() => {
+        if (!authChecked) {
+          console.log('Index: Fallback redirect to login');
+          router.replace('/auth/login');
+        }
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [authChecked]);
+
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color="#6366F1" />

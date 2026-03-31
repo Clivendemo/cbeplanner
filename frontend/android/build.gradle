@@ -20,19 +20,5 @@ allprojects {
   }
 }
 
-// Fix clean task failures for native modules
-subprojects {
-  afterEvaluate { project ->
-    if (project.hasProperty('android')) {
-      project.tasks.matching { it.name == 'clean' }.configureEach {
-        doFirst {
-          // Ensure build directories exist before cleaning
-          project.buildDir.mkdirs()
-        }
-      }
-    }
-  }
-}
-
 apply plugin: "expo-root-project"
 apply plugin: "com.facebook.react.rootproject"
