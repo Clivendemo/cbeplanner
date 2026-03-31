@@ -178,3 +178,36 @@ EXPO_PUBLIC_BACKEND_URL=https://your-backend-url.com
 ---
 
 **Developed by LEGIT LAB**
+
+## Troubleshooting Build Errors
+
+### "Task :react-native-screens:clean FAILED" or similar clean errors
+
+**Solution:** Skip the clean task and build directly:
+
+```bash
+# In Android Studio terminal or command line:
+cd android
+./gradlew assembleRelease -x clean
+
+# Or for debug build:
+./gradlew assembleDebug -x clean
+```
+
+**Alternative:** In Android Studio:
+1. Go to **File > Invalidate Caches / Restart**
+2. Delete the `android/.gradle` folder manually
+3. Delete the `android/app/build` folder manually
+4. Rebuild without clean: **Build > Rebuild Project**
+
+### If issues persist:
+
+1. Close Android Studio
+2. Delete these folders:
+   - `android/.gradle`
+   - `android/app/build`
+   - `android/build`
+   - `~/.gradle/caches` (global Gradle cache)
+3. Reopen Android Studio
+4. Let Gradle sync
+5. Build APK directly (don't clean first)
