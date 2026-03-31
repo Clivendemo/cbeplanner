@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useCallback, useRef } from 'react';
-import { AppState, AppStateStatus } from 'react-native';
+import { AppState, AppStateStatus, Platform } from 'react-native';
 import { auth } from '../firebaseConfig';
 import {
   signInWithEmailAndPassword,
@@ -12,7 +12,8 @@ import {
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+// Backend URL with fallback for web
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://cbeplanner.onrender.com';
 
 // The ONLY admin email - must match backend
 const ADMIN_EMAIL = 'mail2clive@gmail.com';
@@ -59,6 +60,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isNewUser, setIsNewUser] = useState(false);
   const lastActivityRef = useRef<number>(Date.now());
   const rememberMeRef = useRef<boolean>(false);
+  const authCheckedRef = useRef<boolean>(false);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    authCheckedRef.current = authChecked;
+  }, [authChecked]);
 
   // Check if user is admin by email (client-side check, backend also enforces)
   const isAdmin = user?.email?.toLowerCase().trim() === ADMIN_EMAIL;
@@ -128,6 +135,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       const response = await axios.post(`${BACKEND_URL}/api/auth/verify`, {
         idToken
+      }, {
+        timeout: 10000 // 10 second timeout
       });
       
       if (response.data.success) {
@@ -141,6 +150,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return null;
     } catch (error: any) {
+      // On web, if backend is unreachable, still allow the app to load
+      if (Platform.OS === 'web') {
+        console.warn('Backend verification failed, continuing without user profile');
+      }
       await AsyncStorage.removeItem('userToken');
       setUser(null);
       return null;
@@ -180,7 +193,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAuthChecked(true);
     });
 
-    return () => unsubscribe();
+    // Fallback timeout to prevent infinite loading (especially on web)
+    const timeout = setTimeout(() => {
+      if (!authCheckedRef.current) {
+        setLoading(false);
+        setAuthChecked(true);
+      }
+    }, 5000);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(timeout);
+    };
   }, [verifyAndSetUser]);
 
   // Save lastActivityTime periodically so we can check on next app open

@@ -3,6 +3,10 @@
   "outputDirectory": "dist",
   "installCommand": "yarn install",
   "framework": null,
+  "env": {
+    "EXPO_PUBLIC_BACKEND_URL": "https://cbeplanner.onrender.com",
+    "EXPO_PUBLIC_API_BASE_URL": "https://cbeplanner.onrender.com"
+  },
   "rewrites": [
     {
       "source": "/((?!api|_next|static|favicon.ico|assets).*)",

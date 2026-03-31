@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet, View, ActivityIndicator, Text } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, Text, Platform } from 'react-native';
 
 // Auth gate component that handles navigation based on auth state
 function AuthGate({ children }: { children: React.ReactNode }) {
@@ -11,10 +11,26 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const navigationState = useRootNavigationState();
   const hasNavigated = useRef(false);
+  const [isReady, setIsReady] = useState(false);
+
+  // Handle navigation readiness for both web and native
+  useEffect(() => {
+    // On web, navigationState might not have a key immediately
+    if (Platform.OS === 'web') {
+      // Give a small delay for web to initialize
+      const timer = setTimeout(() => setIsReady(true), 100);
+      return () => clearTimeout(timer);
+    } else {
+      // On native, wait for navigation state
+      if (navigationState?.key) {
+        setIsReady(true);
+      }
+    }
+  }, [navigationState?.key]);
 
   useEffect(() => {
-    // Don't do anything until navigation is ready and auth is checked
-    if (!navigationState?.key || !authChecked) return;
+    // Don't do anything until ready and auth is checked
+    if (!isReady || !authChecked) return;
 
     const inAuthGroup = segments[0] === 'auth';
     const inAdminGroup = segments[0] === '(admin)';
@@ -47,7 +63,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
         router.replace('/(teacher)/dashboard');
       }
     }
-  }, [user, segments, authChecked, navigationState?.key, isAdmin]);
+  }, [user, segments, authChecked, isReady, isAdmin]);
 
   // Reset navigation flag when user changes (login/logout)
   useEffect(() => {
