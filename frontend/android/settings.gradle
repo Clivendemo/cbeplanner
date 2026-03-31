@@ -1,8 +1,14 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
 pluginManagement {
   def reactNativeGradlePlugin = new File(
     providers.exec {
       workingDir(rootDir)
-      commandLine("node", "--print", "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })")
+      if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        commandLine('cmd', '/c', 'node --print "require.resolve(\'@react-native/gradle-plugin/package.json\', { paths: [require.resolve(\'react-native/package.json\')] })"')
+      } else {
+        commandLine('node', '--print', "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })")
+      }
     }.standardOutput.asText.get().trim()
   ).getParentFile().absolutePath
   includeBuild(reactNativeGradlePlugin)
@@ -10,7 +16,11 @@ pluginManagement {
   def expoPluginsPath = new File(
     providers.exec {
       workingDir(rootDir)
-      commandLine("node", "--print", "require.resolve('expo-modules-autolinking/package.json', { paths: [require.resolve('expo/package.json')] })")
+      if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        commandLine('cmd', '/c', 'node --print "require.resolve(\'expo-modules-autolinking/package.json\', { paths: [require.resolve(\'expo/package.json\')] })"')
+      } else {
+        commandLine('node', '--print', "require.resolve('expo-modules-autolinking/package.json', { paths: [require.resolve('expo/package.json')] })")
+      }
     }.standardOutput.asText.get().trim(),
     "../android/expo-gradle-plugin"
   ).absolutePath
@@ -29,6 +39,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
     ex.autolinkLibrariesFromCommand(expoAutolinking.rnConfigCommand)
   }
 }
+
 expoAutolinking.useExpoModules()
 
 rootProject.name = 'CBE Plan'
