@@ -4505,6 +4505,298 @@ async def seed_sample_data_internal():
         }
     }
 
+# ===========================================
+# CURRICULUM PDF UPLOAD - NEW ISOLATED FEATURE
+# ===========================================
+import pdfplumber
+import hashlib
+import shutil
+
+# Ensure directories exist
+PDF_DIR = ROOT_DIR / "pdfs"
+PROCESSED_DIR = ROOT_DIR / "pdfs_processed"
+PDF_DIR.mkdir(exist_ok=True)
+PROCESSED_DIR.mkdir(exist_ok=True)
+
+# File size limit: 10MB
+MAX_PDF_SIZE = 10 * 1024 * 1024
+
+def extract_metadata_from_path(filename: str):
+    """Extract grade and subject from filename"""
+    name = filename.lower().replace(".pdf", "")
+    # Try to extract grade number
+    import re
+    grade_match = re.search(r'grade\s*(\d+)', name)
+    grade_num = grade_match.group(1) if grade_match else "10"
+    # Subject is the filename cleaned up
+    subject = re.sub(r'grade\s*\d+', '', name).strip().replace('_', ' ').replace('-', ' ')
+    subject = subject.title() if subject else "Unknown Subject"
+    return grade_num, subject
+
+async def upsert_grade_async(name: str, order: int):
+    """Upsert grade and return its ID"""
+    result = await db.grades.find_one_and_update(
+        {"name": name},
+        {"$set": {"order": order}},
+        upsert=True,
+        return_document=True
+    )
+    return str(result["_id"])
+
+async def upsert_subject_async(name: str, grade_id: str):
+    """Upsert subject and return its ID"""
+    result = await db.subjects.find_one_and_update(
+        {"name": name},
+        {"$set": {"gradeIds": [grade_id]}},
+        upsert=True,
+        return_document=True
+    )
+    return str(result["_id"])
+
+async def upsert_strand_async(name: str, subject_id: str):
+    """Upsert strand and return its ID"""
+    result = await db.strands.find_one_and_update(
+        {"name": name, "subjectId": subject_id},
+        {"$set": {}},
+        upsert=True,
+        return_document=True
+    )
+    return str(result["_id"])
+
+async def insert_substrand_async(name: str, strand_id: str):
+    """Insert substrand and return its ID"""
+    doc = {
+        "_id": ObjectId(),
+        "name": name,
+        "strandId": strand_id
+    }
+    await db.substrands.insert_one(doc)
+    return str(doc["_id"])
+
+async def insert_slo_async(slo: dict, substrand_id: str):
+    """Insert SLO and return its ID"""
+    doc = {
+        "_id": ObjectId(),
+        "name": slo.get("name", ""),
+        "description": slo.get("description", ""),
+        "substrandId": substrand_id
+    }
+    await db.slos.insert_one(doc)
+    return str(doc["_id"])
+
+async def insert_slo_mapping_async(slo_id: str):
+    """Insert SLO mapping"""
+    await db.slo_mappings.insert_one({
+        "_id": ObjectId(),
+        "sloId": slo_id,
+        "competencyIds": [],
+        "valueIds": [],
+        "pciIds": [],
+        "assessmentIds": []
+    })
+
+async def insert_activities_async(substrand_id: str, activities: dict):
+    """Insert learning activities for substrand"""
+    await db.learning_activities.insert_one({
+        "_id": ObjectId(),
+        "substrandId": substrand_id,
+        "introduction_activities": activities.get("introduction", []),
+        "development_activities": activities.get("development", []),
+        "conclusion_activities": activities.get("conclusion", []),
+        "extended_activities": activities.get("extended", []),
+        "learning_resources": [],
+        "assessment_methods": []
+    })
+
+def extract_with_ai_simple(text: str) -> Optional[dict]:
+    """
+    Simple AI extraction using OpenAI for curriculum data.
+    This reuses the same logic from the pipeline's ai_extractor.
+    """
+    try:
+        from openai import OpenAI
+        import json
+        
+        client = OpenAI()
+        
+        prompt = f"""
+You are extracting structured curriculum data from a Kenyan CBC curriculum document.
+
+Return ONLY valid JSON. Do not include any explanation.
+
+STRICT RULES:
+- Do NOT summarize
+- Preserve exact wording
+- Maintain hierarchy
+- Capture ALL SLOs fully
+- Separate activities correctly
+
+JSON FORMAT:
+{{
+  "strand": "",
+  "substrand": "",
+  "slos": [
+    {{
+      "name": "",
+      "description": ""
+    }}
+  ],
+  "activities": {{
+    "introduction": [],
+    "development": [],
+    "conclusion": [],
+    "extended": []
+  }},
+  "competencies": [],
+  "values": [],
+  "pcis": []
+}}
+
+TEXT:
+{text[:4000]}
+"""
+        
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=2000
+        )
+        
+        content = response.choices[0].message.content
+        # Try to extract JSON from response
+        if "```json" in content:
+            content = content.split("```json")[1].split("```")[0]
+        elif "```" in content:
+            content = content.split("```")[1].split("```")[0]
+        
+        return json.loads(content.strip())
+    except Exception as e:
+        logger.error(f"AI extraction error: {str(e)}")
+        return None
+
+async def process_single_pdf(file_path: Path) -> dict:
+    """
+    Process a single PDF file and store curriculum data in MongoDB.
+    This is the core processing function - reuses pipeline logic exactly.
+    """
+    filename = file_path.name
+    logger.info(f"Processing PDF: {filename}")
+    
+    grade_num, subject_name = extract_metadata_from_path(filename)
+    
+    # Upsert grade and subject
+    grade_id = await upsert_grade_async(f"Grade {grade_num}", int(grade_num))
+    subject_id = await upsert_subject_async(subject_name, grade_id)
+    
+    pages_processed = 0
+    strands_created = 0
+    slos_created = 0
+    
+    try:
+        with pdfplumber.open(str(file_path)) as pdf:
+            for page_num, page in enumerate(pdf.pages):
+                text = page.extract_text()
+                if not text or len(text.strip()) < 100:
+                    continue
+                
+                logger.info(f"Processing page {page_num + 1}")
+                pages_processed += 1
+                
+                # Extract curriculum data using AI
+                ai_data = extract_with_ai_simple(text)
+                
+                if not ai_data or not ai_data.get("strand"):
+                    continue
+                
+                # Create strand and substrand
+                strand_id = await upsert_strand_async(ai_data["strand"], subject_id)
+                strands_created += 1
+                
+                substrand_name = ai_data.get("substrand", f"Topic from Page {page_num + 1}")
+                substrand_id = await insert_substrand_async(substrand_name, strand_id)
+                
+                # Create SLOs
+                for slo in ai_data.get("slos", []):
+                    slo_id = await insert_slo_async(slo, substrand_id)
+                    await insert_slo_mapping_async(slo_id)
+                    slos_created += 1
+                
+                # Create activities
+                await insert_activities_async(substrand_id, ai_data.get("activities", {}))
+    
+    except Exception as e:
+        logger.error(f"Error processing PDF: {str(e)}")
+        raise
+    
+    return {
+        "filename": filename,
+        "grade": f"Grade {grade_num}",
+        "subject": subject_name,
+        "pages_processed": pages_processed,
+        "strands_created": strands_created,
+        "slos_created": slos_created
+    }
+
+@api_router.post("/admin/upload-curriculum")
+async def upload_curriculum_pdf(
+    file: UploadFile = File(...),
+    admin: str = Depends(verify_admin)
+):
+    """
+    Upload and process a curriculum PDF file.
+    
+    - Accepts PDF files only (max 10MB)
+    - Saves to backend/pdfs/
+    - Processes using AI extraction pipeline
+    - Moves to backend/pdfs_processed/ after completion
+    - Returns success/failure status
+    """
+    # Validate file type
+    if not file.filename or not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are accepted")
+    
+    # Check file size
+    file_content = await file.read()
+    if len(file_content) > MAX_PDF_SIZE:
+        raise HTTPException(status_code=400, detail="File size exceeds 10MB limit")
+    
+    # Generate safe filename
+    safe_filename = file.filename.replace(" ", "_").replace("/", "_")
+    file_path = PDF_DIR / safe_filename
+    
+    try:
+        # Save file temporarily
+        with open(file_path, "wb") as f:
+            f.write(file_content)
+        
+        logger.info(f"Saved PDF: {safe_filename}")
+        
+        # Process the PDF
+        result = await process_single_pdf(file_path)
+        
+        # Move to processed directory
+        processed_path = PROCESSED_DIR / safe_filename
+        shutil.move(str(file_path), str(processed_path))
+        
+        logger.info(f"Moved to processed: {safe_filename}")
+        
+        return {
+            "status": "success",
+            "message": "Curriculum processed successfully",
+            "details": result
+        }
+        
+    except Exception as e:
+        # Clean up on error
+        if file_path.exists():
+            file_path.unlink()
+        
+        logger.error(f"Error processing curriculum PDF: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to process curriculum: {str(e)}"
+        )
+
 # Health check endpoint
 # Include router
 app.include_router(api_router)

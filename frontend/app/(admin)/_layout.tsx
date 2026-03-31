@@ -99,6 +99,16 @@ export default function AdminLayout() {
         }}
       />
       <Tabs.Screen
+        name="curriculum-upload"
+        options={{
+          title: 'PDF Upload',
+          headerTitle: 'Curriculum Import',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="document-attach" size={size} color={color} />
+          )
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',

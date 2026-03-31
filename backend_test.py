@@ -436,6 +436,16 @@ class CBEBackendTester:
                 self.log_test("Admin Seed Data API", False, f"Expected 401, got {response.status_code}", response.text)
                 return False
             
+            # Test NEW admin upload-curriculum endpoint (should require auth)
+            response = self.session.post(f"{self.base_url}/admin/upload-curriculum")
+            if response.status_code == 401:
+                self.log_test("Admin Upload Curriculum API", True, "Admin upload-curriculum endpoint correctly requires authentication")
+            elif response.status_code == 422:
+                self.log_test("Admin Upload Curriculum API", True, "Admin upload-curriculum endpoint exists (validation error)")
+            else:
+                self.log_test("Admin Upload Curriculum API", False, f"Expected 401 or 422, got {response.status_code}", response.text)
+                return False
+            
             # Test admin curriculum endpoints (should require auth)
             admin_curriculum_endpoints = [
                 "/admin/curriculum/grades",
@@ -547,6 +557,35 @@ class CBEBackendTester:
             self.log_test("Security Headers", False, "Security headers test failed", str(e))
             return False
     
+    def test_pdf_directories_exist(self):
+        """Test that PDF directories exist for curriculum upload functionality"""
+        import os
+        try:
+            # Check if pdfs and pdfs_processed directories exist
+            backend_dir = "/app/backend"
+            pdfs_dir = os.path.join(backend_dir, "pdfs")
+            pdfs_processed_dir = os.path.join(backend_dir, "pdfs_processed")
+            
+            pdfs_exists = os.path.exists(pdfs_dir) and os.path.isdir(pdfs_dir)
+            pdfs_processed_exists = os.path.exists(pdfs_processed_dir) and os.path.isdir(pdfs_processed_dir)
+            
+            if pdfs_exists and pdfs_processed_exists:
+                self.log_test("PDF Directories", True, "Both pdfs and pdfs_processed directories exist")
+                return True
+            elif pdfs_exists:
+                self.log_test("PDF Directories", False, "pdfs directory exists but pdfs_processed is missing", f"pdfs_processed_dir: {pdfs_processed_dir}")
+                return False
+            elif pdfs_processed_exists:
+                self.log_test("PDF Directories", False, "pdfs_processed directory exists but pdfs is missing", f"pdfs_dir: {pdfs_dir}")
+                return False
+            else:
+                self.log_test("PDF Directories", False, "Both pdfs and pdfs_processed directories are missing", f"pdfs: {pdfs_dir}, pdfs_processed: {pdfs_processed_dir}")
+                return False
+                
+        except Exception as e:
+            self.log_test("PDF Directories", False, "Error checking PDF directories", str(e))
+            return False
+    
     def run_all_tests(self):
         """Run all backend tests"""
         print("=" * 60)
@@ -565,6 +604,7 @@ class CBEBackendTester:
         self.test_database_connectivity()
         self.test_api_response_format()
         self.test_security_headers()
+        self.test_pdf_directories_exist()
         
         print()
         print("🔐 AUTHENTICATION & SECURITY TESTS")

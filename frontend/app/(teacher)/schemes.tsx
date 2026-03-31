@@ -10,7 +10,8 @@ import {
   Modal,
   FlatList,
   Platform,
-  TextInput
+  TextInput,
+  Dimensions
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../../contexts/AuthContext';
@@ -21,9 +22,11 @@ import * as Sharing from 'expo-sharing';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { WebView } from 'react-native-webview';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const SCHEME_DOWNLOAD_COST = 15;
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface Grade { id: string; name: string; }
 interface Subject { id: string; name: string; }
@@ -389,9 +392,9 @@ export default function SchemesOfWork() {
         setPdfPreviewUrl(url);
         setShowPdfModal(true);
       } else {
-        // For native (mobile), download and share directly
+        // For native (mobile), download and show in WebView modal
         const token = await firebaseUser?.getIdToken();
-        const fileUri = `${FileSystem.cacheDirectory}scheme_preview_${Date.now()}.pdf`;
+        const fileUri = `${FileSystem.documentDirectory}scheme_preview_${Date.now()}.pdf`;
         
         // Download the file
         const downloadResult = await FileSystem.downloadAsync(
@@ -401,29 +404,19 @@ export default function SchemesOfWork() {
             headers: { 
               Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json'
-            },
-            httpMethod: 'POST',
-            body: JSON.stringify(generatedScheme)
+            }
           }
         );
         
         if (downloadResult.status === 200) {
-          // Share the downloaded PDF
-          const canShare = await Sharing.isAvailableAsync();
-          if (canShare) {
-            await Sharing.shareAsync(downloadResult.uri, { 
-              mimeType: 'application/pdf',
-              dialogTitle: 'Preview Scheme of Work'
-            });
-          } else {
-            Alert.alert('Preview Ready', 'PDF saved. Check your files.');
-          }
+          // Show the PDF in modal using WebView
+          setPdfPreviewUrl(downloadResult.uri);
+          setShowPdfModal(true);
         } else {
           throw new Error('Download failed');
         }
       }
     } catch (error) {
-      
       Alert.alert('Error', 'Failed to generate preview');
     } finally {
       setPreviewing(false);
@@ -1141,23 +1134,45 @@ export default function SchemesOfWork() {
 
   // PDF Preview Modal (in-app viewer)
   const renderPdfPreviewModal = () => (
-    <Modal visible={showPdfModal} transparent animationType="fade">
-      <View style={styles.pdfModalOverlay}>
+    <Modal visible={showPdfModal} transparent animationType="slide">
+      <SafeAreaView style={styles.pdfModalSafeArea}>
         <View style={styles.pdfModalContainer}>
           <View style={styles.pdfModalHeader}>
             <Text style={styles.pdfModalTitle}>Scheme Preview</Text>
-            <TouchableOpacity 
-              onPress={() => {
-                setShowPdfModal(false);
-                if (pdfPreviewUrl) {
-                  URL.revokeObjectURL(pdfPreviewUrl);
+            <View style={styles.pdfModalActions}>
+              {pdfPreviewUrl && Platform.OS !== 'web' && (
+                <TouchableOpacity 
+                  style={styles.pdfShareBtn}
+                  onPress={async () => {
+                    try {
+                      const canShare = await Sharing.isAvailableAsync();
+                      if (canShare && pdfPreviewUrl) {
+                        await Sharing.shareAsync(pdfPreviewUrl, { 
+                          mimeType: 'application/pdf',
+                          dialogTitle: 'Share Scheme of Work'
+                        });
+                      }
+                    } catch (err) {
+                      Alert.alert('Error', 'Unable to share PDF');
+                    }
+                  }}
+                >
+                  <Ionicons name="share-outline" size={22} color="#6366F1" />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity 
+                onPress={() => {
+                  setShowPdfModal(false);
+                  if (pdfPreviewUrl && Platform.OS === 'web') {
+                    URL.revokeObjectURL(pdfPreviewUrl);
+                  }
                   setPdfPreviewUrl(null);
-                }
-              }} 
-              style={styles.pdfModalCloseBtn}
-            >
-              <Ionicons name="close" size={24} color="#374151" />
-            </TouchableOpacity>
+                }} 
+                style={styles.pdfModalCloseBtn}
+              >
+                <Ionicons name="close" size={24} color="#374151" />
+              </TouchableOpacity>
+            </View>
           </View>
           <View style={styles.pdfModalContent}>
             {Platform.OS === 'web' && pdfPreviewUrl ? (
@@ -1166,15 +1181,30 @@ export default function SchemesOfWork() {
                 style={{ width: '100%', height: '100%', border: 'none' } as any}
                 title="PDF Preview"
               />
+            ) : Platform.OS !== 'web' && pdfPreviewUrl ? (
+              <WebView
+                source={{ uri: pdfPreviewUrl }}
+                style={styles.pdfWebView}
+                startInLoadingState={true}
+                renderLoading={() => (
+                  <View style={styles.pdfLoading}>
+                    <ActivityIndicator size="large" color="#6366F1" />
+                    <Text style={styles.pdfLoadingText}>Loading PDF...</Text>
+                  </View>
+                )}
+                onError={() => {
+                  Alert.alert('Error', 'Unable to display PDF. Tap Share to open in another app.');
+                }}
+              />
             ) : (
               <View style={styles.pdfModalPlaceholder}>
-                <Ionicons name="document-text-outline" size={48} color="#9CA3AF" />
-                <Text style={styles.pdfModalPlaceholderText}>PDF Preview</Text>
+                <ActivityIndicator size="large" color="#6366F1" />
+                <Text style={styles.pdfModalPlaceholderText}>Loading Preview...</Text>
               </View>
             )}
           </View>
         </View>
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 
@@ -1996,6 +2026,10 @@ const styles = StyleSheet.create({
     marginTop: 6
   },
   // PDF Modal styles
+  pdfModalSafeArea: {
+    flex: 1,
+    backgroundColor: '#FFFFFF'
+  },
   pdfModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.7)',
@@ -2004,11 +2038,9 @@ const styles = StyleSheet.create({
     padding: 20
   },
   pdfModalContainer: {
-    width: '95%',
-    height: '90%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    overflow: 'hidden'
+    flex: 1,
+    width: '100%',
+    backgroundColor: '#FFFFFF'
   },
   pdfModalHeader: {
     flexDirection: 'row',
@@ -2024,12 +2056,41 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1F2937'
   },
+  pdfModalActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12
+  },
+  pdfShareBtn: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#EEF2FF'
+  },
   pdfModalCloseBtn: {
     padding: 4
   },
   pdfModalContent: {
     flex: 1,
     backgroundColor: '#F3F4F6'
+  },
+  pdfWebView: {
+    flex: 1,
+    backgroundColor: '#F3F4F6'
+  },
+  pdfLoading: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6'
+  },
+  pdfLoadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#6B7280'
   },
   pdfModalPlaceholder: {
     flex: 1,
