@@ -13,6 +13,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+console.log("BACKEND_URL USED:", BACKEND_URL);
 
 // The ONLY admin email - must match backend
 const ADMIN_EMAIL = 'mail2clive@gmail.com';
