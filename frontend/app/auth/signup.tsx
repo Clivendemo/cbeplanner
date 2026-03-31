@@ -58,12 +58,26 @@ export default function SignUp() {
   };
 
   const dismissKeyboard = useCallback(() => {
-    Keyboard.dismiss();
+    if (Platform.OS !== 'web') {
+      Keyboard.dismiss();
+    }
   }, []);
+
+  // Wrapper component - only use TouchableWithoutFeedback on native
+  const KeyboardDismissWrapper = ({ children }: { children: React.ReactNode }) => {
+    if (Platform.OS === 'web') {
+      return <>{children}</>;
+    }
+    return (
+      <TouchableWithoutFeedback onPress={dismissKeyboard} accessible={false}>
+        {children}
+      </TouchableWithoutFeedback>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <TouchableWithoutFeedback onPress={dismissKeyboard} accessible={false}>
+      <KeyboardDismissWrapper>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.container}
@@ -179,7 +193,7 @@ export default function SignUp() {
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+      </KeyboardDismissWrapper>
     </SafeAreaView>
   );
 }
@@ -233,7 +247,8 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     fontSize: 16,
-    color: '#111827'
+    color: '#111827',
+    outlineStyle: 'none'
   },
   button: {
     backgroundColor: '#6366F1',

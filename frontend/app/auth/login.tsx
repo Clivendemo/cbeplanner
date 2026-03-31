@@ -104,12 +104,26 @@ export default function Login() {
   };
 
   const dismissKeyboard = useCallback(() => {
-    Keyboard.dismiss();
+    if (Platform.OS !== 'web') {
+      Keyboard.dismiss();
+    }
   }, []);
+
+  // Wrapper component - only use TouchableWithoutFeedback on native
+  const KeyboardDismissWrapper = ({ children }: { children: React.ReactNode }) => {
+    if (Platform.OS === 'web') {
+      return <>{children}</>;
+    }
+    return (
+      <TouchableWithoutFeedback onPress={dismissKeyboard} accessible={false}>
+        {children}
+      </TouchableWithoutFeedback>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <TouchableWithoutFeedback onPress={dismissKeyboard} accessible={false}>
+      <KeyboardDismissWrapper>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.container}
@@ -211,7 +225,7 @@ export default function Login() {
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+      </KeyboardDismissWrapper>
 
       {/* Password Reset Modal */}
       <Modal
@@ -330,7 +344,8 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     fontSize: 16,
-    color: '#111827'
+    color: '#111827',
+    outlineStyle: 'none' // Remove focus outline on web
   },
   button: {
     backgroundColor: '#6366F1',
@@ -419,7 +434,8 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     fontSize: 16,
-    color: '#111827'
+    color: '#111827',
+    outlineStyle: 'none'
   },
   resetButton: {
     backgroundColor: '#6366F1',
