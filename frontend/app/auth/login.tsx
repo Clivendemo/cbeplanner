@@ -61,14 +61,21 @@ export default function Login() {
     try {
       const verifiedUser = await signIn(email, password, rememberMe);
       if (verifiedUser) {
-        if (verifiedUser.role === 'admin') {
-          router.replace('/(admin)/dashboard');
-        } else {
-          router.replace('/(teacher)/dashboard');
-        }
+        // Small delay to ensure state is updated before navigation
+        setTimeout(() => {
+          if (verifiedUser.role === 'admin') {
+            router.replace('/(admin)/dashboard');
+          } else {
+            router.replace('/(teacher)/dashboard');
+          }
+        }, 100);
+      } else {
+        // signIn returned null - something went wrong
+        Alert.alert('Login Failed', 'Unable to verify account. Please try again.');
+        setLoading(false);
       }
     } catch (error: any) {
-      Alert.alert('Login Failed', error.message);
+      Alert.alert('Login Failed', error.message || 'An error occurred');
       setLoading(false);
     }
   };

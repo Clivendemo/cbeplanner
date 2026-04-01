@@ -136,7 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await axios.post(`${BACKEND_URL}/api/auth/verify`, {
         idToken
       }, {
-        timeout: 10000 // 10 second timeout
+        timeout: 15000 // 15 second timeout
       });
       
       if (response.data.success) {
@@ -150,13 +150,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return null;
     } catch (error: any) {
-      // On web, if backend is unreachable, still allow the app to load
-      if (Platform.OS === 'web') {
-        console.warn('Backend verification failed, continuing without user profile');
-      }
+      // Clear token on error
       await AsyncStorage.removeItem('userToken');
       setUser(null);
-      return null;
+      
+      // Re-throw the error so it can be caught by the caller
+      throw new Error(error.response?.data?.detail || error.message || 'Verification failed');
     }
   }, []);
 
@@ -248,11 +247,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       const verifiedUser = await verifyAndSetUser(userCredential.user);
       setLoading(false);
+      
+      if (!verifiedUser) {
+        throw new Error('Failed to verify user with server');
+      }
+      
       return verifiedUser;
     } catch (error: any) {
       setLoading(false);
       
-      let message = 'Login failed. Please try again.';
+      let message = error.message || 'Login failed. Please try again.';
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
         message = 'Invalid email or password';
       } else if (error.code === 'auth/too-many-requests') {
