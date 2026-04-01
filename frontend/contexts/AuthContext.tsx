@@ -163,19 +163,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let isMounted = true;
     
     // Fallback timeout to prevent infinite loading (especially on web)
-    // Set this FIRST before onAuthStateChanged
     const timeout = setTimeout(() => {
       if (isMounted && !authCheckedRef.current) {
-        console.log('Auth timeout - forcing completion');
         setLoading(false);
         setAuthChecked(true);
       }
-    }, 3000); // Reduced to 3 seconds
+    }, 3000);
 
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (!isMounted) return;
       
-      console.log('onAuthStateChanged fired:', fbUser?.email || 'no user');
+      // Auth state changed
       setFirebaseUser(fbUser);
       
       if (fbUser) {
@@ -202,7 +200,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
           await verifyAndSetUser(fbUser);
         } catch (error) {
-          console.log('Auth check error:', error);
+          // Auth check failed silently
         }
       } else {
         try {

@@ -9,54 +9,55 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading, authChecked, isAdmin } = useAuth();
   const segments = useSegments();
   const router = useRouter();
-  const hasNavigated = useRef(false);
+  const lastUserRef = useRef<string | null>(null);
+  const navigationPending = useRef(false);
 
   useEffect(() => {
     // Don't do anything until auth is checked
     if (!authChecked) return;
+    // Prevent re-entrant navigation
+    if (navigationPending.current) return;
 
     const inAuthGroup = segments[0] === 'auth';
     const inAdminGroup = segments[0] === '(admin)';
     const isIndex = segments.length === 0 || segments[0] === 'index';
 
-    // Prevent double navigation
-    if (hasNavigated.current) return;
+    // Determine the target user key (null = logged out, else the user id)
+    const currentUserKey = user?.id || null;
+    const userChanged = currentUserKey !== lastUserRef.current;
+
+    // Only navigate when: user state actually changed, or on initial load, or wrong route group
+    const needsRedirect = userChanged || (!user && !inAuthGroup) || (user && (inAuthGroup || isIndex)) || (inAdminGroup && !isAdmin);
+    if (!needsRedirect) return;
 
     // Small delay for web to ensure router is ready
     const timer = setTimeout(() => {
-      if (hasNavigated.current) return;
-      
+      if (navigationPending.current) return;
+      navigationPending.current = true;
+      lastUserRef.current = currentUserKey;
+
       if (!user) {
-        // User is not authenticated - redirect to login if not already there
         if (!inAuthGroup) {
-          hasNavigated.current = true;
           router.replace('/auth/login');
         }
       } else {
-        // User is authenticated
         if (inAuthGroup || isIndex) {
-          // Redirect to appropriate dashboard
-          hasNavigated.current = true;
           if (isAdmin) {
             router.replace('/(admin)/dashboard');
           } else {
             router.replace('/(teacher)/dashboard');
           }
         } else if (inAdminGroup && !isAdmin) {
-          // Non-admin trying to access admin routes
-          hasNavigated.current = true;
           router.replace('/(teacher)/dashboard');
         }
       }
+
+      // Reset lock after navigation settles
+      setTimeout(() => { navigationPending.current = false; }, 300);
     }, Platform.OS === 'web' ? 100 : 0);
 
     return () => clearTimeout(timer);
   }, [user, segments, authChecked, isAdmin]);
-
-  // Reset navigation flag when user changes (login/logout)
-  useEffect(() => {
-    hasNavigated.current = false;
-  }, [user]);
 
   // Show loading screen while checking auth
   if (loading || !authChecked) {

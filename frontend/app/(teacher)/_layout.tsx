@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { TouchableOpacity, View, Text, StyleSheet, ActivityIndicator, Platform } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -49,17 +49,6 @@ function EmptyHeader() {
 
 export default function TeacherLayout() {
   const { user, loading, authChecked } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    // Wait for auth to be checked
-    if (!authChecked) return;
-
-    // If no user, redirect to login
-    if (!user) {
-      router.replace('/auth/login');
-    }
-  }, [user, authChecked]);
 
   // Show loading while checking auth
   if (loading || !authChecked) {
@@ -71,7 +60,7 @@ export default function TeacherLayout() {
     );
   }
 
-  // If no user, show nothing (will redirect)
+  // If no user, AuthGate will redirect — show placeholder
   if (!user) {
     return (
       <View style={styles.loadingContainer}>

@@ -60,20 +60,11 @@ export default function Login() {
     setLoading(true);
     try {
       const verifiedUser = await signIn(email, password, rememberMe);
-      if (verifiedUser) {
-        // Small delay to ensure state is updated before navigation
-        setTimeout(() => {
-          if (verifiedUser.role === 'admin') {
-            router.replace('/(admin)/dashboard');
-          } else {
-            router.replace('/(teacher)/dashboard');
-          }
-        }, 100);
-      } else {
-        // signIn returned null - something went wrong
+      if (!verifiedUser) {
         Alert.alert('Login Failed', 'Unable to verify account. Please try again.');
         setLoading(false);
       }
+      // Navigation is handled by AuthGate in _layout.tsx — no router.replace here
     } catch (error: any) {
       Alert.alert('Login Failed', error.message || 'An error occurred');
       setLoading(false);
@@ -121,7 +112,7 @@ export default function Login() {
       >
         <ScrollView 
           contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom, 24) }]}
-          keyboardShouldPersistTaps="handled"
+          keyboardShouldPersistTaps="always"
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>

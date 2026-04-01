@@ -53,9 +53,11 @@ export default function SignUp() {
     setLoading(true);
     try {
       const verifiedUser = await signUp(email, password, firstName, lastName, schoolName);
-      if (verifiedUser) {
-        router.replace('/(teacher)/dashboard');
+      if (!verifiedUser) {
+        Alert.alert('Sign Up Failed', 'Unable to create account. Please try again.');
+        setLoading(false);
       }
+      // Navigation is handled by AuthGate in _layout.tsx
     } catch (error: any) {
       Alert.alert('Sign Up Failed', error.message);
       setLoading(false);
@@ -71,7 +73,7 @@ export default function SignUp() {
       >
         <ScrollView 
           contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom, 24) }]}
-          keyboardShouldPersistTaps="handled"
+          keyboardShouldPersistTaps="always"
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>

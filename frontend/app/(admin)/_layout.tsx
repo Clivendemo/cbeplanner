@@ -1,29 +1,11 @@
-import React, { useEffect } from 'react';
-import { Tabs, useRouter } from 'expo-router';
+import React from 'react';
+import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 
 export default function AdminLayout() {
   const { user, isAdmin, loading, authChecked } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    // Wait for auth to be checked
-    if (!authChecked) return;
-
-    // If no user, redirect to login
-    if (!user) {
-      router.replace('/auth/login');
-      return;
-    }
-
-    // If user is not admin, redirect to teacher home
-    if (!isAdmin) {
-      router.replace('/(teacher)/home');
-      return;
-    }
-  }, [user, isAdmin, authChecked]);
 
   // Show loading while checking auth
   if (loading || !authChecked) {
@@ -35,7 +17,7 @@ export default function AdminLayout() {
     );
   }
 
-  // If not admin, show nothing (will redirect)
+  // If not admin, AuthGate will redirect — show placeholder
   if (!isAdmin) {
     return (
       <View style={styles.loadingContainer}>
