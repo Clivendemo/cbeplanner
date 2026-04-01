@@ -55,13 +55,27 @@ A competency-based education lesson planning system for Kenyan teachers with M-P
 
 ## What's Been Implemented
 - Login/Signup with keyboard handling (web-compatible)
-- Navigation with auth state management
+- Navigation with auth state management (centralized in AuthGate)
 - Credit system flow with profile redirect
 - PDF preview using WebView (mobile)
 - Admin curriculum PDF upload
 - Help & Support with email
+- Lesson plan generation with dropdown cascading (Grade > Subject > Strand > Substrand > SLO)
+- Scheme of Work generation with topic selection, breaks, double lessons
+- M-Pesa wallet top-up integration
+- Transaction history
+- Dashboard with 6 feature tiles
+
+## Stabilization Fixes (April 2026)
+1. Fixed double navigation: Centralized all redirects in AuthGate (_layout.tsx)
+2. Fixed login keyboard bug: keyboardShouldPersistTaps changed to "always"
+3. Removed competing navigation from index.tsx, login.tsx, signup.tsx, teacher layout, admin layout
+4. Removed console.log statements from AuthContext for production
+5. Fixed frontend .env pointing to production instead of preview backend
+6. Fixed web infinite loading by serving static Expo web export
 
 ## Next Tasks
 1. Test Android build on Windows machine
 2. Configure release signing
 3. Submit to Play Store
+4. Production environment variable management for Vercel deployment
