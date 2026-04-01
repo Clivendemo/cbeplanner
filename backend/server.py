@@ -630,17 +630,19 @@ async def verify_admin(authorization: Optional[str] = Header(None)):
 async def verify_user_token(request: TokenVerifyRequest):
     try:
         # Verify token using Google's Identity Toolkit API
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
                 f"https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key={FIREBASE_API_KEY}",
                 json={"idToken": request.idToken}
             )
             
             if response.status_code != 200:
+                logger.error(f"Firebase verification failed: {response.status_code} - {response.text}")
                 raise HTTPException(status_code=401, detail="Invalid token")
             
             data = response.json()
             if "users" not in data or len(data["users"]) == 0:
+                logger.error(f"Firebase verification - no users in response: {data}")
                 raise HTTPException(status_code=401, detail="Invalid token")
             
             user_data = data["users"][0]
@@ -688,9 +690,16 @@ async def verify_user_token(request: TokenVerifyRequest):
                 user["freeLessonsRemaining"] = free_remaining
         
         return {"success": True, "user": serialize_doc(user), "isNewUser": is_new_user}
+    except httpx.TimeoutException as e:
+        logger.error(f"Firebase verification timeout: {str(e)}")
+        raise HTTPException(status_code=504, detail="Token verification timed out. Please try again.")
     except httpx.HTTPError as e:
+        logger.error(f"Firebase HTTP error: {str(e)}")
         raise HTTPException(status_code=401, detail=f"Token verification failed: {str(e)}")
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"Auth verify error: {str(e)}")
         raise HTTPException(status_code=401, detail=str(e))
 
 @api_router.post("/auth/initialize-admin")
