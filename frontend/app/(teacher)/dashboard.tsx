@@ -106,8 +106,7 @@ export default function Dashboard() {
       icon: 'create',
       color: '#10B981',
       route: '/(teacher)/notes',
-      disabled: true,
-      badge: 'Coming Soon'
+      disabled: false
     },
     {
       title: 'My Lesson Plans',

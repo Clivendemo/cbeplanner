@@ -23,6 +23,10 @@ from curriculum_import import (
 # Import PDF generator
 from pdf_generator import generate_lesson_plan_pdf
 
+# Import Notes generator and PDF
+from notes_generator import generate_notes_content
+from notes_pdf import generate_notes_pdf
+
 # Import Scheme of Work generator
 from scheme_generator import (
     generate_scheme_pdf, get_lessons_per_week, get_assessment_for_slo,
@@ -268,6 +272,7 @@ def serialize_doc(doc):
 
 # Lesson plan pricing constants
 LESSON_PLAN_COST_KES = 2
+NOTES_DOWNLOAD_COST_KES = 1
 FREE_LESSONS_ON_SIGNUP = 5
 
 class User(BaseModel):
@@ -1934,83 +1939,58 @@ async def cleanup_expired_plans(user: dict = Depends(verify_admin)):
         raise HTTPException(status_code=500, detail="Failed to cleanup expired plans")
 
 @api_router.post("/notes/generate")
-async def generate_notes(request: GenerateNotesRequest, user: dict = Depends(verify_token)):
-    # Check if user has free notes or wallet balance
-    if not user["freeNotesUsed"]:
-        await db.users.update_one(
-            {"_id": ObjectId(user["id"])},
-            {"$set": {"freeNotesUsed": True}}
-        )
-    else:
-        notes_price = 5.0
-        if user["walletBalance"] < notes_price:
-            raise HTTPException(status_code=402, detail="Insufficient wallet balance")
-        await db.users.update_one(
-            {"_id": ObjectId(user["id"])},
-            {"$inc": {"walletBalance": -notes_price}}
-        )
-    
-    # Fetch all related data
+async def generate_notes_endpoint(request: GenerateNotesRequest, user: dict = Depends(verify_token)):
+    """Generate rich educational notes for a given sub-strand (free to generate and preview)."""
+    # Fetch all related curriculum data
     grade = await db.grades.find_one({"_id": ObjectId(request.gradeId)})
     subject = await db.subjects.find_one({"_id": ObjectId(request.subjectId)})
     strand = await db.strands.find_one({"_id": ObjectId(request.strandId)})
     substrand = await db.substrands.find_one({"_id": ObjectId(request.substrandId)})
-    
+
     if not all([grade, subject, strand, substrand]):
-        raise HTTPException(status_code=404, detail="Invalid selection")
-    
-    # Get activities
-    activities = await db.activities.find({
-        "strandId": request.strandId,
-        "substrandId": request.substrandId
-    }).to_list(100)
-    
-    # Duration-aware content generation
-    duration = request.duration
-    
-    if duration <= 40:
-        # Short notes: Brief, bullet points
-        content = f"# {substrand['name']}\n\n" + \
-                 f"## Key Points\n" + \
-                 f"- Understanding {substrand['name']} concepts\n" + \
-                 f"- Basic principles and applications\n" + \
-                 f"- Real-world examples\n\n" + \
-                 f"## Summary\n" + \
-                 f"Brief explanation of {substrand['name']} within {strand['name']}."
-    elif duration <= 60:
-        # Medium notes: Moderate detail
-        content = f"# {substrand['name']}\n\n" + \
-                 f"## Introduction\n" + \
-                 f"{substrand['name']} is an important concept in {strand['name']}.\n\n" + \
-                 f"## Key Concepts\n" + \
-                 f"- Definition and explanation\n" + \
-                 f"- Core principles\n" + \
-                 f"- Practical applications\n" + \
-                 f"- Examples and illustrations\n\n" + \
-                 f"## Important Points\n" + \
-                 f"Detailed explanation of concepts with examples."
-    else:
-        # Comprehensive notes: Full detail
-        content = f"# {substrand['name']}\n\n" + \
-                 f"## Introduction\n" + \
-                 f"{substrand['name']} is a fundamental topic in {strand['name']} that forms the basis for further learning.\n\n" + \
-                 f"## Detailed Explanation\n" + \
-                 f"- Comprehensive overview of concepts\n" + \
-                 f"- Theoretical foundations\n" + \
-                 f"- Practical applications and real-world relevance\n" + \
-                 f"- Multiple examples and case studies\n" + \
-                 f"- Common misconceptions and clarifications\n\n" + \
-                 f"## Learning Activities\n" + \
-                 f"Students can engage in various activities to deepen understanding.\n\n" + \
-                 f"## Review Questions\n" + \
-                 f"Key questions for self-assessment and revision."
-    
-    # Create notes
-    notes = {
+        raise HTTPException(status_code=404, detail="Invalid selection. Please check your grade, subject, strand, and sub-strand.")
+
+    # Fetch SLOs for this substrand
+    slos = await db.slos.find({"substrandId": request.substrandId}).to_list(100)
+    # Also try ObjectId-based lookup
+    if not slos:
+        try:
+            slos = await db.slos.find({"substrandId": ObjectId(request.substrandId)}).to_list(100)
+        except Exception:
+            pass
+
+    # Fetch learning activities for this substrand
+    activities = []
+    try:
+        activities = await db.learning_activities.find({"substrandId": request.substrandId}).to_list(100)
+        if not activities:
+            activities = await db.learning_activities.find({"substrandId": ObjectId(request.substrandId)}).to_list(100)
+    except Exception:
+        pass
+    # Also try 'activities' collection as fallback
+    if not activities:
+        try:
+            activities = await db.activities.find({"substrandId": request.substrandId}).to_list(100)
+            if not activities:
+                activities = await db.activities.find({"substrandId": ObjectId(request.substrandId)}).to_list(100)
+        except Exception:
+            pass
+
+    # Generate rich content
+    generated = generate_notes_content(
+        subject_name=subject["name"],
+        strand_name=strand["name"],
+        substrand_name=substrand["name"],
+        slos=[serialize_doc(s) for s in slos],
+        activities=activities,
+        grade_name=grade["name"],
+    )
+
+    # Create notes record
+    notes_doc = {
         "teacherId": user["id"],
         "teacherName": f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
         "schoolName": user.get("schoolName", ""),
-        "duration": duration,
         "gradeId": request.gradeId,
         "gradeName": grade["name"],
         "subjectId": request.subjectId,
@@ -2019,20 +1999,97 @@ async def generate_notes(request: GenerateNotesRequest, user: dict = Depends(ver
         "strandName": strand["name"],
         "substrandId": request.substrandId,
         "substrandName": substrand["name"],
-        "content": content,
-        "activities": [a["description"] for a in activities],
-        "createdAt": datetime.utcnow()
+        "generatedContent": generated,
+        "downloaded": False,
+        "createdAt": datetime.utcnow(),
     }
-    
-    result = await db.notes.insert_one(notes)
-    # Remove MongoDB _id and add string id
-    if "_id" in notes:
-        del notes["_id"]
-    notes["id"] = str(result.inserted_id)
-    # Convert datetime to ISO string for JSON serialization
-    notes["createdAt"] = notes["createdAt"].isoformat()
-    
-    return {"success": True, "notes": notes}
+
+    result = await db.notes.insert_one(notes_doc)
+    notes_id = str(result.inserted_id)
+
+    # Build response (without _id)
+    response_doc = {k: v for k, v in notes_doc.items() if k != "_id"}
+    response_doc["id"] = notes_id
+    response_doc["createdAt"] = response_doc["createdAt"].isoformat()
+
+    return {"success": True, "notes": response_doc}
+
+
+@api_router.get("/notes/{note_id}/preview")
+async def preview_notes_pdf(note_id: str, user: dict = Depends(verify_token)):
+    """Preview notes as PDF (FREE — no wallet deduction)."""
+    note = await db.notes.find_one({"_id": ObjectId(note_id), "teacherId": user["id"]})
+    if not note:
+        raise HTTPException(status_code=404, detail="Notes not found")
+
+    pdf_bytes = generate_notes_pdf(note)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"inline; filename=notes_{note_id}.pdf"},
+    )
+
+
+@api_router.post("/notes/{note_id}/download")
+async def download_notes_pdf(note_id: str, user: dict = Depends(verify_token)):
+    """Download notes as PDF (KES 1 deducted from wallet). First generation is free."""
+    note = await db.notes.find_one({"_id": ObjectId(note_id), "teacherId": user["id"]})
+    if not note:
+        raise HTTPException(status_code=404, detail="Notes not found")
+
+    user_id = user["id"]
+    user_doc = await db.users.find_one({"_id": ObjectId(user_id)})
+    free_notes_used = user_doc.get("freeNotesUsed", False) if user_doc else True
+    wallet_balance = user_doc.get("walletBalance", 0.0) if user_doc else 0.0
+
+    # First download is free
+    if not free_notes_used:
+        await db.users.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {"freeNotesUsed": True}}
+        )
+        logger.info(f"User {user_id} used free notes download for note {note_id}")
+    else:
+        # Charge KES 1
+        if wallet_balance < NOTES_DOWNLOAD_COST_KES:
+            raise HTTPException(
+                status_code=402,
+                detail=f"Insufficient wallet balance. You need KES {NOTES_DOWNLOAD_COST_KES} to download notes. Current balance: KES {wallet_balance}"
+            )
+
+        import uuid
+        ledger_ref = f"NOTES-{uuid.uuid4().hex[:12].upper()}"
+        ledger_entry = {
+            "userId": user_id,
+            "type": "DEBIT",
+            "amount": NOTES_DOWNLOAD_COST_KES,
+            "reference": ledger_ref,
+            "source": "NOTES_DOWNLOAD",
+            "description": "Notes download",
+            "createdAt": datetime.utcnow(),
+        }
+        await db.wallet_ledger.insert_one(ledger_entry)
+
+        result = await db.users.update_one(
+            {"_id": ObjectId(user_id), "walletBalance": {"$gte": NOTES_DOWNLOAD_COST_KES}},
+            {"$inc": {"walletBalance": -NOTES_DOWNLOAD_COST_KES}}
+        )
+        if result.modified_count == 0:
+            await db.wallet_ledger.delete_one({"reference": ledger_ref})
+            raise HTTPException(status_code=402, detail="Insufficient wallet balance")
+
+        logger.info(f"User {user_id} charged KES {NOTES_DOWNLOAD_COST_KES} for notes download. Ref: {ledger_ref}")
+
+    # Mark as downloaded
+    await db.notes.update_one({"_id": ObjectId(note_id)}, {"$set": {"downloaded": True}})
+
+    # Generate PDF
+    pdf_bytes = generate_notes_pdf(note)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=notes_{note_id}.pdf"},
+    )
 
 @api_router.get("/notes")
 async def get_notes(user: dict = Depends(verify_token)):
