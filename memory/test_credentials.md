@@ -5,13 +5,21 @@
 - Password: TestPass123!
 - Role: teacher
 - School: Test School
+- Wallet Balance: KES ~3-4 (after notes download tests)
 
 ## Admin Account
 - Email: mail2clive@gmail.com
-- Password: (user's existing Firebase password - not available in this environment)
+- Password: (user's existing Firebase password)
 - Role: admin
 
-## Notes
-- Authentication is via Firebase Auth (email/password)
-- Backend URL: https://magical-shannon-6.preview.emergentagent.com
-- Frontend URL: https://magical-shannon-6.preview.emergentagent.com
+## Firebase API Key
+- AIzaSyBalkTy90NBRs7Qky_VPTlikVP6UD69-p8
+
+## URLs
+- Backend: https://magical-shannon-6.preview.emergentagent.com
+- Frontend: https://magical-shannon-6.preview.emergentagent.com
+
+## Getting Firebase ID Token (for API testing)
+POST https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBalkTy90NBRs7Qky_VPTlikVP6UD69-p8
+Body: {"email":"testteacher2026@gmail.com","password":"TestPass123!","returnSecureToken":true}
+Use: Authorization: Bearer {idToken}

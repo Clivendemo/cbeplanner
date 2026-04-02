@@ -10,72 +10,61 @@ A competency-based education lesson planning system for Kenyan teachers with M-P
 - **Auth**: Firebase Authentication
 - **Payments**: Safaricom Daraja API (M-Pesa)
 
-## Android Build Configuration (Production-Ready)
-
-### Versions Locked
-- **Gradle**: 8.10.2
-- **Android Gradle Plugin**: 8.7.3
-- **Kotlin**: 1.9.24
-- **NDK**: 26.1.10909125
-- **Build Tools**: 35.0.0
-- **Compile SDK**: 35
-- **Target SDK**: 35
-- **Min SDK**: 24
-
-### Key Settings
-- `newArchEnabled`: false (prevents CMake/reanimated issues)
-- `hermesEnabled`: true (better performance)
-- `reactNativeArchitectures`: arm64-v8a (modern devices)
-- BuildConfig enabled for all modules
-
-### Files Modified
-1. `android/build.gradle` - Root project configuration
-2. `android/app/build.gradle` - App module configuration
-3. `android/gradle.properties` - Build settings
-4. `android/settings.gradle` - Cross-platform compatible
-5. `android/proguard-rules.pro` - Native module rules
-6. `android/gradle/wrapper/gradle-wrapper.properties` - Gradle version
-7. `app.json` - Expo configuration
-8. `babel.config.js` - Reanimated plugin
-
-## Build Instructions
-
-### First Time Setup
-1. `cd frontend && yarn install`
-2. Create `android/local.properties` with SDK path
-3. Open `android/` in Android Studio
-4. Wait for Gradle sync
-
-### Building APK
-- Android Studio: Build > Build Bundle(s)/APK(s) > Build APK(s)
-- Command Line: `cd android && gradlew assembleRelease`
-
-### Building AAB (Play Store)
-- `cd android && gradlew bundleRelease`
-
 ## What's Been Implemented
-- Login/Signup with keyboard handling (web-compatible)
-- Navigation with auth state management (centralized in AuthGate)
-- Credit system flow with profile redirect
-- PDF preview using WebView (mobile)
-- Admin curriculum PDF upload
-- Help & Support with email
-- Lesson plan generation with dropdown cascading (Grade > Subject > Strand > Substrand > SLO)
-- Scheme of Work generation with topic selection, breaks, double lessons
+
+### Core Features
+- Login/Signup with Firebase Auth (keyboard handling fixed for web)
+- Navigation with centralized AuthGate (no double navigation)
+- Dashboard with 6 feature tiles
+- Lesson Plan generation with cascading dropdowns (Grade > Subject > Strand > Substrand > SLO)
+- Scheme of Work generation
 - M-Pesa wallet top-up integration
 - Transaction history
-- Dashboard with 6 feature tiles
+- Teacher profile management
 
-## Stabilization Fixes (April 2026)
-1. Fixed double navigation: Centralized all redirects in AuthGate (_layout.tsx)
-2. Fixed login keyboard bug: keyboardShouldPersistTaps changed to "always"
-3. Removed competing navigation from index.tsx, login.tsx, signup.tsx, teacher layout, admin layout
-4. Removed console.log statements from AuthContext for production
-5. Fixed frontend .env pointing to production instead of preview backend
-6. Fixed web infinite loading by serving static Expo web export
+### Notes Generation Feature (April 2, 2026)
+- **Backend**: `POST /api/notes/generate`, `GET /api/notes/{id}/preview`, `POST /api/notes/{id}/download`
+- **Content**: Rich educational notes with Introduction, Main Content (concept sections with explanations, examples, applications), Key Terms, Practice Questions, Summary
+- **PDF**: Clean textbook-style A4 PDF via ReportLab (Times Roman, proper headings, meta table)
+- **Wallet**: KES 1 per download (first one free via `freeNotesUsed` flag), preview is free
+- **Frontend**: Form with cascading dropdowns, in-app preview, download button, insufficient funds modal
+- **Files**: `notes_generator.py`, `notes_pdf.py`, updated `server.py`, updated `notes.tsx`, updated `dashboard.tsx`
+
+### Stabilization Fixes (April 1, 2026)
+- Fixed double navigation (centralized in AuthGate)
+- Fixed login keyboard bug (keyboardShouldPersistTaps="always")
+- Removed competing navigation from index.tsx, login.tsx, signup.tsx, teacher/admin layouts
+- Removed console.log statements from AuthContext
+- Fixed frontend .env pointing to production instead of preview
+
+### Previous Work
+- PDF preview using WebView (mobile)
+- Admin curriculum PDF upload
+- Android native build setup (expo prebuild, gradle fixes)
+- Web infinite loading fix
+- Help & Support with email
+
+## Key API Endpoints
+- `POST /api/auth/verify` - Firebase token verification
+- `GET /api/grades`, `GET /api/subjects`, `GET /api/strands`, `GET /api/substrands`, `GET /api/slos` - Curriculum data
+- `POST /api/lesson-plans/generate` - Generate lesson plans
+- `POST /api/schemes/generate` - Generate schemes
+- `POST /api/notes/generate` - Generate study notes
+- `GET /api/notes/{id}/preview` - Preview notes PDF (free)
+- `POST /api/notes/{id}/download` - Download notes PDF (KES 1)
+- `GET /api/notes` - List user's notes
+- `POST /api/wallet/topup` - M-Pesa wallet top-up
+
+## Pricing
+- Lesson Plans: KES 2 each (5 free on signup)
+- Notes Download: KES 1 each (first one free)
+- Notes Preview: Free
 
 ## Next Tasks
-1. Test Android build on Windows machine
-2. Configure release signing
-3. Submit to Play Store
-4. Production environment variable management for Vercel deployment
+1. Past Papers feature implementation
+2. Android APK build testing
+3. Configure release signing for Play Store
+4. Production environment variable management for Vercel
+
+## Test Data
+- Grade 4 > Mathematics > Numbers > Whole Numbers (with 3 SLOs, 2 learning activities)
