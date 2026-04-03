@@ -58,7 +58,13 @@ logger = logging.getLogger(__name__)
 # MONGO_URL is the legacy name for local development
 mongo_url = os.getenv('MONGODB_URI') or os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 db_name = os.getenv('DB_NAME', 'cbeplanner-oregon')
-client = AsyncIOMotorClient(mongo_url)
+
+# Atlas requires certifi CA bundle for SSL; local MongoDB doesn't
+import certifi
+if 'mongodb+srv' in mongo_url or 'mongodb.net' in mongo_url:
+    client = AsyncIOMotorClient(mongo_url, tlsCAFile=certifi.where())
+else:
+    client = AsyncIOMotorClient(mongo_url)
 db = client[db_name]
 
 # Firebase project configuration from environment variables
