@@ -57,7 +57,7 @@ logger = logging.getLogger(__name__)
 # MONGODB_URI is the standard name for external deployment (Railway, Render)
 # MONGO_URL is the legacy name for local development
 mongo_url = os.getenv('MONGODB_URI') or os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-db_name = os.getenv('DB_NAME', 'cbeplanner')
+db_name = os.getenv('DB_NAME', 'cbeplanner-oregon')
 client = AsyncIOMotorClient(mongo_url)
 db = client[db_name]
 
