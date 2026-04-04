@@ -2319,42 +2319,48 @@ async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Dep
 # Helper functions for generating scheme content
 def generate_inquiry_questions(strand: str, substrand: str, slo: str, is_kiswahili: bool = False) -> str:
     """Generate relevant key inquiry questions based on the topic"""
+    import re
+    # Strip leading numbering like "2.3 ", "1.2.1 ", "3. " from substrand name
+    clean_substrand = re.sub(r'^[\d]+(?:\.[\d]+)*\.?\s*', '', substrand).strip()
+    if not clean_substrand:
+        clean_substrand = substrand
+    
     questions = []
     
     if is_kiswahili:
         # Kiswahili inquiry questions
         if "fasihi" in substrand.lower() or "hadithi" in substrand.lower():
-            questions.append(f"Umuhimu wa {substrand} ni upi katika jamii?")
-            questions.append(f"Tunajifunza nini kutoka kwa {substrand}?")
+            questions.append(f"Umuhimu wa {clean_substrand} ni upi katika jamii?")
+            questions.append(f"Tunajifunza nini kutoka kwa {clean_substrand}?")
         elif "sarufi" in substrand.lower() or "lugha" in substrand.lower():
-            questions.append(f"Kanuni za {substrand} ni zipi?")
-            questions.append(f"Tunatumia vipi {substrand} katika mawasiliano?")
+            questions.append(f"Kanuni za {clean_substrand} ni zipi?")
+            questions.append(f"Tunatumia vipi {clean_substrand} katika mawasiliano?")
         elif "uandishi" in substrand.lower() or "insha" in substrand.lower():
-            questions.append(f"Hatua za kuandika {substrand} ni zipi?")
-            questions.append(f"Sifa za {substrand} bora ni zipi?")
+            questions.append(f"Hatua za kuandika {clean_substrand} ni zipi?")
+            questions.append(f"Sifa za {clean_substrand} bora ni zipi?")
         elif "usomaji" in substrand.lower() or "kusoma" in substrand.lower():
-            questions.append(f"Mbinu za kusoma {substrand} kwa ufanisi ni zipi?")
-            questions.append(f"Tunaelewaje maana ya {substrand}?")
+            questions.append(f"Mbinu za kusoma {clean_substrand} kwa ufanisi ni zipi?")
+            questions.append(f"Tunaelewaje maana ya {clean_substrand}?")
         else:
-            questions.append(f"Umuhimu wa {substrand} ni upi?")
-            questions.append(f"Tunatumia vipi {substrand} katika maisha ya kila siku?")
+            questions.append(f"Umuhimu wa {clean_substrand} ni upi?")
+            questions.append(f"Tunatumia vipi {clean_substrand} katika maisha ya kila siku?")
     else:
         # English inquiry questions
         if "evolution" in substrand.lower() or "history" in substrand.lower():
-            questions.append(f"How has {substrand} developed over time?")
-            questions.append(f"What are the key milestones in the development of {substrand}?")
+            questions.append(f"How has {clean_substrand} developed over time?")
+            questions.append(f"What are the key milestones in the development of {clean_substrand}?")
         elif "architecture" in substrand.lower() or "structure" in substrand.lower():
-            questions.append(f"What are the main components of {substrand}?")
-            questions.append(f"How do the different parts of {substrand} work together?")
+            questions.append(f"What are the main components of {clean_substrand}?")
+            questions.append(f"How do the different parts of {clean_substrand} work together?")
         elif "network" in substrand.lower() or "communication" in substrand.lower():
-            questions.append(f"How is data transmitted in {substrand}?")
-            questions.append(f"What factors affect {substrand} performance?")
+            questions.append(f"How is data transmitted in {clean_substrand}?")
+            questions.append(f"What factors affect {clean_substrand} performance?")
         elif "programming" in substrand.lower() or "code" in substrand.lower():
-            questions.append(f"How do we implement {substrand} in programming?")
-            questions.append(f"What are the best practices for {substrand}?")
+            questions.append(f"How do we implement {clean_substrand} in programming?")
+            questions.append(f"What are the best practices for {clean_substrand}?")
         else:
-            questions.append(f"What is the importance of {substrand}?")
-            questions.append(f"How do we apply {substrand} in real-world situations?")
+            questions.append(f"What is the importance of {clean_substrand}?")
+            questions.append(f"How do we apply {clean_substrand} in real-world situations?")
     
     return " ".join([f"{i+1}. {q}" for i, q in enumerate(questions)])
 

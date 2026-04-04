@@ -391,32 +391,39 @@ def get_assessment_for_slo(slo_text: str) -> List[str]:
 
 def generate_inquiry_questions(strand: str, substrand: str, slo: str) -> List[str]:
     """Generate key inquiry questions based on content"""
+    import re
+    # Strip leading numbering like "2.3 ", "1.2.1 ", "3. " from substrand name
+    clean = re.sub(r'^[\d]+(?:\.[\d]+)*\.?\s*', '', substrand).strip()
+    if not clean:
+        clean = substrand
+    
     questions = []
     
-    # Extract topic from substrand
-    topic = substrand.split(' ', 1)[-1] if ' ' in substrand else substrand
-    
-    questions.append(f"What is the importance of {topic.lower()}?")
-    questions.append(f"How can we apply knowledge of {topic.lower()} in daily life?")
+    questions.append(f"What is the importance of {clean.lower()}?")
+    questions.append(f"How can we apply knowledge of {clean.lower()} in daily life?")
     
     return questions
 
 
 def generate_learning_experiences(strand: str, substrand: str, slo: str) -> List[str]:
     """Generate learning experiences"""
+    import re
+    clean = re.sub(r'^[\d]+(?:\.[\d]+)*\.?\s*', '', substrand).strip()
+    if not clean:
+        clean = substrand
+    
     experiences = []
     
-    topic = substrand.split(' ', 1)[-1] if ' ' in substrand else substrand
     slo_lower = slo.lower()
     
     if 'identify' in slo_lower:
-        experiences.append(f"The learner is guided to identify characteristics of {topic.lower()}")
+        experiences.append(f"The learner is guided to identify characteristics of {clean.lower()}")
     elif 'describe' in slo_lower:
-        experiences.append(f"The learner is guided to describe {topic.lower()} using examples")
+        experiences.append(f"The learner is guided to describe {clean.lower()} using examples")
     elif 'explain' in slo_lower:
-        experiences.append(f"The learner is guided to explain concepts related to {topic.lower()}")
+        experiences.append(f"The learner is guided to explain concepts related to {clean.lower()}")
     else:
-        experiences.append(f"The learner is guided to explore {topic.lower()}")
+        experiences.append(f"The learner is guided to explore {clean.lower()}")
     
     experiences.append("Group discussion and presentations")
     experiences.append("Practical activities and demonstrations")
