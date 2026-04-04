@@ -26,7 +26,7 @@ load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
 mongo_url = os.getenv('MONGODB_URI') or os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-db_name = os.getenv('DB_NAME', 'cbeplanner')
+db_name = os.getenv('DB_NAME', 'cbeplanner-oregon')
 
 client = AsyncIOMotorClient(mongo_url)
 db = client[db_name]
@@ -409,7 +409,8 @@ async def main():
         # Seed all JSON files
         json_files = [
             str(ROOT_DIR / "curriculum_data" / "grade1_curriculum_complete.json"),
-            str(ROOT_DIR / "extracted_curriculum_grade10_languages_powermech.json")
+            str(ROOT_DIR / "extracted_curriculum_grade10_languages_powermech.json"),
+            str(ROOT_DIR / "extracted_grade10_missing_subjects.json"),
         ]
         
         for file_path in json_files:

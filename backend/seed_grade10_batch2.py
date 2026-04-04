@@ -7,8 +7,8 @@ import asyncio
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
 
-MONGO_URL = os.environ.get('MONGO_URL')
-DB_NAME = os.environ.get('DB_NAME', 'cbeplanner')
+MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+DB_NAME = os.environ.get('DB_NAME', 'cbeplanner-oregon')
 
 async def seed():
     client = AsyncIOMotorClient(MONGO_URL)

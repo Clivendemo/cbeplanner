@@ -13,8 +13,8 @@ from datetime import datetime
 import os
 
 # MongoDB connection
-MONGO_URL = "mongodb+srv://clive_db_admin:n1ruhu5u@cbeplanner.jtshzub.mongodb.net/cbeplanner?retryWrites=true&w=majority&appName=cbeplanner"
-DB_NAME = "cbeplanner"
+MONGO_URL = "mongodb://localhost:27017"
+DB_NAME = "cbeplanner-oregon"
 
 # Connect to MongoDB
 client = AsyncIOMotorClient(MONGO_URL)
