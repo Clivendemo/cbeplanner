@@ -4936,65 +4936,92 @@ TEXT:
 
 async def process_single_pdf(file_path: Path) -> dict:
     """
-    Process a single PDF file and store curriculum data in MongoDB.
-    This is the core processing function - reuses pipeline logic exactly.
+    Process a single PDF file using the upgraded AI pipeline:
+    1. Extract ALL text from PDF (full context, not page-by-page)
+    2. Send to Gemini 2.5 Flash for structured extraction
+    3. Save extracted JSON
+    4. Generate seed script
+    5. Run seed script to load into database
     """
+    import sys
+    sys.path.insert(0, str(ROOT_DIR / "scripts"))
+    from ai_extractor import extract_with_gemini_chunked
+    from seed_script_generator import generate_seed_script
+
     filename = file_path.name
+    name_no_ext = file_path.stem
     logger.info(f"Processing PDF: {filename}")
-    
+
+    # Step 1: Extract ALL text from PDF
+    all_text = []
+    with pdfplumber.open(str(file_path)) as pdf:
+        for i, page in enumerate(pdf.pages):
+            text = page.extract_text()
+            if text:
+                all_text.append(text)
+
+    full_text = "\n\n".join(all_text)
+    if not full_text.strip():
+        raise ValueError(f"No text found in {filename}")
+
+    logger.info(f"Extracted {len(full_text)} characters from {filename}")
+
+    # Detect grade/subject from filename
     grade_num, subject_name = extract_metadata_from_path(filename)
-    
-    # Upsert grade and subject
-    grade_id = await upsert_grade_async(f"Grade {grade_num}", int(grade_num))
-    subject_id = await upsert_subject_async(subject_name, grade_id)
-    
-    pages_processed = 0
-    strands_created = 0
-    slos_created = 0
-    
-    try:
-        with pdfplumber.open(str(file_path)) as pdf:
-            for page_num, page in enumerate(pdf.pages):
-                text = page.extract_text()
-                if not text or len(text.strip()) < 100:
-                    continue
-                
-                logger.info(f"Processing page {page_num + 1}")
-                pages_processed += 1
-                
-                # Extract curriculum data using AI
-                ai_data = extract_with_ai_simple(text)
-                
-                if not ai_data or not ai_data.get("strand"):
-                    continue
-                
-                # Create strand and substrand
-                strand_id = await upsert_strand_async(ai_data["strand"], subject_id)
-                strands_created += 1
-                
-                substrand_name = ai_data.get("substrand", f"Topic from Page {page_num + 1}")
-                substrand_id = await insert_substrand_async(substrand_name, strand_id)
-                
-                # Create SLOs
-                for slo in ai_data.get("slos", []):
-                    slo_id = await insert_slo_async(slo, substrand_id)
-                    await insert_slo_mapping_async(slo_id)
-                    slos_created += 1
-                
-                # Create activities
-                await insert_activities_async(substrand_id, ai_data.get("activities", {}))
-    
-    except Exception as e:
-        logger.error(f"Error processing PDF: {str(e)}")
-        raise
-    
+    grade_hint = f"Grade {grade_num}"
+
+    # Step 2: AI extraction with Gemini (full context)
+    logger.info(f"Sending to Gemini 2.5 Flash for extraction...")
+    extracted = await extract_with_gemini_chunked(full_text, subject_name, grade_hint)
+
+    if not extracted or not extracted.get("strands"):
+        raise ValueError(f"AI extraction returned no data for {filename}")
+
+    strand_count = len(extracted.get("strands", []))
+    ss_count = sum(len(s.get("substrands", [])) for s in extracted.get("strands", []))
+    slo_count = sum(
+        sum(len(ss.get("slos", [])) for ss in s.get("substrands", []))
+        for s in extracted.get("strands", [])
+    )
+    logger.info(f"Extracted: {strand_count} strands, {ss_count} substrands, {slo_count} SLOs")
+
+    # Step 3: Save JSON
+    safe_name = name_no_ext.lower().replace(" ", "_").replace("-", "_")
+    json_dir = ROOT_DIR / "curriculum_data"
+    json_dir.mkdir(exist_ok=True)
+    json_path = json_dir / f"extracted_{safe_name}.json"
+    with open(json_path, "w") as f:
+        json.dump(extracted, f, indent=2, ensure_ascii=False)
+    logger.info(f"JSON saved to {json_path}")
+
+    # Step 4: Generate seed script
+    script_name = f"seed_{safe_name}.py"
+    script_path = str(ROOT_DIR / script_name)
+    generate_seed_script(extracted, script_path)
+    logger.info(f"Seed script saved to {script_path}")
+
+    # Step 5: Run the seed script to load data into DB
+    import subprocess
+    result = subprocess.run(
+        [sys.executable, script_path],
+        capture_output=True, text=True, timeout=120
+    )
+    if result.returncode != 0:
+        logger.error(f"Seed script error: {result.stderr}")
+        raise ValueError(f"Seed script failed: {result.stderr[:500]}")
+
+    logger.info(f"Seed script ran successfully")
+    logger.info(result.stdout[-500:] if len(result.stdout) > 500 else result.stdout)
+
     return {
         "filename": filename,
-        "grade": f"Grade {grade_num}",
-        "subject": subject_name,
-        "pages_processed": pages_processed,
-        "strands_created": strands_created,
-        "slos_created": slos_created
+        "grade": extracted.get("grade", grade_hint),
+        "subject": extracted.get("subject_name", subject_name),
+        "strands": strand_count,
+        "substrands": ss_count,
+        "slos": slo_count,
+        "json_path": str(json_path),
+        "seed_script": script_name,
     }
 
 @api_router.post("/admin/upload-curriculum")
