@@ -385,6 +385,14 @@ class LearningActivities(BaseModel):
     learning_resources: List[str] = []
     assessment_methods: List[str] = []
 
+class BulkCreateItem(BaseModel):
+    name: str
+    description: Optional[str] = None
+
+class BulkCreateRequest(BaseModel):
+    items: List[BulkCreateItem]
+    parentId: str
+
 class Assessment(BaseModel):
     id: Optional[str] = None
     name: str
@@ -3306,6 +3314,39 @@ async def admin_create_assessment(assessment: Assessment, user: dict = Depends(v
     result = await db.assessments.insert_one(assessment.dict(exclude={"id"}))
     return {"success": True, "id": str(result.inserted_id)}
 
+@api_router.put("/admin/assessments/{assessment_id}")
+async def admin_update_assessment(assessment_id: str, assessment: Assessment, user: dict = Depends(verify_admin)):
+    update_data = {k: v for k, v in assessment.dict(exclude={"id"}).items() if v is not None}
+    await db.assessments.update_one({"_id": ObjectId(assessment_id)}, {"$set": update_data})
+    return {"success": True, "updated": True}
+
+@api_router.delete("/admin/assessments/{assessment_id}")
+async def admin_delete_assessment(assessment_id: str, user: dict = Depends(verify_admin)):
+    await db.assessments.delete_one({"_id": ObjectId(assessment_id)})
+    return {"success": True}
+
+@api_router.post("/admin/assessments/bulk")
+async def admin_bulk_create_assessments(request: BulkCreateRequest, user: dict = Depends(verify_admin)):
+    """Create multiple assessment methods at once. parentId is ignored but required by schema."""
+    created_ids = []
+    for item in request.items:
+        name = item.name.strip()
+        if not name:
+            continue
+        existing = await db.assessments.find_one({"name": name})
+        if existing:
+            continue
+        result = await db.assessments.insert_one({
+            "name": name,
+            "description": item.description or name
+        })
+        created_ids.append(str(result.inserted_id))
+    return {
+        "success": True,
+        "message": f"Created {len(created_ids)} assessment methods",
+        "createdIds": created_ids
+    }
+
 # SLO Mappings
 @api_router.get("/admin/slo-mappings/{slo_id}")
 async def admin_get_slo_mapping(slo_id: str, user: dict = Depends(verify_admin)):
@@ -3406,14 +3447,6 @@ class MoveSloRequest(BaseModel):
 class ChangeSubjectGradeRequest(BaseModel):
     targetGradeId: str
     removeFromOtherGrades: bool = False
-
-class BulkCreateItem(BaseModel):
-    name: str
-    description: Optional[str] = None
-
-class BulkCreateRequest(BaseModel):
-    items: List[BulkCreateItem]
-    parentId: str
 
 @api_router.put("/admin/strands/{strand_id}/move")
 async def admin_move_strand(strand_id: str, request: MoveStrandRequest, user: dict = Depends(verify_admin)):
@@ -3587,83 +3620,134 @@ async def admin_change_subject_grade(subject_id: str, request: ChangeSubjectGrad
 
 @api_router.post("/admin/strands/bulk")
 async def admin_bulk_create_strands(request: BulkCreateRequest, user: dict = Depends(verify_admin)):
-    """Create multiple strands at once for a subject"""
-    # Verify subject exists
+    """Create multiple strands at once for a subject (skips duplicates)"""
     subject = await db.subjects.find_one({"_id": ObjectId(request.parentId)})
     if not subject:
         raise HTTPException(status_code=404, detail="Subject not found")
     
-    created_ids = []
-    for item in request.items:
-        if item.name.strip():
-            result = await db.strands.insert_one({
-                "name": item.name.strip(),
-                "subjectId": request.parentId
-            })
-            created_ids.append(str(result.inserted_id))
+    existing_names = set()
+    existing = await db.strands.find({"subjectId": request.parentId}).to_list(500)
+    for s in existing:
+        existing_names.add(s["name"].strip().lower())
     
-    return {
-        "success": True,
-        "message": f"Created {len(created_ids)} strands",
-        "createdIds": created_ids
-    }
+    created_ids = []
+    skipped = 0
+    for item in request.items:
+        name = item.name.strip()
+        if not name:
+            continue
+        if name.lower() in existing_names:
+            skipped += 1
+            continue
+        existing_names.add(name.lower())
+        result = await db.strands.insert_one({
+            "name": name,
+            "subjectId": request.parentId
+        })
+        created_ids.append(str(result.inserted_id))
+    
+    msg = f"Created {len(created_ids)} strands"
+    if skipped:
+        msg += f" ({skipped} duplicates skipped)"
+    return {"success": True, "message": msg, "createdIds": created_ids}
 
 @api_router.post("/admin/substrands/bulk")
 async def admin_bulk_create_substrands(request: BulkCreateRequest, user: dict = Depends(verify_admin)):
-    """Create multiple substrands at once for a strand"""
-    # Verify strand exists
+    """Create multiple substrands at once for a strand (skips duplicates)"""
     strand = await db.strands.find_one({"_id": ObjectId(request.parentId)})
     if not strand:
         raise HTTPException(status_code=404, detail="Strand not found")
     
-    created_ids = []
-    for item in request.items:
-        if item.name.strip():
-            result = await db.substrands.insert_one({
-                "name": item.name.strip(),
-                "strandId": request.parentId
-            })
-            created_ids.append(str(result.inserted_id))
+    existing_names = set()
+    existing = await db.substrands.find({"strandId": request.parentId}).to_list(500)
+    for s in existing:
+        existing_names.add(s["name"].strip().lower())
     
-    return {
-        "success": True,
-        "message": f"Created {len(created_ids)} substrands",
-        "createdIds": created_ids
-    }
+    created_ids = []
+    skipped = 0
+    for item in request.items:
+        name = item.name.strip()
+        if not name:
+            continue
+        if name.lower() in existing_names:
+            skipped += 1
+            continue
+        existing_names.add(name.lower())
+        result = await db.substrands.insert_one({
+            "name": name,
+            "strandId": request.parentId
+        })
+        created_ids.append(str(result.inserted_id))
+    
+    msg = f"Created {len(created_ids)} substrands"
+    if skipped:
+        msg += f" ({skipped} duplicates skipped)"
+    return {"success": True, "message": msg, "createdIds": created_ids}
 
 @api_router.post("/admin/slos/bulk")
 async def admin_bulk_create_slos(request: BulkCreateRequest, user: dict = Depends(verify_admin)):
-    """Create multiple SLOs at once for a substrand, with automatic SLO mappings"""
-    # Verify substrand exists
+    """Create multiple SLOs at once for a substrand (skips duplicates), with automatic SLO mappings"""
     substrand = await db.substrands.find_one({"_id": ObjectId(request.parentId)})
     if not substrand:
         raise HTTPException(status_code=404, detail="Substrand not found")
     
-    created_ids = []
-    for item in request.items:
-        if item.name.strip():
-            result = await db.slos.insert_one({
-                "name": item.name.strip(),
-                "description": item.description or item.name.strip(),
-                "substrandId": request.parentId
-            })
-            slo_id = str(result.inserted_id)
-            created_ids.append(slo_id)
-            
-            # Create default SLO mapping
-            await create_default_slo_mapping(slo_id)
+    existing_names = set()
+    existing = await db.slos.find({"substrandId": request.parentId}).to_list(500)
+    for s in existing:
+        existing_names.add(s["name"].strip().lower())
     
-    return {
-        "success": True,
-        "message": f"Created {len(created_ids)} SLOs with mappings",
-        "createdIds": created_ids
-    }
+    created_ids = []
+    skipped = 0
+    for item in request.items:
+        name = item.name.strip()
+        if not name:
+            continue
+        if name.lower() in existing_names:
+            skipped += 1
+            continue
+        existing_names.add(name.lower())
+        result = await db.slos.insert_one({
+            "name": name,
+            "description": item.description or name,
+            "substrandId": request.parentId
+        })
+        slo_id = str(result.inserted_id)
+        created_ids.append(slo_id)
+        await create_default_slo_mapping(slo_id)
+    
+    msg = f"Created {len(created_ids)} SLOs with mappings"
+    if skipped:
+        msg += f" ({skipped} duplicates skipped)"
+    return {"success": True, "message": msg, "createdIds": created_ids}
 
 class BulkLearningActivityItem(BaseModel):
     introduction_activities: List[str] = []
     development_activities: List[str] = []
     conclusion_activities: List[str] = []
     extended_activities: List[str] = []
+
+# Keywords that indicate an extended activity
+EXTENDED_ACTIVITY_KEYWORDS = [
+    "practical", "project", "experiment", "field work", "fieldwork",
+    "assignment", "research", "investigation", "survey", "field trip",
+    "field study", "hands-on", "hands on"
+]
+
+def classify_activities(raw_activities: List[str]) -> tuple:
+    """Classify pasted activities into development vs extended.
+    Activities containing keywords go to extended_activities, rest to development_activities."""
+    development = []
+    extended = []
+    for activity in raw_activities:
+        stripped = activity.strip()
+        if not stripped:
+            continue
+        lower = stripped.lower()
+        if any(kw in lower for kw in EXTENDED_ACTIVITY_KEYWORDS):
+            extended.append(stripped)
+        else:
+            development.append(stripped)
+    return development, extended
 
 @api_router.post("/admin/learning-activities/bulk-update")
 async def admin_bulk_update_learning_activities(
@@ -3672,18 +3756,52 @@ async def admin_bulk_update_learning_activities(
     user: dict = Depends(verify_admin)
 ):
     """Create or update learning activities for a substrand in bulk"""
-    # Verify substrand exists
     substrand = await db.substrands.find_one({"_id": ObjectId(substrand_id)})
     if not substrand:
         raise HTTPException(status_code=404, detail="Substrand not found")
     
-    # Filter empty strings
+    # Preserve existing introduction and conclusion (DO NOT modify them)
+    existing = await db.learning_activities.find_one({"substrandId": ObjectId(substrand_id)})
+    
+    # Auto-classify development_activities: keyword matches → extended
+    raw_dev = [a.strip() for a in activities.development_activities if a.strip()]
+    raw_ext = [a.strip() for a in activities.extended_activities if a.strip()]
+    
+    # Classify from development input
+    auto_dev, auto_ext = classify_activities(raw_dev)
+    # Also classify from extended input (in case user pasted general ones there)
+    auto_dev2, auto_ext2 = classify_activities(raw_ext)
+    
+    final_dev = auto_dev + auto_dev2
+    final_ext = auto_ext + auto_ext2
+    
+    # Remove duplicates while preserving order
+    seen = set()
+    deduped_dev = []
+    for a in final_dev:
+        if a not in seen:
+            seen.add(a)
+            deduped_dev.append(a)
+    deduped_ext = []
+    for a in final_ext:
+        if a not in seen:
+            seen.add(a)
+            deduped_ext.append(a)
+    
+    # introduction and conclusion: use provided values ONLY if non-empty, else preserve existing
+    intro = [a.strip() for a in activities.introduction_activities if a.strip()]
+    concl = [a.strip() for a in activities.conclusion_activities if a.strip()]
+    if not intro and existing:
+        intro = existing.get("introduction_activities", [])
+    if not concl and existing:
+        concl = existing.get("conclusion_activities", [])
+    
     update_data = {
         "substrandId": ObjectId(substrand_id),
-        "introduction_activities": [a.strip() for a in activities.introduction_activities if a.strip()],
-        "development_activities": [a.strip() for a in activities.development_activities if a.strip()],
-        "conclusion_activities": [a.strip() for a in activities.conclusion_activities if a.strip()],
-        "extended_activities": [a.strip() for a in activities.extended_activities if a.strip()]
+        "introduction_activities": intro,
+        "development_activities": deduped_dev,
+        "conclusion_activities": concl,
+        "extended_activities": deduped_ext
     }
     
     result = await db.learning_activities.update_one(
@@ -3694,8 +3812,78 @@ async def admin_bulk_update_learning_activities(
     
     return {
         "success": True,
-        "message": "Learning activities saved",
-        "created": result.upserted_id is not None
+        "message": f"Learning activities saved. Development: {len(deduped_dev)}, Extended: {len(deduped_ext)}",
+        "created": result.upserted_id is not None,
+        "classified": {
+            "development_count": len(deduped_dev),
+            "extended_count": len(deduped_ext)
+        }
+    }
+
+class BulkLearningActivityPasteRequest(BaseModel):
+    items: List[BulkCreateItem]
+    parentId: str
+
+@api_router.post("/admin/learning-activities/bulk")
+async def admin_bulk_create_learning_activities(
+    request: BulkLearningActivityPasteRequest,
+    user: dict = Depends(verify_admin)
+):
+    """Bulk create learning activities from pasted text.
+    Auto-classifies: general → development_activities, keyword-matched → extended_activities.
+    Does NOT touch introduction_activities or conclusion_activities."""
+    substrand_id = request.parentId
+    substrand = await db.substrands.find_one({"_id": ObjectId(substrand_id)})
+    if not substrand:
+        raise HTTPException(status_code=404, detail="Substrand not found")
+    
+    # Get existing activities to preserve intro/conclusion
+    existing = await db.learning_activities.find_one({"substrandId": ObjectId(substrand_id)})
+    
+    # Parse pasted items and classify
+    raw_items = [item.name.strip() for item in request.items if item.name.strip()]
+    dev_activities, ext_activities = classify_activities(raw_items)
+    
+    # Merge with existing (append new, deduplicate)
+    existing_dev = existing.get("development_activities", []) if existing else []
+    existing_ext = existing.get("extended_activities", []) if existing else []
+    
+    seen = set(existing_dev + existing_ext)
+    new_dev = [a for a in dev_activities if a not in seen]
+    for a in new_dev:
+        seen.add(a)
+    new_ext = [a for a in ext_activities if a not in seen]
+    
+    final_dev = existing_dev + new_dev
+    final_ext = existing_ext + new_ext
+    
+    update_data = {
+        "substrandId": ObjectId(substrand_id),
+        "development_activities": final_dev,
+        "extended_activities": final_ext,
+    }
+    
+    # Preserve intro/conclusion untouched
+    if existing:
+        update_data["introduction_activities"] = existing.get("introduction_activities", [])
+        update_data["conclusion_activities"] = existing.get("conclusion_activities", [])
+    
+    await db.learning_activities.update_one(
+        {"substrandId": ObjectId(substrand_id)},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    return {
+        "success": True,
+        "message": f"Added {len(new_dev)} development + {len(new_ext)} extended activities",
+        "createdIds": [],
+        "classified": {
+            "development_added": len(new_dev),
+            "extended_added": len(new_ext),
+            "total_development": len(final_dev),
+            "total_extended": len(final_ext)
+        }
     }
 
 # ==================== CURRICULUM HIERARCHY ENDPOINT ====================

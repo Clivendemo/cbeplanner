@@ -20,7 +20,7 @@ import axios from 'axios';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
-type EntityType = 'grades' | 'subjects' | 'strands' | 'substrands' | 'slos' | 'learning_activities' | 'competencies' | 'values' | 'pcis';
+type EntityType = 'grades' | 'subjects' | 'strands' | 'substrands' | 'slos' | 'learning_activities' | 'competencies' | 'values' | 'pcis' | 'assessment_methods';
 
 interface Entity {
   id: string;
@@ -60,7 +60,8 @@ const ENTITY_CONFIG: Record<EntityType, {
   learning_activities: { title: 'Learning Activities', singularTitle: 'Learning Activities', icon: 'flash', color: '#84CC16', fields: ['introduction_activities', 'development_activities', 'conclusion_activities', 'extended_activities'], parent: 'substrands', apiPath: 'learning-activities' },
   competencies: { title: 'Competencies', singularTitle: 'Competency', icon: 'star', color: '#EC4899', fields: ['name', 'description'], apiPath: 'competencies' },
   values: { title: 'Values', singularTitle: 'Value', icon: 'heart', color: '#14B8A6', fields: ['name', 'description'], apiPath: 'values' },
-  pcis: { title: 'PCIs', singularTitle: 'PCI', icon: 'globe', color: '#F97316', fields: ['name', 'description'], apiPath: 'pcis' }
+  pcis: { title: 'PCIs', singularTitle: 'PCI', icon: 'globe', color: '#F97316', fields: ['name', 'description'], apiPath: 'pcis' },
+  assessment_methods: { title: 'Assessment Methods', singularTitle: 'Assessment Method', icon: 'clipboard', color: '#0EA5E9', fields: ['name', 'description'], apiPath: 'assessments' }
 };
 
 const showAlert = (title: string, message: string, buttons?: any[]) => {
@@ -321,6 +322,7 @@ export default function Curriculum() {
       if (response.data.success) {
         const key = selectedEntity === 'slos' ? 'slos' : 
                     selectedEntity === 'learning_activities' ? 'learning_activities' : 
+                    selectedEntity === 'assessment_methods' ? 'assessments' :
                     selectedEntity;
         setData(response.data[key] || []);
       }
