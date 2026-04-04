@@ -1,5 +1,5 @@
 """
-AI Curriculum Extractor — Gemini 2.5 Flash
+AI Curriculum Extractor — Gemini 2.5 Flash (google-genai)
 Extracts structured curriculum data from PDF text using Gemini AI.
 Outputs the EXACT JSON structure needed by seed scripts.
 """
@@ -9,11 +9,9 @@ import json
 import asyncio
 import uuid
 from dotenv import load_dotenv
+from google import genai
 
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
-
-from emergentintegrations.llm.chat import LlmChat, UserMessage
-
 
 EXTRACTION_PROMPT = """You are extracting KICD (Kenya Institute of Curriculum Development) CBC (Competency-Based Curriculum) data from a curriculum design PDF.
 
@@ -71,31 +69,35 @@ PDF TEXT:
 """
 
 
+def _get_client():
+    """Create Gemini client using API key from environment."""
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY or GOOGLE_API_KEY not set in environment")
+    return genai.Client(api_key=api_key)
+
+
 async def extract_with_gemini(text: str, session_suffix: str = "") -> dict:
     """Extract curriculum data from PDF text using Gemini 2.5 Flash."""
-    api_key = os.environ.get("EMERGENT_LLM_KEY")
-    if not api_key:
-        raise ValueError("EMERGENT_LLM_KEY not set in environment")
+    client = _get_client()
 
-    session_id = f"curriculum-extract-{session_suffix or uuid.uuid4().hex[:8]}"
+    prompt = EXTRACTION_PROMPT + text
 
-    chat = LlmChat(
-        api_key=api_key,
-        session_id=session_id,
-        system_message="You are a precise curriculum data extraction system. Return ONLY valid JSON."
-    ).with_model("gemini", "gemini-2.5-flash")
+    # Run synchronous API in thread to not block event loop
+    loop = asyncio.get_event_loop()
+    response = await loop.run_in_executor(
+        None,
+        lambda: client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+        )
+    )
 
-    # Send the full text
-    message = UserMessage(text=EXTRACTION_PROMPT + text)
-    response = await chat.send_message(message)
-
-    # Parse JSON from response
-    response_text = response.strip()
+    response_text = response.text.strip()
 
     # Clean markdown code blocks if present
     if response_text.startswith("```"):
         lines = response_text.split("\n")
-        # Remove first and last lines (```json and ```)
         lines = [l for l in lines if not l.strip().startswith("```")]
         response_text = "\n".join(lines)
 
@@ -116,9 +118,9 @@ async def extract_with_gemini_chunked(text: str, subject_hint: str = "", grade_h
     if len(text) < 30000:
         return await extract_with_gemini(text, subject_hint.replace(" ", "_"))
 
-    # Split into chunks by looking for strand-level breaks
+    # Split into chunks
     chunks = _split_into_chunks(text, max_chars=25000)
-    print(f"  Large PDF detected — splitting into {len(chunks)} chunks")
+    print(f"  Large PDF detected - splitting into {len(chunks)} chunks")
 
     all_strands = []
     grade = grade_hint
@@ -175,7 +177,6 @@ def _merge_strands(strands: list) -> list:
         if name not in merged:
             merged[name] = strand
         else:
-            # Append substrands
             existing_ss = {ss["name"] for ss in merged[name].get("substrands", [])}
             for ss in strand.get("substrands", []):
                 if ss["name"] not in existing_ss:
