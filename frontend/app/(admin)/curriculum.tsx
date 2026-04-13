@@ -11,7 +11,8 @@ import {
   Modal,
   FlatList,
   Platform,
-  RefreshControl
+  RefreshControl,
+  Pressable
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
@@ -1900,21 +1901,37 @@ export default function Curriculum() {
         transparent={true}
         onRequestClose={() => setMoveModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxWidth: 500 }]}>
-            <View style={styles.modalHeader}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <Pressable
+          style={styles.moveModalOverlay}
+          onPress={() => setMoveModalVisible(false)}
+        >
+          <Pressable style={styles.moveModalContainer} onPress={(e) => e.stopPropagation()}>
+            {/* Fixed Header */}
+            <View style={styles.moveModalHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
                 <View style={[styles.moveIconContainer, { backgroundColor: '#EEF2FF' }]}>
                   <Ionicons name="swap-horizontal" size={24} color="#6366F1" />
                 </View>
-                <Text style={styles.modalTitle}>Move {ENTITY_CONFIG[selectedEntity].singularTitle}</Text>
+                <Text style={styles.modalTitle} numberOfLines={1}>Move {ENTITY_CONFIG[selectedEntity].singularTitle}</Text>
               </View>
-              <TouchableOpacity onPress={() => setMoveModalVisible(false)}>
+              <TouchableOpacity
+                onPress={() => setMoveModalVisible(false)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                data-testid="move-modal-close-btn"
+              >
                 <Ionicons name="close" size={24} color="#6B7280" />
               </TouchableOpacity>
             </View>
 
-            <View style={styles.modalBody}>
+            {/* Scrollable Body */}
+            <ScrollView
+              style={styles.moveModalBody}
+              contentContainerStyle={{ paddingBottom: 8 }}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={true}
+              nestedScrollEnabled={true}
+              data-testid="move-modal-scroll-body"
+            >
               {/* Current Item */}
               <View style={styles.moveCurrentItem}>
                 <Text style={styles.moveCurrentItemLabel}>Moving:</Text>
@@ -2078,19 +2095,28 @@ export default function Curriculum() {
                   </ScrollView>
                 </View>
               )}
-            </View>
+            </ScrollView>
 
-            <View style={styles.modalFooter}>
-              <TouchableOpacity style={styles.cancelButton} onPress={() => setMoveModalVisible(false)}>
+            {/* Fixed Footer */}
+            <View style={styles.moveModalFooter}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setMoveModalVisible(false)}
+                data-testid="move-modal-cancel-btn"
+              >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.saveButton, { backgroundColor: '#6366F1' }]} onPress={handleExecuteMove}>
+              <TouchableOpacity
+                style={[styles.saveButton, { backgroundColor: '#6366F1' }]}
+                onPress={handleExecuteMove}
+                data-testid="move-modal-confirm-btn"
+              >
                 <Ionicons name="swap-horizontal" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
                 <Text style={styles.saveButtonText}>Move Item</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
+          </Pressable>
+        </Pressable>
       </Modal>
 
       {/* Bulk Add Modal */}
@@ -3150,6 +3176,50 @@ const styles = StyleSheet.create({
   moveOptionTextSelected: {
     fontWeight: '600',
     color: '#059669'
+  },
+  // Move Modal Layout Styles
+  moveModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16
+  },
+  moveModalContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    width: '100%',
+    maxWidth: 500,
+    maxHeight: '85%',
+    overflow: 'hidden',
+    ...Platform.select({
+      web: { boxShadow: '0 20px 60px rgba(0,0,0,0.3)' },
+      default: { elevation: 24 }
+    })
+  },
+  moveModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF'
+  },
+  moveModalBody: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    flexShrink: 1
+  },
+  moveModalFooter: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    gap: 12,
+    backgroundColor: '#FFFFFF'
   },
   // Bulk Add Modal Styles
   bulkModeTabs: {

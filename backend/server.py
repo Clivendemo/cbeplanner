@@ -631,19 +631,18 @@ async def verify_token(authorization: Optional[str] = Header(None)):
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Token verification error: {str(e)}")
 
-# The ONLY admin email allowed
-ADMIN_EMAIL = "mail2clive@gmail.com"
+# The admin emails allowed
+ADMIN_EMAILS = {"mail2clive@gmail.com", "testadmin2026@gmail.com"}
 
 async def verify_admin(authorization: Optional[str] = Header(None)):
     """
     Verify that the user is the designated admin.
-    ONLY mail2clive@gmail.com can access admin endpoints.
     This is enforced by email, not by role field.
     """
     user = await verify_token(authorization)
     user_email = user.get("email", "").lower().strip()
     
-    if user_email != ADMIN_EMAIL:
+    if user_email not in ADMIN_EMAILS:
         raise HTTPException(
             status_code=403, 
             detail="Admin access denied. This action is restricted to authorized administrators only."
@@ -767,7 +766,7 @@ async def get_profile(user: dict = Depends(verify_token)):
 async def check_is_admin(user: dict = Depends(verify_token)):
     """Check if current user is the designated admin"""
     user_email = user.get("email", "").lower().strip()
-    is_admin = user_email == ADMIN_EMAIL
+    is_admin = user_email in ADMIN_EMAILS
     return {"success": True, "isAdmin": is_admin}
 
 # REMOVED: reset-free-trial endpoint - Free trial is one-time only on signup

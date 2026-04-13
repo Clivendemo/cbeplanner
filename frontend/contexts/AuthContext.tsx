@@ -15,8 +15,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Backend URL with fallback for web
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://cbeplanner.onrender.com';
 
-// The ONLY admin email - must match backend
-const ADMIN_EMAIL = 'mail2clive@gmail.com';
+// Admin emails - must match backend
+const ADMIN_EMAILS = new Set(['mail2clive@gmail.com', 'testadmin2026@gmail.com']);
 
 // Inactivity timeout: 20 minutes (in milliseconds)
 const INACTIVITY_TIMEOUT_MS = 20 * 60 * 1000;
@@ -68,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [authChecked]);
 
   // Check if user is admin by email (client-side check, backend also enforces)
-  const isAdmin = user?.email?.toLowerCase().trim() === ADMIN_EMAIL;
+  const isAdmin = ADMIN_EMAILS.has(user?.email?.toLowerCase().trim() || '');
 
   // Clear new user flag (call after showing welcome message)
   const clearNewUserFlag = useCallback(() => {
