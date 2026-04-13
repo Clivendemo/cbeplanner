@@ -145,7 +145,8 @@ async def seed_subject(grade_id):
         for ss_data in strand_data.get("substrands", []):
             ss_result = await db.substrands.insert_one({{
                 "name": ss_data["name"],
-                "strandId": strand_id
+                "strandId": strand_id,
+                "number_of_lessons": ss_data.get("lessons") or None
             }})
             ss_id = str(ss_result.inserted_id)
             total_substrands += 1

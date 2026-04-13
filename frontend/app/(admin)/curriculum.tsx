@@ -123,6 +123,8 @@ export default function Curriculum() {
   const [allSubjects, setAllSubjects] = useState<Entity[]>([]);
   const [allStrands, setAllStrands] = useState<Entity[]>([]);
   const [allSubstrands, setAllSubstrands] = useState<Entity[]>([]);
+  const [moveStrandsForSubject, setMoveStrandsForSubject] = useState<Entity[]>([]);
+  const [moveSubstrandsForStrand, setMoveSubstrandsForStrand] = useState<Entity[]>([]);
 
   // Bulk add modal state
   const [bulkAddModalVisible, setBulkAddModalVisible] = useState(false);
@@ -1034,19 +1036,48 @@ export default function Curriculum() {
   // Get filtered subjects for move modal
   const getFilteredSubjectsForMove = () => {
     if (!moveTargetGrade) return allSubjects;
-    return allSubjects.filter(s => s.gradeIds?.includes(moveTargetGrade));
+    return allSubjects.filter(s => {
+      const gids = s.gradeIds;
+      if (Array.isArray(gids)) return gids.includes(moveTargetGrade);
+      if (typeof gids === 'string') return gids === moveTargetGrade;
+      return false;
+    });
   };
 
-  // Get filtered strands for move modal
+  // Get filtered strands for move modal — use dynamically fetched data
   const getFilteredStrandsForMove = () => {
+    if (moveTargetSubject && moveStrandsForSubject.length > 0) {
+      return moveStrandsForSubject;
+    }
     if (!moveTargetSubject) return allStrands;
     return allStrands.filter(s => s.subjectId === moveTargetSubject);
   };
 
-  // Get filtered substrands for move modal
+  // Get filtered substrands for move modal — use dynamically fetched data
   const getFilteredSubstrandsForMove = () => {
+    if (moveTargetStrand && moveSubstrandsForStrand.length > 0) {
+      return moveSubstrandsForStrand;
+    }
     if (!moveTargetStrand) return allSubstrands;
     return allSubstrands.filter(s => s.strandId === moveTargetStrand);
+  };
+
+  // Fetch strands for a specific subject (dynamic, for move modal)
+  const fetchStrandsForSubject = async (subjectId: string) => {
+    try {
+      const headers = await getHeaders();
+      const res = await axios.get(`${BACKEND_URL}/api/admin/strands?subjectId=${subjectId}`, { headers });
+      setMoveStrandsForSubject(res.data.strands || []);
+    } catch { setMoveStrandsForSubject([]); }
+  };
+
+  // Fetch substrands for a specific strand (dynamic, for move modal)
+  const fetchSubstrandsForStrand = async (strandId: string) => {
+    try {
+      const headers = await getHeaders();
+      const res = await axios.get(`${BACKEND_URL}/api/admin/substrands?strandId=${strandId}`, { headers });
+      setMoveSubstrandsForStrand(res.data.substrands || []);
+    } catch { setMoveSubstrandsForStrand([]); }
   };
 
   // ==================== SLO MAPPING FUNCTIONS ====================
@@ -2004,6 +2035,8 @@ export default function Curriculum() {
                         setMoveTargetSubject('');
                         setMoveTargetStrand('');
                         setMoveTargetSubstrand('');
+                        setMoveStrandsForSubject([]);
+                        setMoveSubstrandsForStrand([]);
                       }}
                     >
                       <Text style={[styles.moveOptionText, !moveTargetSubject && styles.moveOptionTextSelected]}>
@@ -2018,6 +2051,8 @@ export default function Curriculum() {
                           setMoveTargetSubject(subject.id);
                           setMoveTargetStrand('');
                           setMoveTargetSubstrand('');
+                          setMoveSubstrandsForStrand([]);
+                          fetchStrandsForSubject(subject.id);
                         }}
                       >
                         <Text style={[styles.moveOptionText, moveTargetSubject === subject.id && styles.moveOptionTextSelected]}>
@@ -2055,6 +2090,7 @@ export default function Curriculum() {
                         onPress={() => {
                           setMoveTargetStrand(strand.id);
                           setMoveTargetSubstrand('');
+                          fetchSubstrandsForStrand(strand.id);
                         }}
                       >
                         <Text style={[styles.moveOptionText, moveTargetStrand === strand.id && styles.moveOptionTextSelected]}>
