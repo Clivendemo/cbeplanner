@@ -87,6 +87,14 @@ export const LessonPlanDisplay: React.FC<LessonPlanDisplayProps> = ({ lessonPlan
               {lessonPlan.sloDescription && (
                 <Text style={styles.sloDescription}>{lessonPlan.sloDescription}</Text>
               )}
+              {lessonPlan.lessonSpecificOutcomes && lessonPlan.lessonSpecificOutcomes.length > 0 && (
+                <View style={{ marginTop: 8 }}>
+                  <Text style={[styles.sloTitle, { fontWeight: '600', fontSize: 11, color: '#1E40AF' }]}>Lesson-Specific Outcomes:</Text>
+                  {lessonPlan.lessonSpecificOutcomes.map((outcome: string, i: number) => (
+                    <Text key={i} style={[styles.sloDescription, { marginLeft: 8 }]}>• {outcome}</Text>
+                  ))}
+                </View>
+              )}
             </View>
           </TableCell>
         </TableRow>

@@ -55,7 +55,7 @@ const ENTITY_CONFIG: Record<EntityType, {
   grades: { title: 'Grades', singularTitle: 'Grade', icon: 'school', color: '#6366F1', fields: ['name', 'order'], apiPath: 'grades' },
   subjects: { title: 'Subjects', singularTitle: 'Subject', icon: 'book', color: '#10B981', fields: ['name'], parent: 'grades', apiPath: 'subjects' },
   strands: { title: 'Strands', singularTitle: 'Strand', icon: 'git-branch', color: '#F59E0B', fields: ['name'], parent: 'subjects', apiPath: 'strands' },
-  substrands: { title: 'Sub-strands', singularTitle: 'Sub-strand', icon: 'git-merge', color: '#EF4444', fields: ['name'], parent: 'strands', apiPath: 'substrands' },
+  substrands: { title: 'Sub-strands', singularTitle: 'Sub-strand', icon: 'git-merge', color: '#EF4444', fields: ['name', 'number_of_lessons'], parent: 'strands', apiPath: 'substrands' },
   slos: { title: 'SLOs', singularTitle: 'SLO', icon: 'checkmark-circle', color: '#8B5CF6', fields: ['name', 'description'], parent: 'substrands', apiPath: 'slos' },
   learning_activities: { title: 'Learning Activities', singularTitle: 'Learning Activities', icon: 'flash', color: '#84CC16', fields: ['introduction_activities', 'development_activities', 'conclusion_activities', 'extended_activities'], parent: 'substrands', apiPath: 'learning-activities' },
   competencies: { title: 'Competencies', singularTitle: 'Competency', icon: 'star', color: '#EC4899', fields: ['name', 'description'], apiPath: 'competencies' },
@@ -158,6 +158,12 @@ export default function Curriculum() {
   
   // Pull-to-refresh state
   const [refreshing, setRefreshing] = useState(false);
+
+  // Substrand Lessons configuration state
+  const [lessonsModalVisible, setLessonsModalVisible] = useState(false);
+  const [lessonsSubstrand, setLessonsSubstrand] = useState<Entity | null>(null);
+  const [substrandLessons, setSubstrandLessons] = useState<any[]>([]);
+  const [lessonsLoading, setLessonsLoading] = useState(false);
 
   const getHeaders = async () => {
     if (firebaseUser) {
@@ -567,6 +573,110 @@ export default function Curriculum() {
     }
   };
 
+  // ── Substrand Lessons Configuration ──
+  const openLessonsConfigModal = async (substrand: Entity) => {
+    setLessonsSubstrand(substrand);
+    setLessonsLoading(true);
+    setLessonsModalVisible(true);
+    try {
+      const headers = await getHeaders();
+      // Fetch existing lessons
+      const res = await axios.get(
+        `${BACKEND_URL}/api/substrands/${substrand.id}/lessons`,
+        { headers }
+      );
+      if (res.data.success) {
+        setSubstrandLessons(res.data.lessons || []);
+      }
+    } catch (_) {
+      setSubstrandLessons([]);
+    } finally {
+      setLessonsLoading(false);
+    }
+  };
+
+  const handleGenerateLessonSlots = async () => {
+    if (!lessonsSubstrand) return;
+    setLessonsLoading(true);
+    try {
+      const headers = await getHeaders();
+      const res = await axios.post(
+        `${BACKEND_URL}/api/substrands/${lessonsSubstrand.id}/lessons/generate`,
+        {},
+        { headers }
+      );
+      if (res.data.success) {
+        setSubstrandLessons(res.data.lessons || []);
+        Alert.alert('Success', res.data.message);
+      }
+    } catch (err: any) {
+      Alert.alert('Error', err.response?.data?.detail || 'Failed to generate lesson slots');
+    } finally {
+      setLessonsLoading(false);
+    }
+  };
+
+  const handleUpdateLessonOutcome = (lessonIndex: number, outcomeIndex: number, text: string) => {
+    setSubstrandLessons(prev => {
+      const updated = [...prev];
+      const lesson = { ...updated[lessonIndex] };
+      const outcomes = [...(lesson.specific_outcomes || [])];
+      outcomes[outcomeIndex] = text;
+      lesson.specific_outcomes = outcomes;
+      updated[lessonIndex] = lesson;
+      return updated;
+    });
+  };
+
+  const handleAddOutcome = (lessonIndex: number) => {
+    setSubstrandLessons(prev => {
+      const updated = [...prev];
+      const lesson = { ...updated[lessonIndex] };
+      if ((lesson.specific_outcomes || []).length >= 2) return prev;
+      lesson.specific_outcomes = [...(lesson.specific_outcomes || []), ''];
+      updated[lessonIndex] = lesson;
+      return updated;
+    });
+  };
+
+  const handleRemoveOutcome = (lessonIndex: number, outcomeIndex: number) => {
+    setSubstrandLessons(prev => {
+      const updated = [...prev];
+      const lesson = { ...updated[lessonIndex] };
+      lesson.specific_outcomes = (lesson.specific_outcomes || []).filter((_: string, i: number) => i !== outcomeIndex);
+      updated[lessonIndex] = lesson;
+      return updated;
+    });
+  };
+
+  const handleSaveLessons = async () => {
+    if (!lessonsSubstrand) return;
+    setLessonsLoading(true);
+    try {
+      const headers = await getHeaders();
+      let saved = 0;
+      for (const lesson of substrandLessons) {
+        const outcomes = (lesson.specific_outcomes || []).filter((o: string) => o.trim());
+        if (outcomes.length === 0) continue;
+        await axios.patch(
+          `${BACKEND_URL}/api/substrand-lessons/${lesson.id}`,
+          {
+            substrand_id: lessonsSubstrand.id,
+            lesson_number: lesson.lesson_number,
+            specific_outcomes: outcomes,
+          },
+          { headers }
+        );
+        saved++;
+      }
+      Alert.alert('Saved', `Updated ${saved} lesson(s) successfully.`);
+    } catch (err: any) {
+      Alert.alert('Error', err.response?.data?.detail || 'Failed to save lessons');
+    } finally {
+      setLessonsLoading(false);
+    }
+  };
+
   const handleSave = async () => {
     try {
       const headers = await getHeaders();
@@ -581,6 +691,9 @@ export default function Curriculum() {
         payload.subjectId = selectedParentId || currentParentId;
       } else if (selectedEntity === 'substrands' && (selectedParentId || currentParentId)) {
         payload.strandId = selectedParentId || currentParentId;
+        if (payload.number_of_lessons) {
+          payload.number_of_lessons = parseInt(payload.number_of_lessons);
+        }
       } else if (selectedEntity === 'slos' && (selectedParentId || currentParentId)) {
         payload.substrandId = selectedParentId || currentParentId;
       }
@@ -1603,6 +1716,19 @@ export default function Curriculum() {
           </TouchableOpacity>
 
           <TouchableOpacity 
+            style={[styles.learningActivitiesButton, { backgroundColor: '#EFF6FF', borderColor: '#3B82F6' }]}
+            onPress={() => {
+              const substrand = breadcrumbs.find(b => b.type === 'substrands');
+              if (substrand) {
+                openLessonsConfigModal(substrand);
+              }
+            }}
+          >
+            <Ionicons name="school" size={20} color="#3B82F6" />
+            <Text style={[styles.learningActivitiesButtonText, { color: '#3B82F6' }]}>Configure Lessons</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
             style={styles.bulkMappingButton}
             onPress={handleOpenBulkMappingModal}
           >
@@ -1694,16 +1820,16 @@ export default function Curriculum() {
                 .map((field) => (
                 <View key={field} style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>
-                    {field.charAt(0).toUpperCase() + field.slice(1)} *
+                    {field === 'number_of_lessons' ? 'Number of Lessons' : field.charAt(0).toUpperCase() + field.slice(1)} {field === 'number_of_lessons' ? '' : '*'}
                   </Text>
                   <TextInput
                     style={[styles.input, field === 'description' && styles.textArea]}
-                    value={formData[field] || ''}
+                    value={formData[field]?.toString() || ''}
                     onChangeText={(text) => setFormData({ ...formData, [field]: text })}
-                    placeholder={`Enter ${field}`}
+                    placeholder={field === 'number_of_lessons' ? 'e.g. 10 (lessons in this substrand)' : `Enter ${field}`}
                     multiline={field === 'description'}
                     numberOfLines={field === 'description' ? 4 : 1}
-                    keyboardType={field === 'order' ? 'numeric' : 'default'}
+                    keyboardType={field === 'order' || field === 'number_of_lessons' ? 'numeric' : 'default'}
                   />
                 </View>
               ))}
@@ -2451,6 +2577,102 @@ export default function Curriculum() {
                 )}
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Substrand Lessons Configuration Modal */}
+      <Modal
+        visible={lessonsModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setLessonsModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxHeight: '85%' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                Configure Lessons{lessonsSubstrand ? `: ${lessonsSubstrand.name}` : ''}
+              </Text>
+              <TouchableOpacity onPress={() => setLessonsModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody} keyboardShouldPersistTaps="always">
+              {lessonsLoading ? (
+                <ActivityIndicator size="large" color="#3B82F6" style={{ marginTop: 20 }} />
+              ) : substrandLessons.length === 0 ? (
+                <View style={{ alignItems: 'center', padding: 20 }}>
+                  <Ionicons name="school-outline" size={48} color="#9CA3AF" />
+                  <Text style={{ color: '#6B7280', marginTop: 12, textAlign: 'center', fontSize: 14 }}>
+                    No lessons configured yet.{'\n'}Set "Number of Lessons" on the substrand, then click "Generate Lesson Slots".
+                  </Text>
+                  <TouchableOpacity
+                    style={{ backgroundColor: '#3B82F6', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8, marginTop: 16 }}
+                    onPress={handleGenerateLessonSlots}
+                  >
+                    <Text style={{ color: '#FFF', fontWeight: '600' }}>Generate Lesson Slots</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={{ backgroundColor: '#EFF6FF', padding: 10, borderRadius: 8, marginBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+                    onPress={handleGenerateLessonSlots}
+                  >
+                    <Ionicons name="refresh" size={18} color="#3B82F6" />
+                    <Text style={{ color: '#3B82F6', fontWeight: '600', marginLeft: 6 }}>Regenerate Missing Slots</Text>
+                  </TouchableOpacity>
+
+                  {substrandLessons.map((lesson: any, idx: number) => (
+                    <View key={lesson.id || idx} style={{ backgroundColor: '#F9FAFB', borderRadius: 10, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: '#E5E7EB' }}>
+                      <Text style={{ fontWeight: 'bold', color: '#1F2937', marginBottom: 8, fontSize: 14 }}>
+                        Lesson {lesson.lesson_number}
+                      </Text>
+                      {(lesson.specific_outcomes || []).map((outcome: string, oi: number) => (
+                        <View key={oi} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                          <TextInput
+                            style={{ flex: 1, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, padding: 10, fontSize: 13 }}
+                            value={outcome}
+                            onChangeText={(t) => handleUpdateLessonOutcome(idx, oi, t)}
+                            placeholder={`Specific outcome ${oi + 1}`}
+                          />
+                          <TouchableOpacity onPress={() => handleRemoveOutcome(idx, oi)} style={{ marginLeft: 8 }}>
+                            <Ionicons name="close-circle" size={22} color="#EF4444" />
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                      {(lesson.specific_outcomes || []).length < 2 && (
+                        <TouchableOpacity
+                          onPress={() => handleAddOutcome(idx)}
+                          style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}
+                        >
+                          <Ionicons name="add-circle-outline" size={18} color="#3B82F6" />
+                          <Text style={{ color: '#3B82F6', marginLeft: 4, fontSize: 13 }}>Add outcome</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  ))}
+                </>
+              )}
+            </ScrollView>
+
+            {substrandLessons.length > 0 && (
+              <View style={styles.modalFooter}>
+                <TouchableOpacity
+                  style={[styles.saveButton, lessonsLoading && { opacity: 0.6 }]}
+                  onPress={handleSaveLessons}
+                  disabled={lessonsLoading}
+                >
+                  {lessonsLoading ? (
+                    <ActivityIndicator color="#FFF" size="small" />
+                  ) : (
+                    <Text style={styles.saveButtonText}>Save All Lessons</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
       </Modal>

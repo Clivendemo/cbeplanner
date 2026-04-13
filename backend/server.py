@@ -346,6 +346,13 @@ class SubStrand(BaseModel):
     id: Optional[str] = None
     name: str
     strandId: str
+    number_of_lessons: Optional[int] = None
+
+class SubstrandLesson(BaseModel):
+    id: Optional[str] = None
+    substrand_id: str
+    lesson_number: int
+    specific_outcomes: List[str] = []
 
 class SLO(BaseModel):
     id: Optional[str] = None
@@ -1748,6 +1755,27 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
             learning_resources = ["Textbooks", "Charts and diagrams", "Real objects/models", "Digital resources"]
         
         # Create lesson plan with teacher info from profile
+        # ── NEW: Attach lesson-specific outcomes if substrand_lessons exist ──
+        lesson_specific_outcomes = []
+        substrand_lesson_number = None
+        num_lessons = substrand.get("number_of_lessons")
+
+        if num_lessons and num_lessons >= 1:
+            # Count how many plans this user already has for this substrand
+            existing_count = await db.lesson_plans.count_documents({
+                "teacherId": user["id"],
+                "substrandId": request.substrandId,
+            })
+            target_lesson = (existing_count % num_lessons) + 1  # cycle 1..num_lessons
+
+            sl = await db.substrand_lessons.find_one({
+                "substrand_id": request.substrandId,
+                "lesson_number": target_lesson,
+            })
+            if sl and sl.get("specific_outcomes"):
+                lesson_specific_outcomes = sl["specific_outcomes"]
+                substrand_lesson_number = target_lesson
+
         lesson_plan = {
             "teacherId": user["id"],
             "teacherName": f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
@@ -1777,6 +1805,9 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
             "extendedActivity": extended_activity,
             "conclusion": conclusion,
             "assessment": assessment_text,
+            "lessonSpecificOutcomes": lesson_specific_outcomes,
+            "lessonNumber": substrand_lesson_number,
+            "totalLessonsInSubstrand": num_lessons,
             "createdAt": datetime.utcnow(),
             "expiresAt": datetime.utcnow() + timedelta(days=2)
         }
@@ -3082,7 +3113,128 @@ async def admin_update_substrand(substrand_id: str, substrand: SubStrand, user: 
 @api_router.delete("/admin/substrands/{substrand_id}")
 async def admin_delete_substrand(substrand_id: str, user: dict = Depends(verify_admin)):
     await db.substrands.delete_one({"_id": ObjectId(substrand_id)})
+    # Also clean up substrand_lessons
+    await db.substrand_lessons.delete_many({"substrand_id": substrand_id})
     return {"success": True}
+
+# ==================== SUBSTRAND LESSONS ====================
+
+@api_router.get("/substrands/{substrand_id}/lessons")
+async def get_substrand_lessons(substrand_id: str, user: dict = Depends(verify_token)):
+    """Get all configured lessons for a substrand."""
+    lessons = await db.substrand_lessons.find(
+        {"substrand_id": substrand_id}
+    ).sort("lesson_number", 1).to_list(200)
+    return {"success": True, "lessons": [serialize_doc(l) for l in lessons]}
+
+@api_router.post("/substrands/{substrand_id}/lessons/generate")
+async def generate_substrand_lessons(substrand_id: str, user: dict = Depends(verify_admin)):
+    """Auto-generate empty lesson slots based on number_of_lessons.
+    Only creates missing slots — does NOT delete existing ones."""
+    substrand = await db.substrands.find_one({"_id": ObjectId(substrand_id)})
+    if not substrand:
+        raise HTTPException(status_code=404, detail="Substrand not found")
+
+    num = substrand.get("number_of_lessons")
+    if not num or num < 1:
+        raise HTTPException(status_code=400, detail="Set number_of_lessons on the substrand first (>= 1)")
+
+    # Find existing lesson numbers
+    existing = await db.substrand_lessons.find(
+        {"substrand_id": substrand_id}
+    ).to_list(200)
+    existing_nums = {l["lesson_number"] for l in existing}
+
+    created = 0
+    for i in range(1, num + 1):
+        if i not in existing_nums:
+            await db.substrand_lessons.insert_one({
+                "substrand_id": substrand_id,
+                "lesson_number": i,
+                "specific_outcomes": [],
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+            })
+            created += 1
+
+    # Warn if existing lessons exceed the number
+    extra = [l for l in existing if l["lesson_number"] > num]
+    warning = ""
+    if extra:
+        warning = f" Warning: {len(extra)} lesson(s) exist beyond the configured {num}. Review manually."
+
+    all_lessons = await db.substrand_lessons.find(
+        {"substrand_id": substrand_id}
+    ).sort("lesson_number", 1).to_list(200)
+
+    return {
+        "success": True,
+        "message": f"Created {created} lesson slot(s).{warning}",
+        "lessons": [serialize_doc(l) for l in all_lessons]
+    }
+
+@api_router.patch("/substrand-lessons/{lesson_id}")
+async def update_substrand_lesson(lesson_id: str, lesson: SubstrandLesson, user: dict = Depends(verify_admin)):
+    """Update a specific lesson's outcomes (max 2)."""
+    outcomes = [o.strip() for o in lesson.specific_outcomes if o.strip()]
+    if len(outcomes) > 2:
+        raise HTTPException(status_code=400, detail="Maximum 2 specific outcomes per lesson")
+    if len(outcomes) < 1:
+        raise HTTPException(status_code=400, detail="At least 1 specific outcome is required")
+
+    await db.substrand_lessons.update_one(
+        {"_id": ObjectId(lesson_id)},
+        {"$set": {
+            "specific_outcomes": outcomes,
+            "lesson_number": lesson.lesson_number,
+            "updated_at": datetime.utcnow(),
+        }}
+    )
+    return {"success": True}
+
+@api_router.delete("/substrand-lessons/{lesson_id}")
+async def delete_substrand_lesson(lesson_id: str, user: dict = Depends(verify_admin)):
+    """Delete a single lesson slot."""
+    await db.substrand_lessons.delete_one({"_id": ObjectId(lesson_id)})
+    return {"success": True}
+
+@api_router.get("/substrands/{substrand_id}/lesson-validation")
+async def validate_substrand_lessons(substrand_id: str, user: dict = Depends(verify_token)):
+    """Validate that a substrand's lessons are fully configured."""
+    substrand = await db.substrands.find_one({"_id": ObjectId(substrand_id)})
+    if not substrand:
+        raise HTTPException(status_code=404, detail="Substrand not found")
+
+    num = substrand.get("number_of_lessons")
+    if not num:
+        return {"success": True, "valid": False, "useFallback": True,
+                "message": "number_of_lessons not set — will use SLO fallback"}
+
+    lessons = await db.substrand_lessons.find(
+        {"substrand_id": substrand_id}
+    ).sort("lesson_number", 1).to_list(200)
+
+    errors = []
+    if len(lessons) != num:
+        errors.append(f"Expected {num} lessons but found {len(lessons)}")
+
+    # Check for duplicates
+    nums = [l["lesson_number"] for l in lessons]
+    if len(set(nums)) != len(nums):
+        errors.append("Duplicate lesson numbers detected")
+
+    # Check each lesson has outcomes
+    incomplete = [l["lesson_number"] for l in lessons if not l.get("specific_outcomes")]
+    if incomplete:
+        errors.append(f"Lessons {incomplete} have no specific outcomes")
+
+    if errors:
+        return {"success": True, "valid": False, "useFallback": False,
+                "errors": errors,
+                "message": f"Substrand '{substrand['name']}' has {len(errors)} issue(s)"}
+
+    return {"success": True, "valid": True, "useFallback": False,
+            "message": "All lessons properly configured"}
 
 # SLOs
 @api_router.get("/admin/slos")
@@ -5134,6 +5286,11 @@ async def startup_event():
         # Lesson plans - TTL index for auto-deletion of expired plans
         await db.lesson_plans.create_index("expiresAt", expireAfterSeconds=0)
         await db.lesson_plans.create_index("teacherId")
+
+        # Substrand lessons index (compound unique)
+        await db.substrand_lessons.create_index(
+            [("substrand_id", 1), ("lesson_number", 1)], unique=True
+        )
         
         logger.info("Database indexes created/verified successfully")
     except Exception as e:

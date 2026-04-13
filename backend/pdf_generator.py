@@ -54,7 +54,7 @@ def create_styles():
     
     # Body text style
     styles.add(ParagraphStyle(
-        name='BodyText',
+        name='CustomBody',
         parent=styles['Normal'],
         fontSize=10,
         textColor=colors.HexColor('#374151'),
@@ -151,15 +151,49 @@ def generate_lesson_plan_pdf(lesson_plan: Dict[str, Any]) -> bytes:
     elements.append(info_table)
     elements.append(Spacer(1, 16))
     
+    # Lesson number info (if multi-lesson substrand)
+    lesson_number = lesson_plan.get('lessonNumber')
+    total_lessons = lesson_plan.get('totalLessonsInSubstrand')
+    if lesson_number and total_lessons:
+        elements.append(Paragraph(
+            f"Lesson {lesson_number} of {total_lessons}",
+            ParagraphStyle(
+                'LessonNumber',
+                parent=styles['CustomBody'],
+                fontSize=10,
+                textColor=colors.HexColor('#1E40AF'),
+                fontName='Helvetica-Bold',
+                spaceAfter=4
+            )
+        ))
+    
     # Specific Learning Outcome
     elements.append(Paragraph("SPECIFIC LEARNING OUTCOME", styles['SectionHeader']))
     slo_text = lesson_plan.get('sloName', '') or lesson_plan.get('sloDescription', 'N/A')
-    elements.append(Paragraph(slo_text, styles['BodyText']))
+    elements.append(Paragraph(slo_text, styles['CustomBody']))
+    
+    # Lesson-Specific Outcomes (new multi-lesson architecture)
+    lesson_specific_outcomes = lesson_plan.get('lessonSpecificOutcomes', [])
+    if lesson_specific_outcomes:
+        elements.append(Paragraph(
+            "Lesson-Specific Outcomes:",
+            ParagraphStyle(
+                'LessonOutcomesHeader',
+                parent=styles['CustomBody'],
+                fontSize=10,
+                textColor=colors.HexColor('#1E40AF'),
+                fontName='Helvetica-Bold',
+                spaceBefore=4,
+                spaceAfter=4
+            )
+        ))
+        for outcome in lesson_specific_outcomes:
+            elements.append(Paragraph(f"&bull; {outcome}", styles['ListItem']))
     
     # Introduction
     if lesson_plan.get('introduction'):
         elements.append(Paragraph("INTRODUCTION", styles['SectionHeader']))
-        elements.append(Paragraph(lesson_plan['introduction'], styles['BodyText']))
+        elements.append(Paragraph(lesson_plan['introduction'], styles['CustomBody']))
     
     # Lesson Development
     if lesson_plan.get('lessonDevelopment'):
@@ -170,24 +204,24 @@ def generate_lesson_plan_pdf(lesson_plan: Dict[str, Any]) -> bytes:
             paragraphs = dev_text.split('\n\n')
             for para in paragraphs:
                 if para.strip():
-                    elements.append(Paragraph(para.strip(), styles['BodyText']))
+                    elements.append(Paragraph(para.strip(), styles['CustomBody']))
         else:
-            elements.append(Paragraph(dev_text, styles['BodyText']))
+            elements.append(Paragraph(dev_text, styles['CustomBody']))
     
     # Extended Activity
     if lesson_plan.get('extendedActivity'):
         elements.append(Paragraph("EXTENDED ACTIVITY", styles['SectionHeader']))
-        elements.append(Paragraph(lesson_plan['extendedActivity'], styles['BodyText']))
+        elements.append(Paragraph(lesson_plan['extendedActivity'], styles['CustomBody']))
     
     # Conclusion
     if lesson_plan.get('conclusion'):
         elements.append(Paragraph("CONCLUSION", styles['SectionHeader']))
-        elements.append(Paragraph(lesson_plan['conclusion'], styles['BodyText']))
+        elements.append(Paragraph(lesson_plan['conclusion'], styles['CustomBody']))
     
     # Assessment
     if lesson_plan.get('assessment'):
         elements.append(Paragraph("ASSESSMENT", styles['SectionHeader']))
-        elements.append(Paragraph(lesson_plan['assessment'], styles['BodyText']))
+        elements.append(Paragraph(lesson_plan['assessment'], styles['CustomBody']))
     
     # Learning Resources
     resources = lesson_plan.get('learningResources', [])
