@@ -7,10 +7,15 @@
 - School: Test School
 - Wallet Balance: KES ~3-4 (after notes download tests)
 
-## Admin Account
+## Admin Account (Primary)
 - Email: mail2clive@gmail.com
 - Password: (user's existing Firebase password)
 - Role: admin
+
+## Admin Account (Test)
+- Email: testadmin2026@gmail.com
+- Password: AdminTest123!
+- Role: admin (added to ADMIN_EMAILS set in both backend and frontend)
 
 ## Firebase API Key
 - AIzaSyBalkTy90NBRs7Qky_VPTlikVP6UD69-p8
