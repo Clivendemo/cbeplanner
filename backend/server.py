@@ -34,6 +34,12 @@ from scheme_generator import (
     generate_inquiry_questions, generate_learning_experiences, generate_learning_resources
 )
 
+# Import lesson SLO service layer
+from lesson_slo_service import (
+    sync_lesson_slos_for_substrand, regenerate_lesson_slos,
+    get_active_lesson_slos, get_lesson_slo_for_slot, bootstrap_missing_lesson_slos,
+)
+
 # Import production utilities
 from app.production_utils import (
     ProductionLogger, IdempotencyManager, InputValidator, 
@@ -1812,7 +1818,7 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
             learning_resources = ["Textbooks", "Charts and diagrams", "Real objects/models", "Digital resources"]
         
         # Create lesson plan with teacher info from profile
-        # ── NEW: Attach lesson-specific outcomes if substrand_lessons exist ──
+        # ── Attach lesson-specific outcomes from lesson_slos (preferred) or substrand_lessons (legacy) ──
         lesson_specific_outcomes = []
         substrand_lesson_number = None
         num_lessons = substrand.get("number_of_lessons")
@@ -1825,13 +1831,22 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
             })
             target_lesson = (existing_count % num_lessons) + 1  # cycle 1..num_lessons
 
-            sl = await db.substrand_lessons.find_one({
-                "substrand_id": request.substrandId,
-                "lesson_number": target_lesson,
-            })
-            if sl and sl.get("specific_outcomes"):
-                lesson_specific_outcomes = sl["specific_outcomes"]
+            # Priority 1: lesson_slos (new system)
+            lslo = await get_lesson_slo_for_slot(db, request.substrandId, target_lesson)
+            if lslo and lslo.get("outcome"):
+                lesson_specific_outcomes = [lslo["outcome"]]
+                if lslo.get("description"):
+                    lesson_specific_outcomes.append(lslo["description"])
                 substrand_lesson_number = target_lesson
+            else:
+                # Priority 2: substrand_lessons (legacy)
+                sl = await db.substrand_lessons.find_one({
+                    "substrand_id": request.substrandId,
+                    "lesson_number": target_lesson,
+                })
+                if sl and sl.get("specific_outcomes"):
+                    lesson_specific_outcomes = sl["specific_outcomes"]
+                    substrand_lesson_number = target_lesson
 
         lesson_plan = {
             "teacherId": user["id"],
@@ -2746,38 +2761,56 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
             if not slos:
                 continue
         
-            # KEY FIX: use number_of_lessons to determine how many rows this substrand gets
             num_lessons_for_substrand = substrand.get("number_of_lessons") or len(slos)
             num_lessons_for_substrand = max(1, int(num_lessons_for_substrand))
             
             learning_act = await db.learning_activities.find_one({"substrandId": substrand_id})
             
+            # Load lesson_slos for this substrand (if available)
+            active_lesson_slos = await get_active_lesson_slos(db, substrand_id)
+            lesson_slo_by_num = {ls["lessonNumber"]: ls for ls in active_lesson_slos}
+            
             for lesson_slot in range(num_lessons_for_substrand):
-                # Distribute SLOs across lesson slots — cycle if fewer SLOs than lessons
+                lesson_num = lesson_slot + 1
+                # Distribute parent SLOs across lesson slots (cycle if fewer SLOs than lessons)
                 slo = slos[lesson_slot % len(slos)]
                 slo_id = str(slo["_id"])
+                
+                # Priority: use lesson_slo if available, fallback to parent SLO
+                lslo = lesson_slo_by_num.get(lesson_num)
             
                 # Get SLO mapping for competencies and values
                 mapping = await db.slo_mappings.find_one({"sloId": slo_id})
                 competencies = []
-                values = []
+                values_list = []
                 pcis = []
             
-                if mapping:
+                if lslo:
+                    # Prefer lesson_slo-level overrides
+                    competencies = lslo.get("coreCompetencies") or []
+                    values_list = lslo.get("values") or []
+                    pcis = lslo.get("pcis") or []
+                
+                if not competencies and mapping:
                     for comp_id in mapping.get("competencyIds", []):
                         comp = await db.competencies.find_one({"_id": ObjectId(comp_id)})
                         if comp:
                             competencies.append(comp["name"])
-                
+                if not values_list and mapping:
                     for val_id in mapping.get("valueIds", []):
                         val = await db.values.find_one({"_id": ObjectId(val_id)})
                         if val:
-                            values.append(val["name"])
-                
+                            values_list.append(val["name"])
+                if not pcis and mapping:
                     for pci_id in mapping.get("pciIds", []):
                         pci = await db.pcis.find_one({"_id": ObjectId(pci_id)})
                         if pci:
                             pcis.append(pci["name"])
+
+                # Determine SLO text: prefer lesson_slo outcome
+                slo_text = slo["name"]
+                if lslo and lslo.get("outcome"):
+                    slo_text = lslo["outcome"]
             
                 curriculum_content.append({
                     "strandId": str(strand["_id"]),
@@ -2785,16 +2818,19 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                     "substrandId": substrand_id,
                     "substrand": substrand["name"],
                     "sloId": slo_id,
-                    "slo": slo["name"],
+                    "slo": slo_text,
                     "sloDescription": slo.get("description", slo["name"]),
-                    "lessonInSubstrand": lesson_slot + 1,
+                    "lessonInSubstrand": lesson_num,
                     "totalLessonsInSubstrand": num_lessons_for_substrand,
                     "competencies": competencies or ["Critical Thinking", "Communication"],
-                    "values": values or ["Responsibility", "Respect"],
+                    "values": values_list or ["Responsibility", "Respect"],
                     "pcis": pcis,
-                    "learningActivities": learning_act.get("development_activities", []) if learning_act else [],
-                    "resources": learning_act.get("learning_resources", []) if learning_act else [],
-                    "assessmentMethods": learning_act.get("assessment_methods", []) if learning_act else []
+                    # Prefer lesson_slo-level overrides for activities/resources
+                    "learningActivities": (lslo.get("learningExperiences") if lslo else None) or (learning_act.get("development_activities", []) if learning_act else []),
+                    "resources": (lslo.get("learningResources") if lslo else None) or (learning_act.get("learning_resources", []) if learning_act else []),
+                    "assessmentMethods": (lslo.get("assessmentMethods") if lslo else None) or (learning_act.get("assessment_methods", []) if learning_act else []),
+                    # Key inquiry questions: prefer lesson_slo, then auto-generate
+                    "_lessonSloInquiry": lslo.get("keyInquiryQuestions") if lslo else None,
                 })
     
         if not curriculum_content:
@@ -2914,12 +2950,16 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                 if content_index < len(curriculum_content):
                     content = curriculum_content[content_index]
                 
-                    # Generate inquiry questions
-                    inquiry_qs = generate_inquiry_questions(
-                        content["strand"], 
-                        content["substrand"], 
-                        content["slo"]
-                    )
+                    # Generate inquiry questions — prefer lesson_slo override
+                    lesson_slo_inquiry = content.get("_lessonSloInquiry")
+                    if lesson_slo_inquiry and isinstance(lesson_slo_inquiry, list) and len(lesson_slo_inquiry) > 0:
+                        inquiry_qs = "\n".join(f"{i+1}. {q}" for i, q in enumerate(lesson_slo_inquiry[:2]))
+                    else:
+                        inquiry_qs = generate_inquiry_questions(
+                            content["strand"], 
+                            content["substrand"], 
+                            content["slo"]
+                        )
                 
                     # Generate learning experiences
                     experiences = content.get("learningActivities", [])
@@ -3139,6 +3179,236 @@ async def download_scheme(scheme_data: Dict[str, Any], user: dict = Depends(veri
         logger.error(f"Scheme PDF generation failed, refunded user {user['id']}: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to generate PDF. Your payment has been refunded.")
 
+# ==================== SCHEME DRAFT WORKFLOW ====================
+
+@api_router.post("/schemes/save-draft")
+async def save_scheme_draft(body: Dict[str, Any], user: dict = Depends(verify_token)):
+    """Save a generated scheme as a draft record. No wallet charge."""
+    scheme_data = body.get("scheme")
+    generation_input = body.get("generationInput")
+    if not scheme_data:
+        raise HTTPException(status_code=400, detail="No scheme data provided")
+
+    draft = {
+        "teacherId": user["id"],
+        "scheme": scheme_data,
+        "generationInput": generation_input,
+        "status": "draft",
+        "isPaid": False,
+        "paidAt": None,
+        "paymentReference": None,
+        "downloadCount": 0,
+        "lastDownloadedAt": None,
+        "createdAt": datetime.utcnow(),
+        "updatedAt": datetime.utcnow(),
+    }
+    result = await db.scheme_drafts.insert_one(draft)
+    return {"success": True, "draftId": str(result.inserted_id)}
+
+
+@api_router.get("/schemes/drafts")
+async def get_scheme_drafts(user: dict = Depends(verify_token)):
+    """List user's scheme drafts."""
+    drafts = await db.scheme_drafts.find(
+        {"teacherId": user["id"]}
+    ).sort("updatedAt", -1).to_list(50)
+    result = []
+    for d in drafts:
+        d["id"] = str(d.pop("_id"))
+        # Convert datetimes for JSON
+        for k in ["createdAt", "updatedAt", "paidAt", "lastDownloadedAt"]:
+            if d.get(k) and hasattr(d[k], "isoformat"):
+                d[k] = d[k].isoformat()
+        result.append(d)
+    return {"success": True, "drafts": result}
+
+
+@api_router.get("/schemes/drafts/{draft_id}")
+async def get_scheme_draft(draft_id: str, user: dict = Depends(verify_token)):
+    """Get a single scheme draft by ID."""
+    draft = await db.scheme_drafts.find_one({"_id": ObjectId(draft_id), "teacherId": user["id"]})
+    if not draft:
+        raise HTTPException(status_code=404, detail="Scheme draft not found")
+    draft["id"] = str(draft.pop("_id"))
+    for k in ["createdAt", "updatedAt", "paidAt", "lastDownloadedAt"]:
+        if draft.get(k) and hasattr(draft[k], "isoformat"):
+            draft[k] = draft[k].isoformat()
+    return {"success": True, "draft": draft}
+
+
+@api_router.post("/schemes/drafts/{draft_id}/regenerate")
+async def regenerate_scheme_draft(draft_id: str, body: Dict[str, Any], user: dict = Depends(verify_token)):
+    """Regenerate a draft scheme with updated parameters. Replaces scheme data."""
+    draft = await db.scheme_drafts.find_one({"_id": ObjectId(draft_id), "teacherId": user["id"]})
+    if not draft:
+        raise HTTPException(status_code=404, detail="Scheme draft not found")
+
+    new_scheme = body.get("scheme")
+    new_input = body.get("generationInput")
+    if not new_scheme:
+        raise HTTPException(status_code=400, detail="No scheme data provided")
+
+    await db.scheme_drafts.update_one(
+        {"_id": ObjectId(draft_id)},
+        {"$set": {
+            "scheme": new_scheme,
+            "generationInput": new_input or draft.get("generationInput"),
+            "updatedAt": datetime.utcnow(),
+        }}
+    )
+    return {"success": True, "message": "Draft regenerated"}
+
+
+@api_router.post("/schemes/drafts/{draft_id}/preview")
+async def preview_scheme_draft(draft_id: str, user: dict = Depends(verify_token)):
+    """Preview PDF for a saved scheme draft. No wallet charge."""
+    draft = await db.scheme_drafts.find_one({"_id": ObjectId(draft_id), "teacherId": user["id"]})
+    if not draft:
+        raise HTTPException(status_code=404, detail="Scheme draft not found")
+
+    try:
+        pdf_bytes = generate_scheme_pdf(draft["scheme"])
+        return StreamingResponse(
+            BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": 'inline; filename="scheme_preview.pdf"',
+                "Content-Length": str(len(pdf_bytes)),
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error previewing scheme draft: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate preview")
+
+
+@api_router.post("/schemes/drafts/{draft_id}/download")
+async def download_scheme_draft(draft_id: str, user: dict = Depends(verify_token)):
+    """Download PDF for a saved scheme draft. Charges KES 15 on first download."""
+    draft = await db.scheme_drafts.find_one({"_id": ObjectId(draft_id), "teacherId": user["id"]})
+    if not draft:
+        raise HTTPException(status_code=404, detail="Scheme draft not found")
+
+    # If already paid, allow re-download without charge
+    if draft.get("isPaid"):
+        try:
+            pdf_bytes = generate_scheme_pdf(draft["scheme"])
+            scheme_data = draft["scheme"]
+            subject = scheme_data.get("subjectName", "Subject").replace(" ", "_")
+            grade_name = scheme_data.get("gradeName", "Grade").replace(" ", "_")
+            term = scheme_data.get("term", 1)
+            filename = f"Scheme_{subject}_{grade_name}_Term{term}.pdf"
+
+            await db.scheme_drafts.update_one(
+                {"_id": ObjectId(draft_id)},
+                {"$inc": {"downloadCount": 1}, "$set": {"lastDownloadedAt": datetime.utcnow()}}
+            )
+            return StreamingResponse(
+                BytesIO(pdf_bytes),
+                media_type="application/pdf",
+                headers={
+                    "Content-Disposition": f'attachment; filename="{filename}"',
+                    "Content-Length": str(len(pdf_bytes)),
+                }
+            )
+        except Exception as e:
+            logger.error(f"Error re-downloading scheme draft: {str(e)}")
+            raise HTTPException(status_code=500, detail="Failed to generate PDF")
+
+    # First download — charge wallet
+    firebase_uid = user.get("firebaseUid")
+    if not firebase_uid:
+        raise HTTPException(status_code=401, detail="Invalid user session")
+
+    user_profile = await db.users.find_one({"firebaseUid": firebase_uid})
+    if not user_profile:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user_profile.get("walletBalance", 0) < SCHEME_DOWNLOAD_COST:
+        raise HTTPException(status_code=402, detail={
+            "message": "Insufficient wallet balance",
+            "required": SCHEME_DOWNLOAD_COST,
+            "current": user_profile.get("walletBalance", 0),
+        })
+
+    import uuid as uuid_lib
+    ledger_ref = f"SCHEME-{uuid_lib.uuid4().hex[:12].upper()}"
+
+    # Ledger entry first (source of truth)
+    scheme_data = draft["scheme"]
+    try:
+        await db.wallet_ledger.insert_one({
+            "userId": user["id"],
+            "type": "DEBIT",
+            "amount": SCHEME_DOWNLOAD_COST,
+            "reference": ledger_ref,
+            "source": "SCHEME_DOWNLOAD",
+            "description": f"Scheme of Work — {scheme_data.get('subjectName', '')} Term {scheme_data.get('term', 1)}",
+            "createdAt": datetime.utcnow(),
+        })
+    except Exception:
+        raise HTTPException(status_code=500, detail="Payment processing error. Please try again.")
+
+    # Atomic deduction
+    result = await db.users.update_one(
+        {"firebaseUid": firebase_uid, "walletBalance": {"$gte": SCHEME_DOWNLOAD_COST}},
+        {"$inc": {"walletBalance": -SCHEME_DOWNLOAD_COST}},
+    )
+    if result.modified_count == 0:
+        await db.wallet_ledger.delete_one({"reference": ledger_ref})
+        raise HTTPException(status_code=402, detail="Insufficient wallet balance")
+
+    await db.wallets.update_one(
+        {"userId": user["id"]},
+        {"$inc": {"balance": -SCHEME_DOWNLOAD_COST}, "$set": {"updatedAt": datetime.utcnow()}},
+        upsert=True,
+    )
+
+    # Generate PDF
+    try:
+        pdf_bytes = generate_scheme_pdf(scheme_data)
+        subject = scheme_data.get("subjectName", "Subject").replace(" ", "_")
+        grade_name = scheme_data.get("gradeName", "Grade").replace(" ", "_")
+        term = scheme_data.get("term", 1)
+        filename = f"Scheme_{subject}_{grade_name}_Term{term}.pdf"
+
+        # Mark as paid
+        await db.scheme_drafts.update_one(
+            {"_id": ObjectId(draft_id)},
+            {"$set": {
+                "status": "finalized",
+                "isPaid": True,
+                "paidAt": datetime.utcnow(),
+                "paymentReference": ledger_ref,
+                "lastDownloadedAt": datetime.utcnow(),
+            }, "$inc": {"downloadCount": 1}}
+        )
+
+        updated_user = await db.users.find_one({"firebaseUid": firebase_uid})
+        new_balance = updated_user.get("walletBalance", 0) if updated_user else 0
+
+        return StreamingResponse(
+            BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "Content-Length": str(len(pdf_bytes)),
+                "X-New-Balance": str(new_balance),
+            }
+        )
+    except Exception as e:
+        # Refund
+        await db.users.update_one(
+            {"firebaseUid": firebase_uid},
+            {"$inc": {"walletBalance": SCHEME_DOWNLOAD_COST}},
+        )
+        await db.wallet_ledger.delete_one({"reference": ledger_ref})
+        await db.wallets.update_one(
+            {"userId": user["id"]},
+            {"$inc": {"balance": SCHEME_DOWNLOAD_COST}, "$set": {"updatedAt": datetime.utcnow()}},
+        )
+        logger.error(f"Scheme draft PDF failed, refunded: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate PDF. Payment refunded.")
+
 # ==================== ADMIN ENDPOINTS ====================
 
 # Grades
@@ -3220,7 +3490,11 @@ async def admin_get_substrands(strandId: Optional[str] = None, user: dict = Depe
 @api_router.post("/admin/substrands")
 async def admin_create_substrand(substrand: SubStrand, user: dict = Depends(verify_admin)):
     result = await db.substrands.insert_one(substrand.dict(exclude={"id"}))
-    return {"success": True, "id": str(result.inserted_id)}
+    new_id = str(result.inserted_id)
+    # Auto-sync lesson SLOs if number_of_lessons was set
+    if substrand.number_of_lessons and substrand.number_of_lessons >= 1:
+        await sync_lesson_slos_for_substrand(db, new_id)
+    return {"success": True, "id": new_id}
 
 @api_router.put("/admin/substrands/{substrand_id}")
 async def admin_update_substrand(substrand_id: str, substrand: SubStrand, user: dict = Depends(verify_admin)):
@@ -3232,13 +3506,17 @@ async def admin_update_substrand(substrand_id: str, substrand: SubStrand, user: 
         {"_id": ObjectId(substrand_id)},
         {"$set": update_data}
     )
+    # Auto-sync lesson SLOs if number_of_lessons changed
+    if "number_of_lessons" in update_data:
+        await sync_lesson_slos_for_substrand(db, substrand_id)
     return {"success": True}
 
 @api_router.delete("/admin/substrands/{substrand_id}")
 async def admin_delete_substrand(substrand_id: str, user: dict = Depends(verify_admin)):
     await db.substrands.delete_one({"_id": ObjectId(substrand_id)})
-    # Also clean up substrand_lessons
+    # Clean up related data
     await db.substrand_lessons.delete_many({"substrand_id": substrand_id})
+    await db.lesson_slos.delete_many({"substrandId": substrand_id})
     return {"success": True}
 
 # ==================== SUBSTRAND LESSONS ====================
@@ -3359,6 +3637,130 @@ async def validate_substrand_lessons(substrand_id: str, user: dict = Depends(ver
 
     return {"success": True, "valid": True, "useFallback": False,
             "message": "All lessons properly configured"}
+
+# ==================== LESSON SLO ENDPOINTS ====================
+
+@api_router.get("/admin/lesson-slos/{substrand_id}")
+async def admin_get_lesson_slos(substrand_id: str, user: dict = Depends(verify_admin)):
+    """Get all active lesson SLOs for a substrand. Auto-syncs if missing."""
+    substrand = await db.substrands.find_one({"_id": ObjectId(substrand_id)})
+    if not substrand:
+        raise HTTPException(status_code=404, detail="Substrand not found")
+
+    num = substrand.get("number_of_lessons")
+    if num and num >= 1:
+        # Auto-sync: create missing lesson SLOs if needed
+        await sync_lesson_slos_for_substrand(db, substrand_id)
+
+    slos = await get_active_lesson_slos(db, substrand_id)
+    return {"success": True, "lessonSlos": slos, "numberOfLessons": num or 0}
+
+
+@api_router.put("/admin/lesson-slos/{substrand_id}/{lesson_number}")
+async def admin_upsert_lesson_slo(
+    substrand_id: str, lesson_number: int, body: dict, user: dict = Depends(verify_admin)
+):
+    """Create or update a single lesson SLO. Marks it as admin-edited (isDraft=False)."""
+    substrand = await db.substrands.find_one({"_id": ObjectId(substrand_id)})
+    if not substrand:
+        raise HTTPException(status_code=404, detail="Substrand not found")
+
+    num = substrand.get("number_of_lessons", 0)
+    if lesson_number < 1 or (num and lesson_number > num):
+        raise HTTPException(status_code=400, detail=f"Lesson number must be between 1 and {num}")
+
+    update_fields = {
+        "substrandId": substrand_id,
+        "strandId": substrand.get("strandId", ""),
+        "lessonNumber": lesson_number,
+        "isDraft": False,
+        "isAutoGenerated": False,
+        "isActive": True,
+        "updatedAt": datetime.utcnow(),
+    }
+    # Allow updating any of the curriculum fields
+    for field in [
+        "outcome", "description", "parentSloId", "title",
+        "keyInquiryQuestions", "learningExperiences", "learningResources",
+        "assessmentMethods", "coreCompetencies", "values", "pcis",
+    ]:
+        if field in body:
+            update_fields[field] = body[field]
+
+    result = await db.lesson_slos.update_one(
+        {"substrandId": substrand_id, "lessonNumber": lesson_number},
+        {"$set": update_fields, "$setOnInsert": {"createdAt": datetime.utcnow()}},
+        upsert=True,
+    )
+    action = "created" if result.upserted_id else "updated"
+    return {"success": True, "action": action}
+
+
+@api_router.post("/admin/lesson-slos/{substrand_id}/bulk")
+async def admin_bulk_upsert_lesson_slos(
+    substrand_id: str, body: dict, user: dict = Depends(verify_admin)
+):
+    """Bulk upsert lesson SLOs. Expects { lessonSlos: [ {lessonNumber, outcome, ...}, ... ] }"""
+    items = body.get("lessonSlos", [])
+    if not items:
+        raise HTTPException(status_code=400, detail="No lesson SLOs provided")
+
+    updated = 0
+    for item in items:
+        ln = item.get("lessonNumber")
+        if not ln:
+            continue
+        update_fields = {
+            "substrandId": substrand_id,
+            "lessonNumber": ln,
+            "isDraft": False,
+            "isAutoGenerated": False,
+            "isActive": True,
+            "updatedAt": datetime.utcnow(),
+        }
+        for field in [
+            "outcome", "description", "parentSloId", "title",
+            "keyInquiryQuestions", "learningExperiences", "learningResources",
+            "assessmentMethods", "coreCompetencies", "values", "pcis",
+        ]:
+            if field in item:
+                update_fields[field] = item[field]
+
+        await db.lesson_slos.update_one(
+            {"substrandId": substrand_id, "lessonNumber": ln},
+            {"$set": update_fields, "$setOnInsert": {"createdAt": datetime.utcnow()}},
+            upsert=True,
+        )
+        updated += 1
+
+    return {"success": True, "updated": updated}
+
+
+@api_router.post("/admin/lesson-slos/{substrand_id}/regenerate")
+async def admin_regenerate_lesson_slos(substrand_id: str, user: dict = Depends(verify_admin)):
+    """Regenerate auto-generated draft lesson SLOs. Preserves admin-edited ones."""
+    result = await regenerate_lesson_slos(db, substrand_id, force=True)
+    if result.get("error"):
+        raise HTTPException(status_code=400, detail=result["error"])
+    slos = await get_active_lesson_slos(db, substrand_id)
+    return {"success": True, "result": result, "lessonSlos": slos}
+
+
+@api_router.post("/admin/lesson-slos/{substrand_id}/sync")
+async def admin_sync_lesson_slos(substrand_id: str, user: dict = Depends(verify_admin)):
+    """Sync lesson SLOs to match current number_of_lessons (non-destructive)."""
+    result = await sync_lesson_slos_for_substrand(db, substrand_id)
+    if result.get("error"):
+        raise HTTPException(status_code=400, detail=result["error"])
+    slos = await get_active_lesson_slos(db, substrand_id)
+    return {"success": True, "result": result, "lessonSlos": slos}
+
+
+@api_router.post("/admin/lesson-slos/bootstrap")
+async def admin_bootstrap_lesson_slos(user: dict = Depends(verify_admin)):
+    """Migration: scan all substrands and generate missing lesson SLOs."""
+    stats = await bootstrap_missing_lesson_slos(db)
+    return {"success": True, "stats": stats}
 
 # SLOs
 @api_router.get("/admin/slos")
@@ -5487,6 +5889,16 @@ async def startup_event():
         await db.substrand_lessons.create_index(
             [("substrand_id", 1), ("lesson_number", 1)], unique=True
         )
+
+        # Lesson SLOs index (compound unique)
+        await db.lesson_slos.create_index(
+            [("substrandId", 1), ("lessonNumber", 1)], unique=True
+        )
+        await db.lesson_slos.create_index("substrandId")
+
+        # Scheme drafts index
+        await db.scheme_drafts.create_index("teacherId")
+        await db.scheme_drafts.create_index([("teacherId", 1), ("status", 1)])
         
         logger.info("Database indexes created/verified successfully")
     except Exception as e:
