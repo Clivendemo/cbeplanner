@@ -140,8 +140,10 @@ class ProductionLogger:
     
     @staticmethod
     def log_auth_attempt(email: str, success: bool, ip: str = None, reason: str = None):
-        """Log authentication attempt"""
-        logger.info(f"AUTH_ATTEMPT: email={email[:3]}***@***.com success={success} ip={ip or 'unknown'} reason={reason or 'N/A'}")
+        """Log authentication attempt with masked email"""
+        parts = email.split('@') if '@' in email else [email, '']
+        masked = f"{parts[0][:2]}***@{parts[1][:2]}***" if len(parts) == 2 and parts[1] else "***"
+        logger.info(f"AUTH_ATTEMPT: email={masked} success={success} ip={ip or 'unknown'} reason={reason or 'N/A'}")
     
     @staticmethod
     def log_payment_attempt(user_id: str, amount: float, phone: str, status: str, reference: str = None):

@@ -26,3 +26,5 @@ db_export/
 
 # Logs
 *.log
+pdfs_processed/
+scripts/seed/

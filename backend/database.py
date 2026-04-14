@@ -152,5 +152,5 @@ async def ensure_indexes():
         return False
 
 
-# Convenience function for direct database access
-db = property(lambda self: get_database())
+# Module-level convenience — import database.get_database() to use
+# (db = property(...) was removed — property() only works inside a class)

@@ -23,9 +23,17 @@ class MpesaService:
         self.consumer_secret = os.getenv('MPESA_CONSUMER_SECRET', '')
         self.shortcode = os.getenv('MPESA_SHORTCODE', '174379')  # BusinessShortCode for STK Push
         self.till_number = os.getenv('MPESA_TILL_NUMBER', '')  # PartyB - Till that receives payment
-        self.passkey = os.getenv('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919')  # Sandbox default
-        self.callback_url = os.getenv('MPESA_CALLBACK_URL', '')
         self.env = os.getenv('MPESA_ENV', 'sandbox')
+        
+        # Passkey: require explicit env var in production, sandbox default otherwise
+        if self.env == 'production':
+            self.passkey = os.getenv('MPESA_PASSKEY')
+            if not self.passkey:
+                raise RuntimeError("MPESA_PASSKEY environment variable is required in production")
+        else:
+            self.passkey = os.getenv('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919')
+        
+        self.callback_url = os.getenv('MPESA_CALLBACK_URL', '')
         
         # If no till number specified, use shortcode as PartyB
         if not self.till_number:

@@ -6,82 +6,94 @@ A competency-based education lesson planning system for Kenyan teachers with M-P
 ## Architecture
 - **Frontend**: React Native (Expo) - Cross-platform (Android, Web)
 - **Backend**: FastAPI (Python) on port 8001
-- **Database**: MongoDB
+- **Database**: MongoDB (Motor async)
 - **Auth**: Firebase Authentication
 - **Payments**: Safaricom Daraja API (M-Pesa)
+
+## Production Hardening (April 14, 2026)
+
+### Section 1 — Critical Bug Fixes
+- Removed duplicate `app.include_router(api_router)` at end of server.py
+- Removed hardcoded secrets (Firebase API Key, JWT Secret) — now fail-fast in production if missing
+- M-Pesa passkey: sandbox default kept for dev, required in production
+- Admin emails now loaded from `ADMIN_EMAILS` env var (comma-separated)
+- Removed duplicate `GET /admin/slo-mappings/{slo_id}` route (kept richer version with `exists` field)
+- Fixed `database.py` broken `property()` call
+- Fixed scheme download race condition: replaced `$set` with atomic `$inc` + `wallet_ledger` entry
+- Added refund-on-failure for lesson plan generation (wraps content gen in try/except)
+
+### Section 2 — Security Hardening
+- M-Pesa callback: added shared secret validation (`MPESA_CALLBACK_SECRET` header)
+- Added `validate_object_id()` helper for clean 400 on malformed IDs
+- Admin init endpoint now requires `ADMIN_BOOTSTRAP_SECRET` header
+- Email masking in auth logs improved (full domain masking)
+
+### Section 3 — Curriculum Density Fix
+- Scheme of Work `generate_scheme_v2` now uses `number_of_lessons` from substrands
+- Substrand with `number_of_lessons=6` and 2 SLOs generates 6 rows (SLOs cycle)
+- Falls back to SLO count if `number_of_lessons` not set
+- Added `lessonInSubstrand` and `totalLessonsInSubstrand` to scheme lesson rows
+- `admin_update_substrand` now uses partial update (only sets non-None fields)
+
+### Section 4 — Payment & Wallet Integrity
+- Scheme download now creates `wallet_ledger` entry + atomic `$inc` deduction
+- Lesson plan charge syncs `wallets` collection alongside `users.walletBalance`
+- PDF failure → refund + ledger rollback + wallets collection rollback
+
+### Section 5 — UX Improvements
+- `/api/wallet/balance` now returns `freeLessonsRemaining` and `currency`
+- `verify_token` user auto-creation now includes `freeLessonsRemaining` and creates wallet entry
+- Friendly 404 messages for missing curriculum data
+- Added `api_error()` helper for standardized error responses
+
+### Section 6 — Cleanup
+- Removed 13 unused packages from requirements.txt (stripe, boto3, HuggingFace, linting tools)
+- Moved 7 seed/extract scripts to `backend/scripts/seed/`
+- Added `pdfs_processed/` and `scripts/seed/` to `.gitignore`
+- Seed script generator now saves `number_of_lessons` on substrands
 
 ## What's Been Implemented
 
 ### Core Features
-- Login/Signup with Firebase Auth (keyboard handling fixed for web)
-- Navigation with centralized AuthGate (no double navigation)
+- Login/Signup with Firebase Auth
 - Dashboard with 6 feature tiles
-- Lesson Plan generation with cascading dropdowns (Grade > Subject > Strand > Substrand > SLO)
-- Scheme of Work generation
+- Lesson Plan generation with cascading dropdowns
+- Scheme of Work generation (with number_of_lessons support)
 - M-Pesa wallet top-up integration
-- Transaction history
-- Teacher profile management
+- Notes Generation module
 
-### Lesson Planning Engine Extension (April 13, 2026)
-- **Multi-Lesson Architecture**: Broke "1 SLO = 1 Lesson" assumption
-- **DB Schema**: Added `number_of_lessons` to substrands, new `substrand_lessons` collection
-- **Backend Endpoints**: GET/POST/PATCH/DELETE for substrand lessons
-- **Admin UI**: Lesson configuration modal in curriculum.tsx
-- **Frontend**: LessonPlanDisplay.tsx shows lesson-specific outcomes
-- **PDF Generator**: Updated to render "Lesson X of Y" label and lesson-specific outcome bullets
-- **Backward Compatibility**: Falls back to old SLO logic if no substrand_lessons configured
+### Multi-Lesson Architecture
+- `number_of_lessons` field on substrands
+- `substrand_lessons` collection for lesson-specific outcomes
+- PDF generator renders "Lesson X of Y" and specific outcomes
+- Backward compatibility with SLO-only fallback
 
-### Move Modal Fix (April 13, 2026)
-- **Root Cause**: Modal used bottom-sheet pattern (justifyContent: flex-end) causing content clipping
-- **Fix**: Centered modal with ScrollView body, fixed header/footer, responsive sizing
-- **Styles**: New moveModalOverlay, moveModalContainer, moveModalHeader, moveModalBody, moveModalFooter
-- **Features**: Overlay dismiss, close button, proper z-index, nested scroll support
-
-### Notes Generation Feature (April 2, 2026)
-- **Backend**: `POST /api/notes/generate`, `GET /api/notes/{id}/preview`, `POST /api/notes/{id}/download`
-- **Content**: Rich educational notes with Introduction, Main Content, Key Terms, Practice Questions
-- **PDF**: Clean textbook-style A4 PDF via ReportLab
-- **Wallet**: KES 1 per download (first one free), preview is free
-
-### Stabilization Fixes (April 1, 2026)
-- Fixed double navigation (centralized in AuthGate)
-- Fixed login keyboard bug
-- Fixed frontend .env pointing to production instead of preview
-
-### Previous Work
-- PDF preview using WebView (mobile)
-- Admin curriculum PDF upload
-- Android native build setup
-- Web infinite loading fix
-- Help & Support with email
+### Admin Features
+- Curriculum CRUD with move modal (centered, scrollable, responsive)
+- Bulk add/edit operations
+- SLO mapping management
+- Relationship repair endpoint
+- Dynamic strand/substrand fetching in move modal
 
 ## Key API Endpoints
 - `POST /api/auth/verify` - Firebase token verification
-- `GET /api/grades`, subjects, strands, substrands, slos - Curriculum data
-- `POST /api/lesson-plans/generate` - Generate lesson plans
-- `GET /api/lesson-plans/{id}/pdf` - Download lesson plan PDF
-- `GET /api/substrands/{id}/lessons` - Get substrand lessons
-- `POST /api/substrands/{id}/lessons/generate` - Generate lesson slots
-- `PATCH /api/substrand-lessons/{id}` - Update lesson outcomes
-- `POST /api/schemes/generate` - Generate schemes
-- `POST /api/notes/generate` - Generate study notes
-- `POST /api/wallet/topup` - M-Pesa wallet top-up
+- `GET /api/wallet/balance` - Quick balance check with free lessons remaining
+- `POST /api/lesson-plans/generate` - Generate lesson plans (with refund on failure)
+- `POST /api/schemes/download` - Download scheme PDF (KES 15, atomic payment)
+- `POST /api/admin/repair-relationships` - Check/fix orphaned curriculum data
+- `GET /api/substrands/{id}/lessons` - Get substrand lesson config
 
 ## Pricing
 - Lesson Plans: KES 2 each (5 free on signup)
 - Notes Download: KES 1 each (first one free)
+- Scheme Download: KES 15
 - Notes Preview: Free
 
+## Environment Variables Required for Production
+See Section 7 in the hardening spec for full list.
+
 ## Next Tasks
-1. Past Papers feature implementation
-2. Android APK build testing
-3. Configure release signing for Play Store
-4. Production environment variable management for Vercel
-5. Refactor server.py (5000+ lines) into smaller route modules
-
-## Test Data
-- Grade 4 > Mathematics > Numbers > Whole Numbers (with 3 SLOs, 2 substrand_lessons configured)
-
-## Admin Emails
-- mail2clive@gmail.com (primary)
-- testadmin2026@gmail.com (test account)
+1. Firebase Admin SDK integration (Section 2.1 — deferred: requires service account JSON)
+2. Past Papers feature
+3. Android APK build testing
+4. Refactor server.py into smaller route modules

@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone, timedelta
 from bson import ObjectId
+from bson.errors import InvalidId
 import httpx
 from io import BytesIO
 
@@ -68,12 +69,21 @@ else:
 db = client[db_name]
 
 # Firebase project configuration from environment variables
-# Falls back to defaults for backward compatibility
 FIREBASE_PROJECT_ID = os.getenv('FIREBASE_PROJECT_ID', 'cbeplanner')
-FIREBASE_API_KEY = os.getenv('FIREBASE_API_KEY', 'AIzaSyBalkTy90NBRs7Qky_VPTlikVP6UD69-p8')
+FIREBASE_API_KEY = os.getenv('FIREBASE_API_KEY')
+if not FIREBASE_API_KEY:
+    if os.getenv('ENVIRONMENT', 'development') == 'production':
+        raise RuntimeError("FIREBASE_API_KEY environment variable is required")
+    else:
+        FIREBASE_API_KEY = 'AIzaSyBalkTy90NBRs7Qky_VPTlikVP6UD69-p8'  # dev-only fallback
 
-# JWT Secret for additional security (optional)
-JWT_SECRET = os.getenv('JWT_SECRET', 'default-secret-change-in-production')
+# JWT Secret for additional security
+JWT_SECRET = os.getenv('JWT_SECRET')
+if not JWT_SECRET:
+    if os.getenv('ENVIRONMENT', 'development') == 'production':
+        raise RuntimeError("JWT_SECRET environment variable is required")
+    else:
+        JWT_SECRET = 'default-secret-change-in-production'  # dev-only fallback
 
 # Environment
 ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
@@ -273,6 +283,23 @@ def serialize_doc(doc):
         doc["id"] = str(doc["_id"])
         del doc["_id"]
     return doc
+
+def validate_object_id(id_value: str, field_name: str = "ID") -> ObjectId:
+    """Convert string to ObjectId, raising a clean 400 if invalid."""
+    try:
+        return ObjectId(id_value)
+    except (InvalidId, TypeError):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid {field_name} format. Please try again."
+        )
+
+def api_error(status_code: int, message: str, code: str = None) -> HTTPException:
+    """Standardized API error response."""
+    return HTTPException(
+        status_code=status_code,
+        detail={"success": False, "error": message, "code": code or "ERROR"}
+    )
 
 # ==================== MODELS ====================
 
@@ -616,11 +643,19 @@ async def verify_token(authorization: Optional[str] = Header(None)):
                 "schoolName": "",
                 "role": "teacher",
                 "walletBalance": 0.0,
+                "freeLessonsRemaining": FREE_LESSONS_ON_SIGNUP,
                 "freeLessonUsed": False,
                 "freeNotesUsed": False,
                 "createdAt": datetime.utcnow()
             }
             result = await db.users.insert_one(new_user)
+            # Also create wallet entry
+            await db.wallets.insert_one({
+                "userId": str(result.inserted_id),
+                "balance": 0.0,
+                "currency": "KES",
+                "updatedAt": datetime.utcnow()
+            })
             user = await db.users.find_one({"_id": result.inserted_id})
         
         return serialize_doc(user)
@@ -631,8 +666,9 @@ async def verify_token(authorization: Optional[str] = Header(None)):
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Token verification error: {str(e)}")
 
-# The admin emails allowed
-ADMIN_EMAILS = {"mail2clive@gmail.com", "testadmin2026@gmail.com"}
+# Admin emails from environment (comma-separated)
+_admin_emails_env = os.getenv('ADMIN_EMAILS', 'mail2clive@gmail.com,testadmin2026@gmail.com')
+ADMIN_EMAILS = {e.strip().lower() for e in _admin_emails_env.split(',') if e.strip()}
 
 async def verify_admin(authorization: Optional[str] = Header(None)):
     """
@@ -728,8 +764,16 @@ async def verify_user_token(request: TokenVerifyRequest):
         raise HTTPException(status_code=401, detail=str(e))
 
 @api_router.post("/auth/initialize-admin")
-async def initialize_default_admin():
-    """Initialize default admin account - requires manual Firebase user creation"""
+async def initialize_default_admin(request: Request):
+    """Initialize default admin account — protected by bootstrap secret."""
+    bootstrap_secret = os.getenv('ADMIN_BOOTSTRAP_SECRET', '')
+    if not bootstrap_secret:
+        raise HTTPException(status_code=503, detail="Admin initialization is disabled.")
+    
+    provided = request.headers.get('X-Bootstrap-Secret', '')
+    if provided != bootstrap_secret:
+        raise HTTPException(status_code=403, detail="Unauthorized.")
+    
     try:
         # Check if admin already exists
         existing_admin = await db.users.find_one({"role": "admin"})
@@ -929,6 +973,7 @@ async def mpesa_callback(request: Request, callback_data: PaymentCallbackData):
     """
     M-Pesa callback endpoint for payment confirmation
     
+    - Validates shared secret (defense-in-depth)
     - Validates request comes from Safaricom IP
     - Receives payment result from M-Pesa
     - Stores raw callback payload for auditing
@@ -939,6 +984,14 @@ async def mpesa_callback(request: Request, callback_data: PaymentCallbackData):
     - Implements idempotency (ignores already processed transactions)
     """
     try:
+        # Shared secret validation (defense-in-depth beyond IP check)
+        callback_secret = os.getenv('MPESA_CALLBACK_SECRET', '')
+        if callback_secret:
+            provided_secret = request.headers.get('X-Callback-Secret', '')
+            if provided_secret != callback_secret:
+                logger.warning(f"M-Pesa callback rejected — invalid secret. IP: {get_client_ip(request)}")
+                return {"ResultCode": 0, "ResultDesc": "Accepted"}
+        
         # Get client IP and validate it's from Safaricom
         client_ip = get_client_ip(request)
         is_production = os.getenv('MPESA_ENV', 'sandbox') == 'production'
@@ -1235,19 +1288,16 @@ async def get_user_transactions(
 
 @api_router.get("/wallet/balance")
 async def get_wallet_balance(user: dict = Depends(verify_token)):
-    """Get current wallet balance for user"""
-    firebase_uid = user.get("firebaseUid", user.get("id", ""))
-    
-    user_profile = await db.users.find_one({"firebaseUid": firebase_uid})
-    if not user_profile:
-        # Try by user ID
-        user_profile = await db.users.find_one({"_id": ObjectId(user["id"])})
-    
-    if not user_profile:
-        return {"balance": 0}
+    """Lightweight endpoint to fetch current wallet balance only."""
+    user_doc = await db.users.find_one({"_id": ObjectId(user["id"])})
+    if not user_doc:
+        return {"success": True, "balance": 0, "freeLessonsRemaining": 0, "currency": "KES"}
     
     return {
-        "balance": user_profile.get("walletBalance", 0)
+        "success": True,
+        "balance": float(user_doc.get("walletBalance", 0)),
+        "freeLessonsRemaining": user_doc.get("freeLessonsRemaining", 0),
+        "currency": "KES"
     }
 
 
@@ -1470,6 +1520,16 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
                 raise HTTPException(status_code=402, detail="Insufficient wallet balance")
             
             logger.info(f"User {user_id} charged KES {LESSON_PLAN_COST_KES} for lesson plan. Ref: {ledger_ref}")
+            
+            # Sync wallets collection
+            await db.wallets.update_one(
+                {"userId": user_id},
+                {"$inc": {"balance": -LESSON_PLAN_COST_KES}, "$set": {"updatedAt": datetime.utcnow()}},
+                upsert=True
+            )
+        
+        # Content generation follows — if it fails after charge, refund is handled at the end
+        _charged_wallet = free_remaining <= 0
         
         # Fetch all related data
         grade = await db.grades.find_one({"_id": ObjectId(request.gradeId)})
@@ -1481,14 +1541,12 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
         logger.info(f"[LESSON PLAN] Data lookup: grade={grade is not None}, subject={subject is not None}, strand={strand is not None}, substrand={substrand is not None}, slo={slo is not None}")
         
         if not all([grade, subject, strand, substrand, slo]):
-            missing = []
-            if not grade: missing.append("grade")
-            if not subject: missing.append("subject")
-            if not strand: missing.append("strand")
-            if not substrand: missing.append("substrand")
-            if not slo: missing.append("slo")
+            missing = [name for name, val in [
+                ("grade", grade), ("subject", subject),
+                ("strand", strand), ("sub-strand", substrand), ("learning outcome", slo)
+            ] if not val]
             logger.error(f"[LESSON PLAN] Missing data: {missing}")
-            raise HTTPException(status_code=404, detail=f"Invalid selection - missing: {', '.join(missing)}")
+            raise HTTPException(status_code=404, detail=f"Could not find {', '.join(missing)}. Please go back and re-select your topic.")
         
         # Get activities for this strand/substrand
         activities = await db.activities.find({
@@ -1830,6 +1888,27 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
         })
         
         return {"success": True, "lessonPlan": lesson_plan}
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        # Refund if wallet was charged and content generation failed
+        if free_remaining <= 0:
+            await db.users.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$inc": {"walletBalance": LESSON_PLAN_COST_KES}}
+            )
+            await db.wallets.update_one(
+                {"userId": user_id},
+                {"$inc": {"balance": LESSON_PLAN_COST_KES}, "$set": {"updatedAt": datetime.utcnow()}}
+            )
+            await db.wallet_ledger.delete_one({"reference": ledger_ref})
+            logger.warning(f"Lesson plan failed post-charge, refunded user {user_id}. Error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to generate lesson plan. Your payment has been refunded." if free_remaining <= 0
+                   else "Failed to generate lesson plan. Please try again."
+        )
     
     finally:
         # Always release the lock
@@ -2664,8 +2743,18 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
         
             # Get all SLOs for this substrand
             slos = await db.slos.find({"substrandId": substrand_id}).sort("order", 1).to_list(100)
+            if not slos:
+                continue
         
-            for slo in slos:
+            # KEY FIX: use number_of_lessons to determine how many rows this substrand gets
+            num_lessons_for_substrand = substrand.get("number_of_lessons") or len(slos)
+            num_lessons_for_substrand = max(1, int(num_lessons_for_substrand))
+            
+            learning_act = await db.learning_activities.find_one({"substrandId": substrand_id})
+            
+            for lesson_slot in range(num_lessons_for_substrand):
+                # Distribute SLOs across lesson slots — cycle if fewer SLOs than lessons
+                slo = slos[lesson_slot % len(slos)]
                 slo_id = str(slo["_id"])
             
                 # Get SLO mapping for competencies and values
@@ -2690,9 +2779,6 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                         if pci:
                             pcis.append(pci["name"])
             
-                # Get learning activities if available
-                learning_act = await db.learning_activities.find_one({"substrandId": substrand_id})
-            
                 curriculum_content.append({
                     "strandId": str(strand["_id"]),
                     "strand": strand["name"],
@@ -2701,6 +2787,8 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                     "sloId": slo_id,
                     "slo": slo["name"],
                     "sloDescription": slo.get("description", slo["name"]),
+                    "lessonInSubstrand": lesson_slot + 1,
+                    "totalLessonsInSubstrand": num_lessons_for_substrand,
                     "competencies": competencies or ["Critical Thinking", "Communication"],
                     "values": values or ["Responsibility", "Respect"],
                     "pcis": pcis,
@@ -2862,6 +2950,8 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                         "strand": content["strand"],
                         "substrand": content["substrand"],
                         "slo": f"By the end of the lesson, the learner should be able to {content['slo'].lower()}.",
+                        "lessonInSubstrand": content.get("lessonInSubstrand", 1),
+                        "totalLessonsInSubstrand": content.get("totalLessonsInSubstrand", 1),
                         "keyInquiryQuestions": inquiry_qs,
                         "learningExperiences": experiences[:4] if isinstance(experiences, list) else [experiences],
                         "learningResources": resources[:4] if isinstance(resources, list) else [resources],
@@ -2973,25 +3063,43 @@ async def download_scheme(scheme_data: Dict[str, Any], user: dict = Depends(veri
             }
         )
     
-    # Deduct from wallet
-    new_balance = current_balance - SCHEME_DOWNLOAD_COST
-    await db.users.update_one(
-        {"firebaseUid": firebase_uid},
-        {"$set": {"walletBalance": new_balance}}
+    import uuid as uuid_lib
+    ledger_ref = f"SCHEME-{uuid_lib.uuid4().hex[:12].upper()}"
+    
+    # Create wallet_ledger DEBIT entry first (source of truth)
+    ledger_entry = {
+        "userId": user["id"],
+        "type": "DEBIT",
+        "amount": SCHEME_DOWNLOAD_COST,
+        "reference": ledger_ref,
+        "source": "SCHEME_DOWNLOAD",
+        "description": f"Scheme of Work — {scheme_data.get('subjectName', 'Subject')} Term {scheme_data.get('term', 1)}",
+        "createdAt": datetime.utcnow()
+    }
+    try:
+        await db.wallet_ledger.insert_one(ledger_entry)
+    except Exception:
+        raise HTTPException(status_code=500, detail="Payment processing error. Please try again.")
+    
+    # Atomic deduction with balance guard (prevents race condition)
+    result = await db.users.update_one(
+        {"firebaseUid": firebase_uid, "walletBalance": {"$gte": SCHEME_DOWNLOAD_COST}},
+        {"$inc": {"walletBalance": -SCHEME_DOWNLOAD_COST}}
     )
     
-    # Record transaction with unique tx_ref
-    import uuid
-    tx_ref = f"SCHEME_{uuid.uuid4().hex[:12].upper()}"
-    await db.wallet_transactions.insert_one({
-        "userId": user["id"],
-        "tx_ref": tx_ref,
-        "type": "debit",
-        "amount": SCHEME_DOWNLOAD_COST,
-        "description": f"Scheme of Work - {scheme_data.get('subjectName', 'Subject')} Term {scheme_data.get('term', 1)}",
-        "status": "successful",
-        "createdAt": datetime.utcnow()
-    })
+    if result.modified_count == 0:
+        # Rollback the ledger entry
+        await db.wallet_ledger.delete_one({"reference": ledger_ref})
+        raise HTTPException(status_code=402, detail="Insufficient wallet balance")
+    
+    # Sync wallets collection
+    await db.wallets.update_one(
+        {"userId": user["id"]},
+        {"$inc": {"balance": -SCHEME_DOWNLOAD_COST}, "$set": {"updatedAt": datetime.utcnow()}},
+        upsert=True
+    )
+    
+    logger.info(f"Scheme download charged KES {SCHEME_DOWNLOAD_COST} for user {user['id']}. Ref: {ledger_ref}")
     
     # Generate PDF
     try:
@@ -3003,6 +3111,9 @@ async def download_scheme(scheme_data: Dict[str, Any], user: dict = Depends(veri
         term = scheme_data.get('term', 1)
         filename = f"Scheme_{subject}_{grade}_Term{term}.pdf"
         
+        updated_user = await db.users.find_one({"firebaseUid": firebase_uid})
+        new_balance = updated_user.get("walletBalance", 0) if updated_user else 0
+        
         return StreamingResponse(
             BytesIO(pdf_bytes),
             media_type="application/pdf",
@@ -3013,13 +3124,20 @@ async def download_scheme(scheme_data: Dict[str, Any], user: dict = Depends(veri
             }
         )
     except Exception as e:
-        # Refund if PDF generation fails
+        # Refund wallet atomically
         await db.users.update_one(
             {"firebaseUid": firebase_uid},
-            {"$set": {"walletBalance": current_balance}}
+            {"$inc": {"walletBalance": SCHEME_DOWNLOAD_COST}}
         )
-        logger.error(f"Error generating scheme PDF: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to generate PDF")
+        # Rollback ledger entry
+        await db.wallet_ledger.delete_one({"reference": ledger_ref})
+        # Rollback wallets collection
+        await db.wallets.update_one(
+            {"userId": user["id"]},
+            {"$inc": {"balance": SCHEME_DOWNLOAD_COST}, "$set": {"updatedAt": datetime.utcnow()}}
+        )
+        logger.error(f"Scheme PDF generation failed, refunded user {user['id']}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate PDF. Your payment has been refunded.")
 
 # ==================== ADMIN ENDPOINTS ====================
 
@@ -3106,7 +3224,14 @@ async def admin_create_substrand(substrand: SubStrand, user: dict = Depends(veri
 
 @api_router.put("/admin/substrands/{substrand_id}")
 async def admin_update_substrand(substrand_id: str, substrand: SubStrand, user: dict = Depends(verify_admin)):
-    await db.substrands.update_one({"_id": ObjectId(substrand_id)}, {"$set": substrand.dict(exclude={"id"})})
+    # Only update fields that were explicitly provided (not None)
+    update_data = {k: v for k, v in substrand.dict(exclude={"id"}).items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No update data provided")
+    await db.substrands.update_one(
+        {"_id": ObjectId(substrand_id)},
+        {"$set": update_data}
+    )
     return {"success": True}
 
 @api_router.delete("/admin/substrands/{substrand_id}")
@@ -3504,14 +3629,7 @@ async def admin_bulk_create_assessments(request: BulkCreateRequest, user: dict =
         "createdIds": created_ids
     }
 
-# SLO Mappings
-@api_router.get("/admin/slo-mappings/{slo_id}")
-async def admin_get_slo_mapping(slo_id: str, user: dict = Depends(verify_admin)):
-    mapping = await db.slo_mappings.find_one({"sloId": slo_id})
-    if mapping:
-        return {"success": True, "mapping": serialize_doc(mapping)}
-    return {"success": True, "mapping": None}
-
+# SLO Mappings — POST and bulk operations
 @api_router.post("/admin/slo-mappings")
 async def admin_create_slo_mapping(mapping: SLOMapping, user: dict = Depends(verify_admin)):
     # Check if mapping exists
@@ -5416,4 +5534,3 @@ async def migrate_order_fields():
         logger.info("Order field migration completed")
     except Exception as e:
         logger.error(f"Error in order field migration: {str(e)}")
-app.include_router(api_router)
