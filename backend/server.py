@@ -75,10 +75,11 @@ db_name = os.getenv('DB_NAME', 'cbeplanner-oregon')
 
 # Atlas requires certifi CA bundle for SSL; local MongoDB doesn't
 import certifi
+_connect_opts = {"serverSelectionTimeoutMS": 5000, "connectTimeoutMS": 5000}
 if 'mongodb+srv' in mongo_url or 'mongodb.net' in mongo_url:
-    client = AsyncIOMotorClient(mongo_url, tlsCAFile=certifi.where())
+    client = AsyncIOMotorClient(mongo_url, tlsCAFile=certifi.where(), **_connect_opts)
 else:
-    client = AsyncIOMotorClient(mongo_url)
+    client = AsyncIOMotorClient(mongo_url, **_connect_opts)
 db = client[db_name]
 
 # Firebase project configuration from environment variables
@@ -5975,8 +5976,16 @@ async def shutdown_db_client():
 async def startup_event():
     """
     Initialize database indexes on startup.
-    Safe to call multiple times (createIndex is idempotent).
+    Runs as a background task so the server binds the port immediately
+    (prevents Render port-scan timeout).
     """
+    import asyncio
+    asyncio.create_task(_create_indexes())
+    logger.info("Startup complete — index creation running in background")
+
+
+async def _create_indexes():
+    """Create database indexes (idempotent, safe to retry)."""
     try:
         # Create required indexes for production
         # wallet_ledger - UNIQUE reference to prevent duplicate credits
