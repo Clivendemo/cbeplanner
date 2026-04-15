@@ -34,5 +34,5 @@ EXPOSE $PORT
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; import os; urllib.request.urlopen(f'http://localhost:{os.environ.get(\"PORT\", 10000)}/api/health')" || exit 1
 
-# Run the application (Render sets $PORT automatically)
-CMD uvicorn server:app --host 0.0.0.0 --port $PORT
+# Run the application — python server.py reads PORT from env
+CMD python server.py
