@@ -71,6 +71,16 @@ export default function AdminLayout() {
         }}
       />
       <Tabs.Screen
+        name="lesson-slots"
+        options={{
+          title: 'Lesson SLOs',
+          headerTitle: 'Lesson SLO Slots',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="layers" size={size} color={color} />
+          )
+        }}
+      />
+      <Tabs.Screen
         name="data-import"
         options={{
           title: 'Import',
