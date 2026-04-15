@@ -34,10 +34,17 @@ from scheme_generator import (
     generate_inquiry_questions, generate_learning_experiences, generate_learning_resources
 )
 
-# Import lesson SLO service layer
+# Import lesson SLO service layer (legacy — kept for backward compat)
 from lesson_slo_service import (
     sync_lesson_slos_for_substrand, regenerate_lesson_slos,
     get_active_lesson_slos, get_lesson_slo_for_slot, bootstrap_missing_lesson_slos,
+)
+
+# Import lesson SLO slot service (new — Phase 1-3)
+from slot_service import (
+    generate_slots_for_substrand, get_slots_for_substrand,
+    get_slot, update_slot, clear_slot, get_slot_for_scheme,
+    format_resource_display,
 )
 
 # Import production utilities
@@ -1818,35 +1825,41 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
             learning_resources = ["Textbooks", "Charts and diagrams", "Real objects/models", "Digital resources"]
         
         # Create lesson plan with teacher info from profile
-        # ── Attach lesson-specific outcomes from lesson_slos (preferred) or substrand_lessons (legacy) ──
+        # ── Attach lesson-specific data from lesson_slo_slots (primary) ──
         lesson_specific_outcomes = []
         substrand_lesson_number = None
+        slot_resources = []
+        slot_inquiry = ""
         num_lessons = substrand.get("number_of_lessons")
 
         if num_lessons and num_lessons >= 1:
-            # Count how many plans this user already has for this substrand
             existing_count = await db.lesson_plans.count_documents({
                 "teacherId": user["id"],
                 "substrandId": request.substrandId,
             })
-            target_lesson = (existing_count % num_lessons) + 1  # cycle 1..num_lessons
+            target_idx = existing_count % num_lessons  # 0-based slot_index
+            substrand_lesson_number = target_idx + 1
 
-            # Priority 1: lesson_slos (new system)
-            lslo = await get_lesson_slo_for_slot(db, request.substrandId, target_lesson)
-            if lslo and lslo.get("outcome"):
-                lesson_specific_outcomes = [lslo["outcome"]]
-                if lslo.get("description"):
-                    lesson_specific_outcomes.append(lslo["description"])
-                substrand_lesson_number = target_lesson
+            # Priority 1: lesson_slo_slots (new system)
+            slot = await get_slot_for_scheme(db, request.substrandId, target_idx)
+            if slot and slot.get("outcome"):
+                lesson_specific_outcomes = [slot["outcome"]]
+                if slot.get("description"):
+                    lesson_specific_outcomes.append(slot["description"])
+                slot_resources = slot.get("formatted_resources", [])
+                slot_inquiry = slot.get("key_inquiry_question", "")
             else:
-                # Priority 2: substrand_lessons (legacy)
+                # Priority 2: legacy substrand_lessons
                 sl = await db.substrand_lessons.find_one({
                     "substrand_id": request.substrandId,
-                    "lesson_number": target_lesson,
+                    "lesson_number": substrand_lesson_number,
                 })
                 if sl and sl.get("specific_outcomes"):
                     lesson_specific_outcomes = sl["specific_outcomes"]
-                    substrand_lesson_number = target_lesson
+
+        # Merge slot resources into lesson resources
+        if slot_resources:
+            learning_resources = slot_resources
 
         lesson_plan = {
             "teacherId": user["id"],
@@ -2778,91 +2791,106 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
         curriculum_content = []
     
         for substrand_id in request.selectedTopics:
-            # Get substrand
             substrand = await db.substrands.find_one({"_id": ObjectId(substrand_id)})
             if not substrand:
                 continue
-        
-            # Get parent strand
             strand = await db.strands.find_one({"_id": ObjectId(substrand["strandId"])})
             if not strand:
                 continue
-        
-            # Get all SLOs for this substrand
-            slos = await db.slos.find({"substrandId": substrand_id}).sort("order", 1).to_list(100)
-            if not slos:
-                continue
-        
-            num_lessons_for_substrand = substrand.get("number_of_lessons") or len(slos)
-            num_lessons_for_substrand = max(1, int(num_lessons_for_substrand))
-            
-            learning_act = await db.learning_activities.find_one({"substrandId": substrand_id})
-            
-            # Load lesson_slos for this substrand (if available)
-            active_lesson_slos = await get_active_lesson_slos(db, substrand_id)
-            lesson_slo_by_num = {ls["lessonNumber"]: ls for ls in active_lesson_slos}
-            
-            for lesson_slot in range(num_lessons_for_substrand):
-                lesson_num = lesson_slot + 1
-                # Distribute parent SLOs across lesson slots (cycle if fewer SLOs than lessons)
-                slo = slos[lesson_slot % len(slos)]
-                slo_id = str(slo["_id"])
-                
-                # Priority: use lesson_slo if available, fallback to parent SLO
-                lslo = lesson_slo_by_num.get(lesson_num)
-            
-                # Get SLO mapping for competencies and values
-                mapping = await db.slo_mappings.find_one({"sloId": slo_id})
-                competencies = []
-                values_list = []
-                pcis = []
-            
-                if lslo:
-                    # Prefer lesson_slo-level overrides
-                    competencies = lslo.get("coreCompetencies") or []
-                    values_list = lslo.get("values") or []
-                    pcis = lslo.get("pcis") or []
-                
-                if not competencies and mapping:
-                    for comp_id in mapping.get("competencyIds", []):
-                        comp = await db.competencies.find_one({"_id": ObjectId(comp_id)})
-                        if comp:
-                            competencies.append(comp["name"])
-                if not values_list and mapping:
-                    for val_id in mapping.get("valueIds", []):
-                        val = await db.values.find_one({"_id": ObjectId(val_id)})
-                        if val:
-                            values_list.append(val["name"])
-                if not pcis and mapping:
-                    for pci_id in mapping.get("pciIds", []):
-                        pci = await db.pcis.find_one({"_id": ObjectId(pci_id)})
-                        if pci:
-                            pcis.append(pci["name"])
 
-                # Determine SLO text: prefer lesson_slo outcome
-                slo_text = slo["name"]
-                if lslo and lslo.get("outcome"):
-                    slo_text = lslo["outcome"]
-            
+            # STRICT: slot count from number_of_lessons only
+            num_lessons = substrand.get("number_of_lessons")
+            if not num_lessons or int(num_lessons) < 1:
+                # Fallback: use parent SLO count if number_of_lessons not set
+                slo_count = await db.slos.count_documents({"substrandId": substrand_id})
+                num_lessons = max(1, slo_count)
+            else:
+                num_lessons = int(num_lessons)
+
+            # Load parent SLOs for fallback
+            parent_slos = await db.slos.find(
+                {"substrandId": substrand_id}
+            ).sort("order", 1).to_list(100)
+            if not parent_slos:
+                continue
+
+            learning_act = await db.learning_activities.find_one({"substrandId": substrand_id})
+
+            # Load lesson_slo_slots (primary source — Phase 5)
+            raw_slots = await db.lesson_slo_slots.find(
+                {"substrandId": substrand_id}
+            ).sort("slot_index", 1).to_list(500)
+            slots_by_idx = {s["slot_index"]: s for s in raw_slots}
+
+            for idx in range(num_lessons):
+                slot = slots_by_idx.get(idx)
+                parent_slo = parent_slos[idx % len(parent_slos)]
+                parent_slo_id = str(parent_slo["_id"])
+
+                # Resolve outcome: slot > parent SLO
+                slo_text = slot["outcome"] if (slot and slot.get("outcome")) else parent_slo["name"]
+
+                # Resolve ONE inquiry question
+                inquiry_q = ""
+                if slot and slot.get("key_inquiry_question"):
+                    inquiry_q = slot["key_inquiry_question"]
+
+                # Resolve competencies / values / pcis
+                competencies = (slot.get("competencies") if slot else None) or []
+                values_list = (slot.get("values") if slot else None) or []
+                pcis = (slot.get("pcis") if slot else None) or []
+
+                if not competencies:
+                    mapping = await db.slo_mappings.find_one({"sloId": parent_slo_id})
+                    if mapping:
+                        for cid in mapping.get("competencyIds", []):
+                            doc = await db.competencies.find_one({"_id": ObjectId(cid)})
+                            if doc:
+                                competencies.append(doc["name"])
+                        if not values_list:
+                            for vid in mapping.get("valueIds", []):
+                                doc = await db.values.find_one({"_id": ObjectId(vid)})
+                                if doc:
+                                    values_list.append(doc["name"])
+                        if not pcis:
+                            for pid in mapping.get("pciIds", []):
+                                doc = await db.pcis.find_one({"_id": ObjectId(pid)})
+                                if doc:
+                                    pcis.append(doc["name"])
+
+                # Resolve resources with textbook formatting
+                raw_resources = (slot.get("resources") if slot else None) or []
+                if raw_resources:
+                    formatted_resources = [format_resource_display(r) for r in raw_resources]
+                elif learning_act:
+                    formatted_resources = learning_act.get("learning_resources", [])
+                else:
+                    formatted_resources = []
+
+                activities = (slot.get("learning_activities") if slot else None) or (
+                    learning_act.get("development_activities", []) if learning_act else []
+                )
+                assessment = (slot.get("assessment_methods") if slot else None) or (
+                    learning_act.get("assessment_methods", []) if learning_act else []
+                )
+
                 curriculum_content.append({
                     "strandId": str(strand["_id"]),
                     "strand": strand["name"],
                     "substrandId": substrand_id,
                     "substrand": substrand["name"],
-                    "sloId": slo_id,
+                    "sloId": parent_slo_id,
                     "slo": slo_text,
-                    "sloDescription": slo.get("description", slo["name"]),
-                    "lessonInSubstrand": lesson_num,
-                    "totalLessonsInSubstrand": num_lessons_for_substrand,
+                    "sloDescription": parent_slo.get("description", parent_slo["name"]),
+                    "lessonInSubstrand": idx + 1,
+                    "totalLessonsInSubstrand": num_lessons,
                     "competencies": competencies or ["Critical Thinking", "Communication"],
                     "values": values_list or ["Responsibility", "Respect"],
                     "pcis": pcis,
-                    # Prefer lesson_slo-level overrides for activities/resources
-                    "learningActivities": (lslo.get("learningExperiences") if lslo else None) or (learning_act.get("development_activities", []) if learning_act else []),
-                    "resources": (lslo.get("learningResources") if lslo else None) or (learning_act.get("learning_resources", []) if learning_act else []),
-                    "assessmentMethods": (lslo.get("assessmentMethods") if lslo else None) or (learning_act.get("assessment_methods", []) if learning_act else []),
-                    # Key inquiry questions: prefer lesson_slo, then auto-generate
-                    "_lessonSloInquiry": lslo.get("keyInquiryQuestions") if lslo else None,
+                    "learningActivities": activities,
+                    "resources": formatted_resources,
+                    "assessmentMethods": assessment,
+                    "_slotInquiry": inquiry_q,
                 })
     
         if not curriculum_content:
@@ -2982,10 +3010,10 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                 if content_index < len(curriculum_content):
                     content = curriculum_content[content_index]
                 
-                    # Generate inquiry questions — prefer lesson_slo override
-                    lesson_slo_inquiry = content.get("_lessonSloInquiry")
-                    if lesson_slo_inquiry and isinstance(lesson_slo_inquiry, list) and len(lesson_slo_inquiry) > 0:
-                        inquiry_qs = "\n".join(f"{i+1}. {q}" for i, q in enumerate(lesson_slo_inquiry[:2]))
+                    # Generate inquiry questions — prefer slot's single question
+                    slot_inquiry = content.get("_slotInquiry", "")
+                    if slot_inquiry:
+                        inquiry_qs = slot_inquiry
                     else:
                         inquiry_qs = generate_inquiry_questions(
                             content["strand"], 
@@ -3763,6 +3791,79 @@ async def admin_bootstrap_lesson_slos(user: dict = Depends(verify_admin)):
     """Migration: scan all substrands and generate missing lesson SLOs."""
     stats = await bootstrap_missing_lesson_slos(db)
     return {"success": True, "stats": stats}
+
+# ==================== LESSON SLO SLOTS (Phase 3) ====================
+
+@api_router.get("/admin/lesson-slots/{substrand_id}")
+async def admin_get_lesson_slots(substrand_id: str, user: dict = Depends(verify_admin)):
+    """Get all lesson SLO slots for a substrand.
+    Auto-generates slots if they don't exist yet but number_of_lessons is set.
+    """
+    substrand = await db.substrands.find_one({"_id": ObjectId(substrand_id)})
+    if not substrand:
+        raise HTTPException(status_code=404, detail="Substrand not found")
+
+    num = substrand.get("number_of_lessons")
+    if not num or int(num) < 1:
+        return {
+            "success": True,
+            "slots": [],
+            "number_of_lessons": 0,
+            "message": "Set number_of_lessons on this substrand first"
+        }
+
+    slots = await get_slots_for_substrand(db, substrand_id)
+    return {
+        "success": True,
+        "slots": slots,
+        "number_of_lessons": int(num),
+    }
+
+
+@api_router.post("/admin/lesson-slots/{substrand_id}/generate")
+async def admin_generate_lesson_slots(substrand_id: str, user: dict = Depends(verify_admin)):
+    """Generate/regenerate lesson SLO slots from number_of_lessons.
+    Preserves customised slots. Fills gaps with fallback.
+    """
+    result = await generate_slots_for_substrand(db, substrand_id)
+    if result.get("error"):
+        raise HTTPException(status_code=400, detail=result.get("message", result["error"]))
+    slots = await get_slots_for_substrand(db, substrand_id)
+    return {"success": True, "result": result, "slots": slots}
+
+
+@api_router.put("/admin/lesson-slots/{substrand_id}/{slot_index}")
+async def admin_update_lesson_slot(
+    substrand_id: str, slot_index: int, body: dict, user: dict = Depends(verify_admin)
+):
+    """Update a single lesson SLO slot. Marks it as customised."""
+    result = await update_slot(db, substrand_id, slot_index, body)
+    if result.get("error"):
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result
+
+
+@api_router.post("/admin/lesson-slots/{substrand_id}/{slot_index}/clear")
+async def admin_clear_lesson_slot(
+    substrand_id: str, slot_index: int, user: dict = Depends(verify_admin)
+):
+    """Clear a slot back to fallback state."""
+    result = await clear_slot(db, substrand_id, slot_index)
+    return result
+
+
+# Teacher-facing: get slots (read-only, for lesson plan context)
+@api_router.get("/lesson-slots/{substrand_id}")
+async def get_lesson_slots_public(substrand_id: str, user: dict = Depends(verify_token)):
+    """Get lesson SLO slots for a substrand (teacher read-only)."""
+    substrand = await db.substrands.find_one({"_id": ObjectId(substrand_id)})
+    if not substrand:
+        raise HTTPException(status_code=404, detail="Substrand not found")
+    num = substrand.get("number_of_lessons")
+    if not num or int(num) < 1:
+        return {"success": True, "slots": [], "number_of_lessons": 0}
+    slots = await get_slots_for_substrand(db, substrand_id)
+    return {"success": True, "slots": slots, "number_of_lessons": int(num)}
 
 # SLOs
 @api_router.get("/admin/slos")
@@ -5903,6 +6004,12 @@ async def startup_event():
         await db.substrand_lessons.create_index(
             [("substrand_id", 1), ("lesson_number", 1)], unique=True
         )
+
+        # Lesson SLO Slots index (compound unique — Phase 1)
+        await db.lesson_slo_slots.create_index(
+            [("substrandId", 1), ("slot_index", 1)], unique=True
+        )
+        await db.lesson_slo_slots.create_index("substrandId")
 
         # Lesson SLOs index (compound unique)
         await db.lesson_slos.create_index(
