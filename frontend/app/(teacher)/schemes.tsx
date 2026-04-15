@@ -858,84 +858,113 @@ export default function SchemesOfWork() {
   );
 
   // Render Step 4: Preview
-  const renderPreviewStep = () => (
-    <ScrollView style={styles.stepContent}>
-      {generatedScheme && (
-        <>
-          <View style={styles.previewHeader}>
-            <Ionicons name="checkmark-circle" size={48} color="#10B981" />
-            <Text style={styles.previewTitle}>Scheme Generated!</Text>
-            <Text style={styles.previewSubtitle}>
-              {generatedScheme.subjectName} - Term {generatedScheme.term}
-            </Text>
-          </View>
-          
-          <View style={styles.previewStats}>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>
-                {generatedScheme.lessons?.filter((l: any) => !l.isBreak).length || 0}
-              </Text>
-              <Text style={styles.statLabel}>Lessons</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{totalWeeks}</Text>
-              <Text style={styles.statLabel}>Weeks</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>{selectedTopics.size}</Text>
-              <Text style={styles.statLabel}>Topics</Text>
-            </View>
-          </View>
-          
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={styles.previewBtn}
-              onPress={handlePreview}
-              disabled={previewing}
-            >
-              {previewing ? (
-                <ActivityIndicator size={18} color="#6366F1" />
-              ) : (
-                <Ionicons name="eye-outline" size={20} color="#6366F1" />
-              )}
-              <Text style={styles.previewBtnText}>Preview PDF</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.downloadBtn}
-              onPress={handleDownload}
-              disabled={downloading}
-            >
-              {downloading ? (
-                <ActivityIndicator size={18} color="#FFFFFF" />
-              ) : (
-                <Ionicons name="download-outline" size={20} color="#FFFFFF" />
-              )}
-              <Text style={styles.downloadBtnText}>
-                Download (KES {SCHEME_DOWNLOAD_COST})
-              </Text>
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.walletInfo}>
-            <Ionicons name="wallet-outline" size={16} color="#6B7280" />
-            <Text style={styles.walletText}>
-              Wallet Balance: KES {user?.walletBalance || 0}
-            </Text>
-          </View>
-          
-          {/* Edit/Back button */}
+  // ── Duplicate-click guard for download ──
+  const downloadLockRef = React.useRef(false);
+
+  const renderPreviewStep = () => {
+    if (!generatedScheme) return null;
+    const lessons = generatedScheme.lessons || [];
+    const teachingLessons = lessons.filter((l: any) => !l.isBreak);
+
+    return (
+      <View style={{ flex: 1 }}>
+        {/* ── Sticky top action bar (like lesson-detail) ── */}
+        <View style={styles.previewActionBar}>
           <TouchableOpacity
-            style={styles.editSchemeBtn}
+            style={styles.previewEditBtn}
             onPress={() => setCurrentStep('breaks')}
+            data-testid="scheme-edit-btn"
           >
-            <Ionicons name="arrow-back" size={18} color="#6366F1" />
-            <Text style={styles.editSchemeBtnText}>Go Back & Edit</Text>
+            <Ionicons name="create-outline" size={16} color="#6366F1" />
+            <Text style={styles.previewEditBtnText}>Edit</Text>
           </TouchableOpacity>
-        </>
-      )}
-    </ScrollView>
-  );
+
+          <TouchableOpacity
+            style={[styles.previewDownloadBtn, downloading && { opacity: 0.6 }]}
+            onPress={handleDownload}
+            disabled={downloading}
+            data-testid="scheme-download-btn"
+          >
+            {downloading ? (
+              <ActivityIndicator size={14} color="#fff" />
+            ) : (
+              <Ionicons name="download-outline" size={16} color="#fff" />
+            )}
+            <Text style={styles.previewDownloadBtnText}>
+              {downloading ? 'Downloading...' : `Download PDF (KES ${SCHEME_DOWNLOAD_COST})`}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ── Scrollable scheme content ── */}
+        <ScrollView style={styles.stepContent} contentContainerStyle={{ paddingBottom: 40 }}>
+          {/* Header card */}
+          <View style={styles.schemeHeaderCard}>
+            <Text style={styles.schemeHeaderTitle}>{generatedScheme.subjectName || 'Scheme of Work'}</Text>
+            <Text style={styles.schemeHeaderSub}>
+              {generatedScheme.gradeName} | Term {generatedScheme.term}, {generatedScheme.year}
+            </Text>
+            <View style={styles.schemeStatRow}>
+              <View style={styles.schemeStatItem}>
+                <Text style={styles.schemeStatVal}>{teachingLessons.length}</Text>
+                <Text style={styles.schemeStatLbl}>Lessons</Text>
+              </View>
+              <View style={styles.schemeStatItem}>
+                <Text style={styles.schemeStatVal}>{totalWeeks}</Text>
+                <Text style={styles.schemeStatLbl}>Weeks</Text>
+              </View>
+              <View style={styles.schemeStatItem}>
+                <Text style={styles.schemeStatVal}>KES {user?.walletBalance || 0}</Text>
+                <Text style={styles.schemeStatLbl}>Balance</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Lesson rows */}
+          {lessons.map((lesson: any, idx: number) => {
+            if (lesson.isBreak) {
+              return (
+                <View key={`brk-${idx}`} style={styles.schemeBreakRow}>
+                  <Ionicons name="pause-circle-outline" size={16} color="#F59E0B" />
+                  <Text style={styles.schemeBreakText}>
+                    Week {lesson.week}: {lesson.breakType || lesson.breakDescription || 'Break'}
+                  </Text>
+                </View>
+              );
+            }
+            return (
+              <View key={`l-${idx}`} style={styles.schemeLessonCard}>
+                <View style={styles.schemeLessonHeader}>
+                  <Text style={styles.schemeLessonWk}>W{lesson.week} L{lesson.lesson || lesson.lessonNumber}</Text>
+                  {lesson.isDouble && (
+                    <View style={styles.schemeDoubleBadge}>
+                      <Text style={styles.schemeDoubleBadgeText}>Double</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.schemeLessonStrand}>{lesson.strand} / {lesson.substrand}</Text>
+                <Text style={styles.schemeLessonSlo} numberOfLines={3}>{lesson.slo}</Text>
+                {lesson.keyInquiryQuestions ? (
+                  <View style={styles.schemeLessonIqRow}>
+                    <Ionicons name="help-circle-outline" size={14} color="#6366F1" />
+                    <Text style={styles.schemeLessonIq} numberOfLines={2}>{lesson.keyInquiryQuestions}</Text>
+                  </View>
+                ) : null}
+                {lesson.learningResources ? (
+                  <View style={styles.schemeLessonResRow}>
+                    <Ionicons name="book-outline" size={13} color="#6B7280" />
+                    <Text style={styles.schemeLessonRes} numberOfLines={2}>
+                      {Array.isArray(lesson.learningResources) ? lesson.learningResources.join(', ') : lesson.learningResources}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            );
+          })}
+        </ScrollView>
+      </View>
+    );
+  };
 
   // Insufficient Funds Modal
   const renderFundsModal = () => (
@@ -1676,6 +1705,171 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#1F2937'
   },
+  // ── Preview action bar (sticky top, like lesson-detail) ──
+  previewActionBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  previewEditBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    backgroundColor: '#EEF2FF',
+  },
+  previewEditBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6366F1',
+  },
+  previewDownloadBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#6366F1',
+  },
+  previewDownloadBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  // ── Scheme header card ──
+  schemeHeaderCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  schemeHeaderTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  schemeHeaderSub: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginTop: 4,
+  },
+  schemeStatRow: {
+    flexDirection: 'row',
+    marginTop: 14,
+    gap: 20,
+  },
+  schemeStatItem: {
+    alignItems: 'center',
+  },
+  schemeStatVal: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#6366F1',
+  },
+  schemeStatLbl: {
+    fontSize: 11,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  // ── Break row ──
+  schemeBreakRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#FFFBEB',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  schemeBreakText: {
+    fontSize: 13,
+    color: '#92400E',
+    fontWeight: '500',
+  },
+  // ── Lesson card ──
+  schemeLessonCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  schemeLessonHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  schemeLessonWk: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#6366F1',
+    backgroundColor: '#EEF2FF',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  schemeDoubleBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  schemeDoubleBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#92400E',
+  },
+  schemeLessonStrand: {
+    fontSize: 11,
+    color: '#6B7280',
+    marginBottom: 4,
+  },
+  schemeLessonSlo: {
+    fontSize: 13,
+    color: '#111827',
+    lineHeight: 18,
+    marginBottom: 4,
+  },
+  schemeLessonIqRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 5,
+    marginTop: 2,
+  },
+  schemeLessonIq: {
+    fontSize: 12,
+    color: '#4B5563',
+    flex: 1,
+    fontStyle: 'italic',
+  },
+  schemeLessonResRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 5,
+    marginTop: 4,
+  },
+  schemeLessonRes: {
+    fontSize: 11,
+    color: '#6B7280',
+    flex: 1,
+  },
+  // ── Keep old styles for other parts ──
   previewHeader: {
     alignItems: 'center',
     paddingVertical: 32
