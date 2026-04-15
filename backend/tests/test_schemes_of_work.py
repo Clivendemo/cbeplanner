@@ -123,7 +123,7 @@ class TestDatabaseGradesAndSubjects:
         from pymongo import MongoClient
         
         # Connect to MongoDB
-        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+        mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL')
         client = MongoClient(mongo_url)
         db = client['cbeplanner']
         
@@ -145,7 +145,7 @@ class TestDatabaseGradesAndSubjects:
         """Verify database has subjects seeded"""
         from pymongo import MongoClient
         
-        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+        mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL')
         client = MongoClient(mongo_url)
         db = client['cbeplanner']
         
@@ -162,7 +162,7 @@ class TestDatabaseGradesAndSubjects:
         """Verify database has strands for scheme topics"""
         from pymongo import MongoClient
         
-        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+        mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL')
         client = MongoClient(mongo_url)
         db = client['cbeplanner']
         
@@ -176,7 +176,7 @@ class TestDatabaseGradesAndSubjects:
         """Verify database has substrands for topic selection"""
         from pymongo import MongoClient
         
-        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+        mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL')
         client = MongoClient(mongo_url)
         db = client['cbeplanner']
         
@@ -190,7 +190,7 @@ class TestDatabaseGradesAndSubjects:
         """Verify database has SLOs for scheme generation"""
         from pymongo import MongoClient
         
-        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+        mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL')
         client = MongoClient(mongo_url)
         db = client['cbeplanner']
         
@@ -363,7 +363,7 @@ class TestUserWalletForSchemes:
         """Verify demo2@example.com user exists"""
         from pymongo import MongoClient
         
-        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+        mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL')
         client = MongoClient(mongo_url)
         db = client['cbeplanner']
         

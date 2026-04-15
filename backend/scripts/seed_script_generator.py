@@ -66,7 +66,9 @@ from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
-MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
+MONGO_URL = os.environ.get("MONGODB_URI") or os.environ.get("MONGO_URL")
+if not MONGO_URL:
+    raise RuntimeError("MONGODB_URI or MONGO_URL environment variable is required")
 DB_NAME = os.environ.get("DB_NAME", "cbeplanner-oregon")
 
 client = AsyncIOMotorClient(MONGO_URL)

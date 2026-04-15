@@ -70,7 +70,9 @@ logger = logging.getLogger(__name__)
 # MongoDB connection - Support both naming conventions for flexibility
 # MONGODB_URI is the standard name for external deployment (Railway, Render)
 # MONGO_URL is the legacy name for local development
-mongo_url = os.getenv('MONGODB_URI') or os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+mongo_url = os.getenv('MONGODB_URI') or os.environ.get('MONGO_URL')
+if not mongo_url:
+    raise RuntimeError("MONGODB_URI or MONGO_URL environment variable is required")
 db_name = os.getenv('DB_NAME', 'cbeplanner-oregon')
 
 # Atlas requires certifi CA bundle for SSL; local MongoDB doesn't

@@ -11,7 +11,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
-MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
+MONGO_URL = os.environ.get("MONGODB_URI") or os.environ.get("MONGO_URL")
+if not MONGO_URL:
+    raise RuntimeError("MONGODB_URI or MONGO_URL environment variable is required")
 DB_NAME = os.environ.get("DB_NAME", "cbe_lesson_planner")
 
 async def migrate():
