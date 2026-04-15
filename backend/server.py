@@ -2306,7 +2306,7 @@ async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Dep
                 all_curriculum_content.append({
                     "strand": f"{strand_number}.0 {strand['name']}",
                     "substrand": f"{strand_number}.{substrand_number} {substrand['name']}",
-                    "slo": f"By the end of the lesson, the learner should be able to {slo['name'].lower()}.",
+                    "slo": _format_slo_for_scheme(slo['name']),
                     "sloRaw": slo['name'],
                     "coreCompetencies": ", ".join(competencies_list) if competencies_list else "Critical Thinking, Communication",
                     "coreValues": ", ".join(values_list) if values_list else "Responsibility, Respect",
@@ -2454,52 +2454,60 @@ async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Dep
     return {"success": True, "scheme": scheme}
 
 # Helper functions for generating scheme content
-def generate_inquiry_questions(strand: str, substrand: str, slo: str, is_kiswahili: bool = False) -> str:
-    """Generate relevant key inquiry questions based on the topic"""
+def _format_slo_for_scheme(raw_slo: str) -> str:
+    """Clean a lesson SLO for scheme display.
+
+    The scheme template already prints the prefix
+    "By the end of the lesson, the learner should be able to:"
+    so this function:
+    - strips any existing prefix to avoid duplication
+    - trims whitespace
+    - preserves the actual instructional wording as-is
+    """
     import re
-    # Strip leading numbering like "2.3 ", "1.2.1 ", "3. " from substrand name
+    text = (raw_slo or "").strip()
+    # Remove existing prefix variants (case-insensitive)
+    text = re.sub(
+        r'^by the end of the (sub[- ]?strand|lesson),?\s*the learner should be able to:?\s*',
+        '', text, flags=re.IGNORECASE
+    ).strip()
+    # Remove leading "to " if the prefix removal left it
+    text = re.sub(r'^to\s+', '', text, flags=re.IGNORECASE).strip()
+    if not text:
+        return "N/A"
+    # Build the final display string
+    return f"By the end of the lesson, the learner should be able to {text[0].lower()}{text[1:]}"
+
+
+def generate_inquiry_questions(strand: str, substrand: str, slo: str, is_kiswahili: bool = False) -> str:
+    """Generate exactly ONE key inquiry question for a lesson row."""
+    import re
     clean_substrand = re.sub(r'^[\d]+(?:\.[\d]+)*\.?\s*', '', substrand).strip()
     if not clean_substrand:
         clean_substrand = substrand
-    
-    questions = []
-    
+
     if is_kiswahili:
-        # Kiswahili inquiry questions
         if "fasihi" in substrand.lower() or "hadithi" in substrand.lower():
-            questions.append(f"Umuhimu wa {clean_substrand} ni upi katika jamii?")
-            questions.append(f"Tunajifunza nini kutoka kwa {clean_substrand}?")
+            return f"Umuhimu wa {clean_substrand} ni upi katika jamii?"
         elif "sarufi" in substrand.lower() or "lugha" in substrand.lower():
-            questions.append(f"Kanuni za {clean_substrand} ni zipi?")
-            questions.append(f"Tunatumia vipi {clean_substrand} katika mawasiliano?")
+            return f"Kanuni za {clean_substrand} ni zipi?"
         elif "uandishi" in substrand.lower() or "insha" in substrand.lower():
-            questions.append(f"Hatua za kuandika {clean_substrand} ni zipi?")
-            questions.append(f"Sifa za {clean_substrand} bora ni zipi?")
+            return f"Hatua za kuandika {clean_substrand} ni zipi?"
         elif "usomaji" in substrand.lower() or "kusoma" in substrand.lower():
-            questions.append(f"Mbinu za kusoma {clean_substrand} kwa ufanisi ni zipi?")
-            questions.append(f"Tunaelewaje maana ya {clean_substrand}?")
+            return f"Mbinu za kusoma {clean_substrand} kwa ufanisi ni zipi?"
         else:
-            questions.append(f"Umuhimu wa {clean_substrand} ni upi?")
-            questions.append(f"Tunatumia vipi {clean_substrand} katika maisha ya kila siku?")
+            return f"Umuhimu wa {clean_substrand} ni upi?"
     else:
-        # English inquiry questions
         if "evolution" in substrand.lower() or "history" in substrand.lower():
-            questions.append(f"How has {clean_substrand} developed over time?")
-            questions.append(f"What are the key milestones in the development of {clean_substrand}?")
+            return f"How has {clean_substrand} developed over time?"
         elif "architecture" in substrand.lower() or "structure" in substrand.lower():
-            questions.append(f"What are the main components of {clean_substrand}?")
-            questions.append(f"How do the different parts of {clean_substrand} work together?")
+            return f"What are the main components of {clean_substrand}?"
         elif "network" in substrand.lower() or "communication" in substrand.lower():
-            questions.append(f"How is data transmitted in {clean_substrand}?")
-            questions.append(f"What factors affect {clean_substrand} performance?")
+            return f"How is data transmitted in {clean_substrand}?"
         elif "programming" in substrand.lower() or "code" in substrand.lower():
-            questions.append(f"How do we implement {clean_substrand} in programming?")
-            questions.append(f"What are the best practices for {clean_substrand}?")
+            return f"How do we implement {clean_substrand} in programming?"
         else:
-            questions.append(f"What is the importance of {clean_substrand}?")
-            questions.append(f"How do we apply {clean_substrand} in real-world situations?")
-    
-    return " ".join([f"{i+1}. {q}" for i, q in enumerate(questions)])
+            return f"What is the importance of {clean_substrand}?"
 
 def generate_learning_experiences(strand: str, substrand: str, slo: str, is_kiswahili: bool = False) -> str:
     """Generate appropriate learning experiences"""
@@ -3049,7 +3057,7 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                         "isDouble": is_double,
                         "strand": content["strand"],
                         "substrand": content["substrand"],
-                        "slo": f"By the end of the lesson, the learner should be able to {content['slo'].lower()}.",
+                        "slo": _format_slo_for_scheme(content["slo"]),
                         "lessonInSubstrand": content.get("lessonInSubstrand", 1),
                         "totalLessonsInSubstrand": content.get("totalLessonsInSubstrand", 1),
                         "keyInquiryQuestions": inquiry_qs,
