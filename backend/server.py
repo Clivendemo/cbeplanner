@@ -2595,13 +2595,6 @@ async def get_schemes(user: dict = Depends(verify_token)):
     schemes = await db.schemes.find({"teacherId": user["id"]}).sort("createdAt", -1).to_list(100)
     return {"success": True, "schemes": [serialize_doc(s) for s in schemes]}
 
-@api_router.get("/schemes/{scheme_id}")
-async def get_scheme(scheme_id: str, user: dict = Depends(verify_token)):
-    scheme = await db.schemes.find_one({"_id": ObjectId(scheme_id), "teacherId": user["id"]})
-    if not scheme:
-        raise HTTPException(status_code=404, detail="Scheme not found")
-    return {"success": True, "scheme": serialize_doc(scheme)}
-
 # ==================== NEW SCHEME ENDPOINTS ====================
 
 @api_router.get("/schemes/config/lessons-per-week")
@@ -2661,6 +2654,45 @@ async def get_scheme_topics(subjectId: str, user: dict = Depends(verify_token)):
         })
     
     return {"success": True, "topics": topics}
+
+# --- Scheme draft list/detail routes (must come before /{scheme_id} catch-all) ---
+
+@api_router.get("/schemes/drafts")
+async def get_scheme_drafts(user: dict = Depends(verify_token)):
+    """List user's scheme drafts."""
+    drafts = await db.scheme_drafts.find(
+        {"teacherId": user["id"]}
+    ).sort("updatedAt", -1).to_list(50)
+    result = []
+    for d in drafts:
+        d["id"] = str(d.pop("_id"))
+        for k in ["createdAt", "updatedAt", "paidAt", "lastDownloadedAt"]:
+            if d.get(k) and hasattr(d[k], "isoformat"):
+                d[k] = d[k].isoformat()
+        result.append(d)
+    return {"success": True, "drafts": result}
+
+
+@api_router.get("/schemes/drafts/{draft_id}")
+async def get_scheme_draft(draft_id: str, user: dict = Depends(verify_token)):
+    """Get a single scheme draft by ID."""
+    draft = await db.scheme_drafts.find_one({"_id": ObjectId(draft_id), "teacherId": user["id"]})
+    if not draft:
+        raise HTTPException(status_code=404, detail="Scheme draft not found")
+    draft["id"] = str(draft.pop("_id"))
+    for k in ["createdAt", "updatedAt", "paidAt", "lastDownloadedAt"]:
+        if draft.get(k) and hasattr(draft[k], "isoformat"):
+            draft[k] = draft[k].isoformat()
+    return {"success": True, "draft": draft}
+
+
+# Dynamic scheme ID route — MUST come after all static /schemes/... routes
+@api_router.get("/schemes/{scheme_id}")
+async def get_scheme(scheme_id: str, user: dict = Depends(verify_token)):
+    scheme = await db.schemes.find_one({"_id": ObjectId(scheme_id), "teacherId": user["id"]})
+    if not scheme:
+        raise HTTPException(status_code=404, detail="Scheme not found")
+    return {"success": True, "scheme": serialize_doc(scheme)}
 
 class SchemeGenerateRequest(BaseModel):
     gradeId: str
@@ -3204,36 +3236,6 @@ async def save_scheme_draft(body: Dict[str, Any], user: dict = Depends(verify_to
     }
     result = await db.scheme_drafts.insert_one(draft)
     return {"success": True, "draftId": str(result.inserted_id)}
-
-
-@api_router.get("/schemes/drafts")
-async def get_scheme_drafts(user: dict = Depends(verify_token)):
-    """List user's scheme drafts."""
-    drafts = await db.scheme_drafts.find(
-        {"teacherId": user["id"]}
-    ).sort("updatedAt", -1).to_list(50)
-    result = []
-    for d in drafts:
-        d["id"] = str(d.pop("_id"))
-        # Convert datetimes for JSON
-        for k in ["createdAt", "updatedAt", "paidAt", "lastDownloadedAt"]:
-            if d.get(k) and hasattr(d[k], "isoformat"):
-                d[k] = d[k].isoformat()
-        result.append(d)
-    return {"success": True, "drafts": result}
-
-
-@api_router.get("/schemes/drafts/{draft_id}")
-async def get_scheme_draft(draft_id: str, user: dict = Depends(verify_token)):
-    """Get a single scheme draft by ID."""
-    draft = await db.scheme_drafts.find_one({"_id": ObjectId(draft_id), "teacherId": user["id"]})
-    if not draft:
-        raise HTTPException(status_code=404, detail="Scheme draft not found")
-    draft["id"] = str(draft.pop("_id"))
-    for k in ["createdAt", "updatedAt", "paidAt", "lastDownloadedAt"]:
-        if draft.get(k) and hasattr(draft[k], "isoformat"):
-            draft[k] = draft[k].isoformat()
-    return {"success": True, "draft": draft}
 
 
 @api_router.post("/schemes/drafts/{draft_id}/regenerate")
