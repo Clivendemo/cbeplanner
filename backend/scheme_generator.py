@@ -378,14 +378,25 @@ ASSESSMENT_METHODS = {
 }
 
 
-def get_assessment_for_slo(slo_text: str) -> List[str]:
+def get_assessment_for_slo(slo_text: str, is_kiswahili: bool = False) -> List[str]:
     """Determine assessment method based on SLO action verb"""
+    if is_kiswahili:
+        slo_lower = slo_text.lower()
+        if any(v in slo_lower for v in ["eleza", "fafanua", "elezea"]):
+            return ["Maswali ya mdomo", "Maandishi"]
+        elif any(v in slo_lower for v in ["andika", "tunga"]):
+            return ["Kazi ya maandishi", "Tathmini ya wenzake"]
+        elif any(v in slo_lower for v in ["soma", "changanua"]):
+            return ["Ufahamu wa kusoma", "Maswali ya mdomo"]
+        elif any(v in slo_lower for v in ["onyesha", "fanya", "tumia"]):
+            return ["Uchunguzi", "Kazi ya vitendo"]
+        else:
+            return ["Maswali ya mdomo", "Kazi ya maandishi"]
+
     slo_lower = slo_text.lower()
-    
     for action, methods in ASSESSMENT_METHODS.items():
         if action in slo_lower:
             return methods
-    
     return ASSESSMENT_METHODS["default"]
 
 

@@ -2270,6 +2270,9 @@ async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Dep
     if not grade or not subject:
         raise HTTPException(status_code=404, detail="Invalid grade or subject")
     
+    # Check if Kiswahili subject
+    is_kiswahili = 'kiswahili' in subject["name"].lower() or 'fasihi' in subject["name"].lower()
+    
     # Get all strands for this subject with numbering
     strands = await db.strands.find({"subjectId": request.subjectId}).to_list(100)
     
@@ -2309,14 +2312,14 @@ async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Dep
                 all_curriculum_content.append({
                     "strand": f"{strand_number}.0 {strand['name']}",
                     "substrand": f"{strand_number}.{substrand_number} {substrand['name']}",
-                    "slo": _format_slo_for_scheme(slo['name']),
+                    "slo": _format_slo_for_scheme(slo['name'], is_kiswahili),
                     "sloRaw": slo['name'],
                     "coreCompetencies": ", ".join(competencies_list) if competencies_list else "Critical Thinking, Communication",
                     "coreValues": ", ".join(values_list) if values_list else "Responsibility, Respect",
-                    "keyInquiryQuestions": generate_inquiry_questions(strand['name'], substrand['name'], slo['name']),
-                    "learningExperiences": generate_learning_experiences(strand['name'], substrand['name'], slo['name']),
-                    "learningResources": generate_learning_resources(strand['name'], substrand['name']),
-                    "assessmentMethods": generate_assessment_methods(slo['name'])
+                    "keyInquiryQuestions": generate_inquiry_questions(strand['name'], substrand['name'], slo['name'], is_kiswahili),
+                    "learningExperiences": generate_learning_experiences(strand['name'], substrand['name'], slo['name'], is_kiswahili),
+                    "learningResources": generate_learning_resources(strand['name'], substrand['name'], is_kiswahili),
+                    "assessmentMethods": generate_assessment_methods(slo['name'], is_kiswahili)
                 })
     
     # Calculate total lessons
@@ -2403,7 +2406,7 @@ async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Dep
                         "breakDescription": None,
                         "strand": content["strand"],
                         "substrand": content["substrand"],
-                        "slo": content["slo"],
+                        "slo": _format_slo_for_scheme(content["slo"], is_kiswahili),
                         "coreCompetencies": content["coreCompetencies"],
                         "coreValues": content["coreValues"],
                         "keyInquiryQuestions": content["keyInquiryQuestions"],
@@ -2414,21 +2417,32 @@ async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Dep
                     })
                 else:
                     # Revision/Consolidation lessons when curriculum exhausted
-                    lessons.append({
-                        "week": week,
-                        "lessonNumber": lesson_num,
-                        "isBreak": False,
-                        "breakType": None,
-                        "breakDescription": None,
-                        "strand": "Revision",
-                        "substrand": "Term Revision",
-                        "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
-                        "keyInquiryQuestions": "What have we learned? What areas need more practice?",
-                        "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
-                        "learningResources": "Revision notes, Past papers, Reference materials",
-                        "assessmentMethods": "Oral questions, Written tests",
-                        "reflection": ""
-                    })
+                    if is_kiswahili:
+                        lessons.append({
+                            "week": week, "lessonNumber": lesson_num,
+                            "isBreak": False, "breakType": None, "breakDescription": None,
+                            "strand": "Marudio",
+                            "substrand": "Marudio ya Muhula",
+                            "slo": "Kufikia mwisho wa somo, mwanafunzi aweze kupitia na kujumuisha maarifa ya muhula.",
+                            "keyInquiryQuestions": "Tumejifunza nini katika muhula huu?",
+                            "learningExperiences": "Mwanafunzi anaongozwa kupitia dhana muhimu, kukamilisha mazoezi ya vitendo, na kushiriki majadiliano na wenzake.",
+                            "learningResources": "Madaftari ya marudio, Mitihani ya zamani, Vitabu vya rejea",
+                            "assessmentMethods": "Maswali ya mdomo, Mtihani wa maandishi",
+                            "reflection": ""
+                        })
+                    else:
+                        lessons.append({
+                            "week": week, "lessonNumber": lesson_num,
+                            "isBreak": False, "breakType": None, "breakDescription": None,
+                            "strand": "Revision",
+                            "substrand": "Term Revision",
+                            "slo": "By the end of the lesson, the learner should be able to review and consolidate learning for the term.",
+                            "keyInquiryQuestions": "What have we learned this term?",
+                            "learningExperiences": "The learner is guided to review key concepts, complete practice exercises, and engage in peer discussions.",
+                            "learningResources": "Revision notes, Past papers, Reference materials",
+                            "assessmentMethods": "Oral questions, Written tests",
+                            "reflection": ""
+                        })
     
     # Create scheme document
     scheme = {
@@ -2457,29 +2471,38 @@ async def generate_scheme_of_work(request: SchemeOfWorkRequest, user: dict = Dep
     return {"success": True, "scheme": scheme}
 
 # Helper functions for generating scheme content
-def _format_slo_for_scheme(raw_slo: str) -> str:
+def _format_slo_for_scheme(raw_slo: str, is_kiswahili: bool = False) -> str:
     """Clean a lesson SLO for scheme display.
 
-    The scheme template already prints the prefix
-    "By the end of the lesson, the learner should be able to:"
-    so this function:
+    The scheme template already prints the prefix, so this function:
     - strips any existing prefix to avoid duplication
     - trims whitespace
     - preserves the actual instructional wording as-is
+
+    For Kiswahili subjects, uses KICD standard:
+    "Kufikia mwisho wa somo, mwanafunzi aweze..."
     """
     import re
     text = (raw_slo or "").strip()
-    # Remove existing prefix variants (case-insensitive)
+    # Remove existing English prefix variants
     text = re.sub(
         r'^by the end of the (sub[- ]?strand|lesson),?\s*the learner should be able to:?\s*',
         '', text, flags=re.IGNORECASE
     ).strip()
-    # Remove leading "to " if the prefix removal left it
+    # Remove existing Kiswahili prefix variants
+    text = re.sub(
+        r'^kufikia mwisho wa (somo|mada ndogo),?\s*mwanafunzi aweze:?\s*',
+        '', text, flags=re.IGNORECASE
+    ).strip()
+    # Remove leading "to " if prefix removal left it
     text = re.sub(r'^to\s+', '', text, flags=re.IGNORECASE).strip()
     if not text:
         return "N/A"
-    # Build the final display string
-    return f"By the end of the lesson, the learner should be able to {text[0].lower()}{text[1:]}"
+
+    if is_kiswahili:
+        return f"Kufikia mwisho wa somo, mwanafunzi aweze {text[0].lower()}{text[1:]}"
+    else:
+        return f"By the end of the lesson, the learner should be able to {text[0].lower()}{text[1:]}"
 
 
 def generate_inquiry_questions(strand: str, substrand: str, slo: str, is_kiswahili: bool = False) -> str:
@@ -3029,7 +3052,8 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                         inquiry_qs = generate_inquiry_questions(
                             content["strand"], 
                             content["substrand"], 
-                            content["slo"]
+                            content["slo"],
+                            is_kiswahili
                         )
                 
                     # Generate learning experiences
@@ -3038,7 +3062,8 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                         experiences = generate_learning_experiences(
                             content["strand"],
                             content["substrand"],
-                            content["slo"]
+                            content["slo"],
+                            is_kiswahili
                         )
                 
                     # Generate resources
@@ -3046,13 +3071,14 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                     if not resources:
                         resources = generate_learning_resources(
                             content["strand"],
-                            content["substrand"]
+                            content["substrand"],
+                            is_kiswahili
                         )
                 
                     # Get assessment
                     assessment = content.get("assessmentMethods", [])
                     if not assessment:
-                        assessment = get_assessment_for_slo(content["slo"])
+                        assessment = get_assessment_for_slo(content["slo"], is_kiswahili)
                 
                     lessons.append({
                         "week": week,
@@ -3060,7 +3086,7 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                         "isDouble": is_double,
                         "strand": content["strand"],
                         "substrand": content["substrand"],
-                        "slo": _format_slo_for_scheme(content["slo"]),
+                        "slo": _format_slo_for_scheme(content["slo"], is_kiswahili),
                         "lessonInSubstrand": content.get("lessonInSubstrand", 1),
                         "totalLessonsInSubstrand": content.get("totalLessonsInSubstrand", 1),
                         "keyInquiryQuestions": inquiry_qs,
