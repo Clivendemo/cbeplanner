@@ -5735,6 +5735,18 @@ async def process_single_pdf(file_path: Path) -> dict:
     if not extracted or not extracted.get("strands"):
         raise ValueError(f"AI extraction returned no data for {filename}")
 
+    # Log detected grade (may be null if AI couldn't determine)
+    detected_grade = extracted.get("grade")
+    grade_source = extracted.get("_grade_source", "ai")
+    logger.info(f"Grade detected: {detected_grade} (source: {grade_source})")
+    if not detected_grade:
+        logger.warning(f"Grade could not be detected from PDF, using filename hint: {grade_hint}")
+        extracted["grade"] = grade_hint
+        extracted["_grade_hint"] = grade_hint
+
+    if not extracted or not extracted.get("strands"):
+        raise ValueError(f"AI extraction returned no data for {filename}")
+
     strand_count = len(extracted.get("strands", []))
     ss_count = sum(len(s.get("substrands", [])) for s in extracted.get("strands", []))
     slo_count = sum(

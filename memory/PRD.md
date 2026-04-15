@@ -10,52 +10,29 @@ A competency-based education lesson planning system for Kenyan teachers with M-P
 - **Auth**: Firebase Authentication
 - **Payments**: Safaricom Daraja API (M-Pesa)
 
-## Seed Pipeline (v2 — April 14, 2026)
+## Grade System (Canonical Names)
+- PP1, PP2 — Pre-Primary
+- Grade 1 through Grade 12 — Primary / Junior / Senior School
+- Normalizer handles: "grade 1", "GRADE 1", "Grade One", "PP1", "Pre-Primary 1", "Form 1", "Class 5", "Junior School Grade 8"
 
-### Data Model
-```
-Subject (gradeIds as list)
-  └── Strands
-       └── Substrands (number_of_lessons: int)
-            ├── learning_activities (substrandId: string)
-            │    ├── introduction_activities, development_activities
-            │    ├── conclusion_activities, extended_activities
-            │    ├── learning_resources, assessment_methods
-            └── SLOs (substrandId: string, order: int)
-                 └── slo_mappings
-                      ├── competencyIds (populated, not empty)
-                      ├── valueIds (populated)
-                      ├── pciIds (populated)
-                      └── assessmentIds (populated)
-```
-
-### Key Features
-- `get_or_create_*` helpers prevent duplicate competencies/values/PCIs/assessments
-- SLO mappings are fully populated (not empty arrays)
-- `gradeIds` stored as list
-- `substrandId` consistently string
-- Safe reseeding (deletes only subject-scoped data, preserves globals)
-- `lesson_slos` cleaned up on reseed
-- SLO-level overrides supported (per-SLO competencies if extractor provides them)
+## Seed Pipeline (v2)
+- `scripts/ai_extractor.py` — Gemini 2.5 Flash extraction with strengthened grade detection
+- `scripts/grade_utils.py` — Grade normalization + DB matching (27 test cases)
+- `scripts/seed_script_generator.py` — Generates complete Python seed scripts with:
+  - Populated SLO mappings (competencies, values, PCIs, assessments)
+  - `get_or_create_*` helpers (case-insensitive, no duplicates)
+  - Robust `get_or_create_grade` with normalisation + alias scan
+  - `gradeIds` as list, `substrandId` as string, `number_of_lessons` as int
 
 ## Lesson SLO System
-- **Service**: `lesson_slo_service.py` — sync, auto-generate, CRUD
-- **Collection**: `lesson_slos` (unique on substrandId + lessonNumber)
+- `lesson_slo_service.py` — sync, auto-generate, CRUD
+- `lesson_slos` collection (unique on substrandId + lessonNumber)
 - Auto-sync on substrand create/update
-- Admin can edit (marks isDraft=False, protected from regeneration)
 
 ## Scheme Draft Workflow
 - Save draft → list/get → preview (free) → regenerate → download (KES 15)
 - Re-downloads of paid drafts are free
-- Scheme generation prefers lesson_slo outcomes and inquiry questions
-
-## Collections
-- `users`, `wallets`, `wallet_ledger`, `wallet_transactions`
-- `grades`, `subjects`, `strands`, `substrands`, `slos`
-- `slo_mappings`, `learning_activities`, `competencies`, `values`, `pcis`
-- `assessment_methods`
-- `substrand_lessons` (legacy), `lesson_slos` (current)
-- `lesson_plans`, `schemes`, `scheme_drafts`
+- Generation prefers lesson_slo outcomes and inquiry questions
 
 ## Pricing
 - Lesson Plans: KES 2 each (5 free on signup)

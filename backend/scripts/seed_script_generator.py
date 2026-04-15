@@ -20,7 +20,19 @@ def generate_seed_script(extracted_data: dict, output_path: str) -> str:
     Returns:
         Path to the generated script
     """
-    grade = extracted_data.get("grade", "Grade 10")
+    from grade_utils import normalize_grade_name
+
+    raw_grade = extracted_data.get("grade")
+    grade = normalize_grade_name(raw_grade) if raw_grade else None
+    if not grade:
+        # Fallback: the extractor couldn't detect a grade.
+        # Use the raw value if provided, otherwise raise.
+        grade = raw_grade or extracted_data.get("_grade_hint", "")
+        if not grade:
+            raise ValueError(
+                "Grade could not be determined from the PDF. "
+                "Please provide a grade_hint when calling the extractor."
+            )
     subject_name = extracted_data.get("subject_name", "Unknown Subject")
     strands = extracted_data.get("strands", [])
 
@@ -72,12 +84,68 @@ SUBJECT_DATA = {data_str}
 # ============================================================================
 
 async def get_or_create_grade(name):
-    """Get existing grade or create new one."""
-    grade_num = "".join(filter(str.isdigit, name)) or "10"
-    existing = await db.grades.find_one({{"name": name}})
+    """Robust grade matching — normalises the name, searches existing grades,
+    and only creates a new record if no match is found.
+    Never creates duplicates for naming variants like 'grade 4' vs 'Grade 4'."""
+    import re as _re
+
+    # --- Normalisation (inline copy of grade_utils logic) ---
+    _ALIASES = {{
+        "pp1": "PP1", "pp2": "PP2",
+        "pre primary 1": "PP1", "pre primary 2": "PP2",
+        "pre-primary 1": "PP1", "pre-primary 2": "PP2",
+        "preprimary 1": "PP1", "preprimary 2": "PP2",
+    }}
+    _WORDS = {{
+        "one":"1","two":"2","three":"3","four":"4","five":"5","six":"6",
+        "seven":"7","eight":"8","nine":"9","ten":"10","eleven":"11","twelve":"12",
+    }}
+
+    raw = (name or "").strip()
+    key = _re.sub(r'\\s+', ' ', raw).lower().strip()
+    canonical = None
+
+    if key in _ALIASES:
+        canonical = _ALIASES[key]
+    if not canonical:
+        m = _re.search(r'grade\\s+(\\d{{1,2}})', key)
+        if m and 1 <= int(m.group(1)) <= 12:
+            canonical = f"Grade {{m.group(1)}}"
+    if not canonical:
+        m = _re.search(r'grade\\s+(\\w+)', key)
+        if m and m.group(1).lower() in _WORDS:
+            canonical = f"Grade {{_WORDS[m.group(1).lower()]}}"
+    if not canonical:
+        m = _re.fullmatch(r'(\\d{{1,2}})', key)
+        if m and 1 <= int(m.group(1)) <= 12:
+            canonical = f"Grade {{m.group(1)}}"
+    if not canonical:
+        canonical = raw  # last resort: use as-is
+
+    # --- DB lookup (exact, then case-insensitive) ---
+    existing = await db.grades.find_one({{"name": canonical}})
     if existing:
         return existing["_id"]
-    result = await db.grades.insert_one({{"name": name, "order": int(grade_num)}})
+
+    existing = await db.grades.find_one({{
+        "name": {{"$regex": f"^{{_re.escape(canonical)}}$", "$options": "i"}}
+    }})
+    if existing:
+        return existing["_id"]
+
+    # --- Alias scan: normalise every DB grade and compare ---
+    async for doc in db.grades.find():
+        db_key = _re.sub(r'\\s+', ' ', doc["name"]).lower().strip()
+        m = _re.search(r'grade\\s+(\\d{{1,2}})', db_key)
+        db_canonical = f"Grade {{m.group(1)}}" if m else doc["name"]
+        if db_canonical == canonical:
+            return doc["_id"]
+
+    # --- Create only if truly not found ---
+    digits = _re.findall(r'\\d+', canonical)
+    order = int(digits[0]) if digits else 99
+    result = await db.grades.insert_one({{"name": canonical, "order": order}})
+    print(f"    Created new grade: {{canonical}} (order={{order}})")
     return result.inserted_id
 
 
