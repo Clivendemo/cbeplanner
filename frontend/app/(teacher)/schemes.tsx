@@ -19,7 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
@@ -51,6 +51,7 @@ type Step = 'select' | 'topics' | 'breaks' | 'preview';
 export default function SchemesOfWork() {
   const { user, firebaseUser, refreshProfile } = useAuth();
   const router = useRouter();
+  const { editId } = useLocalSearchParams<{ editId?: string }>();
   
   // Step management
   const [currentStep, setCurrentStep] = useState<Step>('select');
@@ -131,6 +132,41 @@ export default function SchemesOfWork() {
   useEffect(() => {
     loadGrades();
   }, []);
+
+  // Preload scheme inputs when coming from "Edit" in My Schemes
+  useEffect(() => {
+    if (!editId || !firebaseUser) return;
+    (async () => {
+      try {
+        const token = await firebaseUser.getIdToken();
+        const res = await axios.get(`${BACKEND_URL}/api/schemes/${editId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.data?.success && res.data.scheme) {
+          const s = res.data.scheme;
+          const inputs = s.inputs || {};
+          setSelectedGrade(inputs.gradeId || s.gradeId || '');
+          setSelectedSubject(inputs.subjectId || s.subjectId || '');
+          setTerm(inputs.term ?? s.term ?? 1);
+          setYear(inputs.year ?? s.year ?? new Date().getFullYear());
+          setTotalWeeks(inputs.totalWeeks ?? s.totalWeeks ?? 12);
+          setLessonsPerWeek(inputs.lessonsPerWeek ?? s.lessonsPerWeek ?? null);
+          if (Array.isArray(inputs.selectedTopics) && inputs.selectedTopics.length) {
+            setSelectedTopics(new Set(inputs.selectedTopics));
+          }
+          if (Array.isArray(inputs.breaks) && inputs.breaks.length) {
+            setBreaks(inputs.breaks);
+          }
+          if (inputs.doubleLesson) {
+            setDoubleLesson(inputs.doubleLesson);
+          }
+          setIncludeCarryOver(!!inputs.includeCarryOver);
+        }
+      } catch {
+        // If preload fails, silently fall back to empty form
+      }
+    })();
+  }, [editId, firebaseUser]);
 
   const loadGrades = async () => {
     try {
@@ -326,7 +362,7 @@ export default function SchemesOfWork() {
     });
   };
 
-  // Generate scheme
+  // Generate scheme — persists and redirects to My Schemes
   const generateScheme = async () => {
     setGenerating(true);
     try {
@@ -355,20 +391,28 @@ export default function SchemesOfWork() {
       );
       
       if (response.data.success) {
-        setGeneratedScheme(response.data.scheme);
-        setCurrentStep('preview');
+        const newSchemeId = response.data.schemeId;
+        // Reset form state so returning to generator starts fresh
+        setGeneratedScheme(null);
+        setSelectedTopics(new Set());
+        setCurrentStep('select');
+        if (newSchemeId) {
+          // Route straight to My Schemes (aligned with Lesson Plans flow)
+          router.replace(`/(teacher)/my-schemes` as any);
+        } else {
+          Alert.alert('Error', 'Scheme generated but could not be saved. Please try again.');
+        }
       } else {
         Alert.alert('Error', response.data.detail || 'Failed to generate scheme');
       }
     } catch (error: any) {
-      
       Alert.alert('Error', error.response?.data?.detail || 'Failed to generate scheme');
     } finally {
       setGenerating(false);
     }
   };
 
-  // Preview PDF (in-app modal)
+  // Preview PDF (in-app modal) — kept for backward compat but no longer called from preview step
   const handlePreview = async () => {
     if (!generatedScheme) return;
     

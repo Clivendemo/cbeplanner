@@ -47,11 +47,17 @@ A competency-based education lesson planning system for Kenyan teachers with M-P
 ## Scheme Draft Workflow
 - Save → list/get → preview (free) → regenerate → download (KES 15)
 
-## Scheme 3-Stage Download Flow (Feb 2026)
-- **Stage 1 — Generator form**: Grade → Topics → Breaks → Generate (free).
-- **Stage 2 — Preview gateway** (`renderPreviewStep`): Shows success summary (subject, grade, term, lessons/weeks/topics stats) with two actions: "Preview Scheme" (opens real PDF) and "Edit Settings" (back to form). No charge at this stage.
-- **Stage 3 — Real PDF modal** (`renderPdfPreviewModal`): True representation of final PDF via inline iframe (web) / WebView (native). Sticky top bar with wallet balance + green "Download PDF (KES 15)" button. If balance < KES 15, the download button is replaced with an inline amber warning bar showing shortfall + "Top Up Wallet" button that deep-links to `/(teacher)/profile`.
-- Backend `/api/schemes/preview` is unauthenticated-charge (free). `/api/schemes/download` does: wallet guard → insert DEBIT ledger → atomic `$inc` deduction with `$gte` guard → generate PDF → refund+rollback on failure. Returns 402 with `{message, required, current}` on insufficient funds.
+## My Schemes Module (Feb 2026 — aligned with My Lesson Plans)
+Mirrors the Lesson Plan architecture end-to-end:
+
+- **Generator** (`schemes.tsx`): form with grade/subject/term/weeks/topics/breaks/double-lesson. On Generate, backend persists scheme + inputs to `db.schemes` and returns `schemeId`. Frontend `router.replace`s to `/my-schemes`. No PDF is exposed post-generation.
+- **List** (`my-schemes.tsx`): `GET /api/schemes` returns owner-scoped schemes. Cards show subject, grade, term/year, weeks × lessons/wk, school, created date, Preview Only / Downloaded badge. "Create New Scheme" CTA on top.
+- **Detail** (`scheme-detail.tsx`): `GET /api/schemes/{id}` → rendered inline with `<SchemeDisplay>` component (no PDF exposed). Sticky action bar: Download PDF (KES 15) · Edit · Delete. Inline amber bar with "Top Up" deep-link when balance < KES 15. Handles legacy scheme schemas (string or array fields, `lessonNumber` or `lesson`).
+- **SchemeDisplay component** (`components/SchemeDisplay.tsx`): Full PDF-like rendering — REPUBLIC OF KENYA header, meta block, horizontally scrollable scheme table (WK, LSN, Strand, Sub-strand, SLO, Key Inquiry, Learning Experiences, Learning Resources, Assessment, Ref.) with zebra rows, amber break rows, double-lesson badge.
+- **Edit**: Navigates back to `/schemes?editId={id}`. Generator preloads inputs from saved scheme (grade, subject, term, year, weeks, LPW, selected topics, breaks, double-lesson, carry-over).
+- **Secure Download** (`POST /api/schemes/{id}/download`): owner check → wallet guard → DEBIT ledger → atomic `$inc` deduction with `$gte` match → PDF from stored scheme → on failure, auto-refund (wallet + ledger rollback). Sets `isPaid=true`, `downloadCount++`, `lastDownloadedAt`.
+- **Delete** (`DELETE /api/schemes/{id}`): owner-only.
+- **Security**: PDF is never exposed pre-payment through a public/free route in the new flow. Preview is JSON-rendered in-app only.
 
 ## Seed Pipeline (v2)
 - Grade normalization (27 variants), populated SLO mappings, get_or_create helpers

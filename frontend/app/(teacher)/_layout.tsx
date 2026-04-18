@@ -132,6 +132,18 @@ export default function TeacherLayout() {
         }}
       />
       <Stack.Screen
+        name="my-schemes"
+        options={{
+          title: 'My Schemes'
+        }}
+      />
+      <Stack.Screen
+        name="scheme-detail"
+        options={{
+          title: 'Scheme of Work'
+        }}
+      />
+      <Stack.Screen
         name="lesson-detail"
         options={{
           title: 'Lesson Plan'

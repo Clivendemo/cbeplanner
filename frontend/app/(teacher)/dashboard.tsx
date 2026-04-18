@@ -117,6 +117,14 @@ export default function Dashboard() {
       disabled: false
     },
     {
+      title: 'My Schemes',
+      subtitle: 'View & download schemes',
+      icon: 'albums',
+      color: '#8B5CF6',
+      route: '/(teacher)/my-schemes',
+      disabled: false
+    },
+    {
       title: 'Past Papers',
       subtitle: 'Assessment materials',
       icon: 'school',

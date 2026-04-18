@@ -3133,8 +3133,32 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
             "createdAt": datetime.utcnow()
         }
     
+        # Persist scheme for My Schemes list/preview/download workflow.
+        # Stores original inputs so Edit can preload the generator form.
+        scheme_record = dict(scheme_data)
+        scheme_record["inputs"] = {
+            "gradeId": request.gradeId,
+            "subjectId": request.subjectId,
+            "term": request.term,
+            "year": request.year,
+            "totalWeeks": total_weeks,
+            "lessonsPerWeek": lessons_per_week,
+            "selectedTopics": request.selectedTopics,
+            "breaks": validated_breaks,
+            "doubleLesson": request.doubleLesson,
+            "includeCarryOver": request.includeCarryOver,
+        }
+        scheme_record["isPaid"] = False
+        scheme_record["downloadCount"] = 0
+        scheme_record["lastDownloadedAt"] = None
+        scheme_record["updatedAt"] = datetime.utcnow()
+        insert_result = await db.schemes.insert_one(scheme_record)
+        scheme_id = str(insert_result.inserted_id)
+        scheme_data["id"] = scheme_id
+    
         return {
             "success": True,
+            "schemeId": scheme_id,
             "scheme": scheme_data,
             "summary": {
                 "totalLessons": len([l for l in lessons if not l.get("isBreak")]),
@@ -3275,6 +3299,134 @@ async def download_scheme(scheme_data: Dict[str, Any], user: dict = Depends(veri
             {"$inc": {"balance": SCHEME_DOWNLOAD_COST}, "$set": {"updatedAt": datetime.utcnow()}}
         )
         logger.error(f"Scheme PDF generation failed, refunded user {user['id']}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate PDF. Your payment has been refunded.")
+
+# ==================== MY SCHEMES (persisted) — owner-scoped preview & paid download ====================
+
+@api_router.delete("/schemes/{scheme_id}")
+async def delete_scheme(scheme_id: str, user: dict = Depends(verify_token)):
+    """Delete an owned scheme record."""
+    try:
+        oid = ObjectId(scheme_id)
+    except (InvalidId, TypeError):
+        raise HTTPException(status_code=400, detail="Invalid scheme id")
+    result = await db.schemes.delete_one({"_id": oid, "teacherId": user["id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Scheme not found")
+    return {"success": True}
+
+
+@api_router.post("/schemes/{scheme_id}/download")
+async def download_owned_scheme(scheme_id: str, user: dict = Depends(verify_token)):
+    """Download a stored scheme (owner only). Charges KES 15 atomically, refunds on failure."""
+    try:
+        oid = ObjectId(scheme_id)
+    except (InvalidId, TypeError):
+        raise HTTPException(status_code=400, detail="Invalid scheme id")
+
+    scheme = await db.schemes.find_one({"_id": oid, "teacherId": user["id"]})
+    if not scheme:
+        raise HTTPException(status_code=404, detail="Scheme not found")
+
+    firebase_uid = user.get("firebaseUid")
+    if not firebase_uid:
+        raise HTTPException(status_code=401, detail="Invalid user session")
+
+    user_profile = await db.users.find_one({"firebaseUid": firebase_uid})
+    if not user_profile:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    current_balance = user_profile.get("walletBalance", 0)
+    if current_balance < SCHEME_DOWNLOAD_COST:
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "message": "Insufficient wallet balance",
+                "required": SCHEME_DOWNLOAD_COST,
+                "current": current_balance,
+            },
+        )
+
+    import uuid as uuid_lib
+    ledger_ref = f"SCHEME-{uuid_lib.uuid4().hex[:12].upper()}"
+
+    ledger_entry = {
+        "userId": user["id"],
+        "type": "DEBIT",
+        "amount": SCHEME_DOWNLOAD_COST,
+        "reference": ledger_ref,
+        "source": "SCHEME_DOWNLOAD",
+        "schemeId": scheme_id,
+        "description": f"Scheme of Work — {scheme.get('subjectName', 'Subject')} Term {scheme.get('term', 1)}",
+        "createdAt": datetime.utcnow(),
+    }
+    try:
+        await db.wallet_ledger.insert_one(ledger_entry)
+    except Exception:
+        raise HTTPException(status_code=500, detail="Payment processing error. Please try again.")
+
+    result = await db.users.update_one(
+        {"firebaseUid": firebase_uid, "walletBalance": {"$gte": SCHEME_DOWNLOAD_COST}},
+        {"$inc": {"walletBalance": -SCHEME_DOWNLOAD_COST}},
+    )
+    if result.modified_count == 0:
+        await db.wallet_ledger.delete_one({"reference": ledger_ref})
+        raise HTTPException(status_code=402, detail="Insufficient wallet balance")
+
+    await db.wallets.update_one(
+        {"userId": user["id"]},
+        {"$inc": {"balance": -SCHEME_DOWNLOAD_COST}, "$set": {"updatedAt": datetime.utcnow()}},
+        upsert=True,
+    )
+
+    logger.info(f"Scheme {scheme_id} download charged KES {SCHEME_DOWNLOAD_COST} for user {user['id']}. Ref: {ledger_ref}")
+
+    try:
+        # Strip internal fields before rendering
+        render_payload = {k: v for k, v in scheme.items() if k not in {"_id", "inputs", "isPaid", "downloadCount", "lastDownloadedAt", "updatedAt"}}
+        pdf_bytes = generate_scheme_pdf(render_payload)
+
+        subject = scheme.get('subjectName', 'Subject').replace(' ', '_')
+        grade = scheme.get('gradeName', 'Grade').replace(' ', '_')
+        term = scheme.get('term', 1)
+        filename = f"Scheme_{subject}_{grade}_Term{term}.pdf"
+
+        await db.schemes.update_one(
+            {"_id": oid},
+            {
+                "$set": {
+                    "isPaid": True,
+                    "lastDownloadedAt": datetime.utcnow(),
+                    "lastPaymentReference": ledger_ref,
+                },
+                "$inc": {"downloadCount": 1},
+            },
+        )
+
+        updated_user = await db.users.find_one({"firebaseUid": firebase_uid})
+        new_balance = updated_user.get("walletBalance", 0) if updated_user else 0
+
+        return StreamingResponse(
+            BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "Content-Length": str(len(pdf_bytes)),
+                "X-New-Balance": str(new_balance),
+            },
+        )
+    except Exception as e:
+        # Refund
+        await db.users.update_one(
+            {"firebaseUid": firebase_uid},
+            {"$inc": {"walletBalance": SCHEME_DOWNLOAD_COST}},
+        )
+        await db.wallet_ledger.delete_one({"reference": ledger_ref})
+        await db.wallets.update_one(
+            {"userId": user["id"]},
+            {"$inc": {"balance": SCHEME_DOWNLOAD_COST}, "$set": {"updatedAt": datetime.utcnow()}},
+        )
+        logger.error(f"Scheme {scheme_id} PDF generation failed, refunded user {user['id']}: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to generate PDF. Your payment has been refunded.")
 
 # ==================== SCHEME DRAFT WORKFLOW ====================
