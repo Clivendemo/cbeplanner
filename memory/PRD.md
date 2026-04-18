@@ -47,6 +47,36 @@ A competency-based education lesson planning system for Kenyan teachers with M-P
 ## Scheme Draft Workflow
 - Save → list/get → preview (free) → regenerate → download (KES 15)
 
+## Server.py Refactor — Phase 1 (Feb 2026)
+- **Created `/app/backend/app/deps.py`** — shared core: MongoDB client, `verify_token`, `verify_admin`, `serialize_doc`, `validate_object_id`, `api_error`, `to_int`, constants (SCHEME_DOWNLOAD_COST, LESSON_PLAN_COST_KES, NOTES_DOWNLOAD_COST_KES, FREE_LESSONS_ON_SIGNUP, FIREBASE_*, JWT_SECRET, ADMIN_EMAILS), shared `api_router = APIRouter(prefix="/api")`.
+- **Created `/app/backend/routes/schemes.py`** — all 7 scheme endpoints (`GET /schemes`, `GET /schemes/config/lessons-per-week`, `GET /schemes/topics/{subjectId}`, `GET /schemes/{id}`, `POST /schemes/generate-v2`, `DELETE /schemes/{id}`, `POST /schemes/{id}/download`) + scheme helpers (`_format_slo_for_scheme`, `generate_assessment_methods`, `validate_break`, `calculate_break_duration`) + `SchemeGenerateRequest` Pydantic model. 650 lines, clean imports.
+- **Created `/app/backend/routes/__init__.py`** package marker.
+- **server.py**: 6063 → 4501 lines (-1562 lines, 26% reduction). No longer defines shared core — imports from `app.deps`. Registers route modules via side-effect import: `from routes import schemes as _routes_schemes`.
+
+## Dead Code Removed
+**Backend (server.py)**:
+- `POST /api/schemes/generate` (V1, superseded by generate-v2) — 210 lines
+- `POST /api/schemes/preview` (exposed free full PDF — security risk) — 22 lines
+- `POST /api/schemes/download` (accepted scheme_data in body, replaceable by owner-scoped `/schemes/{id}/download`) — 100 lines
+- Full Scheme Draft Workflow block: `POST /schemes/save-draft`, `GET /schemes/drafts`, `GET /schemes/drafts/{id}`, `POST /schemes/drafts/{id}/regenerate`, `POST /schemes/drafts/{id}/preview`, `POST /schemes/drafts/{id}/download` (frontend never referenced them) — 230 lines
+- Legacy Pydantic models: `BreakInput`, `SchemeOfWorkRequest`, `SchemeLesson`, `SchemeOfWork` — 52 lines
+- Dead `scheme_drafts` index creation in startup
+
+**Frontend (schemes.tsx)**: 2618 → 2151 lines (-467 lines)
+- Dead handlers `handlePreview`, `handleDownload` (called removed endpoints)
+- Dead components `renderPreviewStep`, `renderFundsModal`, `renderPdfPreviewModal`
+- Dead state (`showPdfModal`, `pdfPreviewUrl`, `showFundsModal`, `pendingDownload`, `previewing`, `downloading`, `generatedScheme`)
+- Dead imports (`WebView`, `Sharing`, `FileSystem`, `Platform`, `SafeAreaView`)
+- Simplified `Step` type from 4-step to 3-step flow (no preview step — flow redirects straight to My Schemes)
+
+## Phase 2 Refactor — PENDING
+Admin endpoints (~2500 lines remaining in `server.py`) to be extracted:
+- `routes/admin_curriculum.py` (grades/subjects/strands/substrands/slos CRUD, bulk, move, reorder, change-grade)
+- `routes/admin_resources.py` (competencies/values/pcis/activities/mappings/assessments/reference-data/lesson-slos/lesson-slots)
+- `routes/admin_import.py` (import/upload-curriculum/curriculum-jobs/seed/public-template)
+- `routes/admin_ops.py` (wallet-reconciliation, repair, cleanup, clear-idempotency)
+- `routes/lesson_plans.py`, `routes/notes.py`, `routes/payments.py`, `routes/auth_profile.py`, `routes/curriculum_public.py`
+
 ## My Schemes Module (Feb 2026 — aligned with My Lesson Plans)
 Mirrors the Lesson Plan architecture end-to-end:
 

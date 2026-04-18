@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   Modal,
   FlatList,
-  Platform,
   TextInput,
   Dimensions
 } from 'react-native';
@@ -17,15 +16,10 @@ import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { WebView } from 'react-native-webview';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-const SCHEME_DOWNLOAD_COST = 15;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface Grade { id: string; name: string; }
@@ -46,7 +40,7 @@ interface DoubleLesson {
   position: string; // e.g., "2-3", "3-4", "4-5"
 }
 
-type Step = 'select' | 'topics' | 'breaks' | 'preview';
+type Step = 'select' | 'topics' | 'breaks';
 
 export default function SchemesOfWork() {
   const { user, firebaseUser, refreshProfile } = useAuth();
@@ -73,10 +67,6 @@ export default function SchemesOfWork() {
   // Carry-over/compression mode
   const [includeCarryOver, setIncludeCarryOver] = useState(false);
   
-  // PDF preview modal
-  const [showPdfModal, setShowPdfModal] = useState(false);
-  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
-  
   // Step 2: Topic selection
   const [topics, setTopics] = useState<Topic[]>([]);
   const [selectedTopics, setSelectedTopics] = useState<Set<string>>(new Set());
@@ -91,33 +81,14 @@ export default function SchemesOfWork() {
   const [breakModalVisible, setBreakModalVisible] = useState(false);
   const [editingBreak, setEditingBreak] = useState<Break | null>(null);
   
-  // Step 4: Preview & Download
-  const [generatedScheme, setGeneratedScheme] = useState<any>(null);
+  // Generation state
   const [generating, setGenerating] = useState(false);
-  const [downloading, setDownloading] = useState(false);
-  const [previewing, setPreviewing] = useState(false);
   
-  // Insufficient funds modal
-  const [showFundsModal, setShowFundsModal] = useState(false);
-  
-  // Track if user was redirected to top-up
-  const [pendingDownload, setPendingDownload] = useState(false);
-  
-  // Refresh profile when screen comes into focus (after top-up)
+  // Refresh profile when screen comes into focus (e.g., after top-up navigation)
   useFocusEffect(
     useCallback(() => {
       refreshProfile();
-      // Check if we have a pending download and now have sufficient balance
-      if (pendingDownload && user && (user.walletBalance || 0) >= SCHEME_DOWNLOAD_COST) {
-        setPendingDownload(false);
-        // Show a message that they can now download
-        Alert.alert(
-          'Balance Updated! 🎉',
-          'Your wallet has been topped up. You can now download your scheme.',
-          [{ text: 'Great!' }]
-        );
-      }
-    }, [pendingDownload, user?.walletBalance])
+    }, [])
   );
   
   const getHeaders = async () => {
@@ -272,7 +243,6 @@ export default function SchemesOfWork() {
   const handleBack = () => {
     if (currentStep === 'topics') setCurrentStep('select');
     else if (currentStep === 'breaks') setCurrentStep('topics');
-    else if (currentStep === 'preview') setCurrentStep('breaks');
   };
 
   // Calculate break duration display text
@@ -393,7 +363,6 @@ export default function SchemesOfWork() {
       if (response.data.success) {
         const newSchemeId = response.data.schemeId;
         // Reset form state so returning to generator starts fresh
-        setGeneratedScheme(null);
         setSelectedTopics(new Set());
         setCurrentStep('select');
         if (newSchemeId) {
@@ -412,158 +381,6 @@ export default function SchemesOfWork() {
     }
   };
 
-  // Preview PDF (in-app modal) — kept for backward compat but no longer called from preview step
-  const handlePreview = async () => {
-    if (!generatedScheme) return;
-    
-    setPreviewing(true);
-    try {
-      const headers = await getHeaders();
-      
-      if (Platform.OS === 'web') {
-        // For web, show in modal with iframe
-        const response = await axios.post(
-          `${BACKEND_URL}/api/schemes/preview`,
-          generatedScheme,
-          { 
-            headers,
-            responseType: 'blob'
-          }
-        );
-        
-        const blob = new Blob([response.data], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        setPdfPreviewUrl(url);
-        setShowPdfModal(true);
-      } else {
-        // For native (mobile), use axios to POST and save manually
-        const token = await firebaseUser?.getIdToken();
-        
-        const response = await axios.post(
-          `${BACKEND_URL}/api/schemes/preview`,
-          generatedScheme,
-          { 
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            responseType: 'arraybuffer'
-          }
-        );
-        
-        // Convert arraybuffer to base64
-        const base64 = btoa(
-          new Uint8Array(response.data).reduce(
-            (data, byte) => data + String.fromCharCode(byte),
-            ''
-          )
-        );
-        
-        // Save to file
-        const fileUri = `${FileSystem.documentDirectory}scheme_preview_${Date.now()}.pdf`;
-        await FileSystem.writeAsStringAsync(fileUri, base64, {
-          encoding: FileSystem.EncodingType.Base64
-        });
-        
-        // Share the file (most reliable way to view PDF on mobile)
-        const canShare = await Sharing.isAvailableAsync();
-        if (canShare) {
-          await Sharing.shareAsync(fileUri, {
-            mimeType: 'application/pdf',
-            dialogTitle: 'Preview Scheme of Work',
-            UTI: 'com.adobe.pdf'
-          });
-        } else {
-          Alert.alert('Preview Ready', 'PDF has been saved to your device.');
-        }
-      }
-    } catch (error: any) {
-      Alert.alert('Error', 'Failed to generate preview. Please try again.');
-    } finally {
-      setPreviewing(false);
-    }
-  };
-
-  // Download PDF (with wallet check)
-  const handleDownload = async () => {
-    if (!generatedScheme) return;
-    
-    // Check wallet balance first
-    const currentBalance = user?.walletBalance || 0;
-    if (currentBalance < SCHEME_DOWNLOAD_COST) {
-      setShowFundsModal(true);
-      return;
-    }
-    
-    setDownloading(true);
-    try {
-      const headers = await getHeaders();
-      
-      // For web
-      if (Platform.OS === 'web') {
-        const response = await axios.post(
-          `${BACKEND_URL}/api/schemes/download`,
-          generatedScheme,
-          { 
-            headers,
-            responseType: 'blob'
-          }
-        );
-        
-        const blob = new Blob([response.data], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Scheme_${generatedScheme.subjectName}_Term${generatedScheme.term}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        // Refresh wallet balance
-        await refreshWalletBalance();
-        
-        Alert.alert('Success', `Scheme downloaded! KES ${SCHEME_DOWNLOAD_COST} deducted from wallet.`);
-      } else {
-        // Native download
-        const token = await firebaseUser?.getIdToken();
-        const fileUri = `${FileSystem.documentDirectory}Scheme_${generatedScheme.subjectName}_Term${generatedScheme.term}.pdf`;
-        
-        const downloadResult = await FileSystem.downloadAsync(
-          `${BACKEND_URL}/api/schemes/download`,
-          fileUri,
-          {
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            httpMethod: 'POST',
-            body: JSON.stringify(generatedScheme)
-          }
-        );
-        
-        if (downloadResult.status === 200) {
-          await Sharing.shareAsync(downloadResult.uri, { mimeType: 'application/pdf' });
-          
-          // Refresh wallet balance
-          await refreshWalletBalance();
-          
-          Alert.alert('Success', `Scheme downloaded! KES ${SCHEME_DOWNLOAD_COST} deducted from wallet.`);
-        } else {
-          throw new Error('Download failed');
-        }
-      }
-    } catch (error: any) {
-      
-      if (error.response?.status === 402) {
-        setShowFundsModal(true);
-      } else {
-        Alert.alert('Error', error.response?.data?.detail || 'Failed to download');
-      }
-    } finally {
-      setDownloading(false);
-    }
-  };
   
   // Refresh wallet balance after download
   const refreshWalletBalance = async () => {
@@ -904,135 +721,6 @@ export default function SchemesOfWork() {
   // Render Step 4: Preview
   const downloadLockRef = React.useRef(false);
 
-  const renderPreviewStep = () => {
-    if (!generatedScheme) return null;
-    const lessons = generatedScheme.lessons || [];
-    const teachingLessons = lessons.filter((l: any) => !l.isBreak);
-    const gradeName = grades.find(g => g.id === selectedGrade)?.name || generatedScheme.gradeName || '';
-    const subjectName = subjects.find(s => s.id === selectedSubject)?.name || generatedScheme.subjectName || '';
-
-    return (
-      <ScrollView style={styles.stepContent} contentContainerStyle={{ paddingBottom: 40, alignItems: 'center' }}>
-        {/* Success header */}
-        <View style={styles.previewSuccessCard}>
-          <View style={styles.previewSuccessIcon}>
-            <Ionicons name="checkmark-circle" size={48} color="#10B981" />
-          </View>
-          <Text style={styles.previewSuccessTitle}>Scheme Generated</Text>
-          <Text style={styles.previewSuccessSubject}>{subjectName}</Text>
-          <Text style={styles.previewSuccessMeta}>
-            {gradeName} | Term {generatedScheme.term}, {generatedScheme.year}
-          </Text>
-
-          {/* Stats row */}
-          <View style={styles.previewStatsRow}>
-            <View style={styles.previewStatBox}>
-              <Text style={styles.previewStatNum}>{teachingLessons.length}</Text>
-              <Text style={styles.previewStatLabel}>Lessons</Text>
-            </View>
-            <View style={styles.previewStatDivider} />
-            <View style={styles.previewStatBox}>
-              <Text style={styles.previewStatNum}>{totalWeeks}</Text>
-              <Text style={styles.previewStatLabel}>Weeks</Text>
-            </View>
-            <View style={styles.previewStatDivider} />
-            <View style={styles.previewStatBox}>
-              <Text style={styles.previewStatNum}>{selectedTopics.size}</Text>
-              <Text style={styles.previewStatLabel}>Topics</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Primary action: Preview PDF */}
-        <TouchableOpacity
-          style={styles.previewPdfBtn}
-          onPress={handlePreview}
-          disabled={previewing}
-          data-testid="preview-pdf-btn"
-        >
-          {previewing ? (
-            <ActivityIndicator size={20} color="#fff" />
-          ) : (
-            <Ionicons name="eye-outline" size={20} color="#fff" />
-          )}
-          <Text style={styles.previewPdfBtnText}>
-            {previewing ? 'Generating Preview...' : 'Preview Scheme'}
-          </Text>
-        </TouchableOpacity>
-        <Text style={styles.previewPdfHint}>
-          View the full professional PDF before downloading
-        </Text>
-
-        {/* Secondary action: Edit */}
-        <TouchableOpacity
-          style={styles.previewEditBackBtn}
-          onPress={() => setCurrentStep('breaks')}
-          data-testid="scheme-edit-btn"
-        >
-          <Ionicons name="create-outline" size={18} color="#6366F1" />
-          <Text style={styles.previewEditBackBtnText}>Edit Settings</Text>
-        </TouchableOpacity>
-
-        {/* Wallet info */}
-        <View style={styles.previewWalletRow}>
-          <Ionicons name="wallet-outline" size={14} color="#9CA3AF" />
-          <Text style={styles.previewWalletText}>
-            Balance: KES {user?.walletBalance || 0} | Download costs KES {SCHEME_DOWNLOAD_COST}
-          </Text>
-        </View>
-      </ScrollView>
-    );
-  };
-
-  // Insufficient Funds Modal
-  const renderFundsModal = () => (
-    <Modal visible={showFundsModal} transparent animationType="fade">
-      <View style={styles.modalOverlay}>
-        <View style={styles.fundsModal}>
-          <View style={styles.fundsModalHeader}>
-            <Ionicons name="wallet-outline" size={48} color="#F59E0B" />
-            <Text style={styles.fundsModalTitle}>You're almost there! 😊</Text>
-          </View>
-          
-          <Text style={styles.fundsModalText}>
-            To download this Scheme of Work, you need KES {SCHEME_DOWNLOAD_COST}.
-          </Text>
-          
-          <Text style={styles.fundsModalBalance}>
-            Your current balance: KES {user?.walletBalance || 0}
-          </Text>
-          
-          <Text style={styles.fundsModalHint}>
-            Top up your wallet and come back - your scheme will be waiting!
-          </Text>
-          
-          <View style={styles.fundsModalButtons}>
-            <TouchableOpacity
-              style={styles.topUpBtn}
-              onPress={() => {
-                setShowFundsModal(false);
-                setPendingDownload(true); // Mark that we have a pending download
-                router.push('/(teacher)/profile');
-              }}
-              data-testid="top-up-mpesa-btn"
-            >
-              <Ionicons name="phone-portrait-outline" size={18} color="#FFFFFF" />
-              <Text style={styles.topUpBtnText}>Top Up via M-PESA</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.cancelBtn}
-              onPress={() => setShowFundsModal(false)}
-              data-testid="cancel-funds-btn"
-            >
-              <Text style={styles.cancelBtnText}>Maybe Later</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-
   // Break Modal
   const renderBreakModal = () => (
     <Modal visible={breakModalVisible} transparent animationType="slide">
@@ -1197,158 +885,19 @@ export default function SchemesOfWork() {
   );
 
   // PDF Preview Modal (in-app viewer)
-  const renderPdfPreviewModal = () => {
-    const balance = user?.walletBalance || 0;
-    const canAfford = balance >= SCHEME_DOWNLOAD_COST;
-    const shortfall = Math.max(0, SCHEME_DOWNLOAD_COST - balance);
-
-    const closeModal = () => {
-      setShowPdfModal(false);
-      if (pdfPreviewUrl && Platform.OS === 'web') {
-        URL.revokeObjectURL(pdfPreviewUrl);
-      }
-      setPdfPreviewUrl(null);
-    };
-
-    return (
-    <Modal visible={showPdfModal} transparent animationType="slide">
-      <SafeAreaView style={styles.pdfModalSafeArea}>
-        <View style={styles.pdfModalContainer}>
-          {/* Top header row: title + close */}
-          <View style={styles.pdfModalHeader}>
-            <Text style={styles.pdfModalTitle}>Scheme Preview</Text>
-            <View style={styles.pdfModalActions}>
-              {pdfPreviewUrl && Platform.OS !== 'web' && (
-                <TouchableOpacity 
-                  style={styles.pdfShareBtn}
-                  onPress={async () => {
-                    try {
-                      const canShare = await Sharing.isAvailableAsync();
-                      if (canShare && pdfPreviewUrl) {
-                        await Sharing.shareAsync(pdfPreviewUrl, { 
-                          mimeType: 'application/pdf',
-                          dialogTitle: 'Share Scheme of Work'
-                        });
-                      }
-                    } catch (err) {
-                      Alert.alert('Error', 'Unable to share PDF');
-                    }
-                  }}
-                  data-testid="pdf-share-btn"
-                >
-                  <Ionicons name="share-outline" size={22} color="#6366F1" />
-                </TouchableOpacity>
-              )}
-              <TouchableOpacity 
-                onPress={closeModal}
-                style={styles.pdfModalCloseBtn}
-                data-testid="pdf-close-btn"
-              >
-                <Ionicons name="close" size={24} color="#374151" />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Sticky action bar: download or insufficient-funds banner */}
-          {canAfford ? (
-            <View style={styles.pdfStickyBar} data-testid="pdf-download-bar">
-              <View style={styles.pdfStickyBarLeft}>
-                <Ionicons name="wallet-outline" size={16} color="#6B7280" />
-                <Text style={styles.pdfStickyBalance}>
-                  Balance: KES {balance}
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={[styles.pdfDownloadBtn, downloading && styles.pdfDownloadBtnDisabled]}
-                onPress={handleDownload}
-                disabled={downloading}
-                data-testid="pdf-download-btn"
-              >
-                {downloading ? (
-                  <ActivityIndicator size={18} color="#FFFFFF" />
-                ) : (
-                  <Ionicons name="download-outline" size={18} color="#FFFFFF" />
-                )}
-                <Text style={styles.pdfDownloadBtnText}>
-                  {downloading ? 'Downloading…' : `Download PDF (KES ${SCHEME_DOWNLOAD_COST})`}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.pdfInsufficientBar} data-testid="pdf-insufficient-bar">
-              <View style={styles.pdfInsufficientLeft}>
-                <Ionicons name="alert-circle" size={20} color="#B45309" />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.pdfInsufficientTitle}>
-                    KES {shortfall} more needed to download
-                  </Text>
-                  <Text style={styles.pdfInsufficientSub}>
-                    Balance: KES {balance} · Cost: KES {SCHEME_DOWNLOAD_COST}
-                  </Text>
-                </View>
-              </View>
-              <TouchableOpacity
-                style={styles.pdfTopUpBtn}
-                onPress={() => {
-                  setPendingDownload(true);
-                  closeModal();
-                  router.push('/(teacher)/profile');
-                }}
-                data-testid="pdf-top-up-btn"
-              >
-                <Ionicons name="phone-portrait-outline" size={16} color="#FFFFFF" />
-                <Text style={styles.pdfTopUpBtnText}>Top Up Wallet</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          <View style={styles.pdfModalContent}>
-            {Platform.OS === 'web' && pdfPreviewUrl ? (
-              <iframe
-                src={pdfPreviewUrl}
-                style={{ width: '100%', height: '100%', border: 'none' } as any}
-                title="PDF Preview"
-              />
-            ) : Platform.OS !== 'web' && pdfPreviewUrl ? (
-              <WebView
-                source={{ uri: pdfPreviewUrl }}
-                style={styles.pdfWebView}
-                startInLoadingState={true}
-                renderLoading={() => (
-                  <View style={styles.pdfLoading}>
-                    <ActivityIndicator size="large" color="#6366F1" />
-                    <Text style={styles.pdfLoadingText}>Loading PDF...</Text>
-                  </View>
-                )}
-                onError={() => {
-                  Alert.alert('Error', 'Unable to display PDF. Tap Share to open in another app.');
-                }}
-              />
-            ) : (
-              <View style={styles.pdfModalPlaceholder}>
-                <ActivityIndicator size="large" color="#6366F1" />
-                <Text style={styles.pdfModalPlaceholderText}>Loading Preview...</Text>
-              </View>
-            )}
-          </View>
-        </View>
-      </SafeAreaView>
-    </Modal>
-    );
-  };
 
   return (
     <View style={styles.container}>
       {/* Step indicator */}
       <View style={styles.stepIndicator}>
-        {(['select', 'topics', 'breaks', 'preview'] as Step[]).map((step, index) => (
+        {(['select', 'topics', 'breaks'] as Step[]).map((step, index) => (
           <View key={step} style={styles.stepItem}>
             <View style={[
               styles.stepDot,
               currentStep === step && styles.stepDotActive,
-              (['select', 'topics', 'breaks', 'preview'] as Step[]).indexOf(currentStep) > index && styles.stepDotComplete
+              (['select', 'topics', 'breaks'] as Step[]).indexOf(currentStep) > index && styles.stepDotComplete
             ]}>
-              {(['select', 'topics', 'breaks', 'preview'] as Step[]).indexOf(currentStep) > index ? (
+              {(['select', 'topics', 'breaks'] as Step[]).indexOf(currentStep) > index ? (
                 <Ionicons name="checkmark" size={14} color="#FFFFFF" />
               ) : (
                 <Text style={[
@@ -1371,57 +920,35 @@ export default function SchemesOfWork() {
       {currentStep === 'select' && renderSelectionStep()}
       {currentStep === 'topics' && renderTopicsStep()}
       {currentStep === 'breaks' && renderBreaksStep()}
-      {currentStep === 'preview' && renderPreviewStep()}
       
       {/* Footer buttons */}
-      {currentStep !== 'preview' && (
-        <View style={styles.footer}>
-          {currentStep !== 'select' && (
-            <TouchableOpacity style={styles.backBtn} onPress={handleBack}>
-              <Ionicons name="arrow-back" size={20} color="#6B7280" />
-              <Text style={styles.backBtnText}>Back</Text>
-            </TouchableOpacity>
+      <View style={styles.footer}>
+        {currentStep !== 'select' && (
+          <TouchableOpacity style={styles.backBtn} onPress={handleBack}>
+            <Ionicons name="arrow-back" size={20} color="#6B7280" />
+            <Text style={styles.backBtnText}>Back</Text>
+          </TouchableOpacity>
+        )}
+        
+        <TouchableOpacity
+          style={[styles.nextBtn, generating && styles.nextBtnDisabled]}
+          onPress={handleNext}
+          disabled={generating}
+        >
+          {generating ? (
+            <ActivityIndicator size={18} color="#FFFFFF" />
+          ) : (
+            <>
+              <Text style={styles.nextBtnText}>
+                {currentStep === 'breaks' ? 'Generate Scheme' : 'Next'}
+              </Text>
+              <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+            </>
           )}
-          
-          <TouchableOpacity
-            style={[styles.nextBtn, generating && styles.nextBtnDisabled]}
-            onPress={handleNext}
-            disabled={generating}
-          >
-            {generating ? (
-              <ActivityIndicator size={18} color="#FFFFFF" />
-            ) : (
-              <>
-                <Text style={styles.nextBtnText}>
-                  {currentStep === 'breaks' ? 'Generate Scheme' : 'Next'}
-                </Text>
-                <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
-      )}
+        </TouchableOpacity>
+      </View>
       
-      {/* New Scheme button on preview */}
-      {currentStep === 'preview' && (
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.newSchemeBtn}
-            onPress={() => {
-              setCurrentStep('select');
-              setGeneratedScheme(null);
-              setSelectedTopics(new Set());
-            }}
-          >
-            <Ionicons name="add" size={20} color="#6366F1" />
-            <Text style={styles.newSchemeBtnText}>Create New Scheme</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-      
-      {renderFundsModal()}
       {renderBreakModal()}
-      {renderPdfPreviewModal()}
     </View>
   );
 }
