@@ -349,13 +349,17 @@ export const LandingLayout: React.FC<Props> = ({ children }) => {
               <DidYouKnowWidget />
               <UpcomingEventsWidget />
               <TeacherQuoteWidget />
-              <AdSlot width={300} height={250} />
             </View>
           </View>
         )}
 
         <View style={[styles.centerCol, isMobile && styles.centerColMobile]}>
           {children}
+
+          {/* Ad directly below the auth card */}
+          <View style={{ marginTop: 20, alignItems: 'center' }}>
+            <AdSlot width={300} height={250} />
+          </View>
         </View>
 
         {!isMobile && (
@@ -390,30 +394,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     width: '100%',
-    maxWidth: 1400,
+    maxWidth: 1800,
     alignSelf: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
     paddingVertical: 24,
-    gap: 24,
+    gap: 28,
   },
   gridDesktop: {},
-  gridTablet: { gap: 16 },
+  gridTablet: { gap: 16, paddingHorizontal: 16 },
   gridMobile: {
     flexDirection: 'column',
     paddingHorizontal: 0,
     paddingVertical: 0,
     gap: 0,
   },
-  sidebarLeft: { width: 210, flexShrink: 0 },
-  sidebarRight: { width: 210, flexShrink: 0 },
+  sidebarLeft: { width: 280, flexShrink: 0 },
+  sidebarRight: { width: 280, flexShrink: 0 },
   centerCol: {
     flex: 1,
-    maxWidth: 500,
+    maxWidth: 640,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    padding: 32,
+    padding: 36,
+    alignSelf: 'stretch',
   },
   centerColMobile: {
     borderRadius: 0,
