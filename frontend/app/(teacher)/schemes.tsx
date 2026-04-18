@@ -73,11 +73,8 @@ export default function SchemesOfWork() {
   const [expandedStrands, setExpandedStrands] = useState<Set<string>>(new Set());
   const [loadingTopics, setLoadingTopics] = useState(false);
   
-  // Step 3: Breaks
-  const [breaks, setBreaks] = useState<Break[]>([
-    { breakType: 'Mid-Term Break', startWeek: 5, startLesson: 1, endWeek: 5, endLesson: 5 },
-    { breakType: 'End Term Exams', startWeek: 13, startLesson: 1, endWeek: 14, endLesson: 5 }
-  ]);
+  // Step 3: Breaks — user adds all breaks themselves (no presets)
+  const [breaks, setBreaks] = useState<Break[]>([]);
   const [breakModalVisible, setBreakModalVisible] = useState(false);
   const [editingBreak, setEditingBreak] = useState<Break | null>(null);
   
@@ -669,7 +666,7 @@ export default function SchemesOfWork() {
         {breaks.map((brk, index) => (
           <View key={index} style={styles.breakCard}>
             <View style={styles.breakInfo}>
-              <Text style={styles.breakType}>{brk.breakType}</Text>
+              <Text style={styles.breakType}>{(brk.breakType || '').toUpperCase()}</Text>
               <Text style={styles.breakDetails}>
                 Week {brk.startWeek}, Lesson {brk.startLesson} → Week {brk.endWeek}, Lesson {brk.endLesson}
               </Text>
@@ -688,7 +685,17 @@ export default function SchemesOfWork() {
         
         <TouchableOpacity
           style={styles.addBreakBtn}
-          onPress={() => setBreakModalVisible(true)}
+          onPress={() => {
+            // Initialize a new break with sensible defaults so the Picker's default value is persisted
+            setEditingBreak({
+              breakType: 'HALF-TERM BREAK',
+              startWeek: 1,
+              startLesson: 1,
+              endWeek: 1,
+              endLesson: lessonsPerWeek || 5,
+            });
+            setBreakModalVisible(true);
+          }}
         >
           <Ionicons name="add" size={20} color="#6366F1" />
           <Text style={styles.addBreakText}>Add Break</Text>
@@ -735,19 +742,20 @@ export default function SchemesOfWork() {
               <Text style={styles.label}>Break Type</Text>
               <View style={styles.pickerContainer}>
                 <Picker
-                  selectedValue={editingBreak?.breakType || 'Half-Term Break'}
+                  selectedValue={editingBreak?.breakType || 'HALF-TERM BREAK'}
                   onValueChange={(v) => setEditingBreak(prev => ({...prev, breakType: v} as Break))}
                   style={styles.picker}
                 >
-                  <Picker.Item label="Opener CAT" value="Opener CAT" />
-                  <Picker.Item label="Half-Term Break" value="Half-Term Break" />
-                  <Picker.Item label="Mid-Term Break" value="Mid-Term Break" />
-                  <Picker.Item label="End Term Exams" value="End Term Exams" />
-                  <Picker.Item label="Holiday" value="Holiday" />
-                  <Picker.Item label="Public Holiday" value="Public Holiday" />
-                  <Picker.Item label="School Event" value="School Event" />
-                  <Picker.Item label="Sports Day" value="Sports Day" />
-                  <Picker.Item label="Staff Meeting" value="Staff Meeting" />
+                  <Picker.Item label="OPENER CAT" value="OPENER CAT" />
+                  <Picker.Item label="CAT 2" value="CAT 2" />
+                  <Picker.Item label="HALF-TERM BREAK" value="HALF-TERM BREAK" />
+                  <Picker.Item label="MID-TERM BREAK" value="MID-TERM BREAK" />
+                  <Picker.Item label="END TERM EXAMS" value="END TERM EXAMS" />
+                  <Picker.Item label="HOLIDAY" value="HOLIDAY" />
+                  <Picker.Item label="PUBLIC HOLIDAY" value="PUBLIC HOLIDAY" />
+                  <Picker.Item label="SCHOOL EVENT" value="SCHOOL EVENT" />
+                  <Picker.Item label="SPORTS DAY" value="SPORTS DAY" />
+                  <Picker.Item label="STAFF MEETING" value="STAFF MEETING" />
                 </Picker>
               </View>
             </View>
@@ -863,7 +871,7 @@ export default function SchemesOfWork() {
               onPress={() => {
                 if (editingBreak && editingBreak.breakType) {
                   const newBreak: Break = {
-                    breakType: editingBreak.breakType,
+                    breakType: (editingBreak.breakType || 'HALF-TERM BREAK').toUpperCase(),
                     startWeek: editingBreak.startWeek || 1,
                     startLesson: editingBreak.startLesson || 1,
                     endWeek: editingBreak.endWeek || editingBreak.startWeek || 1,

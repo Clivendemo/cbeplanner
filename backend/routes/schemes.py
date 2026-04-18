@@ -417,7 +417,6 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                             content["strand"],
                             content["substrand"],
                             content["slo"],
-                            is_kiswahili,
                         )
 
                     experiences = content.get("learningActivities", [])
@@ -426,7 +425,6 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                             content["strand"],
                             content["substrand"],
                             content["slo"],
-                            is_kiswahili,
                         )
 
                     resources = content.get("resources", [])
@@ -434,7 +432,6 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                         resources = generate_learning_resources(
                             content["strand"],
                             content["substrand"],
-                            is_kiswahili,
                         )
 
                     assessment = content.get("assessmentMethods", [])
