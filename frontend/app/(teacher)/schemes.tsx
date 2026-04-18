@@ -1153,10 +1153,24 @@ export default function SchemesOfWork() {
   );
 
   // PDF Preview Modal (in-app viewer)
-  const renderPdfPreviewModal = () => (
+  const renderPdfPreviewModal = () => {
+    const balance = user?.walletBalance || 0;
+    const canAfford = balance >= SCHEME_DOWNLOAD_COST;
+    const shortfall = Math.max(0, SCHEME_DOWNLOAD_COST - balance);
+
+    const closeModal = () => {
+      setShowPdfModal(false);
+      if (pdfPreviewUrl && Platform.OS === 'web') {
+        URL.revokeObjectURL(pdfPreviewUrl);
+      }
+      setPdfPreviewUrl(null);
+    };
+
+    return (
     <Modal visible={showPdfModal} transparent animationType="slide">
       <SafeAreaView style={styles.pdfModalSafeArea}>
         <View style={styles.pdfModalContainer}>
+          {/* Top header row: title + close */}
           <View style={styles.pdfModalHeader}>
             <Text style={styles.pdfModalTitle}>Scheme Preview</Text>
             <View style={styles.pdfModalActions}>
@@ -1176,24 +1190,74 @@ export default function SchemesOfWork() {
                       Alert.alert('Error', 'Unable to share PDF');
                     }
                   }}
+                  data-testid="pdf-share-btn"
                 >
                   <Ionicons name="share-outline" size={22} color="#6366F1" />
                 </TouchableOpacity>
               )}
               <TouchableOpacity 
-                onPress={() => {
-                  setShowPdfModal(false);
-                  if (pdfPreviewUrl && Platform.OS === 'web') {
-                    URL.revokeObjectURL(pdfPreviewUrl);
-                  }
-                  setPdfPreviewUrl(null);
-                }} 
+                onPress={closeModal}
                 style={styles.pdfModalCloseBtn}
+                data-testid="pdf-close-btn"
               >
                 <Ionicons name="close" size={24} color="#374151" />
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Sticky action bar: download or insufficient-funds banner */}
+          {canAfford ? (
+            <View style={styles.pdfStickyBar} data-testid="pdf-download-bar">
+              <View style={styles.pdfStickyBarLeft}>
+                <Ionicons name="wallet-outline" size={16} color="#6B7280" />
+                <Text style={styles.pdfStickyBalance}>
+                  Balance: KES {balance}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.pdfDownloadBtn, downloading && styles.pdfDownloadBtnDisabled]}
+                onPress={handleDownload}
+                disabled={downloading}
+                data-testid="pdf-download-btn"
+              >
+                {downloading ? (
+                  <ActivityIndicator size={18} color="#FFFFFF" />
+                ) : (
+                  <Ionicons name="download-outline" size={18} color="#FFFFFF" />
+                )}
+                <Text style={styles.pdfDownloadBtnText}>
+                  {downloading ? 'Downloading…' : `Download PDF (KES ${SCHEME_DOWNLOAD_COST})`}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.pdfInsufficientBar} data-testid="pdf-insufficient-bar">
+              <View style={styles.pdfInsufficientLeft}>
+                <Ionicons name="alert-circle" size={20} color="#B45309" />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.pdfInsufficientTitle}>
+                    KES {shortfall} more needed to download
+                  </Text>
+                  <Text style={styles.pdfInsufficientSub}>
+                    Balance: KES {balance} · Cost: KES {SCHEME_DOWNLOAD_COST}
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                style={styles.pdfTopUpBtn}
+                onPress={() => {
+                  setPendingDownload(true);
+                  closeModal();
+                  router.push('/(teacher)/profile');
+                }}
+                data-testid="pdf-top-up-btn"
+              >
+                <Ionicons name="phone-portrait-outline" size={16} color="#FFFFFF" />
+                <Text style={styles.pdfTopUpBtnText}>Top Up Wallet</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           <View style={styles.pdfModalContent}>
             {Platform.OS === 'web' && pdfPreviewUrl ? (
               <iframe
@@ -1226,7 +1290,8 @@ export default function SchemesOfWork() {
         </View>
       </SafeAreaView>
     </Modal>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -1901,6 +1966,125 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#6366F1'
   },
+  // New 3-stage preview styles
+  previewSuccessCard: {
+    width: '100%',
+    maxWidth: 480,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24,
+    marginTop: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#F3F4F6'
+  },
+  previewSuccessIcon: {
+    marginBottom: 8
+  },
+  previewSuccessTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+    marginTop: 4
+  },
+  previewSuccessSubject: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6366F1',
+    marginTop: 6
+  },
+  previewSuccessMeta: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginTop: 4
+  },
+  previewStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginTop: 20,
+    paddingTop: 18,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6'
+  },
+  previewStatBox: {
+    alignItems: 'center',
+    flex: 1
+  },
+  previewStatNum: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#111827'
+  },
+  previewStatLabel: {
+    fontSize: 11,
+    color: '#6B7280',
+    marginTop: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5
+  },
+  previewStatDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: '#E5E7EB'
+  },
+  previewPdfBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    maxWidth: 480,
+    backgroundColor: '#6366F1',
+    paddingVertical: 16,
+    borderRadius: 12,
+    marginTop: 24,
+    gap: 10,
+    shadowColor: '#6366F1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4
+  },
+  previewPdfBtnText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700'
+  },
+  previewPdfHint: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    marginTop: 8
+  },
+  previewEditBackBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 20
+  },
+  previewEditBackBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6366F1'
+  },
+  previewWalletRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 20
+  },
+  previewWalletText: {
+    fontSize: 12,
+    color: '#9CA3AF'
+  },
   downloadBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2253,6 +2437,90 @@ const styles = StyleSheet.create({
   },
   pdfModalCloseBtn: {
     padding: 4
+  },
+  pdfStickyBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    gap: 12
+  },
+  pdfStickyBarLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6
+  },
+  pdfStickyBalance: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '500'
+  },
+  pdfDownloadBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#10B981',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    gap: 8,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3
+  },
+  pdfDownloadBtnDisabled: {
+    opacity: 0.7
+  },
+  pdfDownloadBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600'
+  },
+  pdfInsufficientBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FFFBEB',
+    borderBottomWidth: 1,
+    borderBottomColor: '#FDE68A',
+    gap: 12
+  },
+  pdfInsufficientLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8
+  },
+  pdfInsufficientTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#92400E'
+  },
+  pdfInsufficientSub: {
+    fontSize: 11,
+    color: '#B45309',
+    marginTop: 2
+  },
+  pdfTopUpBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#D97706',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 8,
+    gap: 6
+  },
+  pdfTopUpBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600'
   },
   pdfModalContent: {
     flex: 1,

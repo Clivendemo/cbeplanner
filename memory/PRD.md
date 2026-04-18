@@ -47,6 +47,12 @@ A competency-based education lesson planning system for Kenyan teachers with M-P
 ## Scheme Draft Workflow
 - Save → list/get → preview (free) → regenerate → download (KES 15)
 
+## Scheme 3-Stage Download Flow (Feb 2026)
+- **Stage 1 — Generator form**: Grade → Topics → Breaks → Generate (free).
+- **Stage 2 — Preview gateway** (`renderPreviewStep`): Shows success summary (subject, grade, term, lessons/weeks/topics stats) with two actions: "Preview Scheme" (opens real PDF) and "Edit Settings" (back to form). No charge at this stage.
+- **Stage 3 — Real PDF modal** (`renderPdfPreviewModal`): True representation of final PDF via inline iframe (web) / WebView (native). Sticky top bar with wallet balance + green "Download PDF (KES 15)" button. If balance < KES 15, the download button is replaced with an inline amber warning bar showing shortfall + "Top Up Wallet" button that deep-links to `/(teacher)/profile`.
+- Backend `/api/schemes/preview` is unauthenticated-charge (free). `/api/schemes/download` does: wallet guard → insert DEBIT ledger → atomic `$inc` deduction with `$gte` guard → generate PDF → refund+rollback on failure. Returns 402 with `{message, required, current}` on insufficient funds.
+
 ## Seed Pipeline (v2)
 - Grade normalization (27 variants), populated SLO mappings, get_or_create helpers
 
