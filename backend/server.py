@@ -6,6 +6,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 import time
+import asyncio
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict, Any
@@ -5677,320 +5678,102 @@ PROCESSED_DIR.mkdir(exist_ok=True)
 # File size limit: 10MB
 MAX_PDF_SIZE = 10 * 1024 * 1024
 
-def extract_metadata_from_path(filename: str):
-    """Extract grade and subject from filename"""
-    name = filename.lower().replace(".pdf", "")
-    # Try to extract grade number
-    import re
-    grade_match = re.search(r'grade\s*(\d+)', name)
-    grade_num = grade_match.group(1) if grade_match else "10"
-    # Subject is the filename cleaned up
-    subject = re.sub(r'grade\s*\d+', '', name).strip().replace('_', ' ').replace('-', ' ')
-    subject = subject.title() if subject else "Unknown Subject"
-    return grade_num, subject
+# ==================== CURRICULUM PIPELINE (Background Job) ====================
 
-async def upsert_grade_async(name: str, order: int):
-    """Upsert grade and return its ID"""
-    result = await db.grades.find_one_and_update(
-        {"name": name},
-        {"$set": {"order": order}},
-        upsert=True,
-        return_document=True
-    )
-    return str(result["_id"])
+from curriculum_pipeline import (
+    create_job, update_job, get_job, process_curriculum_job,
+    repair_json, clean_pdf_text, insert_curriculum_data,
+)
 
-async def upsert_subject_async(name: str, grade_id: str):
-    """Upsert subject and return its ID"""
-    result = await db.subjects.find_one_and_update(
-        {"name": name},
-        {"$set": {"gradeIds": [grade_id]}},
-        upsert=True,
-        return_document=True
-    )
-    return str(result["_id"])
-
-async def upsert_strand_async(name: str, subject_id: str):
-    """Upsert strand and return its ID"""
-    result = await db.strands.find_one_and_update(
-        {"name": name, "subjectId": subject_id},
-        {"$set": {}},
-        upsert=True,
-        return_document=True
-    )
-    return str(result["_id"])
-
-async def insert_substrand_async(name: str, strand_id: str):
-    """Insert substrand and return its ID"""
-    doc = {
-        "_id": ObjectId(),
-        "name": name,
-        "strandId": strand_id
-    }
-    await db.substrands.insert_one(doc)
-    return str(doc["_id"])
-
-async def insert_slo_async(slo: dict, substrand_id: str):
-    """Insert SLO and return its ID"""
-    doc = {
-        "_id": ObjectId(),
-        "name": slo.get("name", ""),
-        "description": slo.get("description", ""),
-        "substrandId": substrand_id
-    }
-    await db.slos.insert_one(doc)
-    return str(doc["_id"])
-
-async def insert_slo_mapping_async(slo_id: str):
-    """Insert SLO mapping"""
-    await db.slo_mappings.insert_one({
-        "_id": ObjectId(),
-        "sloId": slo_id,
-        "competencyIds": [],
-        "valueIds": [],
-        "pciIds": [],
-        "assessmentIds": []
-    })
-
-async def insert_activities_async(substrand_id: str, activities: dict):
-    """Insert learning activities for substrand"""
-    await db.learning_activities.insert_one({
-        "_id": ObjectId(),
-        "substrandId": substrand_id,
-        "introduction_activities": activities.get("introduction", []),
-        "development_activities": activities.get("development", []),
-        "conclusion_activities": activities.get("conclusion", []),
-        "extended_activities": activities.get("extended", []),
-        "learning_resources": [],
-        "assessment_methods": []
-    })
-
-def extract_with_ai_simple(text: str) -> Optional[dict]:
-    """
-    Simple AI extraction using OpenAI for curriculum data.
-    This reuses the same logic from the pipeline's ai_extractor.
-    """
-    try:
-        from openai import OpenAI
-        import json
-        
-        client = OpenAI()
-        
-        prompt = f"""
-You are extracting structured curriculum data from a Kenyan CBC curriculum document.
-
-Return ONLY valid JSON. Do not include any explanation.
-
-STRICT RULES:
-- Do NOT summarize
-- Preserve exact wording
-- Maintain hierarchy
-- Capture ALL SLOs fully
-- Separate activities correctly
-
-JSON FORMAT:
-{{
-  "strand": "",
-  "substrand": "",
-  "slos": [
-    {{
-      "name": "",
-      "description": ""
-    }}
-  ],
-  "activities": {{
-    "introduction": [],
-    "development": [],
-    "conclusion": [],
-    "extended": []
-  }},
-  "competencies": [],
-  "values": [],
-  "pcis": []
-}}
-
-TEXT:
-{text[:4000]}
-"""
-        
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=2000
-        )
-        
-        content = response.choices[0].message.content
-        # Try to extract JSON from response
-        if "```json" in content:
-            content = content.split("```json")[1].split("```")[0]
-        elif "```" in content:
-            content = content.split("```")[1].split("```")[0]
-        
-        return json.loads(content.strip())
-    except Exception as e:
-        logger.error(f"AI extraction error: {str(e)}")
-        return None
-
-async def process_single_pdf(file_path: Path) -> dict:
-    """
-    Process a single PDF file using the upgraded AI pipeline:
-    1. Extract ALL text from PDF (full context, not page-by-page)
-    2. Send to Gemini 2.5 Flash for structured extraction
-    3. Save extracted JSON
-    4. Generate seed script
-    5. Run seed script to load into database
-    """
-    import sys
-    sys.path.insert(0, str(ROOT_DIR / "scripts"))
-    from ai_extractor import extract_with_gemini_chunked
-    from seed_script_generator import generate_seed_script
-
-    filename = file_path.name
-    name_no_ext = file_path.stem
-    logger.info(f"Processing PDF: {filename}")
-
-    # Step 1: Extract ALL text from PDF
-    all_text = []
-    with pdfplumber.open(str(file_path)) as pdf:
-        for i, page in enumerate(pdf.pages):
-            text = page.extract_text()
-            if text:
-                all_text.append(text)
-
-    full_text = "\n\n".join(all_text)
-    if not full_text.strip():
-        raise ValueError(f"No text found in {filename}")
-
-    logger.info(f"Extracted {len(full_text)} characters from {filename}")
-
-    # Detect grade/subject from filename
-    grade_num, subject_name = extract_metadata_from_path(filename)
-    grade_hint = f"Grade {grade_num}"
-
-    # Step 2: AI extraction with Gemini (full context)
-    logger.info(f"Sending to Gemini 2.5 Flash for extraction...")
-    extracted = await extract_with_gemini_chunked(full_text, subject_name, grade_hint)
-
-    if not extracted or not extracted.get("strands"):
-        raise ValueError(f"AI extraction returned no data for {filename}")
-
-    # Log detected grade (may be null if AI couldn't determine)
-    detected_grade = extracted.get("grade")
-    grade_source = extracted.get("_grade_source", "ai")
-    logger.info(f"Grade detected: {detected_grade} (source: {grade_source})")
-    if not detected_grade:
-        logger.warning(f"Grade could not be detected from PDF, using filename hint: {grade_hint}")
-        extracted["grade"] = grade_hint
-        extracted["_grade_hint"] = grade_hint
-
-    if not extracted or not extracted.get("strands"):
-        raise ValueError(f"AI extraction returned no data for {filename}")
-
-    strand_count = len(extracted.get("strands", []))
-    ss_count = sum(len(s.get("substrands", [])) for s in extracted.get("strands", []))
-    slo_count = sum(
-        sum(len(ss.get("slos", [])) for ss in s.get("substrands", []))
-        for s in extracted.get("strands", [])
-    )
-    logger.info(f"Extracted: {strand_count} strands, {ss_count} substrands, {slo_count} SLOs")
-
-    # Step 3: Save JSON
-    safe_name = name_no_ext.lower().replace(" ", "_").replace("-", "_")
-    json_dir = ROOT_DIR / "curriculum_data"
-    json_dir.mkdir(exist_ok=True)
-    json_path = json_dir / f"extracted_{safe_name}.json"
-    with open(json_path, "w") as f:
-        json.dump(extracted, f, indent=2, ensure_ascii=False)
-    logger.info(f"JSON saved to {json_path}")
-
-    # Step 4: Generate seed script
-    script_name = f"seed_{safe_name}.py"
-    script_path = str(ROOT_DIR / script_name)
-    generate_seed_script(extracted, script_path)
-    logger.info(f"Seed script saved to {script_path}")
-
-    # Step 5: Run the seed script to load data into DB
-    import subprocess
-    result = subprocess.run(
-        [sys.executable, script_path],
-        capture_output=True, text=True, timeout=120
-    )
-    if result.returncode != 0:
-        logger.error(f"Seed script error: {result.stderr}")
-        raise ValueError(f"Seed script failed: {result.stderr[:500]}")
-
-    logger.info(f"Seed script ran successfully")
-    logger.info(result.stdout[-500:] if len(result.stdout) > 500 else result.stdout)
-
-    return {
-        "filename": filename,
-        "grade": extracted.get("grade", grade_hint),
-        "subject": extracted.get("subject_name", subject_name),
-        "strands": strand_count,
-        "substrands": ss_count,
-        "slos": slo_count,
-        "json_path": str(json_path),
-        "seed_script": script_name,
-    }
 
 @api_router.post("/admin/upload-curriculum")
 async def upload_curriculum_pdf(
     file: UploadFile = File(...),
-    admin: str = Depends(verify_admin)
+    admin: dict = Depends(verify_admin)
 ):
+    """Upload a curriculum PDF and queue it for background processing.
+
+    Returns immediately with a job_id. Admin polls /admin/curriculum-jobs/{id}
+    for status. Prevents Render request timeout on large PDFs.
     """
-    Upload and process a curriculum PDF file.
-    
-    - Accepts PDF files only (max 10MB)
-    - Saves to backend/pdfs/
-    - Processes using AI extraction pipeline
-    - Moves to backend/pdfs_processed/ after completion
-    - Returns success/failure status
-    """
-    # Validate file type
     if not file.filename or not file.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Only PDF files are accepted")
-    
-    # Check file size
+
     file_content = await file.read()
     if len(file_content) > MAX_PDF_SIZE:
         raise HTTPException(status_code=400, detail="File size exceeds 10MB limit")
-    
-    # Generate safe filename
+
     safe_filename = file.filename.replace(" ", "_").replace("/", "_")
     file_path = PDF_DIR / safe_filename
-    
-    try:
-        # Save file temporarily
-        with open(file_path, "wb") as f:
-            f.write(file_content)
-        
-        logger.info(f"Saved PDF: {safe_filename}")
-        
-        # Process the PDF
-        result = await process_single_pdf(file_path)
-        
-        # Move to processed directory
-        processed_path = PROCESSED_DIR / safe_filename
-        shutil.move(str(file_path), str(processed_path))
-        
-        logger.info(f"Moved to processed: {safe_filename}")
-        
-        return {
-            "status": "success",
-            "message": "Curriculum processed successfully",
-            "details": result
-        }
-        
-    except Exception as e:
-        # Clean up on error
-        if file_path.exists():
-            file_path.unlink()
-        
-        logger.error(f"Error processing curriculum PDF: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to process curriculum: {str(e)}"
-        )
+
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+
+    logger.info(f"Saved PDF: {safe_filename} ({len(file_content)} bytes)")
+
+    # Create job and start background processing
+    job_id = await create_job(db, safe_filename, admin.get("id", ""))
+    asyncio.create_task(process_curriculum_job(db, job_id, file_path))
+
+    return {
+        "status": "queued",
+        "jobId": job_id,
+        "message": f"Processing {safe_filename} in background. Poll /admin/curriculum-jobs/{job_id} for status.",
+    }
+
+
+@api_router.get("/admin/curriculum-jobs")
+async def list_curriculum_jobs(user: dict = Depends(verify_admin)):
+    """List all curriculum processing jobs for the admin."""
+    jobs = await db.curriculum_jobs.find().sort("createdAt", -1).to_list(50)
+    result = []
+    for j in jobs:
+        j["id"] = j.pop("_id")
+        for k in ["createdAt", "updatedAt"]:
+            if j.get(k) and hasattr(j[k], "isoformat"):
+                j[k] = j[k].isoformat()
+        result.append(j)
+    return {"success": True, "jobs": result}
+
+
+@api_router.get("/admin/curriculum-jobs/{job_id}")
+async def get_curriculum_job(job_id: str, user: dict = Depends(verify_admin)):
+    """Get status of a curriculum processing job."""
+    job = await get_job(db, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    job["id"] = job.pop("_id")
+    for k in ["createdAt", "updatedAt"]:
+        if job.get(k) and hasattr(job[k], "isoformat"):
+            job[k] = job[k].isoformat()
+    return {"success": True, "job": job}
+
+
+@api_router.post("/admin/curriculum-jobs/{job_id}/retry")
+async def retry_curriculum_job(job_id: str, user: dict = Depends(verify_admin)):
+    """Retry a failed curriculum job."""
+    job = await get_job(db, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if job["status"] not in ("failed",):
+        raise HTTPException(status_code=400, detail="Only failed jobs can be retried")
+
+    filename = job["filename"]
+    file_path = PDF_DIR / filename
+    processed_path = PROCESSED_DIR / filename
+
+    # Check if file exists in either location
+    if not file_path.exists() and processed_path.exists():
+        import shutil
+        shutil.copy2(str(processed_path), str(file_path))
+    elif not file_path.exists():
+        raise HTTPException(status_code=404, detail="PDF file no longer available")
+
+    await update_job(db, job_id, status="queued", progress=0,
+                     progressMessage="Retrying...", error=None, result=None)
+    asyncio.create_task(process_curriculum_job(db, job_id, file_path))
+
+    return {"success": True, "message": "Job requeued for processing"}
 
 # Health check endpoint
 # Include router

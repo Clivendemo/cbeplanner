@@ -148,20 +148,9 @@ async def extract_with_gemini(text: str, session_suffix: str = "") -> dict:
 
     response_text = response.text.strip()
 
-    # Clean markdown code blocks if present
-    if response_text.startswith("```"):
-        lines = response_text.split("\n")
-        lines = [l for l in lines if not l.strip().startswith("```")]
-        response_text = "\n".join(lines)
-
-    try:
-        return json.loads(response_text)
-    except json.JSONDecodeError:
-        start = response_text.find("{")
-        end = response_text.rfind("}") + 1
-        if start >= 0 and end > start:
-            return json.loads(response_text[start:end])
-        raise ValueError(f"Could not parse AI response as JSON: {response_text[:200]}...")
+    # Use robust JSON repair (handles fences, trailing commas, smart quotes, truncation)
+    from curriculum_pipeline import repair_json
+    return repair_json(response_text)
 
 
 async def extract_with_gemini_chunked(
