@@ -47,6 +47,40 @@ A competency-based education lesson planning system for Kenyan teachers with M-P
 ## Scheme Draft Workflow
 - Save → list/get → preview (free) → regenerate → download (KES 15)
 
+## Landing Page Redesign (Feb 2026)
+Re-skin of `/app/frontend/app/auth/login.tsx` and `signup.tsx` — no marquee, 3-column desktop layout, KICD footer preserved.
+
+- **New file `components/LandingLayout.tsx`** — single module exporting `LandingLayout` wrapper + `FeatureTiles` + 7 sidebar widgets (DidYouKnow, UpcomingEvents, TeacherQuote, UsefulLinks, TipOfDay, TermCalendar, Subjects, AdSlot).
+- **Responsive via `useWindowDimensions`**:
+  - ≥1024px: 3 columns (210px left + 500px center + 210px right) + 728×90 bottom banner
+  - 768–1023px: 2 columns (hide left sidebar) + 468×60 bottom banner
+  - <768px: single column, edge-to-edge auth card + 320×50 bottom banner
+- **Widgets**:
+  - Did You Know (5 CBC facts, rotate every 8s with dot indicator)
+  - Upcoming Events (9 academic/co-curricular entries with colored date blocks & legend)
+  - Teacher's Corner (3 quotes, rotate every 10s, purple left-border)
+  - Useful Links (5 KE education links → `Linking.openURL`, new tab on web)
+  - Lesson Planning Tip (day-of-week-based)
+  - 2025 Term Calendar (Term 1 Past · Term 2 Current · Term 3 Upcoming, academic + co-curricular per term)
+  - Subjects (9 pills)
+  - Ad slots (placeholders with "Advertisement" label, ready for AdSense swap)
+- **Feature preview tiles (clickable with auth check)**:
+  - 📄 Generate Scheme of Work → `/(teacher)/schemes`
+  - 📝 Generate Lesson Plan → `/(teacher)/home`
+  - 📖 Generate Lesson Notes → `/(teacher)/notes`
+  - 📥 Download CBC Past Papers → `/(teacher)/revision`
+  - If user session is active → direct `router.push`. If not → friendly alert "Please sign in to access this feature. Your session may have expired." (stays on login).
+- **Removed**:
+  - Animated `Dimensions`/marquee text block + all its refs/imports from login.tsx
+  - Full-width `SafeAreaView` + `ScrollView` wrappers (center-col handles sizing)
+  - `useSafeAreaInsets`, `SafeAreaView`, `ScrollView`, `Animated`, `Dimensions` imports that were only used by the marquee/full-width layout
+- **Preserved (untouched)**:
+  - All auth logic (`signIn`, `signUp`, `resetPassword`, `rememberMe`, AuthContext)
+  - Firebase integration, API calls, routing
+  - All other teacher/admin screens
+  - Password Reset modal, graduation cap logo, "KICD-Aligned / LEGIT LAB" footer
+- **Primary color** updated to `#5B5BD6` (indigo, per spec) on buttons, dots, links, tile borders; previous `#6366F1` remains elsewhere for continuity.
+
 ## Server.py Refactor — Phase 1 (Feb 2026)
 - **Created `/app/backend/app/deps.py`** — shared core: MongoDB client, `verify_token`, `verify_admin`, `serialize_doc`, `validate_object_id`, `api_error`, `to_int`, constants (SCHEME_DOWNLOAD_COST, LESSON_PLAN_COST_KES, NOTES_DOWNLOAD_COST_KES, FREE_LESSONS_ON_SIGNUP, FIREBASE_*, JWT_SECRET, ADMIN_EMAILS), shared `api_router = APIRouter(prefix="/api")`.
 - **Created `/app/backend/routes/schemes.py`** — all 7 scheme endpoints (`GET /schemes`, `GET /schemes/config/lessons-per-week`, `GET /schemes/topics/{subjectId}`, `GET /schemes/{id}`, `POST /schemes/generate-v2`, `DELETE /schemes/{id}`, `POST /schemes/{id}/download`) + scheme helpers (`_format_slo_for_scheme`, `generate_assessment_methods`, `validate_break`, `calculate_break_duration`) + `SchemeGenerateRequest` Pydantic model. 650 lines, clean imports.

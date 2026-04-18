@@ -7,13 +7,12 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   Alert
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LandingLayout, FeatureTiles } from '../../components/LandingLayout';
 
 export default function SignUp() {
   const [firstName, setFirstName] = useState('');
@@ -25,7 +24,6 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
 
   // Refs for inputs to manage focus
   const lastNameRef = useRef<TextInput>(null);
@@ -65,24 +63,18 @@ export default function SignUp() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <LandingLayout>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <ScrollView 
-          contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom, 24) }]}
-          keyboardShouldPersistTaps="always"
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.header}>
-            <Ionicons name="school" size={64} color="#6366F1" />
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Join CBE Planner today</Text>
-          </View>
+        <View style={styles.header}>
+          <Ionicons name="school" size={56} color="#5B5BD6" />
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.subtitle}>Join CBE Planner today</Text>
+        </View>
 
-          <View style={styles.form}>
+        <View style={styles.form}>
             <View style={styles.inputContainer}>
               <Ionicons name="person-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
               <TextInput
@@ -210,85 +202,33 @@ export default function SignUp() {
               <Text style={styles.linkText}>Already have an account? Sign In</Text>
             </TouchableOpacity>
           </View>
-        </ScrollView>
+
+        <FeatureTiles />
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </LandingLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F9FAFB'
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB'
-  },
-  scrollContent: {
-    flexGrow: 1,
-    padding: 24,
-    justifyContent: 'center'
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 48
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginTop: 16
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 8
-  },
-  form: {
-    width: '100%'
-  },
+  header: { alignItems: 'center', marginBottom: 24 },
+  title: { fontSize: 26, fontWeight: 'bold', color: '#111827', marginTop: 12 },
+  subtitle: { fontSize: 13, color: '#6B7280', marginTop: 6 },
+  form: { width: '100%' },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    paddingHorizontal: 14,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB'
   },
-  inputIcon: {
-    marginRight: 12
-  },
-  input: {
-    flex: 1,
-    height: 48,
-    fontSize: 16,
-    color: '#111827'
-  },
-  button: {
-    backgroundColor: '#6366F1',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 8
-  },
-  buttonDisabled: {
-    opacity: 0.6
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600'
-  },
-  linkButton: {
-    marginTop: 24,
-    alignItems: 'center'
-  },
-  linkText: {
-    color: '#6366F1',
-    fontSize: 14,
-    fontWeight: '500'
-  }
+  inputIcon: { marginRight: 10 },
+  input: { flex: 1, height: 46, fontSize: 15, color: '#111827' },
+  button: { backgroundColor: '#5B5BD6', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 6 },
+  buttonDisabled: { opacity: 0.6 },
+  buttonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
+  linkButton: { marginTop: 18, alignItems: 'center' },
+  linkText: { color: '#5B5BD6', fontSize: 13, fontWeight: '500' }
 });
