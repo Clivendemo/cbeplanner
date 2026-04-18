@@ -858,111 +858,85 @@ export default function SchemesOfWork() {
   );
 
   // Render Step 4: Preview
-  // ── Duplicate-click guard for download ──
   const downloadLockRef = React.useRef(false);
 
   const renderPreviewStep = () => {
     if (!generatedScheme) return null;
     const lessons = generatedScheme.lessons || [];
     const teachingLessons = lessons.filter((l: any) => !l.isBreak);
+    const gradeName = grades.find(g => g.id === selectedGrade)?.name || generatedScheme.gradeName || '';
+    const subjectName = subjects.find(s => s.id === selectedSubject)?.name || generatedScheme.subjectName || '';
 
     return (
-      <View style={{ flex: 1 }}>
-        {/* ── Sticky top action bar (like lesson-detail) ── */}
-        <View style={styles.previewActionBar}>
-          <TouchableOpacity
-            style={styles.previewEditBtn}
-            onPress={() => setCurrentStep('breaks')}
-            data-testid="scheme-edit-btn"
-          >
-            <Ionicons name="create-outline" size={16} color="#6366F1" />
-            <Text style={styles.previewEditBtnText}>Edit</Text>
-          </TouchableOpacity>
+      <ScrollView style={styles.stepContent} contentContainerStyle={{ paddingBottom: 40, alignItems: 'center' }}>
+        {/* Success header */}
+        <View style={styles.previewSuccessCard}>
+          <View style={styles.previewSuccessIcon}>
+            <Ionicons name="checkmark-circle" size={48} color="#10B981" />
+          </View>
+          <Text style={styles.previewSuccessTitle}>Scheme Generated</Text>
+          <Text style={styles.previewSuccessSubject}>{subjectName}</Text>
+          <Text style={styles.previewSuccessMeta}>
+            {gradeName} | Term {generatedScheme.term}, {generatedScheme.year}
+          </Text>
 
-          <TouchableOpacity
-            style={[styles.previewDownloadBtn, downloading && { opacity: 0.6 }]}
-            onPress={handleDownload}
-            disabled={downloading}
-            data-testid="scheme-download-btn"
-          >
-            {downloading ? (
-              <ActivityIndicator size={14} color="#fff" />
-            ) : (
-              <Ionicons name="download-outline" size={16} color="#fff" />
-            )}
-            <Text style={styles.previewDownloadBtnText}>
-              {downloading ? 'Downloading...' : `Download PDF (KES ${SCHEME_DOWNLOAD_COST})`}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* ── Scrollable scheme content ── */}
-        <ScrollView style={styles.stepContent} contentContainerStyle={{ paddingBottom: 40 }}>
-          {/* Header card */}
-          <View style={styles.schemeHeaderCard}>
-            <Text style={styles.schemeHeaderTitle}>{generatedScheme.subjectName || 'Scheme of Work'}</Text>
-            <Text style={styles.schemeHeaderSub}>
-              {generatedScheme.gradeName} | Term {generatedScheme.term}, {generatedScheme.year}
-            </Text>
-            <View style={styles.schemeStatRow}>
-              <View style={styles.schemeStatItem}>
-                <Text style={styles.schemeStatVal}>{teachingLessons.length}</Text>
-                <Text style={styles.schemeStatLbl}>Lessons</Text>
-              </View>
-              <View style={styles.schemeStatItem}>
-                <Text style={styles.schemeStatVal}>{totalWeeks}</Text>
-                <Text style={styles.schemeStatLbl}>Weeks</Text>
-              </View>
-              <View style={styles.schemeStatItem}>
-                <Text style={styles.schemeStatVal}>KES {user?.walletBalance || 0}</Text>
-                <Text style={styles.schemeStatLbl}>Balance</Text>
-              </View>
+          {/* Stats row */}
+          <View style={styles.previewStatsRow}>
+            <View style={styles.previewStatBox}>
+              <Text style={styles.previewStatNum}>{teachingLessons.length}</Text>
+              <Text style={styles.previewStatLabel}>Lessons</Text>
+            </View>
+            <View style={styles.previewStatDivider} />
+            <View style={styles.previewStatBox}>
+              <Text style={styles.previewStatNum}>{totalWeeks}</Text>
+              <Text style={styles.previewStatLabel}>Weeks</Text>
+            </View>
+            <View style={styles.previewStatDivider} />
+            <View style={styles.previewStatBox}>
+              <Text style={styles.previewStatNum}>{selectedTopics.size}</Text>
+              <Text style={styles.previewStatLabel}>Topics</Text>
             </View>
           </View>
+        </View>
 
-          {/* Lesson rows */}
-          {lessons.map((lesson: any, idx: number) => {
-            if (lesson.isBreak) {
-              return (
-                <View key={`brk-${idx}`} style={styles.schemeBreakRow}>
-                  <Ionicons name="pause-circle-outline" size={16} color="#F59E0B" />
-                  <Text style={styles.schemeBreakText}>
-                    Week {lesson.week}: {lesson.breakType || lesson.breakDescription || 'Break'}
-                  </Text>
-                </View>
-              );
-            }
-            return (
-              <View key={`l-${idx}`} style={styles.schemeLessonCard}>
-                <View style={styles.schemeLessonHeader}>
-                  <Text style={styles.schemeLessonWk}>W{lesson.week} L{lesson.lesson || lesson.lessonNumber}</Text>
-                  {lesson.isDouble && (
-                    <View style={styles.schemeDoubleBadge}>
-                      <Text style={styles.schemeDoubleBadgeText}>Double</Text>
-                    </View>
-                  )}
-                </View>
-                <Text style={styles.schemeLessonStrand}>{lesson.strand} / {lesson.substrand}</Text>
-                <Text style={styles.schemeLessonSlo} numberOfLines={3}>{lesson.slo}</Text>
-                {lesson.keyInquiryQuestions ? (
-                  <View style={styles.schemeLessonIqRow}>
-                    <Ionicons name="help-circle-outline" size={14} color="#6366F1" />
-                    <Text style={styles.schemeLessonIq} numberOfLines={2}>{lesson.keyInquiryQuestions}</Text>
-                  </View>
-                ) : null}
-                {lesson.learningResources ? (
-                  <View style={styles.schemeLessonResRow}>
-                    <Ionicons name="book-outline" size={13} color="#6B7280" />
-                    <Text style={styles.schemeLessonRes} numberOfLines={2}>
-                      {Array.isArray(lesson.learningResources) ? lesson.learningResources.join(', ') : lesson.learningResources}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-            );
-          })}
-        </ScrollView>
-      </View>
+        {/* Primary action: Preview PDF */}
+        <TouchableOpacity
+          style={styles.previewPdfBtn}
+          onPress={handlePreview}
+          disabled={previewing}
+          data-testid="preview-pdf-btn"
+        >
+          {previewing ? (
+            <ActivityIndicator size={20} color="#fff" />
+          ) : (
+            <Ionicons name="eye-outline" size={20} color="#fff" />
+          )}
+          <Text style={styles.previewPdfBtnText}>
+            {previewing ? 'Generating Preview...' : 'Preview Scheme'}
+          </Text>
+        </TouchableOpacity>
+        <Text style={styles.previewPdfHint}>
+          View the full professional PDF before downloading
+        </Text>
+
+        {/* Secondary action: Edit */}
+        <TouchableOpacity
+          style={styles.previewEditBackBtn}
+          onPress={() => setCurrentStep('breaks')}
+          data-testid="scheme-edit-btn"
+        >
+          <Ionicons name="create-outline" size={18} color="#6366F1" />
+          <Text style={styles.previewEditBackBtnText}>Edit Settings</Text>
+        </TouchableOpacity>
+
+        {/* Wallet info */}
+        <View style={styles.previewWalletRow}>
+          <Ionicons name="wallet-outline" size={14} color="#9CA3AF" />
+          <Text style={styles.previewWalletText}>
+            Balance: KES {user?.walletBalance || 0} | Download costs KES {SCHEME_DOWNLOAD_COST}
+          </Text>
+        </View>
+      </ScrollView>
     );
   };
 
