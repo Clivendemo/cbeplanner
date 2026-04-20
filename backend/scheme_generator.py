@@ -189,8 +189,7 @@ def create_scheme_styles():
 
 
 def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
-    """Generate a professional landscape A4 PDF for Scheme of Work"""
-    
+    """Generate a professional landscape A4 PDF for Scheme of Work with title cover page."""
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -208,20 +207,63 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
     subject = scheme_data.get('subjectName', '')
     is_kiswahili = 'kiswahili' in subject.lower() or 'fasihi' in subject.lower()
     
-    # Header Section
-    school_name = scheme_data.get('schoolName', 'SCHOOL NAME')
-    elements.append(Paragraph(school_name.upper(), styles['SchoolName']))
-    
+    school_name = scheme_data.get('schoolName', '') or 'SCHOOL NAME'
     term = scheme_data.get('term', 1)
+    grade = scheme_data.get('gradeName', '')
+    year = scheme_data.get('year', datetime.now().year)
+
+    # ===== COVER / TITLE PAGE =====
+    # Vertically center the block by pushing from the top with a Spacer.
+    # Landscape A4 = 21cm height - 2cm margins = ~19cm usable.
+    # Our title block is ~5cm tall, so spacer ≈ 7cm top-padding.
+    cover_styles = getSampleStyleSheet()
+    cover_title = ParagraphStyle(
+        'CoverTitle', parent=cover_styles['Normal'],
+        fontName='Helvetica-Bold', fontSize=36, alignment=TA_CENTER,
+        textColor=colors.HexColor('#1E3A8A'), spaceAfter=0, leading=44,
+    )
+    cover_school = ParagraphStyle(
+        'CoverSchool', parent=cover_styles['Normal'],
+        fontName='Helvetica-Bold', fontSize=24, alignment=TA_CENTER,
+        textColor=colors.HexColor('#111827'), spaceAfter=0, leading=30,
+    )
+    cover_subtitle = ParagraphStyle(
+        'CoverSubtitle', parent=cover_styles['Normal'],
+        fontName='Helvetica', fontSize=18, alignment=TA_CENTER,
+        textColor=colors.HexColor('#4B5563'), spaceAfter=0, leading=24,
+    )
+    cover_meta = ParagraphStyle(
+        'CoverMeta', parent=cover_styles['Normal'],
+        fontName='Helvetica-Bold', fontSize=14, alignment=TA_CENTER,
+        textColor=colors.HexColor('#6B7280'), spaceAfter=0, leading=18,
+    )
+
+    elements.append(Spacer(1, 4.5*cm))
+    elements.append(Paragraph(school_name.upper(), cover_school))
+    elements.append(Spacer(1, 0.7*cm))
+    if is_kiswahili:
+        elements.append(Paragraph('MPANGO WA KAZI', cover_title))
+    else:
+        elements.append(Paragraph('SCHEME OF WORK', cover_title))
+    elements.append(Spacer(1, 0.7*cm))
+    elements.append(Paragraph(subject.upper() if subject else '', cover_subtitle))
+    elements.append(Spacer(1, 0.4*cm))
+    if is_kiswahili:
+        elements.append(Paragraph(f'MUHULA WA {term} &middot; {year}', cover_meta))
+    else:
+        elements.append(Paragraph(f'TERM {term} &middot; {year}', cover_meta))
+    if grade:
+        elements.append(Spacer(1, 0.2*cm))
+        elements.append(Paragraph(grade.upper(), cover_meta))
+    elements.append(PageBreak())
+
+    # ===== CONTENT PAGE HEADER =====
+    elements.append(Paragraph(school_name.upper(), styles['SchoolName']))
     if is_kiswahili:
         elements.append(Paragraph(f"MPANGO WA KAZI – MUHULA WA {term}", styles['SchemeTitle']))
     else:
         elements.append(Paragraph(f"SCHEME OF WORK – TERM {term}", styles['SchemeTitle']))
-    
-    # Info line - LARGER FONT, no lessons per week
-    grade = scheme_data.get('gradeName', '')
-    year = scheme_data.get('year', datetime.now().year)
-    
+
     if is_kiswahili:
         info_text = f"<b>Darasa:</b> {grade}  |  <b>Somo:</b> {subject}  |  <b>Mwaka:</b> {year}"
     else:
@@ -231,11 +273,11 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
     # Table headers - Kiswahili or English
     if is_kiswahili:
         headers = ['WIKI', 'SOM', 'MADA KUU', 'MADA NDOGO', 'MATOKEO MAALUM YA UJIFUNZAJI', 
-                   'MASWALI IBUKA', 'SHUGHULI ZA UJIFUNZAJI', 'NYENZO ZA KUJIFUNZA', 
+                   'SWALI IBUKA', 'SHUGHULI ZA UJIFUNZAJI', 'NYENZO ZA KUJIFUNZA', 
                    'TATHMINI', 'TAFAK']
     else:
         headers = ['WK', 'LSN', 'STRAND', 'SUB-STRAND', 'SPECIFIC LEARNING OUTCOMES', 
-                   'KEY INQUIRY QUESTIONS', 'LEARNING EXPERIENCES', 'LEARNING RESOURCES', 
+                   'KEY INQUIRY QUESTION', 'LEARNING EXPERIENCES', 'LEARNING RESOURCES', 
                    'ASSESSMENT', 'REFL']
     
     # Column widths optimized for 10pt font (landscape A4 = ~29.7cm, minus margins = ~27.7cm)
@@ -248,58 +290,61 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
     header_row = [Paragraph(h, styles['TableHeader']) for h in headers]
     table_data.append(header_row)
     
-    # Content rows
+    # Helper: pick first inquiry question from list/string
+    def _single_inquiry(val) -> str:
+        if not val:
+            return ''
+        if isinstance(val, list):
+            return str(val[0]).strip() if val else ''
+        return str(val).strip().split('\n')[0].strip()
+
+    # Content rows with week / strand / substrand deduplication
     lessons = scheme_data.get('lessons', [])
     prev_week = None
     prev_strand = None
-    
+    prev_substrand = None
+
     for lesson in lessons:
-        # Check if this is a break
+        # ===== BREAK ROW — single centered row with break name only =====
         if lesson.get('isBreak'):
-            break_name = lesson.get('breakType', 'BREAK')
-            break_week = lesson.get('week', '')
-            break_end_week = lesson.get('endWeek', break_week)
-            break_lesson = lesson.get('lesson', '')
-            break_end_lesson = lesson.get('endLesson', break_lesson)
-            lesson_range = lesson.get('lessonRange', str(break_lesson))
-            
-            # Format: "OPENER CAT - Week 1, Lessons 1-5" or multi-week format
-            if break_week == break_end_week:
-                break_text = f"{break_name.upper()} - Week {break_week}, Lessons {lesson_range}"
-            else:
-                break_text = f"{break_name.upper()} - Week {break_week}-{break_end_week}"
-            
-            break_row = [Paragraph(break_text, styles['BreakCell'])] + [''] * 9
+            break_name = str(lesson.get('breakType', 'BREAK')).upper()
+            break_row = [Paragraph(break_name, styles['BreakCell'])] + [''] * 9
             table_data.append(break_row)
+            # Reset dedupe trackers so the strand/week re-prints after the break
             prev_week = None
             prev_strand = None
+            prev_substrand = None
             continue
-        
+
         week = lesson.get('week', '')
         lsn = lesson.get('lesson', '')
         strand = lesson.get('strand', '')
         substrand = lesson.get('substrand', '')
         slo = lesson.get('slo', '')
-        inquiry = lesson.get('keyInquiryQuestions', '')
+        inquiry_raw = lesson.get('keyInquiryQuestions', '')
         experiences = lesson.get('learningExperiences', '')
         resources = lesson.get('learningResources', '')
         assessment = lesson.get('assessmentMethods', '')
-        
-        # Show week only if different from previous
+
+        # Dedupe: only show week / strand / sub-strand if they differ from prev row
         week_display = str(week) if week != prev_week else ''
-        prev_week = week
-        
-        # Truncate strand display if same as previous
         strand_display = strand if strand != prev_strand else ''
+        substrand_display = substrand if (substrand != prev_substrand or strand != prev_strand) else ''
+
+        prev_week = week
         prev_strand = strand
-        
+        prev_substrand = substrand
+
+        # Single inquiry question per lesson
+        inquiry = _single_inquiry(inquiry_raw)
+
         row = [
             Paragraph(week_display, styles['TableCell']),
             Paragraph(str(lsn), styles['TableCell']),
             Paragraph(strand_display, styles['TableCell']),
-            Paragraph(substrand, styles['TableCell']),
+            Paragraph(substrand_display, styles['TableCell']),
             Paragraph(slo, styles['TableCell']),
-            Paragraph(inquiry if isinstance(inquiry, str) else '\n'.join(inquiry[:2]) if inquiry else '', styles['TableCell']),
+            Paragraph(inquiry, styles['TableCell']),
             Paragraph(experiences if isinstance(experiences, str) else '\n'.join(experiences[:3]) if experiences else '', styles['TableCell']),
             Paragraph(resources if isinstance(resources, str) else ', '.join(resources[:4]) if resources else '', styles['TableCell']),
             Paragraph(assessment if isinstance(assessment, str) else ', '.join(assessment[:2]) if assessment else '', styles['TableCell']),

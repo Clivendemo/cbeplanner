@@ -64,6 +64,19 @@ export const SchemeDisplay: React.FC<SchemeDisplayProps> = ({ scheme }) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {/* ===== COVER / TITLE SECTION ===== */}
+      <View style={styles.coverPage}>
+        <Text style={styles.coverSchoolName}>
+          {(scheme.schoolName || 'SCHOOL NAME').toUpperCase()}
+        </Text>
+        <View style={styles.coverDivider} />
+        <Text style={styles.coverTitle}>SCHEME OF WORK</Text>
+        <View style={styles.coverDivider} />
+        <Text style={styles.coverSubject}>{(scheme.subjectName || '').toUpperCase()}</Text>
+        <Text style={styles.coverMeta}>TERM {scheme.term} · {scheme.year}</Text>
+        {scheme.gradeName ? <Text style={styles.coverMeta}>{scheme.gradeName.toUpperCase()}</Text> : null}
+      </View>
+
       {/* Document Header */}
       <View style={styles.documentHeader}>
         <Text style={styles.documentTitle}>REPUBLIC OF KENYA</Text>
@@ -111,71 +124,87 @@ export const SchemeDisplay: React.FC<SchemeDisplayProps> = ({ scheme }) => {
             <View style={[styles.cell, styles.colStrand]}><Text style={styles.headerText}>Strand</Text></View>
             <View style={[styles.cell, styles.colSubstrand]}><Text style={styles.headerText}>Sub-strand</Text></View>
             <View style={[styles.cell, styles.colSlo]}><Text style={styles.headerText}>Specific Learning Outcomes</Text></View>
-            <View style={[styles.cell, styles.colInquiry]}><Text style={styles.headerText}>Key Inquiry Question(s)</Text></View>
+            <View style={[styles.cell, styles.colInquiry]}><Text style={styles.headerText}>Key Inquiry Question</Text></View>
             <View style={[styles.cell, styles.colExp]}><Text style={styles.headerText}>Learning Experiences</Text></View>
             <View style={[styles.cell, styles.colRes]}><Text style={styles.headerText}>Learning Resources</Text></View>
             <View style={[styles.cell, styles.colAssess]}><Text style={styles.headerText}>Assessment</Text></View>
             <View style={[styles.cell, styles.colRef, styles.lastCell]}><Text style={styles.headerText}>Ref.</Text></View>
           </View>
 
-          {/* Body rows */}
-          {lessons.map((l, idx) => {
-            if (l.isBreak) {
+          {/* Body rows — dedupe week / strand / sub-strand against prev row */}
+          {(() => {
+            let prevWeek: number | null = null;
+            let prevStrand: string | null = null;
+            let prevSub: string | null = null;
+            return lessons.map((l, idx) => {
+              if (l.isBreak) {
+                // Reset dedupe trackers after a break
+                prevWeek = null;
+                prevStrand = null;
+                prevSub = null;
+                const label = (l.breakType || l.breakDescription || 'BREAK').toString().toUpperCase();
+                return (
+                  <View key={idx} style={[styles.row, styles.breakRow]}>
+                    <View style={[styles.cell, styles.breakContent, styles.lastCell, { flex: 1 }]}>
+                      <Text style={styles.breakLabel}>{label}</Text>
+                    </View>
+                  </View>
+                );
+              }
+
+              const weekVal = l.week;
+              const strandVal = l.strand || '';
+              const subVal = l.substrand || '';
+              const weekDisplay = weekVal !== prevWeek ? String(weekVal) : '';
+              const strandDisplay = strandVal !== prevStrand ? strandVal : '';
+              const subDisplay = (subVal !== prevSub || strandVal !== prevStrand) ? subVal : '';
+              prevWeek = weekVal;
+              prevStrand = strandVal;
+              prevSub = subVal;
+
+              // Only one inquiry question
+              const inquiryItems = toList(l.keyInquiryQuestions);
+              const singleInquiry = inquiryItems.length > 0 ? inquiryItems[0] : '—';
+
               return (
-                <View key={idx} style={[styles.row, styles.breakRow]}>
+                <View key={idx} style={[styles.row, idx % 2 === 1 && styles.zebraRow]}>
                   <View style={[styles.cell, styles.colWeek]}>
-                    <Text style={styles.breakText}>{l.week}</Text>
+                    <Text style={styles.cellText}>{weekDisplay}</Text>
                   </View>
                   <View style={[styles.cell, styles.colLesson]}>
-                    <Text style={styles.breakText}>{lessonLabel(l)}</Text>
-                  </View>
-                  <View style={[styles.cell, styles.breakContent, styles.lastCell]}>
-                    <Text style={styles.breakLabel}>
-                      {l.breakType || l.breakDescription || 'Break'}
+                    <Text style={styles.cellText}>
+                      {lessonLabel(l)}
+                      {l.isDouble ? '\n(Dbl)' : ''}
                     </Text>
+                  </View>
+                  <View style={[styles.cell, styles.colStrand]}>
+                    <Text style={styles.cellText}>{strandDisplay || (strandDisplay === '' && strandVal ? '' : '—')}</Text>
+                  </View>
+                  <View style={[styles.cell, styles.colSubstrand]}>
+                    <Text style={styles.cellText}>{subDisplay}</Text>
+                  </View>
+                  <View style={[styles.cell, styles.colSlo]}>
+                    <Text style={styles.cellText}>{l.slo || '—'}</Text>
+                  </View>
+                  <View style={[styles.cell, styles.colInquiry]}>
+                    <Text style={styles.cellText}>{singleInquiry}</Text>
+                  </View>
+                  <View style={[styles.cell, styles.colExp]}>
+                    <Text style={styles.cellText}>{renderList(l.learningExperiences)}</Text>
+                  </View>
+                  <View style={[styles.cell, styles.colRes]}>
+                    <Text style={styles.cellText}>{renderList(l.learningResources)}</Text>
+                  </View>
+                  <View style={[styles.cell, styles.colAssess]}>
+                    <Text style={styles.cellText}>{renderList(l.assessmentMethods)}</Text>
+                  </View>
+                  <View style={[styles.cell, styles.colRef, styles.lastCell]}>
+                    <Text style={styles.cellText}>—</Text>
                   </View>
                 </View>
               );
-            }
-
-            return (
-              <View key={idx} style={[styles.row, idx % 2 === 1 && styles.zebraRow]}>
-                <View style={[styles.cell, styles.colWeek]}>
-                  <Text style={styles.cellText}>{l.week}</Text>
-                </View>
-                <View style={[styles.cell, styles.colLesson]}>
-                  <Text style={styles.cellText}>
-                    {lessonLabel(l)}
-                    {l.isDouble ? '\n(Dbl)' : ''}
-                  </Text>
-                </View>
-                <View style={[styles.cell, styles.colStrand]}>
-                  <Text style={styles.cellText}>{l.strand || '—'}</Text>
-                </View>
-                <View style={[styles.cell, styles.colSubstrand]}>
-                  <Text style={styles.cellText}>{l.substrand || '—'}</Text>
-                </View>
-                <View style={[styles.cell, styles.colSlo]}>
-                  <Text style={styles.cellText}>{l.slo || '—'}</Text>
-                </View>
-                <View style={[styles.cell, styles.colInquiry]}>
-                  <Text style={styles.cellText}>{renderList(l.keyInquiryQuestions)}</Text>
-                </View>
-                <View style={[styles.cell, styles.colExp]}>
-                  <Text style={styles.cellText}>{renderList(l.learningExperiences)}</Text>
-                </View>
-                <View style={[styles.cell, styles.colRes]}>
-                  <Text style={styles.cellText}>{renderList(l.learningResources)}</Text>
-                </View>
-                <View style={[styles.cell, styles.colAssess]}>
-                  <Text style={styles.cellText}>{renderList(l.assessmentMethods)}</Text>
-                </View>
-                <View style={[styles.cell, styles.colRef, styles.lastCell]}>
-                  <Text style={styles.cellText}>—</Text>
-                </View>
-              </View>
-            );
-          })}
+            });
+          })()}
         </View>
       </ScrollView>
 
@@ -196,6 +225,53 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingBottom: 40,
+  },
+  // Cover / title page block (mirrors PDF cover)
+  coverPage: {
+    minHeight: 320,
+    paddingVertical: 60,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 4,
+    borderBottomColor: '#1E3A8A',
+  },
+  coverSchoolName: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#111827',
+    textAlign: 'center',
+    letterSpacing: 1,
+  },
+  coverTitle: {
+    fontSize: 34,
+    fontWeight: '800',
+    color: '#1E3A8A',
+    textAlign: 'center',
+    letterSpacing: 2.5,
+  },
+  coverSubject: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#4B5563',
+    textAlign: 'center',
+    marginBottom: 8,
+    letterSpacing: 1.2,
+  },
+  coverMeta: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+    textAlign: 'center',
+    marginTop: 4,
+    letterSpacing: 0.8,
+  },
+  coverDivider: {
+    width: 80,
+    height: 2,
+    backgroundColor: '#E5E7EB',
+    marginVertical: 20,
   },
   documentHeader: {
     alignItems: 'center',
