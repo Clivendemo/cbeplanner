@@ -462,7 +462,7 @@ export default function SchemesOfWork() {
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Lessons per Week</Text>
           <View style={styles.lessonsRow}>
-            {[4, 5, 6, 7, 8].map(l => (
+            {[2, 3, 4, 5, 6, 7, 8].map(l => (
               <TouchableOpacity
                 key={l}
                 style={[styles.lessonButton, lessonsPerWeek === l && styles.lessonButtonActive]}

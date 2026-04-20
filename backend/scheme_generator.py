@@ -118,73 +118,38 @@ def get_lessons_per_week(grade_name: str, subject_name: str) -> int:
 
 
 def create_scheme_styles():
-    """Create custom styles for scheme PDF"""
+    """Create custom styles for scheme PDF — pure black text on white background."""
     styles = getSampleStyleSheet()
-    
-    # School name style
+
     styles.add(ParagraphStyle(
-        name='SchoolName',
-        parent=styles['Heading1'],
-        fontSize=14,
-        textColor=colors.HexColor('#1F2937'),
+        name='SchoolName', parent=styles['Heading1'],
+        fontSize=14, textColor=colors.black, alignment=TA_CENTER,
+        spaceAfter=4, fontName='Helvetica-Bold',
+    ))
+    styles.add(ParagraphStyle(
+        name='SchemeTitle', parent=styles['Heading2'],
+        fontSize=12, textColor=colors.black, alignment=TA_CENTER,
+        spaceAfter=8, fontName='Helvetica-Bold',
+    ))
+    styles.add(ParagraphStyle(
+        name='InfoText', parent=styles['Normal'],
+        fontSize=11, textColor=colors.black, alignment=TA_CENTER,
+        spaceAfter=14, fontName='Helvetica',
+    ))
+    styles.add(ParagraphStyle(
+        name='TableCell', parent=styles['Normal'],
+        fontSize=10, textColor=colors.black, leading=12, alignment=TA_LEFT,
+    ))
+    styles.add(ParagraphStyle(
+        name='TableHeader', parent=styles['Normal'],
+        fontSize=11, textColor=colors.black, fontName='Helvetica-Bold',
+        alignment=TA_CENTER, leading=13,
+    ))
+    styles.add(ParagraphStyle(
+        name='BreakCell', parent=styles['Normal'],
+        fontSize=10, textColor=colors.black, fontName='Helvetica-Bold',
         alignment=TA_CENTER,
-        spaceAfter=4,
-        fontName='Helvetica-Bold'
     ))
-    
-    # Scheme title
-    styles.add(ParagraphStyle(
-        name='SchemeTitle',
-        parent=styles['Heading2'],
-        fontSize=12,
-        textColor=colors.HexColor('#374151'),
-        alignment=TA_CENTER,
-        spaceAfter=8,
-        fontName='Helvetica-Bold'
-    ))
-    
-    # Info text - LARGER for grade/subject/year
-    styles.add(ParagraphStyle(
-        name='InfoText',
-        parent=styles['Normal'],
-        fontSize=11,
-        textColor=colors.HexColor('#1F2937'),
-        alignment=TA_CENTER,
-        spaceAfter=14,
-        fontName='Helvetica'
-    ))
-    
-    # Table cell style
-    styles.add(ParagraphStyle(
-        name='TableCell',
-        parent=styles['Normal'],
-        fontSize=10,
-        textColor=colors.HexColor('#1F2937'),
-        leading=12,
-        alignment=TA_LEFT
-    ))
-    
-    # Table header style - black bold text, 1pt bigger
-    styles.add(ParagraphStyle(
-        name='TableHeader',
-        parent=styles['Normal'],
-        fontSize=11,
-        textColor=colors.black,
-        fontName='Helvetica-Bold',
-        alignment=TA_CENTER,
-        leading=13
-    ))
-    
-    # Break row style
-    styles.add(ParagraphStyle(
-        name='BreakCell',
-        parent=styles['Normal'],
-        fontSize=9,
-        textColor=colors.HexColor('#1F2937'),
-        fontName='Helvetica-Bold',
-        alignment=TA_CENTER
-    ))
-    
     return styles
 
 
@@ -220,22 +185,22 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
     cover_title = ParagraphStyle(
         'CoverTitle', parent=cover_styles['Normal'],
         fontName='Helvetica-Bold', fontSize=36, alignment=TA_CENTER,
-        textColor=colors.HexColor('#1E3A8A'), spaceAfter=0, leading=44,
+        textColor=colors.black, spaceAfter=0, leading=44,
     )
     cover_school = ParagraphStyle(
         'CoverSchool', parent=cover_styles['Normal'],
         fontName='Helvetica-Bold', fontSize=24, alignment=TA_CENTER,
-        textColor=colors.HexColor('#111827'), spaceAfter=0, leading=30,
+        textColor=colors.black, spaceAfter=0, leading=30,
     )
     cover_subtitle = ParagraphStyle(
         'CoverSubtitle', parent=cover_styles['Normal'],
         fontName='Helvetica', fontSize=18, alignment=TA_CENTER,
-        textColor=colors.HexColor('#4B5563'), spaceAfter=0, leading=24,
+        textColor=colors.black, spaceAfter=0, leading=24,
     )
     cover_meta = ParagraphStyle(
         'CoverMeta', parent=cover_styles['Normal'],
         fontName='Helvetica-Bold', fontSize=14, alignment=TA_CENTER,
-        textColor=colors.HexColor('#6B7280'), spaceAfter=0, leading=18,
+        textColor=colors.black, spaceAfter=0, leading=18,
     )
 
     elements.append(Spacer(1, 4.5*cm))
@@ -434,7 +399,7 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
                 style_name = ''
             if style_name == 'BreakCell':
                 table_style.add('SPAN', (1, row_idx), (-1, row_idx))
-                table_style.add('BACKGROUND', (0, row_idx), (-1, row_idx), colors.HexColor('#FEF3C7'))
+                table_style.add('BACKGROUND', (0, row_idx), (-1, row_idx), colors.white)
                 table_style.add('ALIGN', (1, row_idx), (-1, row_idx), 'CENTER')
                 table_style.add('VALIGN', (0, row_idx), (-1, row_idx), 'MIDDLE')
                 table_style.add('FONTNAME', (0, row_idx), (-1, row_idx), 'Helvetica-Bold')

@@ -237,7 +237,7 @@ export const SchemeDisplay: React.FC<SchemeDisplayProps> = ({ scheme }) => {
                     <Text style={styles.cellText}>{renderList(l.assessmentMethods)}</Text>
                   </View>
                   <View style={[styles.cell, styles.colRef, styles.lastCell]}>
-                    <Text style={styles.cellText}>—</Text>
+                    <Text style={styles.cellText}></Text>
                   </View>
                 </View>
               );
