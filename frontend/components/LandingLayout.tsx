@@ -311,6 +311,14 @@ function parseEventsForMonth(year: number, monthIdx: number): CalEvent[] {
 }
 
 const CalendarWidget: React.FC = () => {
+  return <CalendarWidgetBase compact={false} />;
+};
+
+export const CalendarWidgetCompact: React.FC = () => {
+  return <CalendarWidgetBase compact={true} />;
+};
+
+const CalendarWidgetBase: React.FC<{ compact: boolean }> = ({ compact }) => {
   const today = new Date();
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [viewYear, setViewYear] = useState(today.getFullYear());
@@ -351,15 +359,15 @@ const CalendarWidget: React.FC = () => {
   };
 
   return (
-    <View style={styles.widgetCard} data-testid="calendar-widget">
+    <View style={[styles.widgetCard, compact && { padding: 8 }]} data-testid="calendar-widget">
       {/* Header */}
       <View style={calStyles.header}>
         <Pressable onPress={goPrev} style={calStyles.navBtn} hitSlop={8} data-testid="calendar-prev">
-          <Ionicons name="chevron-back" size={14} color="#5B5BD6" />
+          <Ionicons name="chevron-back" size={compact ? 12 : 14} color="#5B5BD6" />
         </Pressable>
-        <Text style={calStyles.monthLabel}>{MONTH_NAMES[viewMonth]} {viewYear}</Text>
+        <Text style={[calStyles.monthLabel, compact && { fontSize: 11 }]}>{MONTH_NAMES[viewMonth]} {viewYear}</Text>
         <Pressable onPress={goNext} style={calStyles.navBtn} hitSlop={8} data-testid="calendar-next">
-          <Ionicons name="chevron-forward" size={14} color="#5B5BD6" />
+          <Ionicons name="chevron-forward" size={compact ? 12 : 14} color="#5B5BD6" />
         </Pressable>
       </View>
 
@@ -400,6 +408,7 @@ const CalendarWidget: React.FC = () => {
                   <Text
                     style={[
                       calStyles.dayNum,
+                      compact && { fontSize: 9 },
                       isToday && calStyles.dayNumToday,
                       hasEvent && firstEv && { color: firstEv.tc, fontWeight: '700' },
                     ]}

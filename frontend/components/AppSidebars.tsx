@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { usePathname } from 'expo-router';
+import { CalendarWidgetCompact } from './LandingLayout';
 
 /**
  * Compact widgets designed for 180px-wide persistent sidebars across
@@ -74,11 +76,18 @@ const TipCard: React.FC = () => {
   );
 };
 
-export const AppLeftSidebar: React.FC = () => (
-  <View style={{ gap: 12 }}>
-    <TipCard />
-  </View>
-);
+export const AppLeftSidebar: React.FC = () => {
+  const pathname = usePathname() || '';
+  // Show the MPesa till card ONLY on the scheme generation page
+  const isSchemesPage = pathname === '/schemes' || pathname.endsWith('/(teacher)/schemes');
+  return (
+    <View style={{ gap: 12 }}>
+      <CalendarWidgetCompact />
+      {isSchemesPage && <MPesaTillCard />}
+      <TipCard />
+    </View>
+  );
+};
 
 // ===== RIGHT SIDEBAR =====
 

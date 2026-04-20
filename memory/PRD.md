@@ -151,12 +151,11 @@ Post-login teacher pages now render inside a centered 1330px shell:
 
 ## Calendar Widget + Dashboard Reorder + MPesa Migration (Feb 2026)
 - **Landing page left sidebar**: Removed the big `MPesaPaymentWidget` and replaced with a new interactive `CalendarWidget` (shows current month, prev/next month nav, today highlighted in indigo, event dates color-coded using the same `UPCOMING_EVENTS` palette, click an event-date → popover with the event titles, click the same date again or ✕ to close, empty dates are non-interactive). Placed above `UpcomingEventsWidget`.
-- **Scheme generation page** (`schemes.tsx`): Compact `MPesaTillCard` (Till 8336258 + 5 steps + support email) rendered inline at the top of the Select step — only shows on this page.
-- **Post-login left sidebar** (`AppSidebars.tsx`): `MPesaTillCard` removed from `AppLeftSidebar` (remains only as an exported component for targeted page use). Sidebar now shows just `Today's Tip`.
+- **Post-login left sidebar (every teacher page)**: Compact variant `CalendarWidgetCompact` persists on every page (dashboard, schemes, my-schemes, home, notes, lessons, profile, etc.). Same interactive behaviour as the landing calendar.
+- **Scheme generation page only**: `MPesaTillCard` appears in the left sidebar on `/schemes` (rendered conditionally via `usePathname`). Removed from inline page content.
 - **Dashboard tile reorder** (`dashboard.tsx`):
   - Left (4): Schemes of Work → Create Lesson Plan → Generate Notes → My Profile
   - Right (3): My Schemes → My Lesson Plans → Past Papers
-  - Schemes of Work and My Schemes sit as neighbours across the top row.
 
 ## Next Tasks
 1. AppLayout sidebar redesign across all post-login dashboard pages

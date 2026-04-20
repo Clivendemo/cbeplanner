@@ -18,7 +18,6 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { MPesaTillCard } from '../../components/AppSidebars';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -403,11 +402,6 @@ export default function SchemesOfWork() {
   // Render Step 1: Basic Selection
   const renderSelectionStep = () => (
     <ScrollView style={styles.stepContent}>
-      {/* MPesa payment reminder — shown only on the scheme generation page */}
-      <View style={{ marginBottom: 16 }}>
-        <MPesaTillCard />
-      </View>
-
       <View style={styles.formSection}>
         <Text style={styles.sectionTitle}>Basic Information</Text>
         
