@@ -168,6 +168,12 @@ Post-login teacher pages now render inside a centered 1330px shell:
 - **Frontend data layer** (`components/useCalendarData.ts`): Shared hook with 5-min in-memory cache. Exposes `DisplayEvent[]` (with `date`, `day`, `palette`) and `DisplayTerm[]`. `invalidateCalendarCache()` is called after any admin CRUD so other tabs pick up changes on next mount.
 - **LandingLayout widgets** (`UpcomingEventsWidget`, `TermCalendarWidget`, `CalendarWidgetBase`) all now read from the hook — no hardcoded arrays anywhere.
 
+## Responsive Layout + Mobile Sidebar Stacking (Feb 2026)
+- **LandingLayout**: On mobile (`< 768px`), the center card covers the whole width and the sidebars are rendered *below* it in a vertically-stacked block — users simply scroll down past the main card to reveal Calendar, Upcoming Events, Teacher's Corner, Useful Links, Term Calendar, Subjects, etc.
+- **Ad relocation**: The previous 728×90 / 468×60 / 320×50 bottom-of-page ad has been removed from below the middle column and now anchors the **end of the left-sidebar stack** (appropriately sized for each breakpoint).
+- **Teacher shell** (`(teacher)/_layout.tsx`): Below the 1180px breakpoint, the Stack now renders at full viewport height in an outer ScrollView with the `AppLeftSidebar` + `AppRightSidebar` widgets stacked below. Users can scroll past the main app content to see the sidebars on tablets/phones.
+- Desktop layouts remain centered and untouched.
+
 ## Next Tasks
 1. AppLayout sidebar redesign across all post-login dashboard pages
 2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin` into `routes/`)

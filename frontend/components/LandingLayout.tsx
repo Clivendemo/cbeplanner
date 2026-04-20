@@ -655,11 +655,42 @@ interface Props {
   children: React.ReactNode;
 }
 
+// ===== SIDEBAR CONTENT (extracted so mobile can stack them below the main card) =====
+
+const LeftSidebarContent: React.FC<{ adWidth: number; adHeight: number }> = ({ adWidth, adHeight }) => (
+  <View style={{ gap: 14 }}>
+    <DidYouKnowWidget />
+    <CalendarWidget />
+    <UpcomingEventsWidget />
+    <TeacherQuoteWidget />
+    {/* Bottom ad, previously below the main column, now anchored to the left sidebar */}
+    <AdSlot width={adWidth} height={adHeight} />
+  </View>
+);
+
+const RightSidebarContent: React.FC = () => (
+  <View style={{ gap: 14 }}>
+    <UsefulLinksWidget />
+    <TipOfDayWidget />
+    <TermCalendarWidget />
+    <SubjectsWidget />
+    <AdSlot width={300} height={250} />
+  </View>
+);
+
 export const LandingLayout: React.FC<Props> = ({ children }) => {
   const { width } = useWindowDimensions();
   const isDesktop = width >= BP_DESKTOP;
   const isTablet = width >= BP_TABLET && width < BP_DESKTOP;
   const isMobile = width < BP_TABLET;
+
+  // Previously the 728x90 ad lived below the middle bar. Moved to the left sidebar
+  // and sized to the available viewport.
+  const leftAd = isDesktop
+    ? { w: 300, h: 250 }
+    : isTablet
+    ? { w: 468, h: 60 }
+    : { w: 320, h: 50 };
 
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
@@ -671,47 +702,38 @@ export const LandingLayout: React.FC<Props> = ({ children }) => {
           isMobile && styles.gridMobile,
         ]}
       >
+        {/* Desktop: left sidebar in-flow */}
         {isDesktop && (
           <View style={styles.sidebarLeft}>
-            <View style={{ gap: 14 }}>
-              <DidYouKnowWidget />
-              <CalendarWidget />
-              <UpcomingEventsWidget />
-              <TeacherQuoteWidget />
-            </View>
+            <LeftSidebarContent adWidth={leftAd.w} adHeight={leftAd.h} />
           </View>
         )}
 
+        {/* Center column — on mobile it expands to full width */}
         <View style={[styles.centerCol, isMobile && styles.centerColMobile]}>
           {children}
 
-          {/* Ad directly below the auth card */}
+          {/* Small in-card ad directly below the auth card (all sizes) */}
           <View style={{ marginTop: 20, alignItems: 'center' }}>
             <AdSlot width={300} height={250} />
           </View>
         </View>
 
+        {/* Tablet + desktop: right sidebar in-flow */}
         {!isMobile && (
           <View style={styles.sidebarRight}>
-            <View style={{ gap: 14 }}>
-              <UsefulLinksWidget />
-              <TipOfDayWidget />
-              <TermCalendarWidget />
-              <SubjectsWidget />
-              <AdSlot width={300} height={250} />
-            </View>
+            <RightSidebarContent />
           </View>
         )}
       </View>
 
-      {/* Bottom ad banner */}
-      <View style={styles.bottomAdSection}>
-        <View style={{ alignItems: 'center' }}>
-          {isDesktop && <AdSlot width={728} height={90} />}
-          {isTablet && <AdSlot width={468} height={60} />}
-          {isMobile && <AdSlot width={320} height={50} />}
+      {/* Mobile: stack the sidebars below the main card so users can scroll to them */}
+      {isMobile && (
+        <View style={styles.mobileSidebars}>
+          <LeftSidebarContent adWidth={leftAd.w} adHeight={leftAd.h} />
+          <RightSidebarContent />
         </View>
-      </View>
+      )}
     </ScrollView>
   );
 };
@@ -842,6 +864,15 @@ const styles = StyleSheet.create({
   adPlaceholderText: { color: '#D1D5DB', fontSize: 12 },
 
   bottomAdSection: { borderTopWidth: 1, borderTopColor: '#E5E7EB', paddingVertical: 40, paddingHorizontal: 16, backgroundColor: '#F3F4F6' },
+
+  // On mobile, render sidebar widgets stacked below the main card so users can scroll.
+  mobileSidebars: {
+    padding: 16,
+    gap: 14,
+    backgroundColor: '#F3F4F6',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
 
   // Feature tiles
   featureContainer: { borderTopWidth: 1, borderTopColor: '#F3F4F6', marginTop: 24, paddingTop: 20 },

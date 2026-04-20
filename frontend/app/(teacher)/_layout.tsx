@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, View, Text, StyleSheet, ActivityIndicator, Platform, useWindowDimensions } from 'react-native';
+import { TouchableOpacity, View, Text, StyleSheet, ActivityIndicator, Platform, useWindowDimensions, ScrollView } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
@@ -57,7 +57,7 @@ function EmptyHeader() {
 
 export default function TeacherLayout() {
   const { user, loading, authChecked } = useAuth();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const showSidebars = width >= SHELL_BREAKPOINT;
 
   // Show loading while checking auth
@@ -169,9 +169,24 @@ export default function TeacherLayout() {
     </Stack>
   );
 
-  // On smaller screens, render the Stack full-bleed (no sidebars).
+  // Mobile/tablet: Stack covers the full viewport. Sidebars sit below in an
+  // outer scroll so users can swipe up to see them.
   if (!showSidebars) {
-    return stack;
+    return (
+      <ScrollView
+        style={styles.mobileRoot}
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={{ height, backgroundColor: '#FFFFFF' }}>
+          {stack}
+        </View>
+        <View style={styles.mobileSidebars}>
+          <AppLeftSidebar />
+          <AppRightSidebar />
+        </View>
+      </ScrollView>
+    );
   }
 
   // Desktop: wrap the Stack in a centered shell with 180 / 950 / 180 columns.
@@ -278,5 +293,18 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     // @ts-ignore web-only shadow
     boxShadow: '0 6px 24px rgba(17, 24, 39, 0.06)',
+  },
+
+  // Mobile/tablet shell (below 1180px): Stack is viewport-height, sidebars below
+  mobileRoot: {
+    flex: 1,
+    backgroundColor: '#EEF2FF',
+    // @ts-ignore web-only CSS
+    backgroundImage:
+      'radial-gradient(900px 500px at 8% 0%, #E0E7FF 0%, transparent 60%), linear-gradient(180deg, #EEF2FF 0%, #F8FAFC 100%)',
+  },
+  mobileSidebars: {
+    padding: 16,
+    gap: 14,
   },
 });
