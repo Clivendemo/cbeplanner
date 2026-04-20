@@ -81,6 +81,16 @@ export default function AdminLayout() {
         }}
       />
       <Tabs.Screen
+        name="calendar"
+        options={{
+          title: 'Calendar',
+          headerTitle: 'Calendar Events & Terms',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="calendar" size={size} color={color} />
+          )
+        }}
+      />
+      <Tabs.Screen
         name="data-import"
         options={{
           title: 'Import',

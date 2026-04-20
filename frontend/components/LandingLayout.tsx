@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, Linking, useWindowDimensions, Scroll
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
+import { useCalendarData, DisplayEvent, DisplayTerm } from './useCalendarData';
 
 // ===== BREAKPOINTS =====
 const BP_DESKTOP = 1024;
@@ -21,18 +22,6 @@ const QUOTES = [
   { text: 'Education is not the filling of a pail, but the lighting of a fire.', author: 'W.B. Yeats' },
   { text: 'The art of teaching is the art of assisting discovery.', author: 'Mark Van Doren' },
   { text: 'A good teacher can inspire hope and ignite the imagination.', author: 'Brad Henry' },
-];
-
-const UPCOMING_EVENTS = [
-  { date: 'May 5', day: 'Mon', title: 'Term 2 Opens', bg: '#EEF2FF', tc: '#3730A3', dot: '#5B5BD6' },
-  { date: 'May 12', day: 'Mon', title: 'Mid-Term CATs Begin', bg: '#EEF2FF', tc: '#3730A3', dot: '#5B5BD6' },
-  { date: 'May 16', day: 'Fri', title: 'Inter-School Athletics', bg: '#F0FDF4', tc: '#166534', dot: '#16A34A' },
-  { date: 'May 23', day: 'Fri', title: 'Drama Festival — Zonal', bg: '#F0FDF4', tc: '#166534', dot: '#16A34A' },
-  { date: 'May 30', day: 'Fri', title: 'Mid-Term Break Starts', bg: '#EEF2FF', tc: '#3730A3', dot: '#5B5BD6' },
-  { date: 'Jun 6', day: 'Fri', title: 'Schools Reopen', bg: '#EEF2FF', tc: '#3730A3', dot: '#5B5BD6' },
-  { date: 'Jul 4', day: 'Fri', title: 'Term 2 Exams Start', bg: '#FFF7ED', tc: '#9A3412', dot: '#EA580C' },
-  { date: 'Aug 1', day: 'Fri', title: 'Term 2 Closes', bg: '#FFF7ED', tc: '#9A3412', dot: '#EA580C' },
-  { date: 'Aug 8', day: 'Fri', title: 'Music Festival — County', bg: '#F0FDF4', tc: '#166534', dot: '#16A34A' },
 ];
 
 const USEFUL_LINKS = [
@@ -54,57 +43,6 @@ const TIPS: Record<number, string> = {
 };
 
 const SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Science', 'Social Studies', 'CRE', 'Creative Arts', 'Agriculture', 'Life Skills'];
-
-const TERM_CALENDAR = [
-  {
-    name: 'Term 1', period: 'Jan 6 – Apr 4', status: 'Past',
-    headerBg: '#F3F4F6', headerText: '#9CA3AF', badgeBorder: '#E5E7EB',
-    academic: [
-      { label: 'Schools open', date: 'Jan 6' },
-      { label: 'Mid-term break', date: 'Feb 21–28' },
-      { label: 'End-term exams', date: 'Mar 24–28' },
-      { label: 'Schools close', date: 'Apr 4' },
-    ],
-    cocurricular: [
-      { label: 'Debating — Zonal', date: 'Feb 14' },
-      { label: 'Athletics — Sub-county', date: 'Mar 7' },
-      { label: 'Music Festival — Zonal', date: 'Mar 21' },
-    ],
-  },
-  {
-    name: 'Term 2', period: 'Apr 29 – Aug 1', status: 'Current',
-    headerBg: '#EEF2FF', headerText: '#3730A3', badgeBorder: '#C7D2FE',
-    academic: [
-      { label: 'Schools open', date: 'Apr 29' },
-      { label: 'Mid-term CATs', date: 'May 12–16' },
-      { label: 'Mid-term break', date: 'May 30–Jun 6' },
-      { label: 'End-term exams', date: 'Jul 21–25' },
-      { label: 'Schools close', date: 'Aug 1' },
-    ],
-    cocurricular: [
-      { label: 'Athletics — County', date: 'May 16' },
-      { label: 'Drama — Zonal', date: 'May 23' },
-      { label: 'Games — Sub-county', date: 'Jun 20' },
-      { label: 'Music — County', date: 'Aug 8' },
-    ],
-  },
-  {
-    name: 'Term 3', period: 'Aug 26 – Oct 31', status: 'Upcoming',
-    headerBg: '#F0FDF4', headerText: '#166534', badgeBorder: '#BBF7D0',
-    academic: [
-      { label: 'Schools open', date: 'Aug 26' },
-      { label: 'Mid-term break', date: 'Sep 26–Oct 3' },
-      { label: 'End-term exams', date: 'Oct 20–24' },
-      { label: 'Schools close', date: 'Oct 31' },
-    ],
-    cocurricular: [
-      { label: 'Drama — National', date: 'Sep 5' },
-      { label: 'Athletics — National', date: 'Sep 19' },
-      { label: 'Music — National', date: 'Oct 10' },
-      { label: 'Science Congress', date: 'Oct 17' },
-    ],
-  },
-];
 
 const FEATURE_TILES = [
   { icon: 'document-text-outline', label: 'Generate Scheme of Work', bg: '#EEF2FF', color: '#3730A3', border: '#C7D2FE', route: '/(teacher)/schemes' },
@@ -291,21 +229,13 @@ const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 type CalEvent = { day: number; title: string; dot: string; bg: string; tc: string };
 
-function parseEventsForMonth(year: number, monthIdx: number): CalEvent[] {
+function parseEventsForMonth(events: DisplayEvent[], year: number, monthIdx: number): CalEvent[] {
   const out: CalEvent[] = [];
-  for (const ev of UPCOMING_EVENTS) {
-    // "May 5" → ["May", "5"]
-    const m = ev.date.match(/^([A-Za-z]+)\s+(\d+)$/);
-    if (!m) continue;
-    const mIdx = MONTH_MAP[m[1].slice(0, 3).toLowerCase()];
-    if (mIdx !== monthIdx) continue;
-    out.push({
-      day: parseInt(m[2], 10),
-      title: ev.title,
-      dot: ev.dot,
-      bg: ev.bg,
-      tc: ev.tc,
-    });
+  for (const ev of events) {
+    // isoDate format: "YYYY-MM-DD"
+    const [y, m, d] = ev.isoDate.split('-').map((v) => parseInt(v, 10));
+    if (y !== year || m - 1 !== monthIdx) continue;
+    out.push({ day: d, title: ev.title, dot: ev.dot, bg: ev.bg, tc: ev.tc });
   }
   return out;
 }
@@ -319,12 +249,13 @@ export const CalendarWidgetCompact: React.FC = () => {
 };
 
 const CalendarWidgetBase: React.FC<{ compact: boolean }> = ({ compact }) => {
+  const { events } = useCalendarData();
   const today = new Date();
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [openDay, setOpenDay] = useState<number | null>(null);
 
-  const monthEvents = parseEventsForMonth(viewYear, viewMonth);
+  const monthEvents = parseEventsForMonth(events, viewYear, viewMonth);
   const eventsByDay = new Map<number, CalEvent[]>();
   for (const e of monthEvents) {
     const list = eventsByDay.get(e.day) ?? [];
@@ -523,34 +454,43 @@ const calStyles = StyleSheet.create({
   },
 });
 
-const UpcomingEventsWidget: React.FC = () => (
-  <View style={styles.widgetCard}>
-    <View style={styles.widgetHeaderRow}>
-      <Text style={styles.widgetTitle}>Upcoming Events</Text>
-      <View style={styles.legendRow}>
-        <View style={[styles.legendDot, { backgroundColor: '#5B5BD6' }]} />
-        <Text style={styles.legendText}>Academic</Text>
-        <View style={[styles.legendDot, { backgroundColor: '#16A34A', marginLeft: 6 }]} />
-        <Text style={styles.legendText}>Co-curr</Text>
-      </View>
-    </View>
-    <View style={{ gap: 6 }}>
-      {UPCOMING_EVENTS.map((ev, i) => (
-        <View key={i} style={styles.eventRow}>
-          <View style={[styles.eventDateBlock, { backgroundColor: ev.bg }]}>
-            <Text style={[styles.eventDayName, { color: ev.tc }]}>{ev.day}</Text>
-            <Text style={[styles.eventDateNum, { color: ev.tc }]}>{ev.date}</Text>
-          </View>
-          <View style={styles.eventContent}>
-            <View style={[styles.eventDot, { backgroundColor: ev.dot }]} />
-            <Text style={styles.eventTitle} numberOfLines={1}>{ev.title}</Text>
-          </View>
+const UpcomingEventsWidget: React.FC = () => {
+  const { events, loading } = useCalendarData();
+  return (
+    <View style={styles.widgetCard}>
+      <View style={styles.widgetHeaderRow}>
+        <Text style={styles.widgetTitle}>Upcoming Events</Text>
+        <View style={styles.legendRow}>
+          <View style={[styles.legendDot, { backgroundColor: '#5B5BD6' }]} />
+          <Text style={styles.legendText}>Academic</Text>
+          <View style={[styles.legendDot, { backgroundColor: '#16A34A', marginLeft: 6 }]} />
+          <Text style={styles.legendText}>Co-curr</Text>
         </View>
-      ))}
+      </View>
+      <View style={{ gap: 6 }}>
+        {loading ? (
+          <Text style={styles.widgetFact}>Loading events…</Text>
+        ) : events.length === 0 ? (
+          <Text style={styles.widgetFact}>No upcoming events. Admins can add events from the Calendar tab.</Text>
+        ) : (
+          events.map((ev) => (
+            <View key={ev.id} style={styles.eventRow}>
+              <View style={[styles.eventDateBlock, { backgroundColor: ev.bg }]}>
+                <Text style={[styles.eventDayName, { color: ev.tc }]}>{ev.day}</Text>
+                <Text style={[styles.eventDateNum, { color: ev.tc }]}>{ev.date}</Text>
+              </View>
+              <View style={styles.eventContent}>
+                <View style={[styles.eventDot, { backgroundColor: ev.dot }]} />
+                <Text style={styles.eventTitle} numberOfLines={1}>{ev.title}</Text>
+              </View>
+            </View>
+          ))
+        )}
+      </View>
+      <Text style={styles.eventFooterNote}>Confirm dates with your school calendar</Text>
     </View>
-    <Text style={styles.eventFooterNote}>Confirm dates with your school calendar</Text>
-  </View>
-);
+  );
+};
 
 const TeacherQuoteWidget: React.FC = () => {
   const [idx, setIdx] = useState(0);
@@ -598,48 +538,56 @@ const TipOfDayWidget: React.FC = () => {
   );
 };
 
-const TermCalendarWidget: React.FC = () => (
-  <View style={[styles.widgetCard, { padding: 0, overflow: 'hidden' }]}>
-    <View style={styles.termHeader}>
-      <Text style={styles.widgetTitle}>2025 Term Calendar</Text>
-      <Text style={styles.widgetSubtitle}>Academic & co-curricular activities</Text>
-    </View>
-    {TERM_CALENDAR.map((term, idx) => (
-      <View key={term.name}>
-        <View style={[styles.termSectionHeader, { backgroundColor: term.headerBg }]}>
-          <View>
-            <Text style={[styles.termSectionName, { color: term.headerText }]}>{term.name}</Text>
-            <Text style={styles.termSectionPeriod}>{term.period}</Text>
-          </View>
-          <View style={[styles.termBadge, { backgroundColor: term.headerBg, borderColor: term.badgeBorder }]}>
-            <Text style={[styles.termBadgeText, { color: term.headerText }]}>{term.status}</Text>
-          </View>
-        </View>
-        <View style={styles.termActivitiesSection}>
-          <Text style={[styles.activitiesLabel, { color: '#5B5BD6' }]}>📚 ACADEMIC</Text>
-          {term.academic.map((a, i) => (
-            <View key={i} style={styles.activityRow}>
-              <View style={[styles.activityDot, { backgroundColor: '#5B5BD6' }]} />
-              <Text style={styles.activityLabel}>{a.label}</Text>
-              <Text style={styles.activityDate}>{a.date}</Text>
-            </View>
-          ))}
-        </View>
-        <View style={[styles.termActivitiesSection, { paddingBottom: 12 }]}>
-          <Text style={[styles.activitiesLabel, { color: '#16A34A' }]}>🏆 CO-CURRICULAR</Text>
-          {term.cocurricular.map((a, i) => (
-            <View key={i} style={styles.activityRow}>
-              <View style={[styles.activityDot, { backgroundColor: '#16A34A' }]} />
-              <Text style={styles.activityLabel}>{a.label}</Text>
-              <Text style={styles.activityDate}>{a.date}</Text>
-            </View>
-          ))}
-        </View>
-        {idx < TERM_CALENDAR.length - 1 && <View style={styles.termDivider} />}
+const TermCalendarWidget: React.FC = () => {
+  const { terms, loading } = useCalendarData();
+  const titleYear = terms[0]?.year || new Date().getFullYear();
+  return (
+    <View style={[styles.widgetCard, { padding: 0, overflow: 'hidden' }]}>
+      <View style={styles.termHeader}>
+        <Text style={styles.widgetTitle}>{titleYear} Term Calendar</Text>
+        <Text style={styles.widgetSubtitle}>Academic & co-curricular activities</Text>
       </View>
-    ))}
-  </View>
-);
+      {loading ? (
+        <Text style={[styles.widgetFact, { padding: 14 }]}>Loading terms…</Text>
+      ) : terms.length === 0 ? (
+        <Text style={[styles.widgetFact, { padding: 14 }]}>No term calendar yet. Admins can add terms from the Calendar tab.</Text>
+      ) : terms.map((term, idx) => (
+        <View key={term.id}>
+          <View style={[styles.termSectionHeader, { backgroundColor: term.headerBg }]}>
+            <View>
+              <Text style={[styles.termSectionName, { color: term.headerText }]}>{term.name}</Text>
+              <Text style={styles.termSectionPeriod}>{term.period}</Text>
+            </View>
+            <View style={[styles.termBadge, { backgroundColor: term.headerBg, borderColor: term.badgeBorder }]}>
+              <Text style={[styles.termBadgeText, { color: term.headerText }]}>{term.displayStatus}</Text>
+            </View>
+          </View>
+          <View style={styles.termActivitiesSection}>
+            <Text style={[styles.activitiesLabel, { color: '#5B5BD6' }]}>📚 ACADEMIC</Text>
+            {term.academic.map((a, i) => (
+              <View key={i} style={styles.activityRow}>
+                <View style={[styles.activityDot, { backgroundColor: '#5B5BD6' }]} />
+                <Text style={styles.activityLabel}>{a.label}</Text>
+                <Text style={styles.activityDate}>{a.date}</Text>
+              </View>
+            ))}
+          </View>
+          <View style={[styles.termActivitiesSection, { paddingBottom: 12 }]}>
+            <Text style={[styles.activitiesLabel, { color: '#16A34A' }]}>🏆 CO-CURRICULAR</Text>
+            {term.cocurricular.map((a, i) => (
+              <View key={i} style={styles.activityRow}>
+                <View style={[styles.activityDot, { backgroundColor: '#16A34A' }]} />
+                <Text style={styles.activityLabel}>{a.label}</Text>
+                <Text style={styles.activityDate}>{a.date}</Text>
+              </View>
+            ))}
+          </View>
+          {idx < terms.length - 1 && <View style={styles.termDivider} />}
+        </View>
+      ))}
+    </View>
+  );
+};
 
 const SubjectsWidget: React.FC = () => (
   <View style={styles.widgetCard}>

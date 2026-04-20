@@ -4369,6 +4369,7 @@ async def retry_curriculum_job(job_id: str, user: dict = Depends(verify_admin)):
 # Health check endpoint
 # Register modular route files (side-effect: decorators run & attach to api_router)
 from routes import schemes as _routes_schemes  # noqa: F401
+from routes import calendar as _routes_calendar  # noqa: F401
 
 # Include router
 app.include_router(api_router)
@@ -4386,6 +4387,7 @@ async def startup_event():
     """
     import asyncio
     asyncio.create_task(_create_indexes())
+    asyncio.create_task(_routes_calendar.seed_calendar_if_empty())
     logger.info("Startup complete — index creation running in background")
 
 

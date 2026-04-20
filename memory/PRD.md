@@ -157,6 +157,17 @@ Post-login teacher pages now render inside a centered 1330px shell:
   - Left (4): Schemes of Work → Create Lesson Plan → Generate Notes → My Profile
   - Right (3): My Schemes → My Lesson Plans → Past Papers
 
+## Admin-Controlled Calendar + Term Calendar (Feb 2026)
+- **Backend** (`routes/calendar.py`):
+  - Public `GET /api/calendar/events`, `GET /api/calendar/terms` (no auth — landing page consumes them).
+  - Admin `POST/PUT/DELETE /api/admin/calendar/events[/id]`, `…/terms[/id]`.
+  - `POST /api/admin/calendar/seed` (idempotent) + auto-seed on server startup inserts the previous hardcoded values so nothing regresses visually.
+  - Events store ISO `YYYY-MM-DD` + category (`academic` / `cocurricular` / `exam`). Backend returns a display palette for each.
+  - Terms store name, period, status (`past` / `current` / `upcoming`), year, academic milestones, co-curricular milestones.
+- **Admin panel**: New "Calendar" tab (`app/(admin)/calendar.tsx`) between Lesson SLOs and Import. Two sub-tabs (Upcoming Events / Term Calendar), each with list rows (coloured strip + title + meta) and ✏️ edit / 🗑️ delete. Modal editors with category/status chips, inline activity editors for term milestones.
+- **Frontend data layer** (`components/useCalendarData.ts`): Shared hook with 5-min in-memory cache. Exposes `DisplayEvent[]` (with `date`, `day`, `palette`) and `DisplayTerm[]`. `invalidateCalendarCache()` is called after any admin CRUD so other tabs pick up changes on next mount.
+- **LandingLayout widgets** (`UpcomingEventsWidget`, `TermCalendarWidget`, `CalendarWidgetBase`) all now read from the hook — no hardcoded arrays anywhere.
+
 ## Next Tasks
 1. AppLayout sidebar redesign across all post-login dashboard pages
 2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin` into `routes/`)
