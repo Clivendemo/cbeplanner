@@ -1,8 +1,17 @@
 import React from 'react';
-import { TouchableOpacity, View, Text, StyleSheet, ActivityIndicator, Platform } from 'react-native';
+import { TouchableOpacity, View, Text, StyleSheet, ActivityIndicator, Platform, ScrollView, useWindowDimensions } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
+import { AppLeftSidebar, AppRightSidebar } from '../../components/AppSidebars';
+
+// Layout constants for the persistent shell (desktop only)
+const LEFT_SIDEBAR_W = 180;
+const MAIN_W = 950;
+const RIGHT_SIDEBAR_W = 180;
+const GAP = 20;
+const SHELL_W = LEFT_SIDEBAR_W + MAIN_W + RIGHT_SIDEBAR_W + GAP * 2; // 1330
+const SHELL_BREAKPOINT = 1280; // Below this we hide sidebars and show full-width app
 
 // Header Right component - defined outside to prevent re-renders
 function HeaderRight() {
@@ -49,6 +58,8 @@ function EmptyHeader() {
 
 export default function TeacherLayout() {
   const { user, loading, authChecked } = useAuth();
+  const { width } = useWindowDimensions();
+  const showSidebars = width >= SHELL_BREAKPOINT;
 
   // Show loading while checking auth
   if (loading || !authChecked) {
@@ -70,7 +81,7 @@ export default function TeacherLayout() {
     );
   }
 
-  return (
+  const stack = (
     <Stack
       screenOptions={{
         headerStyle: {
@@ -88,7 +99,8 @@ export default function TeacherLayout() {
         // Improve animation performance
         animationDuration: 250,
         // Better gesture settings for mobile
-        fullScreenGestureEnabled: Platform.OS === 'ios'
+        fullScreenGestureEnabled: Platform.OS === 'ios',
+        contentStyle: { backgroundColor: '#FFFFFF' },
       }}
     >
       <Stack.Screen
@@ -157,6 +169,43 @@ export default function TeacherLayout() {
       />
     </Stack>
   );
+
+  // On smaller screens, render the Stack full-bleed (no sidebars).
+  if (!showSidebars) {
+    return stack;
+  }
+
+  // Desktop: wrap the Stack in a centered 1330px shell with 180 / 950 / 180 columns.
+  // The app itself only operates inside the central 950 column.
+  return (
+    <View style={styles.shellRoot}>
+      {/* Decorative soft indigo background that blends with the #6366F1 header */}
+      <View style={styles.shellBg} pointerEvents="none" />
+
+      <ScrollView
+        style={styles.shellScroll}
+        contentContainerStyle={styles.shellScrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.shellRow}>
+          {/* Left sidebar */}
+          <View style={[styles.sideCol, { width: LEFT_SIDEBAR_W }]}>
+            <AppLeftSidebar />
+          </View>
+
+          {/* Central app column — the Stack renders here, untouched */}
+          <View style={[styles.mainCol, { width: MAIN_W }]}>
+            {stack}
+          </View>
+
+          {/* Right sidebar */}
+          <View style={[styles.sideCol, { width: RIGHT_SIDEBAR_W }]}>
+            <AppRightSidebar />
+          </View>
+        </View>
+      </ScrollView>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -206,5 +255,49 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     marginLeft: 4
-  }
+  },
+
+  // ===== Persistent shell (desktop only) =====
+  shellRoot: {
+    flex: 1,
+    backgroundColor: '#EEF2FF', // indigo-50, blends with #6366F1 header
+    position: 'relative',
+  },
+  shellBg: {
+    // Subtle layered wash — soft indigo → slate → violet
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: '#EEF2FF',
+    backgroundImage: 'radial-gradient(1000px 600px at 10% 0%, #E0E7FF 0%, transparent 60%), radial-gradient(1000px 600px at 90% 100%, #F5F3FF 0%, transparent 60%), linear-gradient(180deg, #EEF2FF 0%, #F8FAFC 100%)',
+  } as any,
+  shellScroll: { flex: 1 },
+  shellScrollContent: {
+    flexGrow: 1,
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  shellRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 20,
+    width: 1330, // LEFT + GAP + MAIN + GAP + RIGHT
+    maxWidth: '100%',
+  },
+  sideCol: {
+    flexShrink: 0,
+    paddingTop: 4,
+  },
+  mainCol: {
+    flexShrink: 0,
+    minHeight: '100vh' as any,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+  },
 });

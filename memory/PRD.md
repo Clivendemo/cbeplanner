@@ -139,6 +139,16 @@ Scheme of Work generator + in-app preview fully localized for Kiswahili subjects
 - **In-app preview** (`SchemeDisplay.tsx`): Cover (MPANGO WA KAZI / MUHULA WA), banner (JAMHURI YA KENYA, MTAALA WA UMILISI, MPANGO WA KAZI), meta labels (Shule/Darasa/Somo/Muhula/Muda), table headers (WIKI/SOM/Mada Kuu/Mada Ndogo/Matokeo Maalum ya Ujifunzaji/Swali Ibuka/Shughuli za Ujifunzaji/Nyenzo za Kujifunza/Tathmini/Tafak.), SLO preamble ("Kufikia mwisho wa somo, mwanafunzi aweze: …"), and Kiswahili footer
 - English-subject output is unchanged
 
+## App Shell / Persistent Sidebars (Feb 2026)
+Post-login teacher pages now render inside a centered 1330px shell:
+- **Left sidebar 180px**: MPesa Till card (compact 5-step reminder) + Today's Tip.
+- **Main column 950px**: The existing Stack navigator (dashboard, home, notes, lessons, profile, schemes, my-schemes, scheme-detail, lesson-detail, revision) renders here — unchanged and isolated from the sidebar chrome.
+- **Right sidebar 180px**: Teacher's Corner quote (auto-rotating), Useful Links, Support / Email Us.
+- **Breakpoint**: Sidebars show only when `width >= 1280px`. Below that, the Stack renders full-bleed (mobile/tablet remain identical to before).
+- **Background**: Soft indigo wash (`#EEF2FF` + radial gradients toward `#E0E7FF` / `#F5F3FF`) that harmonises with the app's `#6366F1` header.
+- **Login page**: Unchanged — still uses `LandingLayout` with its own widget set.
+- New file: `frontend/components/AppSidebars.tsx`. Wrapping done in `frontend/app/(teacher)/_layout.tsx`.
+
 ## Next Tasks
 1. AppLayout sidebar redesign across all post-login dashboard pages
 2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin` into `routes/`)
