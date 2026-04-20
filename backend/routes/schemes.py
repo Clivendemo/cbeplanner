@@ -26,6 +26,7 @@ from app.deps import (
 from scheme_generator import (
     generate_scheme_pdf, get_lessons_per_week, get_assessment_for_slo,
     generate_inquiry_questions, generate_learning_experiences, generate_learning_resources,
+    derive_inquiry_from_slo, format_slo_with_prefix,
 )
 from slot_service import format_resource_display
 
@@ -410,7 +411,13 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                     content = curriculum_content[content_index]
                     slot_inquiry = content.get("_slotInquiry")
 
-                    if slot_inquiry:
+                    # Key inquiry question is derived directly from the SLO.
+                    # Admin-curated inquiry (slot_inquiry) is used only as a fallback
+                    # when SLO-derivation cannot produce a meaningful question.
+                    derived = derive_inquiry_from_slo(content["slo"], is_kiswahili)
+                    if derived:
+                        inquiry_qs = derived
+                    elif slot_inquiry:
                         inquiry_qs = slot_inquiry
                     else:
                         inquiry_qs = generate_inquiry_questions(
@@ -444,7 +451,10 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                         "isDouble": is_double,
                         "strand": content["strand"],
                         "substrand": content["substrand"],
-                        "slo": _format_slo_for_scheme(content["slo"], is_kiswahili),
+                        "slo": format_slo_with_prefix(
+                            _format_slo_for_scheme(content["slo"], is_kiswahili),
+                            is_kiswahili,
+                        ),
                         "lessonInSubstrand": content.get("lessonInSubstrand", 1),
                         "totalLessonsInSubstrand": content.get("totalLessonsInSubstrand", 1),
                         "keyInquiryQuestions": inquiry_qs,

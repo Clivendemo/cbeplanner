@@ -506,6 +506,120 @@ def generate_inquiry_questions(strand: str, substrand: str, slo: str) -> List[st
     return questions
 
 
+# Verb→question-stem map for turning an SLO into a learner-centred inquiry question.
+_INQUIRY_STEMS = [
+    ('identify',    'How can we identify {body}?'),
+    ('describe',    'How would you describe {body}?'),
+    ('explain',     'Why is {body} important?'),
+    ('discuss',     'Why is it important to discuss {body}?'),
+    ('apply',       'How can we apply {body} in daily life?'),
+    ('solve',       'How do we solve {body}?'),
+    ('calculate',   'How do we calculate {body}?'),
+    ('compute',     'How do we compute {body}?'),
+    ('analyze',     'What patterns can we find in {body}?'),
+    ('analyse',     'What patterns can we find in {body}?'),
+    ('demonstrate', 'How can we demonstrate {body}?'),
+    ('show',        'How can we show {body}?'),
+    ('perform',     'How can we perform {body}?'),
+    ('create',      'How can we create {body}?'),
+    ('design',      'How can we design {body}?'),
+    ('build',       'How can we build {body}?'),
+    ('evaluate',    'How do we evaluate {body}?'),
+    ('appreciate',  'Why should we appreciate {body}?'),
+    ('state',       'What is {body}?'),
+    ('list',        'What are {body}?'),
+    ('name',        'What are the names of {body}?'),
+    ('classify',    'How can we classify {body}?'),
+    ('compare',     'How do we compare {body}?'),
+    ('differentiate','How do we differentiate {body}?'),
+    ('use',         'How do we use {body}?'),
+    ('read',        'How do we read {body}?'),
+    ('write',       'How do we write {body}?'),
+    ('draw',        'How do we draw {body}?'),
+    ('measure',     'How do we measure {body}?'),
+    ('observe',     'What do we observe about {body}?'),
+]
+
+_KISWAHILI_STEMS = [
+    ('tambua',  'Tunawezaje kutambua {body}?'),
+    ('eleza',   'Kwa nini {body} ni muhimu?'),
+    ('jadili',  'Kwa nini ni muhimu kujadili {body}?'),
+    ('andika',  'Tunaandikaje {body}?'),
+    ('soma',    'Tunasomaje {body}?'),
+    ('onyesha', 'Tunaonyeshaje {body}?'),
+    ('tumia',   'Tunatumiaje {body} katika maisha ya kila siku?'),
+    ('linganisha','Tunalinganishaje {body}?'),
+    ('taja',    '{body} ni nini?'),
+    ('chora',   'Tunachoraje {body}?'),
+]
+
+
+def derive_inquiry_from_slo(slo: str, is_kiswahili: bool = False) -> str:
+    """Turn a Specific Learning Outcome into a single learner-centred key inquiry question.
+
+    Uses the leading action verb of the SLO (identify/describe/explain/…) to pick
+    a natural question stem, then wraps the remainder of the SLO as the body.
+    Falls back to a generic but SLO-aware question if no stem matches.
+    """
+    if not slo:
+        return ''
+    text = str(slo).strip().rstrip('.')
+    if not text:
+        return ''
+    lower = text.lower()
+
+    stems = _KISWAHILI_STEMS if is_kiswahili else _INQUIRY_STEMS
+    for verb, template in stems:
+        if lower.startswith(verb + ' '):
+            body = text[len(verb) + 1:].strip()
+            # Normalise articles: "the X" / "a X" → "X"
+            for article in ('the ', 'a ', 'an '):
+                if body.lower().startswith(article):
+                    body = body[len(article):]
+            if body:
+                return template.format(body=body)
+
+    # Generic fallback — works for noun-phrase and verb-led SLOs alike.
+    # Prefer a "What is…" / "Why is…important" shape over ungrammatical "Why is it important to <noun>".
+    if is_kiswahili:
+        return f'Kwa nini {text.lower()} ni muhimu?'
+    # If the SLO starts with a verb-like word we handle it above; here it's usually a noun phrase
+    first_word = text.split(None, 1)[0].lower() if text else ''
+    action_hint = {'to', 'how', 'why', 'what', 'when', 'where'}
+    if first_word in action_hint:
+        return f'Why is {text.lower()} important?'
+    # Noun-phrase SLO: ask "Why is <noun phrase> important in everyday life?"
+    return f'Why is {text.lower()} important in everyday life?'
+
+
+def format_slo_with_prefix(slo: str, is_kiswahili: bool = False) -> str:
+    """Prefix the SLO with the standard KICD CBC lesson-outcome preamble."""
+    if not slo:
+        return ''
+    text = str(slo).strip()
+    if not text:
+        return ''
+    # Strip any existing preamble to avoid duplication
+    import re
+    patterns_en = [
+        r'^by the end of the lesson,?\s*the learner should be able to:?\s*',
+        r'^by the end of the lesson,?\s*the learner will be able to:?\s*',
+        r'^the learner should be able to:?\s*',
+    ]
+    patterns_sw = [
+        r'^kufikia mwisho wa somo,?\s*mwanafunzi aweze(?:\s+kuweza)?:?\s*',
+        r'^mwanafunzi aweze(?:\s+kuweza)?:?\s*',
+    ]
+    for pat in (patterns_sw if is_kiswahili else patterns_en):
+        text = re.sub(pat, '', text, flags=re.IGNORECASE).strip()
+    if not text:
+        return ''
+    if is_kiswahili:
+        return f'Kufikia mwisho wa somo, mwanafunzi aweze: {text}'
+    # Ensure body begins with a verb/lowercase; preserve proper nouns as-is
+    return f'By the end of the lesson, the learner should be able to: {text}'
+
+
 def generate_learning_experiences(strand: str, substrand: str, slo: str) -> List[str]:
     """Generate learning experiences"""
     import re

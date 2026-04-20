@@ -62,6 +62,16 @@ export const SchemeDisplay: React.FC<SchemeDisplayProps> = ({ scheme }) => {
     return '';
   };
 
+  // Prefix the SLO with the standard KICD preamble if not already present.
+  const formatSlo = (raw?: string): string => {
+    if (!raw) return '—';
+    const text = String(raw).trim();
+    if (!text) return '—';
+    if (/^by the end of the lesson/i.test(text)) return text;
+    if (/^kufikia mwisho wa somo/i.test(text)) return text;
+    return `By the end of the lesson, the learner should be able to: ${text}`;
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* ===== COVER / TITLE SECTION ===== */}
@@ -212,7 +222,7 @@ export const SchemeDisplay: React.FC<SchemeDisplayProps> = ({ scheme }) => {
                     <Text style={styles.cellText}>{subDisplay}</Text>
                   </View>
                   <View style={[styles.cell, styles.colSlo]}>
-                    <Text style={styles.cellText}>{l.slo || '—'}</Text>
+                    <Text style={styles.cellText}>{formatSlo(l.slo)}</Text>
                   </View>
                   <View style={[styles.cell, styles.colInquiry]}>
                     <Text style={styles.cellText}>{singleInquiry}</Text>
