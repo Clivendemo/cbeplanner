@@ -143,6 +143,140 @@ const DidYouKnowWidget: React.FC = () => {
   );
 };
 
+const MPESA_STEPS = [
+  'Open MPesa on your phone',
+  'Select Lipa na MPesa',
+  'Select Buy Goods & Services',
+  'Enter Till No. 8336258',
+  'Enter amount & your M-PIN',
+];
+
+const MPesaPaymentWidget: React.FC = () => (
+  <View style={mpesaStyles.card} data-testid="mpesa-payment-widget">
+    {/* Green accent bar on left edge */}
+    <View style={mpesaStyles.accentBar} />
+
+    <View style={mpesaStyles.inner}>
+      {/* Header row */}
+      <View style={mpesaStyles.headerRow}>
+        <View style={mpesaStyles.iconSquare}>
+          <Ionicons name="card-outline" size={16} color="#16a34a" />
+        </View>
+        <Text style={mpesaStyles.headerTitle}>MPesa Payment</Text>
+      </View>
+
+      {/* Message */}
+      <Text style={mpesaStyles.message}>
+        If your STK push did not arrive, pay manually via{' '}
+        <Text style={mpesaStyles.bold}>Buy Goods</Text> on MPesa:
+      </Text>
+
+      {/* Till number highlight */}
+      <View style={mpesaStyles.tillBox}>
+        <View>
+          <Text style={mpesaStyles.tillLabel}>Till Number</Text>
+          <Text style={mpesaStyles.tillNumber}>8336258</Text>
+        </View>
+        <View style={mpesaStyles.tillBadge}>
+          <Text style={mpesaStyles.tillBadgeText}>Buy Goods</Text>
+        </View>
+      </View>
+
+      {/* Steps */}
+      <View style={{ gap: 4 }}>
+        {MPESA_STEPS.map((step, i) => (
+          <View key={i} style={mpesaStyles.stepRow}>
+            <View style={mpesaStyles.stepBullet}>
+              <Text style={mpesaStyles.stepBulletText}>{i + 1}</Text>
+            </View>
+            <Text style={mpesaStyles.stepText}>{step}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Footer note */}
+      <View style={mpesaStyles.footerDivider} />
+      <Text style={mpesaStyles.footerNote}>
+        After payment, refresh the page or contact support at{' '}
+        <Text
+          style={mpesaStyles.footerEmail}
+          onPress={() => Linking.openURL('mailto:legitlab@outlook.com')}
+        >
+          legitlab@outlook.com
+        </Text>{' '}
+        with your transaction code.
+      </Text>
+    </View>
+  </View>
+);
+
+const mpesaStyles = StyleSheet.create({
+  card: {
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  accentBar: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    backgroundColor: '#16a34a',
+    borderTopLeftRadius: 12,
+    borderBottomLeftRadius: 12,
+  },
+  inner: { paddingLeft: 8 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 7, marginBottom: 8 },
+  iconSquare: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: '#dcfce7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: { fontSize: 12, fontWeight: '600', color: '#166534' },
+  message: { fontSize: 11, color: '#166534', lineHeight: 17, opacity: 0.9, marginBottom: 10 },
+  bold: { fontWeight: '700' },
+  tillBox: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  tillLabel: { fontSize: 9, color: '#6B7280', letterSpacing: 0.5, textTransform: 'uppercase' },
+  tillNumber: { fontSize: 18, fontWeight: '700', color: '#166534', letterSpacing: 0.8 },
+  tillBadge: { backgroundColor: '#dcfce7', borderRadius: 6, paddingVertical: 4, paddingHorizontal: 8 },
+  tillBadgeText: { fontSize: 10, fontWeight: '600', color: '#166534' },
+  stepRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 7 },
+  stepBullet: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#16a34a',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  stepBulletText: { fontSize: 9, color: '#FFFFFF', fontWeight: '700', lineHeight: 10 },
+  stepText: { fontSize: 11, color: '#166534', lineHeight: 16, opacity: 0.85, flex: 1 },
+  footerDivider: { height: 1, backgroundColor: '#bbf7d0', marginTop: 10, marginBottom: 8 },
+  footerNote: { fontSize: 10, color: '#6B7280', lineHeight: 15 },
+  footerEmail: { color: '#16a34a', fontWeight: '500' },
+});
+
 const UpcomingEventsWidget: React.FC = () => (
   <View style={styles.widgetCard}>
     <View style={styles.widgetHeaderRow}>
@@ -347,6 +481,7 @@ export const LandingLayout: React.FC<Props> = ({ children }) => {
           <View style={styles.sidebarLeft}>
             <View style={{ gap: 14 }}>
               <DidYouKnowWidget />
+              <MPesaPaymentWidget />
               <UpcomingEventsWidget />
               <TeacherQuoteWidget />
             </View>
