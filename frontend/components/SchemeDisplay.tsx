@@ -131,22 +131,54 @@ export const SchemeDisplay: React.FC<SchemeDisplayProps> = ({ scheme }) => {
             <View style={[styles.cell, styles.colRef, styles.lastCell]}><Text style={styles.headerText}>Ref.</Text></View>
           </View>
 
-          {/* Body rows — dedupe week / strand / sub-strand against prev row */}
+          {/* Body rows — dedupe week / strand / sub-strand against prev row;
+             merge consecutive break rows of same type */}
           {(() => {
+            // Pre-merge consecutive break lessons of same type
+            type AnyLesson = SchemeLesson & { _mergedBreak?: boolean; endWeek?: number };
+            const merged: AnyLesson[] = [];
+            let i = 0;
+            while (i < lessons.length) {
+              const cur = lessons[i];
+              if (cur.isBreak) {
+                const btype = (cur.breakType || cur.breakDescription || 'BREAK').toString().toUpperCase();
+                const startWeek = cur.week;
+                let j = i + 1;
+                while (
+                  j < lessons.length &&
+                  lessons[j].isBreak &&
+                  ((lessons[j].breakType || lessons[j].breakDescription || 'BREAK').toString().toUpperCase() === btype)
+                ) { j++; }
+                merged.push({
+                  ...cur,
+                  _mergedBreak: true,
+                  breakType: btype,
+                  week: startWeek,
+                  endWeek: lessons[j - 1].week,
+                });
+                i = j;
+              } else {
+                merged.push(cur as AnyLesson);
+                i += 1;
+              }
+            }
+
             let prevWeek: number | null = null;
             let prevStrand: string | null = null;
             let prevSub: string | null = null;
-            return lessons.map((l, idx) => {
-              if (l.isBreak) {
-                // Reset dedupe trackers after a break
-                prevWeek = null;
-                prevStrand = null;
-                prevSub = null;
-                const label = (l.breakType || l.breakDescription || 'BREAK').toString().toUpperCase();
+            return merged.map((l, idx) => {
+              if (l._mergedBreak) {
+                prevWeek = null; prevStrand = null; prevSub = null;
+                const wkFrom = l.week;
+                const wkTo = l.endWeek ?? wkFrom;
+                const weekCell = wkFrom === wkTo ? String(wkFrom) : `${wkFrom}-${wkTo}`;
                 return (
                   <View key={idx} style={[styles.row, styles.breakRow]}>
+                    <View style={[styles.cell, styles.colWeek]}>
+                      <Text style={styles.breakText}>{weekCell}</Text>
+                    </View>
                     <View style={[styles.cell, styles.breakContent, styles.lastCell, { flex: 1 }]}>
-                      <Text style={styles.breakLabel}>{label}</Text>
+                      <Text style={styles.breakLabel}>{l.breakType}</Text>
                     </View>
                   </View>
                 );
@@ -162,7 +194,6 @@ export const SchemeDisplay: React.FC<SchemeDisplayProps> = ({ scheme }) => {
               prevStrand = strandVal;
               prevSub = subVal;
 
-              // Only one inquiry question
               const inquiryItems = toList(l.keyInquiryQuestions);
               const singleInquiry = inquiryItems.length > 0 ? inquiryItems[0] : '—';
 
@@ -172,13 +203,10 @@ export const SchemeDisplay: React.FC<SchemeDisplayProps> = ({ scheme }) => {
                     <Text style={styles.cellText}>{weekDisplay}</Text>
                   </View>
                   <View style={[styles.cell, styles.colLesson]}>
-                    <Text style={styles.cellText}>
-                      {lessonLabel(l)}
-                      {l.isDouble ? '\n(Dbl)' : ''}
-                    </Text>
+                    <Text style={styles.cellText}>{lessonLabel(l)}</Text>
                   </View>
                   <View style={[styles.cell, styles.colStrand]}>
-                    <Text style={styles.cellText}>{strandDisplay || (strandDisplay === '' && strandVal ? '' : '—')}</Text>
+                    <Text style={styles.cellText}>{strandDisplay}</Text>
                   </View>
                   <View style={[styles.cell, styles.colSubstrand]}>
                     <Text style={styles.cellText}>{subDisplay}</Text>

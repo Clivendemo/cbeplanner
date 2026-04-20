@@ -299,18 +299,50 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
         return str(val).strip().split('\n')[0].strip()
 
     # Content rows with week / strand / substrand deduplication
+    # Also: merge consecutive break rows of the same type into a single row,
+    # keep the week column visible, span columns 2-10 for the break name.
     lessons = scheme_data.get('lessons', [])
     prev_week = None
     prev_strand = None
     prev_substrand = None
 
-    for lesson in lessons:
-        # ===== BREAK ROW — single centered row with break name only =====
-        if lesson.get('isBreak'):
-            break_name = str(lesson.get('breakType', 'BREAK')).upper()
-            break_row = [Paragraph(break_name, styles['BreakCell'])] + [''] * 9
+    # Merge consecutive break lessons of the same type
+    def _merge_breaks(items):
+        merged = []
+        i = 0
+        while i < len(items):
+            cur = items[i]
+            if cur.get('isBreak'):
+                btype = str(cur.get('breakType', 'BREAK')).upper()
+                week = cur.get('week', '')
+                j = i + 1
+                # Collect consecutive breaks of same type
+                while j < len(items) and items[j].get('isBreak') and str(items[j].get('breakType', 'BREAK')).upper() == btype:
+                    j += 1
+                merged.append({
+                    '_merged_break': True,
+                    'breakType': btype,
+                    'week': week,
+                    'endWeek': items[j - 1].get('week', week),
+                })
+                i = j
+            else:
+                merged.append(cur)
+                i += 1
+        return merged
+
+    for lesson in _merge_breaks(lessons):
+        if lesson.get('_merged_break'):
+            break_name = lesson['breakType']
+            wk_from = lesson.get('week', '')
+            wk_to = lesson.get('endWeek', wk_from)
+            week_cell = str(wk_from) if wk_from == wk_to else f"{wk_from}-{wk_to}"
+            # Week cell visible; rest of the row spans as the break label
+            break_row = [
+                Paragraph(week_cell, styles['TableCell']),
+                Paragraph(break_name, styles['BreakCell']),
+            ] + [''] * 8
             table_data.append(break_row)
-            # Reset dedupe trackers so the strand/week re-prints after the break
             prev_week = None
             prev_strand = None
             prev_substrand = None
@@ -338,9 +370,12 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
         # Single inquiry question per lesson
         inquiry = _single_inquiry(inquiry_raw)
 
+        # Lesson label: strip "(Dbl)" and similar double-lesson suffixes
+        lsn_display = str(lsn)
+
         row = [
             Paragraph(week_display, styles['TableCell']),
-            Paragraph(str(lsn), styles['TableCell']),
+            Paragraph(lsn_display, styles['TableCell']),
             Paragraph(strand_display, styles['TableCell']),
             Paragraph(substrand_display, styles['TableCell']),
             Paragraph(slo, styles['TableCell']),
@@ -385,14 +420,24 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
         ('RIGHTPADDING', (0, 0), (-1, -1), 4),
     ])
     
-    # Style break rows (span full width, centered, bold, WHITE background)
-    for i, lesson in enumerate(lessons):
-        if lesson.get('isBreak'):
-            row_idx = i + 1  # +1 for header
-            table_style.add('SPAN', (0, row_idx), (-1, row_idx))
-            table_style.add('BACKGROUND', (0, row_idx), (-1, row_idx), colors.white)
-            table_style.add('ALIGN', (0, row_idx), (-1, row_idx), 'CENTER')
-            table_style.add('FONTNAME', (0, row_idx), (-1, row_idx), 'Helvetica-Bold')
+    # Style break rows: keep week col visible, span columns 2-10 for the break name
+    # Break rows are detected by scanning built table_data for our sentinel.
+    for row_idx, row in enumerate(table_data):
+        if row_idx == 0:
+            continue  # header
+        # Our merged break row has Paragraph in cols 0 and 1, empty strings in 2-9
+        if len(row) >= 10 and isinstance(row[2], str) and row[2] == '' and isinstance(row[1], Paragraph):
+            # Detect by checking row[1] text style via Paragraph.style.name == 'BreakCell'
+            try:
+                style_name = getattr(row[1].style, 'name', '')
+            except Exception:
+                style_name = ''
+            if style_name == 'BreakCell':
+                table_style.add('SPAN', (1, row_idx), (-1, row_idx))
+                table_style.add('BACKGROUND', (0, row_idx), (-1, row_idx), colors.HexColor('#FEF3C7'))
+                table_style.add('ALIGN', (1, row_idx), (-1, row_idx), 'CENTER')
+                table_style.add('VALIGN', (0, row_idx), (-1, row_idx), 'MIDDLE')
+                table_style.add('FONTNAME', (0, row_idx), (-1, row_idx), 'Helvetica-Bold')
     
     table.setStyle(table_style)
     elements.append(table)
