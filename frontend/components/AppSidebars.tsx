@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 // ===== LEFT SIDEBAR =====
 
-const MPesaTillCard: React.FC = () => (
+export const MPesaTillCard: React.FC = () => (
   <View style={styles.card} data-testid="app-mpesa-till-card">
     <View style={styles.mpesaAccentBar} />
     <View style={{ paddingLeft: 6 }}>
@@ -76,7 +76,6 @@ const TipCard: React.FC = () => {
 
 export const AppLeftSidebar: React.FC = () => (
   <View style={{ gap: 12 }}>
-    <MPesaTillCard />
     <TipCard />
   </View>
 );

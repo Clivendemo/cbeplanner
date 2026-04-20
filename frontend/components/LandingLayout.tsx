@@ -151,7 +151,7 @@ const MPESA_STEPS = [
   'Enter amount & your M-PIN',
 ];
 
-const MPesaPaymentWidget: React.FC = () => (
+export const MPesaPaymentWidget: React.FC = () => (
   <View style={mpesaStyles.card} data-testid="mpesa-payment-widget">
     {/* Green accent bar on left edge */}
     <View style={mpesaStyles.accentBar} />
@@ -275,6 +275,243 @@ const mpesaStyles = StyleSheet.create({
   footerDivider: { height: 1, backgroundColor: '#bbf7d0', marginTop: 10, marginBottom: 8 },
   footerNote: { fontSize: 10, color: '#6B7280', lineHeight: 15 },
   footerEmail: { color: '#16a34a', fontWeight: '500' },
+});
+
+// ===== CALENDAR WIDGET =====
+// Parses "May 5" → { month: 4, day: 5 } (0-indexed month)
+const MONTH_MAP: Record<string, number> = {
+  jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+  jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+};
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+type CalEvent = { day: number; title: string; dot: string; bg: string; tc: string };
+
+function parseEventsForMonth(year: number, monthIdx: number): CalEvent[] {
+  const out: CalEvent[] = [];
+  for (const ev of UPCOMING_EVENTS) {
+    // "May 5" → ["May", "5"]
+    const m = ev.date.match(/^([A-Za-z]+)\s+(\d+)$/);
+    if (!m) continue;
+    const mIdx = MONTH_MAP[m[1].slice(0, 3).toLowerCase()];
+    if (mIdx !== monthIdx) continue;
+    out.push({
+      day: parseInt(m[2], 10),
+      title: ev.title,
+      dot: ev.dot,
+      bg: ev.bg,
+      tc: ev.tc,
+    });
+  }
+  return out;
+}
+
+const CalendarWidget: React.FC = () => {
+  const today = new Date();
+  const [viewMonth, setViewMonth] = useState(today.getMonth());
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [openDay, setOpenDay] = useState<number | null>(null);
+
+  const monthEvents = parseEventsForMonth(viewYear, viewMonth);
+  const eventsByDay = new Map<number, CalEvent[]>();
+  for (const e of monthEvents) {
+    const list = eventsByDay.get(e.day) ?? [];
+    list.push(e);
+    eventsByDay.set(e.day, list);
+  }
+
+  const firstOfMonth = new Date(viewYear, viewMonth, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const isCurrentMonth = viewMonth === today.getMonth() && viewYear === today.getFullYear();
+  const todayDay = today.getDate();
+
+  const cells: Array<number | null> = [];
+  for (let i = 0; i < firstOfMonth; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const handleDayPress = (day: number) => {
+    if (!eventsByDay.has(day)) return; // no action on empty date
+    setOpenDay((cur) => (cur === day ? null : day)); // toggle same date
+  };
+
+  const goPrev = () => {
+    setOpenDay(null);
+    if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); }
+    else setViewMonth((m) => m - 1);
+  };
+  const goNext = () => {
+    setOpenDay(null);
+    if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); }
+    else setViewMonth((m) => m + 1);
+  };
+
+  return (
+    <View style={styles.widgetCard} data-testid="calendar-widget">
+      {/* Header */}
+      <View style={calStyles.header}>
+        <Pressable onPress={goPrev} style={calStyles.navBtn} hitSlop={8} data-testid="calendar-prev">
+          <Ionicons name="chevron-back" size={14} color="#5B5BD6" />
+        </Pressable>
+        <Text style={calStyles.monthLabel}>{MONTH_NAMES[viewMonth]} {viewYear}</Text>
+        <Pressable onPress={goNext} style={calStyles.navBtn} hitSlop={8} data-testid="calendar-next">
+          <Ionicons name="chevron-forward" size={14} color="#5B5BD6" />
+        </Pressable>
+      </View>
+
+      {/* Day labels */}
+      <View style={calStyles.row}>
+        {DAY_LABELS.map((l, i) => (
+          <View key={i} style={calStyles.cell}>
+            <Text style={calStyles.dayLabel}>{l}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Date grid */}
+      {Array.from({ length: cells.length / 7 }).map((_, rowIdx) => (
+        <View key={rowIdx} style={calStyles.row}>
+          {cells.slice(rowIdx * 7, rowIdx * 7 + 7).map((day, colIdx) => {
+            if (day === null) {
+              return <View key={colIdx} style={calStyles.cell} />;
+            }
+            const evs = eventsByDay.get(day);
+            const hasEvent = !!evs;
+            const isToday = isCurrentMonth && day === todayDay;
+            const firstEv = evs?.[0];
+            return (
+              <Pressable
+                key={colIdx}
+                onPress={() => handleDayPress(day)}
+                style={calStyles.cell}
+                data-testid={`calendar-day-${day}`}
+              >
+                <View
+                  style={[
+                    calStyles.dayPill,
+                    isToday && calStyles.dayPillToday,
+                    hasEvent && firstEv && { backgroundColor: firstEv.bg },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      calStyles.dayNum,
+                      isToday && calStyles.dayNumToday,
+                      hasEvent && firstEv && { color: firstEv.tc, fontWeight: '700' },
+                    ]}
+                  >
+                    {day}
+                  </Text>
+                  {hasEvent && firstEv && !isToday && (
+                    <View style={[calStyles.eventDot, { backgroundColor: firstEv.dot }]} />
+                  )}
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
+      ))}
+
+      {/* Popover for selected day */}
+      {openDay !== null && eventsByDay.has(openDay) && (
+        <View style={calStyles.popover} data-testid="calendar-popover">
+          <View style={calStyles.popoverHeader}>
+            <Text style={calStyles.popoverDate}>
+              {MONTH_NAMES[viewMonth]} {openDay}
+            </Text>
+            <Pressable onPress={() => setOpenDay(null)} hitSlop={8} data-testid="calendar-popover-close">
+              <Ionicons name="close" size={12} color="#6B7280" />
+            </Pressable>
+          </View>
+          {(eventsByDay.get(openDay) ?? []).map((e, i) => (
+            <View key={i} style={calStyles.popoverRow}>
+              <View style={[calStyles.popoverDot, { backgroundColor: e.dot }]} />
+              <Text style={calStyles.popoverTitle}>{e.title}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Legend */}
+      <View style={calStyles.legend}>
+        <View style={[styles.legendDot, { backgroundColor: '#5B5BD6' }]} />
+        <Text style={styles.legendText}>Academic</Text>
+        <View style={[styles.legendDot, { backgroundColor: '#16A34A', marginLeft: 8 }]} />
+        <Text style={styles.legendText}>Co-curr</Text>
+        <View style={[styles.legendDot, { backgroundColor: '#EA580C', marginLeft: 8 }]} />
+        <Text style={styles.legendText}>Exams</Text>
+      </View>
+    </View>
+  );
+};
+
+const calStyles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  navBtn: { padding: 4 },
+  monthLabel: { fontSize: 12, fontWeight: '700', color: '#111827' },
+  row: { flexDirection: 'row' },
+  cell: {
+    flex: 1,
+    aspectRatio: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 2,
+  },
+  dayLabel: { fontSize: 9, fontWeight: '700', color: '#9CA3AF', letterSpacing: 0.3 },
+  dayPill: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  dayPillToday: {
+    backgroundColor: '#5B5BD6',
+  },
+  dayNum: { fontSize: 11, color: '#374151', fontWeight: '500' },
+  dayNumToday: { color: '#FFFFFF', fontWeight: '700' },
+  eventDot: {
+    position: 'absolute',
+    bottom: 2,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+  },
+  popover: {
+    marginTop: 10,
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    padding: 8,
+  },
+  popoverHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  popoverDate: { fontSize: 11, fontWeight: '700', color: '#111827' },
+  popoverRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 2 },
+  popoverDot: { width: 5, height: 5, borderRadius: 3 },
+  popoverTitle: { fontSize: 10, color: '#374151', flex: 1 },
+  legend: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    gap: 3,
+  },
 });
 
 const UpcomingEventsWidget: React.FC = () => (
@@ -481,7 +718,7 @@ export const LandingLayout: React.FC<Props> = ({ children }) => {
           <View style={styles.sidebarLeft}>
             <View style={{ gap: 14 }}>
               <DidYouKnowWidget />
-              <MPesaPaymentWidget />
+              <CalendarWidget />
               <UpcomingEventsWidget />
               <TeacherQuoteWidget />
             </View>

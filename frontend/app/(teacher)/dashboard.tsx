@@ -69,8 +69,8 @@ export default function Dashboard() {
   const freeLessonsRemaining = user?.freeLessonsRemaining ?? 0;
 
   // Dashboard tiles - arranged in two columns
-  // LEFT: Schemes of Work, Create Lesson Plan, My Profile
-  // RIGHT: Generate Notes, My Plans, Past Papers
+  // LEFT (4): Schemes of Work, Create Lesson Plan, Generate Notes, My Profile
+  // RIGHT (3): My Schemes, My Lesson Plans, Past Papers
   const leftColumnTiles = [
     {
       title: 'Schemes of Work',
@@ -90,6 +90,14 @@ export default function Dashboard() {
       badge: freeLessonsRemaining > 0 ? `${freeLessonsRemaining} Free` : undefined
     },
     {
+      title: 'Generate Notes',
+      subtitle: 'Create learner-friendly notes',
+      icon: 'create',
+      color: '#10B981',
+      route: '/(teacher)/notes',
+      disabled: false
+    },
+    {
       title: 'My Profile',
       subtitle: 'Settings & account',
       icon: 'person-circle',
@@ -101,11 +109,11 @@ export default function Dashboard() {
   
   const rightColumnTiles = [
     {
-      title: 'Generate Notes',
-      subtitle: 'Create learner-friendly notes',
-      icon: 'create',
-      color: '#10B981',
-      route: '/(teacher)/notes',
+      title: 'My Schemes',
+      subtitle: 'View & download schemes',
+      icon: 'albums',
+      color: '#8B5CF6',
+      route: '/(teacher)/my-schemes',
       disabled: false
     },
     {
@@ -114,14 +122,6 @@ export default function Dashboard() {
       icon: 'folder-open',
       color: '#F59E0B',
       route: '/(teacher)/lessons',
-      disabled: false
-    },
-    {
-      title: 'My Schemes',
-      subtitle: 'View & download schemes',
-      icon: 'albums',
-      color: '#8B5CF6',
-      route: '/(teacher)/my-schemes',
       disabled: false
     },
     {
