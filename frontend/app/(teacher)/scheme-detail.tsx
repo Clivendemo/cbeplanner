@@ -29,6 +29,11 @@ export default function SchemeDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
+  // Tracks a deferred download after user is sent to top up their wallet.
+  // Lives only as long as the screen stays mounted (expo-router stack keeps
+  // it alive while profile is pushed on top). If user abandons (navigates
+  // elsewhere / closes browser), the flag is lost — no charge, safe.
+  const [pendingDownload, setPendingDownload] = useState(false);
 
   const loadScheme = async () => {
     if (!id || !firebaseUser) return;
@@ -56,11 +61,30 @@ export default function SchemeDetail() {
     loadScheme();
   }, [id]);
 
-  // Refresh wallet on focus (after top-up)
+  // On focus: refresh balance, then auto-resume download if user topped up.
   useFocusEffect(
     useCallback(() => {
-      refreshProfile();
-    }, [])
+      let cancelled = false;
+      (async () => {
+        await refreshProfile();
+        if (cancelled) return;
+        // Small delay so `user.walletBalance` state is updated from context
+        setTimeout(() => {
+          if (cancelled) return;
+          if (pendingDownload) {
+            const latestBalance = user?.walletBalance || 0;
+            if (latestBalance >= SCHEME_DOWNLOAD_COST) {
+              setPendingDownload(false);
+              // Resume download automatically — no extra click for the user
+              handleDownload();
+            }
+            // If still insufficient, keep the pending flag; user will see the
+            // friendly modal again when they click Download themselves.
+          }
+        }, 400);
+      })();
+      return () => { cancelled = true; };
+    }, [pendingDownload, user?.walletBalance])
   );
 
   const handleEdit = () => {
@@ -99,16 +123,20 @@ export default function SchemeDetail() {
 
     const balance = user?.walletBalance || 0;
     if (balance < SCHEME_DOWNLOAD_COST) {
+      const shortfall = SCHEME_DOWNLOAD_COST - balance;
       Alert.alert(
-        'Top Up Required',
-        `You need KES ${SCHEME_DOWNLOAD_COST - balance} more to download this scheme.\n\nBalance: KES ${balance}\nCost: KES ${SCHEME_DOWNLOAD_COST}`,
+        '🎯 Almost there!',
+        `You're just KES ${shortfall} away from downloading your professional Scheme of Work.\n\nTop up your wallet now and we'll continue the download the moment you return — no extra clicks needed.\n\nBalance: KES ${balance} · Cost: KES ${SCHEME_DOWNLOAD_COST}`,
         [
           { text: 'Maybe Later', style: 'cancel' },
           {
-            text: 'Top Up Wallet',
-            onPress: () => router.push('/(teacher)/profile' as any),
+            text: 'Top Up & Continue',
+            onPress: () => {
+              setPendingDownload(true);
+              router.push('/(teacher)/profile' as any);
+            },
           },
-        ]
+        ],
       );
       return;
     }
@@ -136,7 +164,6 @@ export default function SchemeDetail() {
         document.body.removeChild(a);
         URL.revokeObjectURL(blobUrl);
         await refreshProfile();
-        Alert.alert('Success', `Scheme downloaded. KES ${SCHEME_DOWNLOAD_COST} deducted from wallet.`);
       } else {
         const subject = (scheme?.subjectName || 'Subject').replace(/\s+/g, '_');
         const grade = (scheme?.gradeName || 'Grade').replace(/\s+/g, '_');
@@ -160,22 +187,31 @@ export default function SchemeDetail() {
           });
         }
         await refreshProfile();
-        Alert.alert('Success', `Scheme downloaded. KES ${SCHEME_DOWNLOAD_COST} deducted from wallet.`);
       }
       // Refresh to reflect isPaid/downloadCount
       loadScheme();
     } catch (err: any) {
       if (err.response?.status === 402) {
+        // Edge case: balance race condition; backend did not charge
         Alert.alert(
-          'Insufficient Balance',
-          'Please top up your wallet to download this scheme.',
+          'Balance just changed',
+          'Your wallet balance dropped below KES 15 right before the download. No charge was made — please top up and try again.',
           [
             { text: 'Maybe Later', style: 'cancel' },
-            { text: 'Top Up', onPress: () => router.push('/(teacher)/profile' as any) },
-          ]
+            {
+              text: 'Top Up',
+              onPress: () => {
+                setPendingDownload(true);
+                router.push('/(teacher)/profile' as any);
+              },
+            },
+          ],
         );
       } else {
-        Alert.alert('Download Failed', 'Please try again. If the problem persists, no charge was applied.');
+        Alert.alert(
+          'Download Failed',
+          'Something went wrong. If your wallet was charged, it has been automatically refunded. Please try again.',
+        );
       }
     } finally {
       setDownloading(false);
@@ -203,15 +239,12 @@ export default function SchemeDetail() {
     );
   }
 
-  const balance = user?.walletBalance || 0;
-  const canAfford = balance >= SCHEME_DOWNLOAD_COST;
-
   return (
     <View style={styles.container}>
       {/* Sticky action bar */}
       <View style={styles.actionBar}>
         <TouchableOpacity
-          style={[styles.downloadBtn, (downloading || !canAfford) && styles.downloadBtnDisabled]}
+          style={[styles.downloadBtn, downloading && styles.downloadBtnDisabled]}
           onPress={handleDownload}
           disabled={downloading}
           data-testid="scheme-detail-download-btn"
@@ -243,21 +276,6 @@ export default function SchemeDetail() {
           <Ionicons name="trash-outline" size={16} color="#EF4444" />
         </TouchableOpacity>
       </View>
-
-      {!canAfford && (
-        <View style={styles.insufficientBar} data-testid="scheme-detail-insufficient-bar">
-          <Ionicons name="alert-circle" size={16} color="#B45309" />
-          <Text style={styles.insufficientText}>
-            KES {SCHEME_DOWNLOAD_COST - balance} more needed · Balance KES {balance}
-          </Text>
-          <TouchableOpacity
-            onPress={() => router.push('/(teacher)/profile' as any)}
-            data-testid="scheme-detail-topup-btn"
-          >
-            <Text style={styles.topupLink}>Top Up</Text>
-          </TouchableOpacity>
-        </View>
-      )}
 
       {/* In-app scheme preview (no PDF exposed) */}
       <SchemeDisplay scheme={scheme} />
@@ -309,16 +327,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
   },
-  insufficientBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    backgroundColor: '#FFFBEB',
-    borderBottomWidth: 1,
-    borderBottomColor: '#FDE68A',
-  },
-  insufficientText: { flex: 1, fontSize: 12, color: '#92400E', fontWeight: '500' },
-  topupLink: { fontSize: 12, color: '#D97706', fontWeight: '700', textDecorationLine: 'underline' },
 });
