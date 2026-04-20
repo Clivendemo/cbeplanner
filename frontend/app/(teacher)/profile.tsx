@@ -525,6 +525,12 @@ export default function Profile() {
               </TouchableOpacity>
             </View>
 
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+              style={{ maxHeight: '80%' }}
+            >
+
             <View style={styles.mpesaLogoContainer}>
               <View style={styles.mpesaLogo}>
                 <Ionicons name="phone-portrait" size={32} color="#00A859" />
@@ -606,6 +612,54 @@ export default function Profile() {
               <Ionicons name="shield-checkmark" size={14} color="#10B981" />
               <Text style={styles.secureText}> Secure payment via Safaricom M-Pesa</Text>
             </View>
+
+            {/* Manual Buy Goods fallback — shown when STK push fails to arrive */}
+            <View style={styles.mpesaFallback}>
+              <View style={styles.mpesaFallbackHeader}>
+                <Ionicons name="information-circle" size={16} color="#00A859" />
+                <Text style={styles.mpesaFallbackTitle}>STK push didn't arrive?</Text>
+              </View>
+              <Text style={styles.mpesaFallbackSub}>
+                Pay manually via Buy Goods on M-Pesa:
+              </Text>
+
+              <View style={styles.tillBlock}>
+                <Text style={styles.tillLabel}>TILL NUMBER</Text>
+                <Text style={styles.tillNumber}>8336258</Text>
+                <View style={styles.buyGoodsBadge}>
+                  <Text style={styles.buyGoodsBadgeText}>BUY GOODS</Text>
+                </View>
+              </View>
+
+              <View style={styles.stepsBlock}>
+                {[
+                  'Open MPesa on your phone',
+                  'Select Lipa na MPesa',
+                  'Select Buy Goods & Services',
+                  'Enter Till No. 8336258',
+                  'Enter amount & your M-PIN',
+                ].map((step, idx) => (
+                  <View key={idx} style={styles.stepRow}>
+                    <View style={styles.stepNumber}>
+                      <Text style={styles.stepNumberText}>{idx + 1}</Text>
+                    </View>
+                    <Text style={styles.stepText}>{step}</Text>
+                  </View>
+                ))}
+              </View>
+
+              <Text style={styles.mpesaFallbackFooter}>
+                After payment, refresh the page or contact{' '}
+                <Text
+                  style={styles.mpesaFallbackEmail}
+                  onPress={() => Linking.openURL('mailto:legitlabs@outlook.com?subject=M-Pesa%20Payment%20Confirmation')}
+                >
+                  legitlabs@outlook.com
+                </Text>
+                {' '}with your transaction code.
+              </Text>
+            </View>
+            </ScrollView>
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -1230,6 +1284,107 @@ const styles = StyleSheet.create({
   secureText: {
     fontSize: 12,
     color: '#6B7280'
+  },
+  // ===== M-Pesa manual Buy Goods fallback =====
+  mpesaFallback: {
+    marginTop: 20,
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+    borderRadius: 12,
+    padding: 14,
+  },
+  mpesaFallbackHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
+  mpesaFallbackTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#00A859',
+  },
+  mpesaFallbackSub: {
+    fontSize: 12,
+    color: '#166534',
+    marginBottom: 12,
+  },
+  tillBlock: {
+    backgroundColor: '#00A859',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    alignItems: 'center',
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: '#13BC3F',
+  },
+  tillLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#A7F3D0',
+    letterSpacing: 1.5,
+    marginBottom: 2,
+  },
+  tillNumber: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 2,
+    marginVertical: 2,
+  },
+  buyGoodsBadge: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 20,
+    marginTop: 6,
+  },
+  buyGoodsBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#00A859',
+    letterSpacing: 0.8,
+  },
+  stepsBlock: {
+    gap: 6,
+    marginBottom: 12,
+  },
+  stepRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  stepNumber: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#00A859',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepNumberText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  stepText: {
+    flex: 1,
+    fontSize: 12,
+    color: '#1F2937',
+    lineHeight: 16,
+  },
+  mpesaFallbackFooter: {
+    fontSize: 11,
+    color: '#166534',
+    lineHeight: 16,
+    marginTop: 4,
+  },
+  mpesaFallbackEmail: {
+    color: '#00A859',
+    fontWeight: '700',
+    textDecorationLine: 'underline',
   },
   developerCredit: {
     alignItems: 'center',
