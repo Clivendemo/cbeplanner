@@ -40,6 +40,13 @@ interface SchemeDisplayProps {
 export const SchemeDisplay: React.FC<SchemeDisplayProps> = ({ scheme }) => {
   const lessons = scheme.lessons || [];
 
+  // Kiswahili subjects: "Kiswahili" (all grades) and "Fasihi ya Kiswahili" (grade 10+)
+  const subjectLower = (scheme.subjectName || '').toLowerCase();
+  const isKiswahili = subjectLower.includes('kiswahili') || subjectLower.includes('fasihi');
+
+  // Localized label helper
+  const t = (en: string, sw: string) => (isKiswahili ? sw : en);
+
   const toList = (val?: string[] | string): string[] => {
     if (!val) return [];
     if (Array.isArray(val)) return val.filter(Boolean);
@@ -69,6 +76,9 @@ export const SchemeDisplay: React.FC<SchemeDisplayProps> = ({ scheme }) => {
     if (!text) return '—';
     if (/^by the end of the lesson/i.test(text)) return text;
     if (/^kufikia mwisho wa somo/i.test(text)) return text;
+    if (isKiswahili) {
+      return `Kufikia mwisho wa somo, mwanafunzi aweze: ${text}`;
+    }
     return `By the end of the lesson, the learner should be able to: ${text}`;
   };
 
@@ -80,45 +90,45 @@ export const SchemeDisplay: React.FC<SchemeDisplayProps> = ({ scheme }) => {
           {(scheme.schoolName || 'SCHOOL NAME').toUpperCase()}
         </Text>
         <View style={styles.coverDivider} />
-        <Text style={styles.coverTitle}>SCHEME OF WORK</Text>
+        <Text style={styles.coverTitle}>{t('SCHEME OF WORK', 'MPANGO WA KAZI')}</Text>
         <View style={styles.coverDivider} />
         <Text style={styles.coverSubject}>{(scheme.subjectName || '').toUpperCase()}</Text>
-        <Text style={styles.coverMeta}>TERM {scheme.term} · {scheme.year}</Text>
+        <Text style={styles.coverMeta}>{t('TERM', 'MUHULA WA')} {scheme.term} · {scheme.year}</Text>
         {scheme.gradeName ? <Text style={styles.coverMeta}>{scheme.gradeName.toUpperCase()}</Text> : null}
       </View>
 
       {/* Document Header */}
       <View style={styles.documentHeader}>
-        <Text style={styles.documentTitle}>REPUBLIC OF KENYA</Text>
-        <Text style={styles.documentSubtitle}>COMPETENCY-BASED CURRICULUM</Text>
-        <Text style={styles.documentType}>SCHEME OF WORK</Text>
+        <Text style={styles.documentTitle}>{t('REPUBLIC OF KENYA', 'JAMHURI YA KENYA')}</Text>
+        <Text style={styles.documentSubtitle}>{t('COMPETENCY-BASED CURRICULUM', 'MTAALA WA UMILISI')}</Text>
+        <Text style={styles.documentType}>{t('SCHEME OF WORK', 'MPANGO WA KAZI')}</Text>
       </View>
 
       {/* Meta block */}
       <View style={styles.metaBlock}>
         <View style={styles.metaRow}>
-          <Text style={styles.metaLabel}>School</Text>
+          <Text style={styles.metaLabel}>{t('School', 'Shule')}</Text>
           <Text style={styles.metaValue}>{scheme.schoolName || '—'}</Text>
         </View>
         <View style={styles.metaRow}>
-          <Text style={styles.metaLabel}>Grade</Text>
+          <Text style={styles.metaLabel}>{t('Grade', 'Darasa')}</Text>
           <Text style={styles.metaValue}>{scheme.gradeName}</Text>
         </View>
         <View style={styles.metaRow}>
-          <Text style={styles.metaLabel}>Subject</Text>
+          <Text style={styles.metaLabel}>{t('Subject', 'Somo')}</Text>
           <Text style={styles.metaValue}>{scheme.subjectName}</Text>
         </View>
         <View style={styles.metaRow}>
-          <Text style={styles.metaLabel}>Term</Text>
+          <Text style={styles.metaLabel}>{t('Term', 'Muhula')}</Text>
           <Text style={styles.metaValue}>
-            Term {scheme.term}, {scheme.year}
+            {t('Term', 'Muhula wa')} {scheme.term}, {scheme.year}
           </Text>
         </View>
         {scheme.totalWeeks ? (
           <View style={styles.metaRow}>
-            <Text style={styles.metaLabel}>Duration</Text>
+            <Text style={styles.metaLabel}>{t('Duration', 'Muda')}</Text>
             <Text style={styles.metaValue}>
-              {scheme.totalWeeks} weeks · {scheme.lessonsPerWeek || '—'} lessons/week
+              {scheme.totalWeeks} {t('weeks', 'wiki')} · {scheme.lessonsPerWeek || '—'} {t('lessons/week', 'masomo/wiki')}
             </Text>
           </View>
         ) : null}
@@ -129,16 +139,16 @@ export const SchemeDisplay: React.FC<SchemeDisplayProps> = ({ scheme }) => {
         <View style={styles.table}>
           {/* Header row */}
           <View style={[styles.row, styles.headerRow]}>
-            <View style={[styles.cell, styles.colWeek]}><Text style={styles.headerText}>WK</Text></View>
-            <View style={[styles.cell, styles.colLesson]}><Text style={styles.headerText}>LSN</Text></View>
-            <View style={[styles.cell, styles.colStrand]}><Text style={styles.headerText}>Strand</Text></View>
-            <View style={[styles.cell, styles.colSubstrand]}><Text style={styles.headerText}>Sub-strand</Text></View>
-            <View style={[styles.cell, styles.colSlo]}><Text style={styles.headerText}>Specific Learning Outcomes</Text></View>
-            <View style={[styles.cell, styles.colInquiry]}><Text style={styles.headerText}>Key Inquiry Question</Text></View>
-            <View style={[styles.cell, styles.colExp]}><Text style={styles.headerText}>Learning Experiences</Text></View>
-            <View style={[styles.cell, styles.colRes]}><Text style={styles.headerText}>Learning Resources</Text></View>
-            <View style={[styles.cell, styles.colAssess]}><Text style={styles.headerText}>Assessment</Text></View>
-            <View style={[styles.cell, styles.colRef, styles.lastCell]}><Text style={styles.headerText}>Ref.</Text></View>
+            <View style={[styles.cell, styles.colWeek]}><Text style={styles.headerText}>{t('WK', 'WIKI')}</Text></View>
+            <View style={[styles.cell, styles.colLesson]}><Text style={styles.headerText}>{t('LSN', 'SOM')}</Text></View>
+            <View style={[styles.cell, styles.colStrand]}><Text style={styles.headerText}>{t('Strand', 'Mada Kuu')}</Text></View>
+            <View style={[styles.cell, styles.colSubstrand]}><Text style={styles.headerText}>{t('Sub-strand', 'Mada Ndogo')}</Text></View>
+            <View style={[styles.cell, styles.colSlo]}><Text style={styles.headerText}>{t('Specific Learning Outcomes', 'Matokeo Maalum ya Ujifunzaji')}</Text></View>
+            <View style={[styles.cell, styles.colInquiry]}><Text style={styles.headerText}>{t('Key Inquiry Question', 'Swali Ibuka')}</Text></View>
+            <View style={[styles.cell, styles.colExp]}><Text style={styles.headerText}>{t('Learning Experiences', 'Shughuli za Ujifunzaji')}</Text></View>
+            <View style={[styles.cell, styles.colRes]}><Text style={styles.headerText}>{t('Learning Resources', 'Nyenzo za Kujifunza')}</Text></View>
+            <View style={[styles.cell, styles.colAssess]}><Text style={styles.headerText}>{t('Assessment', 'Tathmini')}</Text></View>
+            <View style={[styles.cell, styles.colRef, styles.lastCell]}><Text style={styles.headerText}>{t('Ref.', 'Tafak.')}</Text></View>
           </View>
 
           {/* Body rows — dedupe week / strand / sub-strand against prev row;
@@ -249,7 +259,10 @@ export const SchemeDisplay: React.FC<SchemeDisplayProps> = ({ scheme }) => {
       {/* Footer */}
       <View style={styles.footerNote}>
         <Text style={styles.footerText}>
-          Swipe table horizontally to view all columns · KICD-aligned scheme of work
+          {t(
+            'Swipe table horizontally to view all columns · KICD-aligned scheme of work',
+            'Telezesha jedwali kwa mlalo kuona safuwima zote · Mpango wa kazi uliooanishwa na KICD'
+          )}
         </Text>
       </View>
     </ScrollView>

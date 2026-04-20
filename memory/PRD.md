@@ -132,8 +132,16 @@ Mirrors the Lesson Plan architecture end-to-end:
 ## Admin Emails
 - mail2clive@gmail.com (primary), testadmin2026@gmail.com (test)
 
+## Kiswahili Localization (Feb 2026)
+Scheme of Work generator + in-app preview fully localized for Kiswahili subjects:
+- **Detection**: subject name contains "kiswahili" or "fasihi" → triggers Kiswahili mode
+- **PDF** (`scheme_generator.py`): Cover page (MPANGO WA KAZI / MUHULA WA / Darasa / Somo / Mwaka), table headers (WIKI, SOM, MADA KUU, MADA NDOGO, MATOKEO MAALUM YA UJIFUNZAJI, SWALI IBUKA, SHUGHULI ZA UJIFUNZAJI, NYENZO ZA KUJIFUNZA, TATHMINI, TAFAK), Kiswahili inquiry-question stems, Kiswahili assessment methods, Kiswahili footer ("Imetengenezwa na …")
+- **In-app preview** (`SchemeDisplay.tsx`): Cover (MPANGO WA KAZI / MUHULA WA), banner (JAMHURI YA KENYA, MTAALA WA UMILISI, MPANGO WA KAZI), meta labels (Shule/Darasa/Somo/Muhula/Muda), table headers (WIKI/SOM/Mada Kuu/Mada Ndogo/Matokeo Maalum ya Ujifunzaji/Swali Ibuka/Shughuli za Ujifunzaji/Nyenzo za Kujifunza/Tathmini/Tafak.), SLO preamble ("Kufikia mwisho wa somo, mwanafunzi aweze: …"), and Kiswahili footer
+- English-subject output is unchanged
+
 ## Next Tasks
-1. Frontend: Scheme draft workflow UI (save/preview/edit/download)
-2. Firebase Admin SDK integration
+1. AppLayout sidebar redesign across all post-login dashboard pages
+2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin` into `routes/`)
 3. Past Papers feature
-4. Refactor server.py into route modules
+4. Firebase Admin SDK integration
+5. Android APK build + Play Store signing
