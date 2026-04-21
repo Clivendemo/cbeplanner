@@ -139,6 +139,19 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         
         # Determine endpoint type for rate limit config
         path = request.url.path
+        # Skip rate limiting entirely for read-only, unauthenticated public
+        # endpoints that every visitor hits on every page load. They're cheap,
+        # cacheable, and were causing the "default" 100/min bucket to be
+        # exhausted after a handful of navigations — which then 429'd login
+        # attempts too.
+        RATE_LIMIT_EXEMPT_PREFIXES = (
+            "/api/health",
+            "/api/calendar/",
+            "/api/news",
+        )
+        if path.startswith(RATE_LIMIT_EXEMPT_PREFIXES):
+            return await call_next(request)
+
         if "/auth/" in path:
             endpoint_type = "auth"
         elif "/payments/" in path:

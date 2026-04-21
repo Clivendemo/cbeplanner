@@ -401,8 +401,8 @@ class RateLimitManager:
     
     # Rate limit configurations (requests per window)
     LIMITS = {
-        "default": {"requests": 100, "window": 60},      # 100 requests per minute
-        "auth": {"requests": 10, "window": 60},          # 10 auth attempts per minute
+        "default": {"requests": 200, "window": 60},      # 200 requests per minute — modern SPAs spike on page load
+        "auth": {"requests": 20, "window": 60},          # 20 auth attempts per minute (was 10 — caused login lockouts)
         "payment": {"requests": 5, "window": 60},        # 5 payment attempts per minute
         "admin": {"requests": 200, "window": 60},        # 200 admin requests per minute
     }

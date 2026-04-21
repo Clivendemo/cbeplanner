@@ -238,6 +238,17 @@ Each now has an in-flight lock + leading gap. Existing loading/disabled state lo
 - Touch-target `minHeight: 48` on input containers.
 - Reduced padding (24 → 20 horizontal; 40 → 32 bottom; logo margin 24 → 16) frees space on 320–375 px phones.
 
+## Rate-Limit + Dedup Fix (Feb 2026)
+**Root cause**: Public read-only endpoints (`/api/calendar/events`, `/api/calendar/terms`, `/api/news`) were charged against a single 100-req/min "default" bucket. A single landing page fires 5+ calls across NewsStrip + landing widgets + shell sidebars; after a few navigations the bucket was exhausted and the same IP's login attempts also got 429'd.
+
+**Fixes**:
+- **Backend** (`server.py` middleware): `/api/health`, `/api/calendar/*`, `/api/news` are now completely exempt from rate-limiting.
+- **Default bucket** raised 100 → 200 req/min. **Auth bucket** raised 10 → 20 req/min (stops failed-login lockouts on shared IPs/schools).
+- **Frontend dedup** (`components/useCalendarData.ts`): added an in-flight promise coalescer; 5 concurrent widget mounts share ONE network fetch. Exported `getCalendarEvents()` so NewsStrip reuses the cache instead of firing a duplicate.
+- **News module cache** (`components/AppChrome.tsx`): 5-min TTL + in-flight coalesce — `AppChrome` re-mounts on every route change no longer re-hit `/api/news`.
+
+**Verified**: 50 consecutive calendar-events calls all 200; single page load = 2× each endpoint (React effect), previously 5-6×; 13 regression tests pass in 1.92s.
+
 ## Next Tasks
 1. AppLayout sidebar redesign across all post-login dashboard pages
 2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin` into `routes/`)

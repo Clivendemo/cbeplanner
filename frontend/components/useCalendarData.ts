@@ -88,6 +88,7 @@ function formatTerm(raw: any): DisplayTerm {
 // ===== Module cache =====
 
 let _cache: { events: DisplayEvent[]; terms: DisplayTerm[]; at: number } | null = null;
+let _inFlight: Promise<{ events: DisplayEvent[]; terms: DisplayTerm[] }> | null = null;
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 min
 
 async function fetchBoth(): Promise<{ events: DisplayEvent[]; terms: DisplayTerm[] }> {
@@ -101,8 +102,34 @@ async function fetchBoth(): Promise<{ events: DisplayEvent[]; terms: DisplayTerm
   };
 }
 
+/** Internal: returns a fresh promise if any, else schedules one. Dedups
+ *  concurrent callers so 5 widgets mounting together share a single fetch. */
+function loadCalendar(): Promise<{ events: DisplayEvent[]; terms: DisplayTerm[] }> {
+  if (_cache && Date.now() - _cache.at < CACHE_TTL_MS) {
+    return Promise.resolve({ events: _cache.events, terms: _cache.terms });
+  }
+  if (_inFlight) return _inFlight;
+  _inFlight = fetchBoth().then((data) => {
+    _cache = { ...data, at: Date.now() };
+    _inFlight = null;
+    return data;
+  }).catch((e) => {
+    _inFlight = null;
+    throw e;
+  });
+  return _inFlight;
+}
+
 export function invalidateCalendarCache() {
   _cache = null;
+  _inFlight = null;
+}
+
+/** Exposed so unrelated consumers (e.g. NewsStrip) can piggy-back on the
+ *  shared cache rather than issuing a duplicate `/api/calendar/events` call. */
+export async function getCalendarEvents(): Promise<DisplayEvent[]> {
+  const { events } = await loadCalendar();
+  return events;
 }
 
 // ===== Hook =====
@@ -121,14 +148,16 @@ export function useCalendarData() {
       return;
     }
     let cancelled = false;
-    (async () => {
-      const data = await fetchBoth();
-      if (cancelled) return;
-      _cache = { ...data, at: Date.now() };
-      setEvents(data.events);
-      setTerms(data.terms);
-      setLoading(false);
-    })();
+    loadCalendar()
+      .then((data) => {
+        if (cancelled) return;
+        setEvents(data.events);
+        setTerms(data.terms);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
     return () => {
       cancelled = true;
     };

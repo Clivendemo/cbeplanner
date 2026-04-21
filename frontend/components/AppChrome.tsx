@@ -10,8 +10,32 @@
 import React, { useEffect, useState } from 'react';
 import { Platform, View, StyleSheet } from 'react-native';
 import axios from 'axios';
+import { getCalendarEvents } from './useCalendarData';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+
+// Module-level news cache so AppChrome re-mounts (which happen on every
+// route change) don't re-hit /api/news. 5-minute TTL matches the calendar.
+const NEWS_TTL_MS = 5 * 60 * 1000;
+let _newsCache: { data: { tag: string; text: string }[]; at: number } | null = null;
+let _newsInFlight: Promise<{ tag: string; text: string }[]> | null = null;
+
+async function loadNews(): Promise<{ tag: string; text: string }[]> {
+  if (_newsCache && Date.now() - _newsCache.at < NEWS_TTL_MS) return _newsCache.data;
+  if (_newsInFlight) return _newsInFlight;
+  _newsInFlight = axios.get(`${BACKEND_URL}/api/news`)
+    .then((r) => {
+      const data = (r.data?.news || []).map((n: any) => ({ tag: n.tag, text: n.text }));
+      _newsCache = { data, at: Date.now() };
+      _newsInFlight = null;
+      return data;
+    })
+    .catch(() => {
+      _newsInFlight = null;
+      return [];
+    });
+  return _newsInFlight;
+}
 
 // ===== Default news items (used if API returns none) =====
 
@@ -31,24 +55,21 @@ export const NewsStrip: React.FC = () => {
 
   useEffect(() => {
     // Merge: admin-created announcements + upcoming events from the calendar.
-    // Admins can push non-event announcements via the News tab.
-    // Falls back silently to DEFAULT_NEWS if both calls fail.
+    // Both sources are module-level cached, so mounting NewsStrip multiple
+    // times (route navigation re-mounts AppChrome) does NOT re-fire requests.
     let cancelled = false;
     (async () => {
       try {
-        const [newsRes, evRes] = await Promise.all([
-          axios.get(`${BACKEND_URL}/api/news`).catch(() => ({ data: { news: [] } })),
-          axios.get(`${BACKEND_URL}/api/calendar/events`).catch(() => ({ data: { events: [] } })),
+        const [news, events] = await Promise.all([
+          loadNews(),
+          getCalendarEvents().catch(() => []),
         ]);
         if (cancelled) return;
-        const news = (newsRes.data?.news || []).map((n: any) => ({
-          tag: n.tag, text: n.text,
-        }));
-        const events = (evRes.data?.events || []).slice(0, 6).map((e: any) => ({
+        const evItems = events.slice(0, 6).map((e: any) => ({
           tag: e.category === 'exam' ? 'Exam' : e.category === 'cocurricular' ? 'Event' : 'Academic',
           text: `${e.title} · ${e.date}`,
         }));
-        const combined = [...news, ...events];
+        const combined = [...news, ...evItems];
         setItems(combined.length > 0 ? combined : DEFAULT_NEWS);
       } catch {
         /* keep defaults */
