@@ -139,6 +139,36 @@ def format_slo_text(lesson_plan: Dict[str, Any]) -> str:
     )
 
 
+def _normalise_outcome(text: str) -> str:
+    """Lowercase + collapse whitespace — used to detect duplicate SLO text."""
+    return ' '.join(str(text or '').lower().split())
+
+
+def dedupe_lesson_specific_outcomes(
+    outcomes: List[str], primary_slo: str
+) -> List[str]:
+    """Remove duplicates within the list and any entry that repeats the
+    main SPECIFIC LEARNING OUTCOME shown above.
+
+    The slot schema commonly stores the *same* text in both `outcome` and
+    `description`, and the outcome itself is often a restatement of the
+    parent SLO — this was rendering as triplicate text in the PDF.
+    """
+    primary_norm = _normalise_outcome(primary_slo)
+    seen: set = {primary_norm} if primary_norm and primary_norm != 'n/a' else set()
+    cleaned: List[str] = []
+    for item in outcomes or []:
+        norm = _normalise_outcome(item)
+        if not norm or norm in seen:
+            continue
+        # Also drop if it merely prefixes or contains the primary SLO text.
+        if primary_norm and (primary_norm in norm or norm in primary_norm):
+            continue
+        seen.add(norm)
+        cleaned.append(str(item).strip())
+    return cleaned
+
+
 def _bullet_list(items: List[str], style) -> List[Paragraph]:
     """Return a list of Paragraph elements, each prefixed with a bullet.
 
@@ -230,10 +260,16 @@ def generate_lesson_plan_pdf(lesson_plan: Dict[str, Any]) -> bytes:
 
     # ── Specific Learning Outcome ─────────────────────────────────────────
     elements.append(Paragraph("SPECIFIC LEARNING OUTCOME", S['SectionHeader']))
-    elements.append(Paragraph(format_slo_text(lesson_plan), S['Body']))
+    slo_text = format_slo_text(lesson_plan)
+    elements.append(Paragraph(slo_text, S['Body']))
 
     # ── Lesson-Specific Outcomes (multi-lesson architecture) ──────────────
-    lesson_specific_outcomes: list = lesson_plan.get('lessonSpecificOutcomes') or []
+    # Dedupe against the main SLO shown above AND within the list itself so
+    # the slot's outcome + description (which are frequently identical, or
+    # paraphrase the parent SLO) don't render as triplicate text.
+    lesson_specific_outcomes = dedupe_lesson_specific_outcomes(
+        lesson_plan.get('lessonSpecificOutcomes') or [], slo_text
+    )
     if lesson_specific_outcomes:
         elements.append(Paragraph("Lesson-Specific Outcomes:", S['AccentLabel']))
         elements.extend(_bullet_list(lesson_specific_outcomes, S['ListItem']))

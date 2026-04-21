@@ -265,6 +265,18 @@ Each now has an in-flight lock + leading gap. Existing loading/disabled state lo
 - 4 new regression tests in `tests/test_scheme_expiry.py` (all pass in <1s): list-filters-expired, detail-410, download-410 (no wallet charge), live-scheme-still-200.
 - Full test suite: **17 passed in 2.84s**.
 
+## Lesson Plan PDF: Dedupe Triplicate SLO (Feb 2026)
+The SPECIFIC LEARNING OUTCOME section was visually repeating the same text three times because:
+1. `sloName` renders under "SPECIFIC LEARNING OUTCOME"
+2. Slot schema often stores the same text in both `outcome` AND `description`
+3. Slot outcome is frequently a paraphrase/containment of the parent SLO
+
+**Fix** (`pdf_generator.py`):
+- Added pure helper `dedupe_lesson_specific_outcomes(outcomes, primary_slo)` — lowercase + whitespace-normalised compare; drops exact duplicates, primary-SLO matches, and prefix/containment overlaps.
+- Main render path now filters the `lessonSpecificOutcomes` list through the dedupe before emitting bullets.
+
+**Regression**: 7-test suite in `tests/test_lesson_plan_slo_dedupe.py` covering exact duplicates, primary matches, case/whitespace insensitivity, prefix/containment, blank-entry filtering, and N/A safety. **Full backend suite: 24 passed in 2.91s.**
+
 ## Next Tasks
 1. AppLayout sidebar redesign across all post-login dashboard pages
 2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin` into `routes/`)
