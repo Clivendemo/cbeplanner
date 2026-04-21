@@ -149,7 +149,7 @@ export default function AdminProfile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB'
+    backgroundColor: 'transparent'
   },
   content: {
     padding: 16

@@ -47,16 +47,23 @@ export default function Root({ children }: PropsWithChildren) {
               }
               body {
                 overflow-x: hidden;
-                /* World-class premium background: soft purple → white → lavender
-                   with a faint radial glow that shifts slowly for the "gleam" feel. */
-                background-color: #F6F4FE;
+                /* World-class premium background: a layered purple/lavender wash
+                   with a large ambient glow and a slow-moving gleam that sweeps
+                   across the viewport. Richer than a flat gradient, but still
+                   restrained so content stays the hero. */
+                background-color: #EFEAFC;
                 background-image:
-                  radial-gradient(1200px 800px at 10% 5%, #EDE9FE 0%, transparent 55%),
-                  radial-gradient(1200px 800px at 90% 95%, #F5F3FF 0%, transparent 55%),
-                  linear-gradient(135deg, #F8F7FF 0%, #FFFFFF 45%, #F3EFFE 100%);
+                  /* Soft lavender glow, top-left */
+                  radial-gradient(1200px 820px at 8% 0%, #DDD3FB 0%, transparent 55%),
+                  /* Cool indigo glow, top-right */
+                  radial-gradient(1000px 700px at 100% 12%, #E7DFFD 0%, transparent 60%),
+                  /* Warm magenta-purple haze, bottom-right */
+                  radial-gradient(1100px 760px at 92% 100%, #EADDFC 0%, transparent 55%),
+                  /* Base diagonal gradient */
+                  linear-gradient(135deg, #F5F1FF 0%, #FBF8FF 50%, #EFE7FE 100%);
                 background-attachment: fixed;
               }
-              /* Slow, premium shimmer glow layered behind all content */
+              /* ===== Premium shimmer layer behind everything ===== */
               body::before {
                 content: '';
                 position: fixed;
@@ -64,15 +71,48 @@ export default function Root({ children }: PropsWithChildren) {
                 pointer-events: none;
                 z-index: 0;
                 background:
-                  radial-gradient(700px 400px at var(--glow-x, 20%) var(--glow-y, 30%),
-                    rgba(167, 139, 250, 0.18) 0%,
-                    rgba(167, 139, 250, 0.00) 60%);
-                animation: cbepl-glow-drift 22s ease-in-out infinite alternate;
+                  /* Soft drifting lavender orb */
+                  radial-gradient(780px 460px at 18% 28%,
+                    rgba(167, 139, 250, 0.22) 0%,
+                    rgba(167, 139, 250, 0.00) 65%),
+                  /* Cool amethyst counter-orb on the opposite side */
+                  radial-gradient(640px 420px at 82% 78%,
+                    rgba(139, 92, 246, 0.16) 0%,
+                    rgba(139, 92, 246, 0.00) 70%);
+                animation: cbepl-glow-drift 28s ease-in-out infinite alternate;
+                filter: blur(2px);
+              }
+              /* ===== Diagonal gleam streak — subtle, ~24s cycle ===== */
+              body::after {
+                content: '';
+                position: fixed;
+                top: -20%; left: -40%; right: -40%; bottom: -20%;
+                pointer-events: none;
+                z-index: 0;
+                background: linear-gradient(
+                  110deg,
+                  rgba(255,255,255,0) 42%,
+                  rgba(255,255,255,0.55) 50%,
+                  rgba(221, 214, 254, 0.35) 54%,
+                  rgba(255,255,255,0) 62%
+                );
+                transform: translateX(-60%) rotate(4deg);
+                animation: cbepl-gleam-sweep 24s ease-in-out infinite;
+                mix-blend-mode: screen;
+                opacity: 0.55;
               }
               @keyframes cbepl-glow-drift {
-                0%   { background-position: 10% 15%; opacity: 0.85; }
-                50%  { background-position: 80% 75%; opacity: 1; }
-                100% { background-position: 15% 85%; opacity: 0.85; }
+                0%   { transform: translate3d(-3%, -2%, 0) scale(1.00); opacity: 0.90; }
+                50%  { transform: translate3d(4%,  3%, 0) scale(1.06); opacity: 1.00; }
+                100% { transform: translate3d(-2%, 4%, 0) scale(1.02); opacity: 0.92; }
+              }
+              @keyframes cbepl-gleam-sweep {
+                0%   { transform: translateX(-60%) rotate(4deg); }
+                55%  { transform: translateX(-60%) rotate(4deg); }
+                100% { transform: translateX(60%)  rotate(4deg); }
+              }
+              @media (prefers-reduced-motion: reduce) {
+                body::before, body::after { animation: none !important; }
               }
               /* Keep the actual app tree above the glow layer */
               #root { position: relative; z-index: 1; }

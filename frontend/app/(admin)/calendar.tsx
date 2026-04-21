@@ -601,7 +601,7 @@ function blankTerm(order: number): TermDoc {
 // ===== Styles =====
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  container: { flex: 1, backgroundColor: 'transparent' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   muted: { color: '#6B7280', fontSize: 13, marginTop: 8 },
 

@@ -45,7 +45,7 @@ export default function RevisionPapers() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB'
+    backgroundColor: 'transparent'
   },
   content: {
     flex: 1,

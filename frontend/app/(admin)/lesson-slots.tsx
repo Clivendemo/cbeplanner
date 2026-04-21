@@ -512,7 +512,7 @@ export default function LessonSlotsScreen() {
 // ── Styles ──
 
 const S = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  container: { flex: 1, backgroundColor: 'transparent' },
   content: { padding: 16 },
   title: { fontSize: 22, fontWeight: '700', color: '#111827', marginBottom: 4 },
   subtitle: { fontSize: 13, color: '#6B7280', marginBottom: 16 },

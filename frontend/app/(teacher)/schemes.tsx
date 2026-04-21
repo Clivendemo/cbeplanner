@@ -965,7 +965,7 @@ export default function SchemesOfWork() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB'
+    backgroundColor: 'transparent'
   },
   stepIndicator: {
     flexDirection: 'row',
