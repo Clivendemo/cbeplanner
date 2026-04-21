@@ -51,7 +51,14 @@ export default function SchemeDetail() {
         setError('Scheme not found.');
       }
     } catch (err: any) {
-      if (err.response?.status === 404) setError('Scheme not found.');
+      if (err.response?.status === 410) {
+        // Scheme auto-expired (24h). Surface a clean message so the UI
+        // shows the expired state instead of a generic error.
+        setError(
+          err.response?.data?.detail ||
+          'This scheme has expired. Schemes are automatically removed 24 hours after generation.'
+        );
+      } else if (err.response?.status === 404) setError('Scheme not found.');
       else setError('Failed to load scheme. Please try again.');
     } finally {
       setLoading(false);
@@ -192,7 +199,14 @@ export default function SchemeDetail() {
       // Refresh to reflect isPaid/downloadCount
       loadScheme();
     } catch (err: any) {
-      if (err.response?.status === 402) {
+      if (err.response?.status === 410) {
+        Alert.alert(
+          'Scheme Expired',
+          err.response?.data?.detail ||
+          'This scheme has expired. Schemes are automatically removed 24 hours after generation. Please generate a new one.',
+          [{ text: 'Generate New', onPress: () => router.replace('/(teacher)/schemes' as any) }]
+        );
+      } else if (err.response?.status === 402) {
         // Edge case: balance race condition; backend did not charge
         Alert.alert(
           'Balance just changed',

@@ -249,6 +249,22 @@ Each now has an in-flight lock + leading gap. Existing loading/disabled state lo
 
 **Verified**: 50 consecutive calendar-events calls all 200; single page load = 2× each endpoint (React effect), previously 5-6×; 13 regression tests pass in 1.92s.
 
+## Scheme 24h Auto-Expiry (Feb 2026)
+
+**Backend**:
+- `routes/schemes.py`: new `SCHEME_TTL_HOURS = 24`. On scheme creation, set `expiresAt = createdAt + 24h` on the Mongo doc.
+- **MongoDB TTL index** on `schemes.expiresAt` (via `_create_indexes` in `server.py`) — physical deletion happens automatically ~60s after expiry.
+- **Defensive filtering** on GET `/api/schemes` so the ~60s TTL sweep lag never leaks stale rows.
+- **410 Gone** on `GET /api/schemes/{id}` and `POST /api/schemes/{id}/download` when `expiresAt < now` — download check runs **before** any wallet charge.
+- Backwards-compat: docs without `expiresAt` are never deleted or blocked (existing schemes grandfathered in).
+
+**Frontend**:
+- `scheme-detail.tsx` handles 410 on load (shows "This scheme has expired" message) and on download (alert with "Generate New" button that routes back to the schemes page).
+
+**Verified**:
+- 4 new regression tests in `tests/test_scheme_expiry.py` (all pass in <1s): list-filters-expired, detail-410, download-410 (no wallet charge), live-scheme-still-200.
+- Full test suite: **17 passed in 2.84s**.
+
 ## Next Tasks
 1. AppLayout sidebar redesign across all post-login dashboard pages
 2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin` into `routes/`)

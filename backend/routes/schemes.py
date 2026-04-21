@@ -9,7 +9,7 @@ Handles:
 - Paid PDF download (atomic KES 15 deduction, auto-refund on failure)
 - Supporting reads: lessons-per-week config and topic list
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO
 from typing import Any, Dict, List, Optional
 import uuid as uuid_lib
@@ -29,6 +29,12 @@ from scheme_generator import (
     derive_inquiry_from_slo, format_slo_with_prefix,
 )
 from slot_service import format_resource_display
+
+
+# Generated schemes expire 24 hours after creation. MongoDB TTL index on
+# `expiresAt` handles physical deletion; endpoints also defensively filter
+# expired rows so the TTL sweep lag window never leaks stale data to users.
+SCHEME_TTL_HOURS = 24
 
 
 # ==================== SCHEME HELPER FUNCTIONS ====================
@@ -147,7 +153,16 @@ class SchemeGenerateRequest(BaseModel):
 
 @api_router.get("/schemes")
 async def get_schemes(user: dict = Depends(verify_token)):
-    schemes = await db.schemes.find({"teacherId": user["id"]}).sort("createdAt", -1).to_list(100)
+    # Defensive filter on expiresAt — TTL sweep runs ~every 60s so it's possible
+    # a just-expired row would otherwise linger in the list.
+    now = datetime.utcnow()
+    schemes = await db.schemes.find({
+        "teacherId": user["id"],
+        "$or": [
+            {"expiresAt": {"$exists": False}},
+            {"expiresAt": {"$gt": now}},
+        ],
+    }).sort("createdAt", -1).to_list(100)
     return {"success": True, "schemes": [serialize_doc(s) for s in schemes]}
 
 
@@ -212,6 +227,14 @@ async def get_scheme(scheme_id: str, user: dict = Depends(verify_token)):
     scheme = await db.schemes.find_one({"_id": oid, "teacherId": user["id"]})
     if not scheme:
         raise HTTPException(status_code=404, detail="Scheme not found")
+    # 24h expiry window — surface a 410 Gone with a clean message rather than
+    # a generic 404 so the UI can show an "expired" state if it wants to.
+    expires_at = scheme.get("expiresAt")
+    if expires_at and expires_at < datetime.utcnow():
+        raise HTTPException(
+            status_code=410,
+            detail="This scheme has expired. Schemes are automatically removed 24 hours after generation."
+        )
     return {"success": True, "scheme": serialize_doc(scheme)}
 
 
@@ -511,9 +534,13 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
         scheme_record["downloadCount"] = 0
         scheme_record["lastDownloadedAt"] = None
         scheme_record["updatedAt"] = datetime.utcnow()
+        # Schemes auto-expire 24h after generation. The TTL index on `expiresAt`
+        # (see _create_indexes in server.py) will physically delete the row.
+        scheme_record["expiresAt"] = scheme_record["createdAt"] + timedelta(hours=SCHEME_TTL_HOURS)
         insert_result = await db.schemes.insert_one(scheme_record)
         scheme_id = str(insert_result.inserted_id)
         scheme_data["id"] = scheme_id
+        scheme_data["expiresAt"] = scheme_record["expiresAt"].isoformat()
 
         return {
             "success": True,
@@ -556,6 +583,13 @@ async def download_owned_scheme(scheme_id: str, user: dict = Depends(verify_toke
     scheme = await db.schemes.find_one({"_id": oid, "teacherId": user["id"]})
     if not scheme:
         raise HTTPException(status_code=404, detail="Scheme not found")
+    # Block download on expired schemes BEFORE any wallet charge.
+    expires_at = scheme.get("expiresAt")
+    if expires_at and expires_at < datetime.utcnow():
+        raise HTTPException(
+            status_code=410,
+            detail="This scheme has expired. Schemes are automatically removed 24 hours after generation."
+        )
 
     firebase_uid = user.get("firebaseUid")
     if not firebase_uid:

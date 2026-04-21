@@ -4438,6 +4438,13 @@ async def _create_indexes():
         await db.lesson_plans.create_index("expiresAt", expireAfterSeconds=0)
         await db.lesson_plans.create_index("teacherId")
 
+        # Schemes - TTL index: auto-delete 24h after creation.
+        # Uses `expiresAt` (set to createdAt + 24h at insert) so we never have to
+        # migrate existing documents; rows without the field are never deleted.
+        await db.schemes.create_index("expiresAt", expireAfterSeconds=0)
+        await db.schemes.create_index("teacherId")
+        await db.schemes.create_index("createdAt")
+
         # Substrand lessons index (compound unique)
         await db.substrand_lessons.create_index(
             [("substrand_id", 1), ("lesson_number", 1)], unique=True
