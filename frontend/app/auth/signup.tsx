@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { LandingLayout, FeatureTiles } from '../../components/LandingLayout';
+import { useDebouncedAction } from '../../hooks/useDebouncedAction';
 
 export default function SignUp() {
   const [firstName, setFirstName] = useState('');
@@ -32,7 +33,7 @@ export default function SignUp() {
   const passwordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
 
-  const handleSignUp = async () => {
+  const handleSignUp = useDebouncedAction(async () => {
     if (!firstName || !lastName || !schoolName || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
@@ -60,7 +61,7 @@ export default function SignUp() {
       Alert.alert('Sign Up Failed', error.message);
       setLoading(false);
     }
-  };
+  });
 
   return (
     <LandingLayout>

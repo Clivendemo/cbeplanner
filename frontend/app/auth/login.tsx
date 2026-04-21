@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { LandingLayout, FeatureTiles } from '../../components/LandingLayout';
+import { useDebouncedAction } from '../../hooks/useDebouncedAction';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -30,7 +31,7 @@ export default function Login() {
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
 
-  const handleLogin = async () => {
+  const handleLogin = useDebouncedAction(async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
@@ -46,7 +47,7 @@ export default function Login() {
       Alert.alert('Login Failed', error.message || 'An error occurred');
       setLoading(false);
     }
-  };
+  });
 
   const handleForgotPassword = () => {
     setResetEmail(email);

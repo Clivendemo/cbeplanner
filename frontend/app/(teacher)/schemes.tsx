@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import { useDebouncedAction } from '../../hooks/useDebouncedAction';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -330,7 +331,7 @@ export default function SchemesOfWork() {
   };
 
   // Generate scheme — persists and redirects to My Schemes
-  const generateScheme = async () => {
+  const generateScheme = useDebouncedAction(async () => {
     setGenerating(true);
     try {
       const headers = await getHeaders();
@@ -376,7 +377,7 @@ export default function SchemesOfWork() {
     } finally {
       setGenerating(false);
     }
-  };
+  }, { leadingGap: 2000 });
 
   
   // Refresh wallet balance after download

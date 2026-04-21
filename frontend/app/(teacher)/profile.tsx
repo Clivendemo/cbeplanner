@@ -20,6 +20,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { getErrorMessage, isRateLimitError } from '../../utils/errorHandler';
+import { useDebouncedAction } from '../../hooks/useDebouncedAction';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.legitlab.cbeplanner';
@@ -93,7 +94,7 @@ export default function Profile() {
   };
 
   // Handle M-Pesa top-up
-  const handleTopUp = async () => {
+  const handleTopUp = useDebouncedAction(async () => {
     if (!phoneNumber || phoneNumber.length < 9) {
       Alert.alert('Error', 'Please enter a valid phone number');
       return;
@@ -146,7 +147,7 @@ export default function Profile() {
     } finally {
       setTopUpLoading(false);
     }
-  };
+  }, { leadingGap: 2000 });
 
   const checkPaymentStatus = async (checkoutId: string) => {
     setCheckingStatus(true);

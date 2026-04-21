@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { SchemeDisplay } from '../../components/SchemeDisplay';
+import { useDebouncedAction } from '../../hooks/useDebouncedAction';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const SCHEME_DOWNLOAD_COST = 15;
@@ -118,7 +119,7 @@ export default function SchemeDetail() {
     );
   };
 
-  const handleDownload = async () => {
+  const handleDownload = useDebouncedAction(async () => {
     if (!id || !firebaseUser) return;
 
     const balance = user?.walletBalance || 0;
@@ -216,7 +217,7 @@ export default function SchemeDetail() {
     } finally {
       setDownloading(false);
     }
-  };
+  }, { leadingGap: 1500 });
 
   if (loading) {
     return (

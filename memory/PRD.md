@@ -216,6 +216,15 @@ All **additive, opt-in** — zero changes to existing code paths, no regressions
 - **`frontend/components/ErrorBoundary.tsx`**: top-level React error boundary with friendly fallback + "Try again" reset. **Wired into `app/_layout.tsx`** — any render-phase crash now shows a branded fallback instead of a white screen.
 - **`backend/tests/test_calendar_and_news.py`**: 13 regression tests (all pass in 2.16s). Shape-stability, sort-order, active-filter, admin-auth enforcement, and latency budget checks on `/api/calendar/events`, `/api/calendar/terms`, `/api/news` and their admin counterparts.
 
+## Critical Buttons Debounced (Feb 2026)
+`useDebouncedAction` applied to 5 production-critical actions:
+- **Login** (`app/auth/login.tsx`) — 800ms
+- **Sign Up** (`app/auth/signup.tsx`) — 800ms
+- **Generate Scheme** (`app/(teacher)/schemes.tsx`) — 2000ms
+- **Download Scheme** (`app/(teacher)/scheme-detail.tsx`) — 1500ms
+- **M-Pesa Top-Up** (`app/(teacher)/profile.tsx`) — 2000ms
+Each now has an in-flight lock + leading gap. Existing loading/disabled state logic preserved 1:1 — no UX regression, just immune to double-taps and duplicate charges.
+
 ## Next Tasks
 1. AppLayout sidebar redesign across all post-login dashboard pages
 2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin` into `routes/`)
