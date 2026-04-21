@@ -493,10 +493,14 @@ class RequestLogger:
 # PRODUCTION CORS ORIGINS
 # ===========================================
 PRODUCTION_CORS_ORIGINS = [
+    # Primary production domain
+    "https://cbeplanner.com",
+    "https://www.cbeplanner.com",
+    # Legacy Vercel preview domain (kept during transition; safe to remove later)
     "https://cbeplanner.vercel.app",
     "https://www.cbeplanner.vercel.app",
+    # Backend host (self)
     "https://cbeplanner.onrender.com",
-    # Add your custom domain here when you have one
 ]
 
 DEVELOPMENT_CORS_ORIGINS = [
