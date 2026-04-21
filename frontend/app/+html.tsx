@@ -24,6 +24,14 @@ export default function Root({ children }: PropsWithChildren) {
           crossOrigin="anonymous"
         />
 
+        {/* Premium display font for the news marquee */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600;1,700&display=swap"
+          rel="stylesheet"
+        />
+
         <ScrollViewStyleReset />
 
         {/* Ensure the app fills the full browser viewport */}
@@ -73,8 +81,14 @@ export default function Root({ children }: PropsWithChildren) {
               .cbepl-news-strip {
                 position: relative;
                 overflow: hidden;
+                padding: 10px 0;
                 background:
-                  linear-gradient(90deg, #4C1D95 0%, #6D28D9 50%, #8B5CF6 100%);
+                  linear-gradient(90deg, #2E1065 0%, #5B21B6 35%, #7C3AED 70%, #A78BFA 100%);
+                border-bottom: 1px solid rgba(255,255,255,0.08);
+                box-shadow:
+                  inset 0 1px 0 rgba(255,255,255,0.15),
+                  inset 0 -1px 0 rgba(0,0,0,0.25),
+                  0 2px 6px rgba(76, 29, 149, 0.35);
               }
               .cbepl-news-strip::after {
                 /* "Lazy gleam": soft diagonal streak sweeping across the strip. */
@@ -84,7 +98,7 @@ export default function Root({ children }: PropsWithChildren) {
                 background: linear-gradient(
                   110deg,
                   rgba(255,255,255,0) 20%,
-                  rgba(255,255,255,0.25) 50%,
+                  rgba(255,255,255,0.28) 50%,
                   rgba(255,255,255,0) 80%
                 );
                 transform: translateX(-100%);
@@ -100,7 +114,8 @@ export default function Root({ children }: PropsWithChildren) {
                 display: inline-flex;
                 white-space: nowrap;
                 padding-left: 100%;
-                animation: cbepl-scroll var(--scroll-duration, 55s) linear infinite;
+                /* Slowed down (~20% slower) so users can comfortably read */
+                animation: cbepl-scroll var(--scroll-duration, 70s) linear infinite;
               }
               .cbepl-news-strip:hover .cbepl-news-track {
                 animation-play-state: paused;
@@ -112,26 +127,45 @@ export default function Root({ children }: PropsWithChildren) {
               .cbepl-news-item {
                 display: inline-flex;
                 align-items: center;
-                gap: 10px;
-                padding: 0 28px;
-                font-size: 13px;
-                font-weight: 500;
-                color: #F3E8FF;
-                letter-spacing: 0.2px;
+                gap: 12px;
+                padding: 0 36px;
+                /* Beautiful serif-display font for the ticker — premium feel */
+                font-family: 'Playfair Display', 'Cormorant Garamond', 'Merriweather', Georgia, serif;
+                font-size: 17px;
+                font-weight: 600;
+                color: #F5EFFF;
+                letter-spacing: 0.3px;
+                /* 3D raised effect via stacked text shadows */
+                text-shadow:
+                  0 1px 0 rgba(255,255,255,0.18),
+                  0 2px 0 rgba(76, 29, 149, 0.55),
+                  0 3px 0 rgba(46, 16, 101, 0.55),
+                  0 4px 10px rgba(0, 0, 0, 0.45),
+                  0 0 18px rgba(167, 139, 250, 0.5);
               }
               .cbepl-news-item strong {
                 color: #FFFFFF;
                 font-weight: 700;
+                font-style: italic;
                 margin-right: 6px;
+                text-shadow:
+                  0 1px 0 rgba(255,255,255,0.25),
+                  0 2px 0 rgba(76, 29, 149, 0.6),
+                  0 3px 0 rgba(46, 16, 101, 0.6),
+                  0 4px 10px rgba(0, 0, 0, 0.5);
               }
               .cbepl-news-bullet {
-                width: 5px; height: 5px; border-radius: 50%;
-                background: rgba(255,255,255,0.55);
+                width: 7px; height: 7px; border-radius: 50%;
+                background: rgba(255,255,255,0.85);
                 display: inline-block;
+                box-shadow:
+                  0 0 8px rgba(255,255,255,0.8),
+                  0 0 16px rgba(167, 139, 250, 0.7);
               }
               @media (max-width: 640px) {
-                .cbepl-news-item { font-size: 12px; padding: 0 20px; }
-                .cbepl-news-track { animation-duration: 40s; }
+                .cbepl-news-strip { padding: 8px 0; }
+                .cbepl-news-item { font-size: 15px; padding: 0 24px; gap: 10px; }
+                .cbepl-news-track { animation-duration: 50s; }
               }
 
               /* ===== Global footer ===== */

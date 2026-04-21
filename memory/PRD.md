@@ -196,6 +196,11 @@ Post-login teacher pages now render inside a centered 1330px shell:
 - **Font harmonization**: Sidebar widget titles 13 → 15, body 12 → 13, subtitle 10 → 12, legend 9 → 11, event dates/titles 8-11 → 10-13, term calendar headings/labels 10-12 → 11-13. AppSidebars (post-login) title 11 → 13, body 10 → 12. Everything now sits in the same 11-15px scale range as the main app content.
 - **Removed the in-card ad below the login card** — the sidebars already carry the ad slots.
 
+## Premium Marquee Typography (Feb 2026)
+- **Font**: Added Google Fonts `Playfair Display` (weights 500/600/700 + italic) preloaded via `+html.tsx`. News marquee uses it with italic category labels for editorial feel.
+- **Thicker strip + 3D**: Padding 10px top/bottom (mobile 8px), size 17px (mobile 15px), richer 4-stop purple gradient (`#2E1065 → #5B21B6 → #7C3AED → #A78BFA`), stacked text-shadows (3-layer drop + outer glow), inset highlight/shadow on the strip itself, glowing bullet dots.
+- **Slower speed**: Desktop 55s → 70s, mobile 40s → 50s. Hover-to-pause still active.
+
 ## Next Tasks
 1. AppLayout sidebar redesign across all post-login dashboard pages
 2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin` into `routes/`)
