@@ -16,6 +16,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { LandingLayout, FeatureTiles } from '../../components/LandingLayout';
 import { useDebouncedAction } from '../../hooks/useDebouncedAction';
+import { PasswordInput } from '../../components/PasswordInput';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -115,20 +116,20 @@ export default function Login() {
 
           <View style={styles.inputContainer}>
             <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-            <TextInput
-              ref={passwordRef}
-              style={styles.input}
+            <PasswordInput
+              ref={passwordRef as any}
+              inputStyle={styles.input}
               placeholder="Password"
               value={password}
               onChangeText={setPassword}
-              secureTextEntry
               autoCapitalize="none"
               autoCorrect={false}
               placeholderTextColor="#9CA3AF"
               returnKeyType="done"
               onSubmitEditing={handleLogin}
               testID="login-password-input"
-              data-testid="login-password-input"
+              testIDPrefix="login-password"
+              containerStyle={{ flex: 1 }}
             />
           </View>
 
