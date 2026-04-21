@@ -229,6 +229,15 @@ Each now has an in-flight lock + leading gap. Existing loading/disabled state lo
 - **M-Pesa Top-Up modal** (`app/(teacher)/profile.tsx`): Added `maxHeight: '92%'` + `'92vh'` on `modalContent` so the modal never exceeds the viewport. Removed the inner ScrollView's rigid `maxHeight: '80%'` (replaced with `flexShrink: 1`). On shorter laptops the phone-number field is now visible without zooming.
 - **Reset password** (`app/auth/login.tsx`): Modal closes synchronously right after Firebase `sendPasswordResetEmail` resolves, before the success Alert. Previously on react-native-web the Alert's OK `onPress` callback sometimes failed to fire, leaving the modal stuck open. Reset email still works end-to-end.
 
+## M-Pesa Top-Up Modal — Mobile Responsive (Feb 2026)
+- `modalOverlay`: added `alignItems: 'center'` so desktop shows a centered sheet; `modalContent`: `width: '100%'`, `maxWidth: 520`, `alignSelf: 'stretch'` — edge-to-edge bottom sheet on phones, readable width on desktop.
+- `maxHeight: '92%' / '92vh'` keeps every input visible without zooming on short phones.
+- Critical mobile flex fix: `minWidth: 0` on `phoneInput` + `amountInput` so tall numeric input values don't push the container wider than the screen.
+- `fontSize: 16` on inputs prevents iOS Safari auto-zoom on focus.
+- Quick-amount buttons: `flexWrap: 'wrap'` + `gap: 8` + `flexBasis: 70` — gracefully wraps to 2×2 on viewports < 320 px instead of overflowing.
+- Touch-target `minHeight: 48` on input containers.
+- Reduced padding (24 → 20 horizontal; 40 → 32 bottom; logo margin 24 → 16) frees space on 320–375 px phones.
+
 ## Next Tasks
 1. AppLayout sidebar redesign across all post-login dashboard pages
 2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin` into `routes/`)

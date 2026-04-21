@@ -1133,17 +1133,22 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end'
+    justifyContent: 'flex-end',
+    alignItems: 'center', // Centers the modal horizontally on desktop; on mobile the modal is full-width so this is a no-op.
   },
   modalContent: {
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    padding: 24,
-    paddingBottom: 40,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 32,
+    width: '100%',
+    maxWidth: 520, // On desktop keeps the sheet readable instead of stretching the full viewport.
+    alignSelf: 'stretch',
     // Never exceed the viewport — without this, tall modals overflow upward
     // and clip the first input (phone number) off-screen until the user
-    // zooms out.
+    // zooms out. Especially important on short phones (iPhone SE etc).
     maxHeight: '92%',
     // @ts-ignore web-specific — viewport-relative cap on tall desktop shells
     maxHeight: '92vh' as any,
@@ -1161,7 +1166,7 @@ const styles = StyleSheet.create({
   },
   mpesaLogoContainer: {
     alignItems: 'center',
-    marginBottom: 24
+    marginBottom: 16,
   },
   mpesaLogo: {
     width: 64,
@@ -1178,13 +1183,13 @@ const styles = StyleSheet.create({
     color: '#00A859'
   },
   inputGroup: {
-    marginBottom: 16
+    marginBottom: 14,
   },
   inputLabel: {
     fontSize: 14,
     fontWeight: '500',
     color: '#374151',
-    marginBottom: 8
+    marginBottom: 6,
   },
   phoneInputContainer: {
     flexDirection: 'row',
@@ -1192,27 +1197,29 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     borderRadius: 8,
-    backgroundColor: '#F9FAFB'
+    backgroundColor: '#F9FAFB',
+    minHeight: 48, // Ensures the field is visibly tap-friendly on mobile.
   },
   countryCode: {
-    paddingHorizontal: 12,
-    paddingVertical: 14,
-    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+    fontSize: 15,
     color: '#374151',
     borderRightWidth: 1,
-    borderRightColor: '#E5E7EB'
+    borderRightColor: '#E5E7EB',
   },
   phoneInput: {
     flex: 1,
+    minWidth: 0, // Prevents flex overflow on small screens (critical mobile fix).
     paddingHorizontal: 12,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: '#111827'
+    paddingVertical: 12,
+    fontSize: 16, // Keeps >= 16 to prevent iOS Safari auto-zoom on focus.
+    color: '#111827',
   },
   inputHint: {
     fontSize: 12,
     color: '#9CA3AF',
-    marginTop: 4
+    marginTop: 4,
   },
   amountInputContainer: {
     flexDirection: 'row',
@@ -1220,59 +1227,62 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     borderRadius: 8,
-    backgroundColor: '#F9FAFB'
+    backgroundColor: '#F9FAFB',
+    minHeight: 48,
   },
   currencyLabel: {
-    paddingHorizontal: 12,
-    paddingVertical: 14,
-    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+    fontSize: 15,
     fontWeight: '600',
     color: '#374151',
     borderRightWidth: 1,
-    borderRightColor: '#E5E7EB'
+    borderRightColor: '#E5E7EB',
   },
   amountInput: {
     flex: 1,
+    minWidth: 0,
     paddingHorizontal: 12,
-    paddingVertical: 14,
-    fontSize: 20,
+    paddingVertical: 12,
+    fontSize: 18,
     fontWeight: '600',
-    color: '#111827'
+    color: '#111827',
   },
   quickAmounts: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20
+    flexWrap: 'wrap', // Wraps to a second row on very narrow screens instead of clipping.
+    gap: 8,
+    marginBottom: 16,
   },
   quickAmountBtn: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: 70, // Lets 4 buttons fit on phones but wraps gracefully below ~280px.
     paddingVertical: 10,
-    marginHorizontal: 4,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   quickAmountBtnActive: {
     borderColor: '#00A859',
-    backgroundColor: '#E8F5E9'
+    backgroundColor: '#E8F5E9',
   },
   quickAmountText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6B7280'
+    color: '#6B7280',
   },
   quickAmountTextActive: {
-    color: '#00A859'
+    color: '#00A859',
   },
   payButton: {
     backgroundColor: '#00A859',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderRadius: 12,
-    marginBottom: 12
+    marginBottom: 10,
   },
   payButtonDisabled: {
     backgroundColor: '#9CA3AF'
