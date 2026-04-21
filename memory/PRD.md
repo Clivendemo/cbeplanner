@@ -174,6 +174,14 @@ Post-login teacher pages now render inside a centered 1330px shell:
 - **Teacher shell** (`(teacher)/_layout.tsx`): Below the 1180px breakpoint, the Stack now renders at full viewport height in an outer ScrollView with the `AppLeftSidebar` + `AppRightSidebar` widgets stacked below. Users can scroll past the main app content to see the sidebars on tablets/phones.
 - Desktop layouts remain centered and untouched.
 
+## Premium Chrome: Background + News Strip + Footer (Feb 2026)
+- **Premium background** (in `+html.tsx` body CSS): soft purple → white → lavender gradient (radial + diagonal) layered on a fixed `body` with a slow 22-second `::before` radial glow that drifts across the viewport. Non-intrusive, low-contrast, sits behind everything via `z-index: 0`.
+- **News-strip marquee** (`components/AppChrome.tsx` `NewsStrip`): thin strip at the very top (height auto-adapts). Dark-to-light purple gradient (`#4C1D95 → #8B5CF6`) with a **"lazy gleam"** (`::after` diagonal light streak animated 14s via `@keyframes cbepl-gleam`). Content scrolls right-to-left via pure CSS `@keyframes cbepl-scroll`, pauses on hover, 55s desktop / 40s mobile. Items are fetched from `GET /api/calendar/events` and mixed with 3 default items; `DEFAULT_NEWS` array is easy to update.
+- **Global footer** (`GlobalFooter`): minimal centered "© {year} CBE Planner. All rights reserved." — year auto-generated via `new Date().getFullYear()`. Soft gray text, frosted white backdrop with `backdrop-filter: blur`. Purple link to cbeplanner.com.
+- **Reusable pattern**: `AppChrome` wraps the root `<Stack>` in `app/_layout.tsx` with `showStrip` / `showFooter` props for per-page opt-out later. Web-only — returns children directly on native so RN layouts stay untouched.
+- **Responsive**: 640px breakpoint shrinks marquee text & speeds up scroll; footer stacks cleanly; background scales via `background-attachment: fixed`.
+- **Existing layouts untouched**: `contentStyle: transparent` on the root Stack lets the body gradient show through; all `(teacher)` / `(admin)` / landing layouts continue to work.
+
 ## Next Tasks
 1. AppLayout sidebar redesign across all post-login dashboard pages
 2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin` into `routes/`)
