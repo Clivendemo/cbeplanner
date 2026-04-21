@@ -527,9 +527,9 @@ export default function Profile() {
             </View>
 
             <ScrollView
-              showsVerticalScrollIndicator={false}
+              showsVerticalScrollIndicator={true}
               contentContainerStyle={{ paddingBottom: 20 }}
-              style={{ maxHeight: '80%' }}
+              style={{ flexGrow: 0, flexShrink: 1 }}
             >
 
             <View style={styles.mpesaLogoContainer}>
@@ -1140,7 +1140,13 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
-    paddingBottom: 40
+    paddingBottom: 40,
+    // Never exceed the viewport — without this, tall modals overflow upward
+    // and clip the first input (phone number) off-screen until the user
+    // zooms out.
+    maxHeight: '92%',
+    // @ts-ignore web-specific — viewport-relative cap on tall desktop shells
+    maxHeight: '92vh' as any,
   },
   modalHeader: {
     flexDirection: 'row',

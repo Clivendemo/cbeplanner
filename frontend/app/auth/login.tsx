@@ -62,10 +62,13 @@ export default function Login() {
     setResetting(true);
     try {
       await resetPassword(resetEmail);
+      // Close the modal first so the UX is responsive even if the Alert
+      // callback doesn't fire (web quirk on react-native-web).
+      setResetModalVisible(false);
+      setResetEmail('');
       Alert.alert(
         'Password Reset Email Sent',
-        `We've sent a password reset link to ${resetEmail}. Please check your inbox and spam folder.`,
-        [{ text: 'OK', onPress: () => setResetModalVisible(false) }]
+        `We've sent a password reset link to ${resetEmail}. Please check your inbox and spam folder.`
       );
     } catch (error: any) {
       let message = 'Failed to send reset email';

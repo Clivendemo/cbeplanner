@@ -225,6 +225,10 @@ All **additive, opt-in** — zero changes to existing code paths, no regressions
 - **M-Pesa Top-Up** (`app/(teacher)/profile.tsx`) — 2000ms
 Each now has an in-flight lock + leading gap. Existing loading/disabled state logic preserved 1:1 — no UX regression, just immune to double-taps and duplicate charges.
 
+## Profile + Login Polish (Feb 2026)
+- **M-Pesa Top-Up modal** (`app/(teacher)/profile.tsx`): Added `maxHeight: '92%'` + `'92vh'` on `modalContent` so the modal never exceeds the viewport. Removed the inner ScrollView's rigid `maxHeight: '80%'` (replaced with `flexShrink: 1`). On shorter laptops the phone-number field is now visible without zooming.
+- **Reset password** (`app/auth/login.tsx`): Modal closes synchronously right after Firebase `sendPasswordResetEmail` resolves, before the success Alert. Previously on react-native-web the Alert's OK `onPress` callback sometimes failed to fire, leaving the modal stuck open. Reset email still works end-to-end.
+
 ## Next Tasks
 1. AppLayout sidebar redesign across all post-login dashboard pages
 2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin` into `routes/`)
