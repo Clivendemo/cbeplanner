@@ -189,9 +189,9 @@ export default function TeacherLayout() {
     );
   }
 
-  // Desktop: wrap the Stack in a centered shell with 180 / 950 / 180 columns.
-  // The app itself only operates inside the central 950 column. No ScrollView —
-  // Expo Router's Stack on web needs to fill a flex parent directly.
+  // Desktop: wrap the Stack in a centered, responsive shell.
+  // Left & right sidebars are fixed 180px. Main column grows/shrinks with the
+  // viewport so content always fits without horizontal scroll or zooming.
   return (
     <View style={styles.shellRoot}>
       <View style={styles.shellRow}>
@@ -200,8 +200,8 @@ export default function TeacherLayout() {
           <AppLeftSidebar />
         </View>
 
-        {/* Central app column — the Stack renders here, untouched */}
-        <View style={[styles.mainCol, { width: MAIN_W }]}>
+        {/* Central app column — flexes to fill available space up to MAIN_W */}
+        <View style={[styles.mainCol]}>
           {stack}
         </View>
 
@@ -285,7 +285,9 @@ const styles = StyleSheet.create({
     paddingTop: 4,
   },
   mainCol: {
-    flexShrink: 0,
+    flex: 1,
+    maxWidth: MAIN_W,
+    minWidth: 0, // allow the flex child to shrink below its content width
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1,

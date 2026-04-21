@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Linking, useWindowDimensions, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Linking, useWindowDimensions, ScrollView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import { useCalendarData, DisplayEvent, DisplayTerm } from './useCalendarData';
 
 // ===== BREAKPOINTS =====
-const BP_DESKTOP = 1024;
+const BP_DESKTOP = 1180;
 const BP_TABLET = 768;
 
 // ===== DATA =====
@@ -52,14 +52,58 @@ const FEATURE_TILES = [
 ];
 
 // ===== AD SLOT =====
-const AdSlot: React.FC<{ width: number; height: number }> = ({ width, height }) => (
-  <View style={{ alignItems: 'center' }}>
-    <Text style={styles.adLabel}>Advertisement</Text>
-    <View style={[styles.adBox, { maxWidth: width, height, width: '100%' }]}>
-      <Text style={styles.adPlaceholderText}>{width} × {height}</Text>
+// Renders a real AdSense <ins> block on web. It collapses to zero height
+// when no ad fills; it expands naturally once Google serves an ad.
+// In development or when AdSense hasn't verified the site yet, nothing
+// is visible — no awkward placeholder boxes taking up space.
+const ADSENSE_CLIENT = 'ca-pub-5294485814743596';
+const ADSENSE_SLOT = process.env.EXPO_PUBLIC_ADSENSE_SLOT || '';
+
+const AdSlot: React.FC<{ width: number; height: number }> = ({ width, height }) => {
+  const insRef = React.useRef<any>(null);
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      // @ts-ignore AdSense global
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch {
+      /* adblock or not loaded yet */
+    }
+  }, []);
+
+  if (Platform.OS !== 'web') return null;
+
+  // Real ad when a slot is configured; otherwise render a tiny hidden shell
+  // so the layout doesn't reserve space until an ad actually arrives.
+  const hasSlot = Boolean(ADSENSE_SLOT);
+
+  return (
+    <View
+      style={{
+        alignSelf: 'center',
+        width: '100%',
+        maxWidth: width,
+        minHeight: 0, // collapse when empty
+      }}
+    >
+      {hasSlot ? (
+        // eslint-disable-next-line react-native/no-raw-text
+        <>
+          {/* @ts-ignore web-only */}
+          <ins
+            ref={insRef}
+            className="adsbygoogle"
+            style={{ display: 'block', width: '100%' }}
+            data-ad-client={ADSENSE_CLIENT}
+            data-ad-slot={ADSENSE_SLOT}
+            data-ad-format="auto"
+            data-full-width-responsive="true"
+          />
+        </>
+      ) : null}
     </View>
-  </View>
-);
+  );
+};
 
 // ===== WIDGETS =====
 const DidYouKnowWidget: React.FC = () => {
@@ -739,7 +783,7 @@ export const LandingLayout: React.FC<Props> = ({ children }) => {
 };
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: '#F3F4F6' },
+  page: { flex: 1, backgroundColor: 'transparent' },
   pageContent: { flexGrow: 1 },
   grid: {
     flexDirection: 'row',
@@ -759,8 +803,8 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     gap: 0,
   },
-  sidebarLeft: { width: 280, flexShrink: 0 },
-  sidebarRight: { width: 280, flexShrink: 0 },
+  sidebarLeft: { width: 300, flexShrink: 0 },
+  sidebarRight: { width: 300, flexShrink: 0 },
   centerCol: {
     flex: 1,
     maxWidth: 640,
@@ -769,7 +813,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     padding: 36,
-    alignSelf: 'stretch',
+    // Let the card size to its natural content height — no forced stretch
+    // that creates awkward empty space at the bottom of short pages.
+    alignSelf: 'flex-start',
+    // @ts-ignore web-only subtle shadow matches the premium background
+    boxShadow: '0 12px 40px rgba(76, 29, 149, 0.08)',
   },
   centerColMobile: {
     borderRadius: 0,
@@ -778,7 +826,7 @@ const styles = StyleSheet.create({
     padding: 20,
     width: '100%',
     maxWidth: undefined,
-    minHeight: '100%',
+    alignSelf: 'auto',
   },
 
   // Widget card
@@ -789,9 +837,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 14,
   },
-  widgetTitle: { fontSize: 13, fontWeight: '600', color: '#111827', marginBottom: 8 },
-  widgetSubtitle: { fontSize: 10, color: '#9CA3AF', marginTop: 3 },
-  widgetFact: { fontSize: 12, color: '#6B7280', lineHeight: 18 },
+  widgetTitle: { fontSize: 15, fontWeight: '700', color: '#111827', marginBottom: 8 },
+  widgetSubtitle: { fontSize: 12, color: '#9CA3AF', marginTop: 3 },
+  widgetFact: { fontSize: 13, color: '#6B7280', lineHeight: 20 },
   widgetHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
 
   // Dots
@@ -801,58 +849,58 @@ const styles = StyleSheet.create({
 
   // Legend
   legendRow: { flexDirection: 'row', alignItems: 'center' },
-  legendDot: { width: 6, height: 6, borderRadius: 3 },
-  legendText: { fontSize: 9, color: '#6B7280', marginLeft: 3 },
+  legendDot: { width: 7, height: 7, borderRadius: 4 },
+  legendText: { fontSize: 11, color: '#6B7280', marginLeft: 4 },
 
   // Events
-  eventRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  eventRow: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   eventDateBlock: {
-    minWidth: 42,
-    borderRadius: 7,
-    paddingVertical: 4,
-    paddingHorizontal: 3,
+    minWidth: 48,
+    borderRadius: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 4,
     alignItems: 'center',
   },
-  eventDayName: { fontSize: 8, fontWeight: '600', letterSpacing: 0.3, textTransform: 'uppercase' },
-  eventDateNum: { fontSize: 10, fontWeight: '500', marginTop: 2 },
+  eventDayName: { fontSize: 10, fontWeight: '600', letterSpacing: 0.3, textTransform: 'uppercase' },
+  eventDateNum: { fontSize: 12, fontWeight: '600', marginTop: 2 },
   eventContent: { flexDirection: 'row', alignItems: 'center', gap: 7, flex: 1 },
-  eventDot: { width: 5, height: 5, borderRadius: 3 },
-  eventTitle: { fontSize: 11, color: '#374151', flex: 1 },
-  eventFooterNote: { fontSize: 10, color: '#9CA3AF', textAlign: 'center', marginTop: 10 },
+  eventDot: { width: 6, height: 6, borderRadius: 3 },
+  eventTitle: { fontSize: 13, color: '#374151', flex: 1 },
+  eventFooterNote: { fontSize: 11, color: '#9CA3AF', textAlign: 'center', marginTop: 10 },
 
   // Quote
   quoteBlock: { paddingLeft: 10, borderLeftWidth: 3, borderLeftColor: '#5B5BD6', marginTop: 4 },
-  quoteText: { fontSize: 12, color: '#374151', fontStyle: 'italic', lineHeight: 18 },
-  quoteAuthor: { fontSize: 11, color: '#9CA3AF', marginTop: 6 },
+  quoteText: { fontSize: 13, color: '#374151', fontStyle: 'italic', lineHeight: 20 },
+  quoteAuthor: { fontSize: 12, color: '#9CA3AF', marginTop: 6 },
 
   // Useful Links
-  usefulLink: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 5 },
-  usefulLinkText: { fontSize: 12, color: '#5B5BD6' },
+  usefulLink: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
+  usefulLinkText: { fontSize: 13, color: '#5B5BD6' },
   linkDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#5B5BD6' },
   linkDivider: { height: 1, backgroundColor: '#F3F4F6', marginVertical: 2 },
 
   // Subjects
   subjectGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
-  subjectPill: { backgroundColor: '#F3F4F6', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
-  subjectPillText: { fontSize: 11, color: '#374151' },
+  subjectPill: { backgroundColor: '#F3F4F6', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5 },
+  subjectPillText: { fontSize: 12, color: '#374151' },
 
   // Term calendar
   termHeader: { padding: 14, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
-  termSectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, paddingVertical: 9 },
-  termSectionName: { fontSize: 12, fontWeight: '600' },
-  termSectionPeriod: { fontSize: 10, color: '#9CA3AF', marginTop: 1 },
-  termBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20, borderWidth: 1 },
-  termBadgeText: { fontSize: 10, fontWeight: '500' },
+  termSectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, paddingVertical: 10 },
+  termSectionName: { fontSize: 13, fontWeight: '700' },
+  termSectionPeriod: { fontSize: 11, color: '#9CA3AF', marginTop: 2 },
+  termBadge: { paddingHorizontal: 9, paddingVertical: 3, borderRadius: 20, borderWidth: 1 },
+  termBadgeText: { fontSize: 11, fontWeight: '600' },
   termActivitiesSection: { paddingHorizontal: 14, paddingTop: 8, paddingBottom: 4 },
-  activitiesLabel: { fontSize: 10, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 5 },
-  activityRow: { flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 2 },
-  activityDot: { width: 5, height: 5, borderRadius: 3 },
-  activityLabel: { flex: 1, fontSize: 11, color: '#374151' },
-  activityDate: { fontSize: 10, color: '#9CA3AF' },
+  activitiesLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 },
+  activityRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 3 },
+  activityDot: { width: 6, height: 6, borderRadius: 3 },
+  activityLabel: { flex: 1, fontSize: 12, color: '#374151' },
+  activityDate: { fontSize: 11, color: '#9CA3AF' },
   termDivider: { height: 1, backgroundColor: '#F3F4F6' },
 
   // Ads
-  adLabel: { fontSize: 10, color: '#9CA3AF', letterSpacing: 0.5, marginBottom: 4 },
+  adLabel: { fontSize: 11, color: '#9CA3AF', letterSpacing: 0.5, marginBottom: 4 },
   adBox: {
     backgroundColor: '#F9FAFB',
     borderWidth: 1,

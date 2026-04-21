@@ -189,6 +189,13 @@ Post-login teacher pages now render inside a centered 1330px shell:
 - **Admin tab** (`app/(admin)/news.tsx`): megaphone icon between Calendar and Import. List rows show tag pill + text + order + live/hidden status. Per-row active Switch toggles visibility without opening the modal. Editor modal has tag / message / active / order with validation.
 - **NewsStrip integration** (`components/AppChrome.tsx`): now merges `/api/news` (admin-pushed) with `/api/calendar/events` (up to 6). Admin announcements appear first in the marquee order.
 
+## Responsive Polish + Ad Collapse + Font Harmonization (Feb 2026)
+- **Ads are now real, not placeholders**: `AdSlot` renders a Google AdSense `<ins>` block that starts at zero height and grows when an ad fills. If no AdSense slot is configured, nothing renders at all — the layout doesn't reserve awkward empty space. Previously the "300 × 250" / "320 × 50" grey placeholder boxes were always visible.
+- **Login page bottom space**: Removed `alignSelf: stretch` on the center column so the auth card sizes to its natural content height. The row now ends cleanly at the shortest column — no more large gap under the main card.
+- **Responsive breakpoints tightened**: Landing `BP_DESKTOP` lowered 1024 → 1180 so mid-sized laptops get a clean 2-column layout instead of a cramped 3-column. Teacher shell `mainCol` switched from fixed 950px to `flex: 1` (max 950) — now fills available space cleanly on 1180–1800px screens.
+- **Font harmonization**: Sidebar widget titles 13 → 15, body 12 → 13, subtitle 10 → 12, legend 9 → 11, event dates/titles 8-11 → 10-13, term calendar headings/labels 10-12 → 11-13. AppSidebars (post-login) title 11 → 13, body 10 → 12. Everything now sits in the same 11-15px scale range as the main app content.
+- **Removed the in-card ad below the login card** — the sidebars already carry the ad slots.
+
 ## Next Tasks
 1. AppLayout sidebar redesign across all post-login dashboard pages
 2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin` into `routes/`)
