@@ -30,20 +30,26 @@ export const NewsStrip: React.FC = () => {
   const [items, setItems] = useState<{ tag: string; text: string }[]>(DEFAULT_NEWS);
 
   useEffect(() => {
-    // Pull admin-managed upcoming events and turn them into news-ticker rows.
-    // Falls back silently to DEFAULT_NEWS on any error.
+    // Merge: admin-created announcements + upcoming events from the calendar.
+    // Admins can push non-event announcements via the News tab.
+    // Falls back silently to DEFAULT_NEWS if both calls fail.
     let cancelled = false;
     (async () => {
       try {
-        const res = await axios.get(`${BACKEND_URL}/api/calendar/events`);
-        const events = res.data?.events || [];
-        if (cancelled || events.length === 0) return;
-        const ev = events.slice(0, 6).map((e: any) => ({
+        const [newsRes, evRes] = await Promise.all([
+          axios.get(`${BACKEND_URL}/api/news`).catch(() => ({ data: { news: [] } })),
+          axios.get(`${BACKEND_URL}/api/calendar/events`).catch(() => ({ data: { events: [] } })),
+        ]);
+        if (cancelled) return;
+        const news = (newsRes.data?.news || []).map((n: any) => ({
+          tag: n.tag, text: n.text,
+        }));
+        const events = (evRes.data?.events || []).slice(0, 6).map((e: any) => ({
           tag: e.category === 'exam' ? 'Exam' : e.category === 'cocurricular' ? 'Event' : 'Academic',
           text: `${e.title} · ${e.date}`,
         }));
-        // Mix with a couple defaults for variety
-        setItems([...ev, ...DEFAULT_NEWS.slice(0, 3)]);
+        const combined = [...news, ...events];
+        setItems(combined.length > 0 ? combined : DEFAULT_NEWS);
       } catch {
         /* keep defaults */
       }

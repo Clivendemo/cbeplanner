@@ -4370,6 +4370,7 @@ async def retry_curriculum_job(job_id: str, user: dict = Depends(verify_admin)):
 # Register modular route files (side-effect: decorators run & attach to api_router)
 from routes import schemes as _routes_schemes  # noqa: F401
 from routes import calendar as _routes_calendar  # noqa: F401
+from routes import news as _routes_news  # noqa: F401
 
 # Include router
 app.include_router(api_router)

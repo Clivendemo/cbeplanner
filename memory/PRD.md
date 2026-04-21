@@ -182,6 +182,13 @@ Post-login teacher pages now render inside a centered 1330px shell:
 - **Responsive**: 640px breakpoint shrinks marquee text & speeds up scroll; footer stacks cleanly; background scales via `background-attachment: fixed`.
 - **Existing layouts untouched**: `contentStyle: transparent` on the root Stack lets the body gradient show through; all `(teacher)` / `(admin)` / landing layouts continue to work.
 
+## News Announcements Admin Tab (Feb 2026)
+- **Backend** (`routes/news.py`): new `news_announcements` collection.
+  - Public `GET /api/news` (active items only, ordered).
+  - Admin `GET /api/admin/news` (includes inactive), `POST`, `PUT`, `DELETE /api/admin/news[/id]`.
+- **Admin tab** (`app/(admin)/news.tsx`): megaphone icon between Calendar and Import. List rows show tag pill + text + order + live/hidden status. Per-row active Switch toggles visibility without opening the modal. Editor modal has tag / message / active / order with validation.
+- **NewsStrip integration** (`components/AppChrome.tsx`): now merges `/api/news` (admin-pushed) with `/api/calendar/events` (up to 6). Admin announcements appear first in the marquee order.
+
 ## Next Tasks
 1. AppLayout sidebar redesign across all post-login dashboard pages
 2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin` into `routes/`)

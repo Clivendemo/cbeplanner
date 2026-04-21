@@ -91,6 +91,16 @@ export default function AdminLayout() {
         }}
       />
       <Tabs.Screen
+        name="news"
+        options={{
+          title: 'News',
+          headerTitle: 'News Announcements',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="megaphone" size={size} color={color} />
+          )
+        }}
+      />
+      <Tabs.Screen
         name="data-import"
         options={{
           title: 'Import',
