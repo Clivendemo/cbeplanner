@@ -14,6 +14,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { LandingLayout, FeatureTiles } from '../../components/LandingLayout';
 import { useDebouncedAction } from '../../hooks/useDebouncedAction';
+import { PasswordInput } from '../../components/PasswordInput';
 
 export default function SignUp() {
   const [firstName, setFirstName] = useState('');
@@ -150,13 +151,12 @@ export default function SignUp() {
 
             <View style={styles.inputContainer}>
               <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-              <TextInput
-                ref={passwordRef}
-                style={styles.input}
+              <PasswordInput
+                ref={passwordRef as any}
+                inputStyle={styles.input}
                 placeholder="Password"
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry
                 autoCapitalize="none"
                 autoCorrect={false}
                 placeholderTextColor="#9CA3AF"
@@ -164,24 +164,27 @@ export default function SignUp() {
                 onSubmitEditing={() => confirmPasswordRef.current?.focus()}
                 blurOnSubmit={false}
                 testID="signup-password-input"
+                testIDPrefix="signup-password"
+                containerStyle={{ flex: 1 }}
               />
             </View>
 
             <View style={styles.inputContainer}>
               <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
-              <TextInput
-                ref={confirmPasswordRef}
-                style={styles.input}
+              <PasswordInput
+                ref={confirmPasswordRef as any}
+                inputStyle={styles.input}
                 placeholder="Confirm Password"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
-                secureTextEntry
                 autoCapitalize="none"
                 autoCorrect={false}
                 placeholderTextColor="#9CA3AF"
                 returnKeyType="done"
                 onSubmitEditing={handleSignUp}
                 testID="signup-confirm-password-input"
+                testIDPrefix="signup-confirm-password"
+                containerStyle={{ flex: 1 }}
               />
             </View>
 

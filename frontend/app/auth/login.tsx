@@ -183,7 +183,7 @@ export default function Login() {
               </TouchableOpacity>
             </View>
             <Text style={styles.modalDescription}>
-              Enter your email address and we'll send you a link to reset your password.
+              Enter your email address. We'll send you a secure link that opens CBE Planner, where you can set and confirm a new password.
             </Text>
             <View style={styles.modalInputContainer}>
               <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />

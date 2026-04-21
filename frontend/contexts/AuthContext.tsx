@@ -7,6 +7,8 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
   sendPasswordResetEmail,
+  verifyPasswordResetCode,
+  confirmPasswordReset,
   User as FirebaseUser
 } from 'firebase/auth';
 import axios from 'axios';
@@ -46,6 +48,8 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  verifyResetCode: (oobCode: string) => Promise<string>;
+  confirmReset: (oobCode: string, newPassword: string) => Promise<void>;
   clearNewUserFlag: () => void;
   recordActivity: () => void;
 }
@@ -349,7 +353,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resetPassword = async (email: string) => {
     try {
-      await sendPasswordResetEmail(auth, email);
+      // Direct the email link back to our custom in-app reset page so the user
+      // can type + confirm a new password inside CBE Planner.
+      // NOTE: For this link to land here, the Firebase Console → Authentication
+      // → Templates → Password reset → "Customize action URL" must be set to
+      // `${origin}/auth/reset-password` (or the Firebase Hosting domain that
+      // proxies there). Firebase appends ?mode=resetPassword&oobCode=... to it.
+      let continueUrl: string | undefined;
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        continueUrl = `${window.location.origin}/auth/login`;
+      }
+      await sendPasswordResetEmail(
+        auth,
+        email,
+        continueUrl ? { url: continueUrl, handleCodeInApp: false } : undefined,
+      );
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  };
+
+  const verifyResetCode = async (oobCode: string) => {
+    try {
+      return await verifyPasswordResetCode(auth, oobCode);
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  };
+
+  const confirmReset = async (oobCode: string, newPassword: string) => {
+    try {
+      await confirmPasswordReset(auth, oobCode, newPassword);
     } catch (error: any) {
       throw new Error(error.message);
     }
@@ -368,6 +402,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       signOut: signOutExposed, 
       refreshProfile, 
       resetPassword,
+      verifyResetCode,
+      confirmReset,
       clearNewUserFlag,
       recordActivity
     }}>

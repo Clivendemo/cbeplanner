@@ -92,6 +92,7 @@ export default function RootLayout() {
                 <Stack.Screen name="index" options={{ gestureEnabled: false }} />
                 <Stack.Screen name="auth/login" options={{ gestureEnabled: false }} />
                 <Stack.Screen name="auth/signup" options={{ gestureEnabled: false }} />
+                <Stack.Screen name="auth/reset-password" options={{ gestureEnabled: false }} />
                 <Stack.Screen name="(teacher)" options={{ gestureEnabled: false }} />
                 <Stack.Screen name="(admin)" options={{ gestureEnabled: false }} />
               </Stack>

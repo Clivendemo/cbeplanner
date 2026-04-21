@@ -277,9 +277,26 @@ The SPECIFIC LEARNING OUTCOME section was visually repeating the same text three
 
 **Regression**: 7-test suite in `tests/test_lesson_plan_slo_dedupe.py` covering exact duplicates, primary matches, case/whitespace insensitivity, prefix/containment, blank-entry filtering, and N/A safety. **Full backend suite: 24 passed in 2.91s.**
 
+## Password UX: Reveal/Hide + Confirm-New-Password Reset (Feb 2026)
+
+### Reveal/Hide password toggle
+- New reusable component `/app/frontend/components/PasswordInput.tsx` — wraps `TextInput` with a `TouchableOpacity` eye toggle (Ionicons `eye-outline` / `eye-off-outline`). Uses `forwardRef` so focus chains work. Exposes `testIDPrefix` and emits `{prefix}-input` and `{prefix}-toggle` testids.
+- Integrated into `app/auth/login.tsx` (password), `app/auth/signup.tsx` (password + confirm password), and `app/auth/reset-password.tsx` (new + confirm new).
+
+### In-app password reset with confirm-new-password
+- New screen `app/auth/reset-password.tsx` registered in `_layout.tsx`. Reads Firebase `oobCode` from the URL, calls `verifyPasswordResetCode` to resolve the email (shows it on-screen), then requires **New Password** + **Confirm New Password** (both with the eye toggle), validating equality and min length before calling `confirmPasswordReset`.
+- `AuthContext` extended with `verifyResetCode` and `confirmReset` helpers; `resetPassword` now passes a `continueUrl` for post-reset redirect back to the app's login.
+- Graceful screens for verifying / expired / invalid / success states.
+
+### Firebase Console step (one-time, documented in-code)
+For the reset email to land on the in-app custom screen (enabling the confirm-new-password UX), the project owner must set **Firebase Console → Authentication → Templates → Password reset → Customize action URL** to `https://cbeplanner.com/auth/reset-password` (or the preview domain for testing). Without this step, Firebase still delivers the link but opens its default hosted reset page.
+
+**Verified**: login, signup, and reset-password screens all render the eye toggle; toggling flips the input's native `type=password` ↔ `type=text` (Playwright check passed). Invalid `oobCode` correctly shows the "Reset Link Problem" screen.
+
 ## Next Tasks
-1. AppLayout sidebar redesign across all post-login dashboard pages
-2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin` into `routes/`)
+1. Apply SLO dedupe helper to the Scheme of Work PDF preview table (P1)
+2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin`, `/lesson_plans` into `routes/`)
 3. Past Papers feature
 4. Firebase Admin SDK integration
 5. Android APK build + Play Store signing
+
