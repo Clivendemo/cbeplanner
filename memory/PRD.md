@@ -201,6 +201,21 @@ Post-login teacher pages now render inside a centered 1330px shell:
 - **Thicker strip + 3D**: Padding 10px top/bottom (mobile 8px), size 17px (mobile 15px), richer 4-stop purple gradient (`#2E1065 → #5B21B6 → #7C3AED → #A78BFA`), stacked text-shadows (3-layer drop + outer glow), inset highlight/shadow on the strip itself, glowing bullet dots.
 - **Slower speed**: Desktop 55s → 70s, mobile 40s → 50s. Hover-to-pause still active.
 
+## Production Hardening — New Opt-in Safety Nets (Feb 2026)
+
+All **additive, opt-in** — zero changes to existing code paths, no regressions possible.
+
+- **`frontend/api/apiClient.ts`**: shared axios instance with:
+  - 20s request timeout
+  - Automatic Firebase ID-token injection on every request
+  - One-shot 401 auto-refresh (forces `getIdToken(true)`, retries once)
+  - Network/5xx retry with exponential backoff (2 retries, 400→900ms) on idempotent verbs only — **no retries on POST/PUT/DELETE** to avoid duplicate side-effects
+  - Normalised `ApiError` shape with user-friendly messages (timeout, network down, 401/403/404/5xx)
+  - Existing raw `axios.get(...)` calls continue to work unchanged
+- **`frontend/hooks/useDebouncedAction.ts`**: drop-in button safety. 800ms leading gap + in-flight lock; attaches `pending` + `error` flags to the callback itself so consumers wire `disabled={action.pending}` without extra state.
+- **`frontend/components/ErrorBoundary.tsx`**: top-level React error boundary with friendly fallback + "Try again" reset. **Wired into `app/_layout.tsx`** — any render-phase crash now shows a branded fallback instead of a white screen.
+- **`backend/tests/test_calendar_and_news.py`**: 13 regression tests (all pass in 2.16s). Shape-stability, sort-order, active-filter, admin-auth enforcement, and latency budget checks on `/api/calendar/events`, `/api/calendar/terms`, `/api/news` and their admin counterparts.
+
 ## Next Tasks
 1. AppLayout sidebar redesign across all post-login dashboard pages
 2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin` into `routes/`)

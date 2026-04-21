@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet, View, ActivityIndicator, Text, Platform } from 'react-native';
 import { AppChrome } from '../components/AppChrome';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 
 // Auth gate component that handles navigation based on auth state
 function AuthGate({ children }: { children: React.ReactNode }) {
@@ -76,26 +77,28 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.container}>
-      <AuthProvider>
-        <AppChrome>
-          <AuthGate>
-            <Stack 
-              screenOptions={{ 
-                headerShown: false,
-                animation: 'slide_from_right',
-                gestureEnabled: true,
-                contentStyle: { backgroundColor: 'transparent' },
-              }}
-            >
-              <Stack.Screen name="index" options={{ gestureEnabled: false }} />
-              <Stack.Screen name="auth/login" options={{ gestureEnabled: false }} />
-              <Stack.Screen name="auth/signup" options={{ gestureEnabled: false }} />
-              <Stack.Screen name="(teacher)" options={{ gestureEnabled: false }} />
-              <Stack.Screen name="(admin)" options={{ gestureEnabled: false }} />
-            </Stack>
-          </AuthGate>
-        </AppChrome>
-      </AuthProvider>
+      <ErrorBoundary>
+        <AuthProvider>
+          <AppChrome>
+            <AuthGate>
+              <Stack 
+                screenOptions={{ 
+                  headerShown: false,
+                  animation: 'slide_from_right',
+                  gestureEnabled: true,
+                  contentStyle: { backgroundColor: 'transparent' },
+                }}
+              >
+                <Stack.Screen name="index" options={{ gestureEnabled: false }} />
+                <Stack.Screen name="auth/login" options={{ gestureEnabled: false }} />
+                <Stack.Screen name="auth/signup" options={{ gestureEnabled: false }} />
+                <Stack.Screen name="(teacher)" options={{ gestureEnabled: false }} />
+                <Stack.Screen name="(admin)" options={{ gestureEnabled: false }} />
+              </Stack>
+            </AuthGate>
+          </AppChrome>
+        </AuthProvider>
+      </ErrorBoundary>
     </GestureHandlerRootView>
   );
 }
