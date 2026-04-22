@@ -523,13 +523,9 @@ _KISWAHILI_STEMS = [
 
 
 def derive_inquiry_from_slo(slo: str, is_kiswahili: bool = False) -> str:
-    """Turn a Specific Learning Outcome into a grammatically correct key inquiry question.
+    """Turn a Specific Learning Outcome into a grammatically correct key inquiry question."""
+    import re
 
-    Uses the leading action verb of the SLO (identify/describe/explain/…) to pick
-    a natural question stem, then wraps the remainder of the SLO as the body.
-    Falls back to a verb-aware question if no stem matches, distinguishing between
-    verb-led SLOs ("set up a topology") and noun-led SLOs ("importance of networks").
-    """
     if not slo:
         return ''
     text = str(slo).strip().rstrip('.')
@@ -537,21 +533,29 @@ def derive_inquiry_from_slo(slo: str, is_kiswahili: bool = False) -> str:
         return ''
     lower = text.lower()
 
+    # --- Pre-processing: handle "importance of X" / "importance of X: Y" ---
+    importance_match = re.match(
+        r'^importance of\s+(.+?)(?:\s*:\s*.+)?$', lower, re.IGNORECASE
+    )
+    if importance_match:
+        topic = importance_match.group(1).strip().rstrip('.')
+        if topic:
+            return f'Why is {topic} important?'
+
     stems = _KISWAHILI_STEMS if is_kiswahili else _INQUIRY_STEMS
     for verb, template in stems:
         if lower.startswith(verb + ' '):
             body = text[len(verb) + 1:].strip()
-            # Normalise articles: "the X" / "a X" → "X"
+            # Strip colon-based sub-clauses: "factors for X: compatibility" → "factors for X"
+            body = re.sub(r'\s*:.*$', '', body).strip()
+            # Normalise articles
             for article in ('the ', 'a ', 'an '):
                 if body.lower().startswith(article):
                     body = body[len(article):]
             if body:
                 return template.format(body=body)
 
-    # --- Smarter fallback ---
-    # Detect if the SLO starts with an action verb.
-    # If verb-led  → "How do we <full SLO>?"   (grammatically safe for any verb phrase)
-    # If noun-led  → "Why is <noun phrase> important?"
+    # Expanded ACTION_VERBS — includes verbs not in _INQUIRY_STEMS
     ACTION_VERBS = {
         'set', 'configure', 'connect', 'install', 'build', 'create', 'develop',
         'make', 'prepare', 'arrange', 'assemble', 'construct', 'produce',
@@ -568,17 +572,28 @@ def derive_inquiry_from_slo(slo: str, is_kiswahili: bool = False) -> str:
         'deploy', 'mount', 'attach', 'wire', 'cable', 'ping', 'trace',
         'navigate', 'browse', 'download', 'upload', 'backup', 'restore',
         'enable', 'disable', 'activate', 'deactivate', 'assign', 'allocate',
+        # Additional verbs to catch common SLO patterns
+        'define', 'give', 'outline', 'summarise', 'summarize', 'distinguish',
+        'predict', 'interpret', 'justify', 'suggest', 'recommend', 'plan',
+        'calculate', 'estimate', 'measure', 'count', 'multiply', 'divide',
+        'add', 'subtract', 'simplify', 'expand', 'factorise', 'factorize',
+        'prove', 'verify', 'confirm', 'determine', 'derive', 'deduce',
+        'express', 'represent', 'match', 'order', 'arrange', 'sequence',
+        'type', 'enter', 'input', 'output', 'print', 'scan', 'copy', 'paste',
     }
 
     first_word = lower.split()[0] if lower.split() else ''
 
     if first_word in ACTION_VERBS:
-        # Verb-led SLO → "How do we <SLO>?" (start SLO with lowercase)
-        slo_lower_start = text[0].lower() + text[1:]
+        # Verb-led SLO → "How do we <SLO>?"
+        # But first strip any colon sub-clause from the full text
+        clean_text = re.sub(r'\s*:.*$', '', text).strip()
+        slo_lower_start = clean_text[0].lower() + clean_text[1:]
         return f'How do we {slo_lower_start}?'
     else:
-        # Noun-led SLO → "Why is <noun phrase> important?"
-        return f'Why is {text.lower()} important?'
+        # Noun-led SLO → strip colon sub-clause then wrap
+        clean_text = re.sub(r'\s*:.*$', '', text).strip()
+        return f'Why is {clean_text.lower()} important?'
 
 
 def format_slo_with_prefix(slo: str, is_kiswahili: bool = False) -> str:
