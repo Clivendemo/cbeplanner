@@ -499,7 +499,7 @@ _INQUIRY_STEMS = [
     ('name',        'What are the names of {body}?'),
     ('classify',    'How can we classify {body}?'),
     ('compare',     'How do we compare {body}?'),
-    ('differentiate','How do we differentiate {body}?'),
+    ('differentiate','How do we differentiate between {body}?'),
     ('use',         'How do we use {body}?'),
     ('read',        'How do we read {body}?'),
     ('write',       'How do we write {body}?'),
@@ -523,11 +523,12 @@ _KISWAHILI_STEMS = [
 
 
 def derive_inquiry_from_slo(slo: str, is_kiswahili: bool = False) -> str:
-    """Turn a Specific Learning Outcome into a single learner-centred key inquiry question.
+    """Turn a Specific Learning Outcome into a grammatically correct key inquiry question.
 
     Uses the leading action verb of the SLO (identify/describe/explain/…) to pick
     a natural question stem, then wraps the remainder of the SLO as the body.
-    Falls back to a generic but SLO-aware question if no stem matches.
+    Falls back to a verb-aware question if no stem matches, distinguishing between
+    verb-led SLOs ("set up a topology") and noun-led SLOs ("importance of networks").
     """
     if not slo:
         return ''
@@ -547,17 +548,37 @@ def derive_inquiry_from_slo(slo: str, is_kiswahili: bool = False) -> str:
             if body:
                 return template.format(body=body)
 
-    # Generic fallback — works for noun-phrase and verb-led SLOs alike.
-    # Prefer a "What is…" / "Why is…important" shape over ungrammatical "Why is it important to <noun>".
-    if is_kiswahili:
-        return f'Kwa nini {text.lower()} ni muhimu?'
-    # If the SLO starts with a verb-like word we handle it above; here it's usually a noun phrase
-    first_word = text.split(None, 1)[0].lower() if text else ''
-    action_hint = {'to', 'how', 'why', 'what', 'when', 'where'}
-    if first_word in action_hint:
+    # --- Smarter fallback ---
+    # Detect if the SLO starts with an action verb.
+    # If verb-led  → "How do we <full SLO>?"   (grammatically safe for any verb phrase)
+    # If noun-led  → "Why is <noun phrase> important?"
+    ACTION_VERBS = {
+        'set', 'configure', 'connect', 'install', 'build', 'create', 'develop',
+        'make', 'prepare', 'arrange', 'assemble', 'construct', 'produce',
+        'test', 'run', 'execute', 'launch', 'start', 'stop', 'manage',
+        'use', 'operate', 'access', 'open', 'close', 'select', 'choose',
+        'find', 'search', 'sort', 'filter', 'format', 'edit', 'update',
+        'convert', 'transfer', 'send', 'receive', 'share', 'save', 'load',
+        'troubleshoot', 'fix', 'repair', 'debug', 'solve', 'check',
+        'compare', 'contrast', 'differentiate', 'classify', 'group',
+        'collect', 'gather', 'record', 'plot', 'draw', 'sketch', 'label',
+        'complete', 'fill', 'submit', 'present', 'display', 'show',
+        'explore', 'investigate', 'research', 'study', 'review', 'practise',
+        'practice', 'simulate', 'model', 'program', 'code', 'implement',
+        'deploy', 'mount', 'attach', 'wire', 'cable', 'ping', 'trace',
+        'navigate', 'browse', 'download', 'upload', 'backup', 'restore',
+        'enable', 'disable', 'activate', 'deactivate', 'assign', 'allocate',
+    }
+
+    first_word = lower.split()[0] if lower.split() else ''
+
+    if first_word in ACTION_VERBS:
+        # Verb-led SLO → "How do we <SLO>?" (start SLO with lowercase)
+        slo_lower_start = text[0].lower() + text[1:]
+        return f'How do we {slo_lower_start}?'
+    else:
+        # Noun-led SLO → "Why is <noun phrase> important?"
         return f'Why is {text.lower()} important?'
-    # Noun-phrase SLO: ask "Why is <noun phrase> important in everyday life?"
-    return f'Why is {text.lower()} important in everyday life?'
 
 
 def format_slo_with_prefix(slo: str, is_kiswahili: bool = False) -> str:
