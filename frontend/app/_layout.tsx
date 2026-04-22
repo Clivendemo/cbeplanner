@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet, View, ActivityIndicator, Text, Platform } from 'react-native';
 import { AppChrome } from '../components/AppChrome';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import { Analytics } from '@vercel/analytics/react';
 
 // Auth gate component that handles navigation based on auth state
 function AuthGate({ children }: { children: React.ReactNode }) {
@@ -100,6 +101,7 @@ export default function RootLayout() {
           </AppChrome>
         </AuthProvider>
       </ErrorBoundary>
+      {Platform.OS === 'web' && <Analytics />}
     </GestureHandlerRootView>
   );
 }
