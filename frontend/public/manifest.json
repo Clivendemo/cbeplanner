@@ -1,0 +1,13 @@
+{
+  "name": "CBE Planner",
+  "short_name": "CBEPlan",
+  "description": "Generate CBC lesson plans, schemes of work and notes for Kenyan teachers",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#EFEAFC",
+  "theme_color": "#6366F1",
+  "icons": [
+    { "src": "/assets/images/icon.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/assets/images/icon.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

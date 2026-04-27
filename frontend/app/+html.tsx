@@ -8,20 +8,58 @@ import { type PropsWithChildren } from 'react';
  */
 export default function Root({ children }: PropsWithChildren) {
   return (
-    <html lang="en">
+    <html lang="en-KE">
       <head>
+        <title>CBE Planner - Lesson Plans & Schemes of Work for Kenyan CBC Teachers</title>
+        <meta
+            name="description"
+            content="CBE Planner helps Kenyan CBC teachers instantly generate lesson plans, schemes of work, and lesson notes aligned to KICD guidelines — for all grades and subjects."
+        />
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, shrink-to-fit=no"
         />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://cbeplanner.com/" />
+        <meta property="og:title" content="CBE Planner – Lesson Plans & Schemes of Work for Kenyan CBC Teachers" />
+        <meta property="og:description" content="Instantly generate CBC-aligned lesson plans, schemes of work, and lesson notes. Built for Kenyan teachers, covering all grades and subjects." />
+        <meta property="og:image" content="https://cbeplanner.com/assets/images/app-image.png" />
+        <meta property="og:site_name" content="CBE Planner" />
+        <meta property="og:locale" content="en_KE" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="CBE Planner – Lesson Plans & Schemes of Work for Kenyan CBC Teachers" />
+        <meta name="twitter:description" content="Instantly generate CBC-aligned lesson plans, schemes of work, and lesson notes for Kenyan teachers." />
+        <meta name="twitter:image" content="https://cbeplanner.com/assets/images/app-image.png" />
+
+        <meta name="canonical" content="https://cbeplanner.com/" />
+
+        <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/icon.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#6366F1" />
 
         {/* Google AdSense */}
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5294485814743596"
           crossOrigin="anonymous"
+        />
+
+        {/* ✅ ADD GOOGLE ANALYTICS RIGHT HERE */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-74L90635K6"></script>
+        <script
+          dangerouslySetInnerHTML={{
+          __html: `
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-74L90635K6');
+          `,
+        }}
         />
 
         {/* Premium display font for the news marquee */}

@@ -476,88 +476,276 @@ def generate_inquiry_questions(strand: str, substrand: str, slo: str) -> List[st
 
 # Verb→question-stem map for turning an SLO into a learner-centred inquiry question.
 _INQUIRY_STEMS = [
-    ('identify',    'How can we identify {body}?'),
-    ('describe',    'How would you describe {body}?'),
-    ('explain',     'Why is {body} important?'),
-    ('discuss',     'Why is it important to discuss {body}?'),
-    ('apply',       'How can we apply {body} in daily life?'),
-    ('solve',       'How do we solve {body}?'),
-    ('calculate',   'How do we calculate {body}?'),
-    ('compute',     'How do we compute {body}?'),
-    ('analyze',     'What patterns can we find in {body}?'),
-    ('analyse',     'What patterns can we find in {body}?'),
-    ('demonstrate', 'How can we demonstrate {body}?'),
-    ('show',        'How can we show {body}?'),
-    ('perform',     'How can we perform {body}?'),
-    ('create',      'How can we create {body}?'),
-    ('design',      'How can we design {body}?'),
-    ('build',       'How can we build {body}?'),
-    ('evaluate',    'How do we evaluate {body}?'),
-    ('appreciate',  'Why should we appreciate {body}?'),
-    ('state',       'What is {body}?'),
-    ('list',        'What are {body}?'),
-    ('name',        'What are the names of {body}?'),
-    ('classify',    'How can we classify {body}?'),
-    ('compare',     'How do we compare {body}?'),
-    ('differentiate','How do we differentiate {body}?'),
-    ('use',         'How do we use {body}?'),
-    ('read',        'How do we read {body}?'),
-    ('write',       'How do we write {body}?'),
-    ('draw',        'How do we draw {body}?'),
-    ('measure',     'How do we measure {body}?'),
-    ('observe',     'What do we observe about {body}?'),
+    ('identify',        'How can we identify {body}?'),
+    ('describe',        'How would you describe {body}?'),
+    ('explain',         'Why is {body} important?'),
+    ('discuss',         'Why is it important to discuss {body}?'),
+    ('apply',           'How can we apply {body} in daily life?'),
+    ('solve',           'How do we solve {body}?'),
+    ('calculate',       'How do we calculate {body}?'),
+    ('compute',         'How do we compute {body}?'),
+    ('analyze',         'How can we analyze {body}?'),
+    ('analyse',         'How can we analyse {body}?'),
+    ('demonstrate',     'How can we demonstrate {body}?'),
+    ('show',            'How can we show {body}?'),
+    ('perform',         'How can we perform {body}?'),
+    ('create',          'How can we create {body}?'),
+    ('design',          'How can we design {body}?'),
+    ('build',           'How can we build {body}?'),
+    ('evaluate',        'How do we evaluate {body}?'),
+    ('appreciate',      'Why should we appreciate {body}?'),
+    ('state',           'What is {body}?'),
+    ('list',            'What are {body}?'),
+    ('name',            'What are the names of {body}?'),
+    ('classify',        'How can we classify {body}?'),
+    ('compare',         'How do we compare {body}?'),
+    ('differentiate',   'How do we differentiate between {body}?'),
+    ('use',             'How do we use {body}?'),
+    ('read',            'How do we read {body}?'),
+    ('write',           'How do we write {body}?'),
+    ('draw',            'How do we draw {body}?'),
+    ('measure',         'How do we measure {body}?'),
+    ('observe',         'What do we observe about {body}?'),
+    # Additional verbs
+    ('interpret',       'How do we interpret {body}?'),
+    ('brainstorm',      'What ideas can we generate about {body}?'),
+    ('predict',         'How can we predict {body}?'),
+    ('investigate',     'How can we investigate {body}?'),
+    ('outline',         'How do we outline {body}?'),
+    ('summarise',       'How do we summarise {body}?'),
+    ('summarize',       'How do we summarize {body}?'),
+    ('justify',         'How do we justify {body}?'),
+    ('distinguish',     'How do we distinguish between {body}?'),
+    ('suggest',         'What suggestions can we make about {body}?'),
+    ('recommend',       'What recommendations can we make about {body}?'),
+    ('plan',            'How do we plan {body}?'),
+    ('define',          'How do we define {body}?'),
+    ('give',            'What are examples of {body}?'),
+    ('determine',       'How do we determine {body}?'),
+    ('express',         'How do we express {body}?'),
+    ('represent',       'How do we represent {body}?'),
+    ('construct',       'How do we construct {body}?'),
+    ('develop',         'How do we develop {body}?'),
+    ('formulate',       'How do we formulate {body}?'),
+    ('propose',         'What proposals can we make about {body}?'),
+    ('select',          'How do we select {body}?'),
+    ('arrange',         'How do we arrange {body}?'),
+    ('sequence',        'How do we sequence {body}?'),
+    ('categorise',      'How do we categorise {body}?'),
+    ('categorize',      'How do we categorize {body}?'),
+    ('examine',         'How do we examine {body}?'),
+    ('explore',         'How can we explore {body}?'),
+    ('assess',          'How do we assess {body}?'),
+    ('critique',        'How do we critique {body}?'),
+    ('reflect',         'How do we reflect on {body}?'),
+    ('relate',          'How does {body} relate to everyday life?'),
+    ('connect',         'How do we connect {body}?'),
+    ('simulate',        'How do we simulate {body}?'),
+    ('model',           'How do we model {body}?'),
+    ('test',            'How do we test {body}?'),
+    ('verify',          'How do we verify {body}?'),
+    ('prove',           'How do we prove {body}?'),
+    ('deduce',          'How do we deduce {body}?'),
+    ('derive',          'How do we derive {body}?'),
+    ('estimate',        'How do we estimate {body}?'),
+    ('simplify',        'How do we simplify {body}?'),
+    ('factorise',       'How do we factorise {body}?'),
+    ('factorize',       'How do we factorize {body}?'),
+    ('expand',          'How do we expand {body}?'),
+    ('convert',         'How do we convert {body}?'),
+    ('implement',       'How do we implement {body}?'),
+    ('configure',       'How do we configure {body}?'),
+    ('install',         'How do we install {body}?'),
+    ('troubleshoot',    'How do we troubleshoot {body}?'),
+    ('navigate',        'How do we navigate {body}?'),
+    ('present',         'How do we present {body}?'),
+    ('collaborate',     'How do we collaborate on {body}?'),
+    ('participate',     'How do we participate in {body}?'),
+    ('contribute',      'How do we contribute to {body}?'),
 ]
 
 _KISWAHILI_STEMS = [
-    ('tambua',  'Tunawezaje kutambua {body}?'),
-    ('eleza',   'Kwa nini {body} ni muhimu?'),
-    ('jadili',  'Kwa nini ni muhimu kujadili {body}?'),
-    ('andika',  'Tunaandikaje {body}?'),
-    ('soma',    'Tunasomaje {body}?'),
-    ('onyesha', 'Tunaonyeshaje {body}?'),
-    ('tumia',   'Tunatumiaje {body} katika maisha ya kila siku?'),
-    ('linganisha','Tunalinganishaje {body}?'),
-    ('taja',    '{body} ni nini?'),
-    ('chora',   'Tunachoraje {body}?'),
+    # Verbs of identification / description
+    ('tambua',       'Tunawezaje kutambua {body}?'),
+    ('taja',         '{body} ni nini?'),
+    ('elezea',       'Unawezaje kuelezea {body}?'),
+    ('eleza',        'Kwa nini {body} ni muhimu?'),
+    ('fafanua',      'Unawezaje kufafanua {body}?'),
+    ('bainisha',     'Tunawezaje kubainisha {body}?'),
+    ('orodhesha',    'Ni zipi {body}?'),
+    ('oanisha',      'Tunaoanishaje {body}?'),
+    # Verbs of analysis / comparison
+    ('linganisha',   'Tunalinganishaje {body}?'),
+    ('changanya',    'Tunachanganyaje {body}?'),
+    ('changanua',    'Tunachananuaje {body}?'),
+    ('tathmini',     'Tunatathminaje {body}?'),
+    ('hakiki',       'Tunahakikije {body}?'),
+    ('chunguza',     'Tunachunguzaje {body}?'),
+    ('tafiti',       'Tunatafitije {body}?'),
+    ('angalia',      'Tunaangaliaje {body}?'),
+    ('kagua',        'Tunakaguaje {body}?'),
+    # Verbs of discussion / explanation
+    ('jadili',       'Kwa nini ni muhimu kujadili {body}?'),
+    ('bishana',      'Tunawezaje kubishana kuhusu {body}?'),
+    ('hoji',         'Tunahojije kuhusu {body}?'),
+    ('jibu',         'Tunajibuaje maswali kuhusu {body}?'),
+    ('toa',          'Unatoa maoni gani kuhusu {body}?'),
+    ('fikiri',       'Tunafikiriaje kuhusu {body}?'),
+    ('pendekeza',    'Unapendekeza nini kuhusu {body}?'),
+    # Verbs of production / creation
+    ('andika',       'Tunaandikaje {body}?'),
+    ('tunga',        'Tunatunga vipi {body}?'),
+    ('unda',         'Tunaundaje {body}?'),
+    ('tengeneza',    'Tunatengenezaje {body}?'),
+    ('panga',        'Tunapangaje {body}?'),
+    ('piga',         'Tunapigaje {body}?'),
+    ('chora',        'Tunachoraje {body}?'),
+    ('jenga',        'Tunajenaje {body}?'),
+    ('buni',         'Tunabunaje {body}?'),
+    # Verbs of reading / literacy
+    ('soma',         'Tunasomaje {body}?'),
+    ('sikiliza',     'Tunasikiziaje {body}?'),
+    ('kariri',       'Tunakariraje {body}?'),
+    ('tafsiri',      'Tunatafsirijie {body}?'),
+    ('fasiri',       'Tunafasirije {body}?'),
+    ('simulia',      'Tunasimuliaje {body}?'),
+    ('imba',         'Tunaimbaje {body}?'),
+    ('sema',         'Tunasemaje kuhusu {body}?'),
+    ('zungumza',     'Tunazungumzaje {body}?'),
+    # Verbs of action / application
+    ('tumia',        'Tunatumiaje {body} katika maisha ya kila siku?'),
+    ('tekeleza',     'Tunatekelezaje {body}?'),
+    ('fanya',        'Tunafanyaje {body}?'),
+    ('onyesha',      'Tunaonyeshaje {body}?'),
+    ('igiza',        'Tunaigizaje {body}?'),
+    ('cheza',        'Tunachezaje {body}?'),
+    ('shiriki',      'Tunashirikije {body}?'),
+    ('jiandae',      'Tunajiandaaje kwa {body}?'),
+    # Verbs of classification / organisation
+    ('ainisha',      'Tunaainishaje {body}?'),
+    ('panga',        'Tunapangaje {body}?'),
+    ('weka',         'Tunawekaje {body}?'),
+    ('panga',        'Tunapangaje {body} kwa utaratibu?'),
+    # Value / appreciation verbs
+    ('thamini',      'Kwa nini tunathamini {body}?'),
+    ('linda',        'Tunalindaje {body}?'),
+    ('heshimu',      'Tunaheshimuje {body}?'),
+    ('jali',         'Tunajali vipi {body}?'),
+    ('kinga',        'Tunakingaje {body}?'),
 ]
 
 
 def derive_inquiry_from_slo(slo: str, is_kiswahili: bool = False) -> str:
-    """Turn a Specific Learning Outcome into a single learner-centred key inquiry question.
+    """Turn a Specific Learning Outcome into a grammatically correct key inquiry question.
 
-    Uses the leading action verb of the SLO (identify/describe/explain/…) to pick
+    Uses the leading action verb of the SLO (identify/describe/explain/...) to pick
     a natural question stem, then wraps the remainder of the SLO as the body.
-    Falls back to a generic but SLO-aware question if no stem matches.
+    Falls back to a verb-aware question if no stem matches, distinguishing between
+    verb-led SLOs ("set up a topology") and noun-led SLOs ("importance of networks").
     """
+    import re
+
     if not slo:
         return ''
     text = str(slo).strip().rstrip('.')
     if not text:
         return ''
+
+    # Strip standard KICD SLO preambles so verb-matching works correctly
+    preamble_patterns = [
+        r'^by the end of the lesson,?\s*the learner should be able to:?\s*[-\u2013]?\s*',
+        r'^by the end of the lesson,?\s*the learner will be able to:?\s*[-\u2013]?\s*',
+        r'^the learner should be able to:?\s*[-\u2013]?\s*',
+        r'^learner should be able to:?\s*[-\u2013]?\s*',
+        r'^kufikia mwisho wa somo,?\s*mwanafunzi aweze(?:\s+kuweza)?:?\s*[-\u2013]?\s*',
+        r'^mwanafunzi aweze(?:\s+kuweza)?:?\s*[-\u2013]?\s*',
+    ]
+    for pat in preamble_patterns:
+        text = re.sub(pat, '', text, flags=re.IGNORECASE).strip()
+
+    # Strip a leading dash/bullet that may remain after preamble stripping
+    text = re.sub(r'^[-\u2013\u2022]\s*', '', text).strip()
+
+    if not text:
+        return ''
+
     lower = text.lower()
 
+    # Handle "importance of X" / "umuhimu wa X" and colon variants
+    importance_match = re.match(
+        r'^(?:importance of|umuhimu wa)\s+(.+?)(?:\s*:\s*.+)?$', lower, re.IGNORECASE
+    )
+    if importance_match:
+        topic = importance_match.group(1).strip().rstrip('.')
+        if topic:
+            if is_kiswahili:
+                return f'Kwa nini {topic} ni muhimu?'
+            return f'Why is {topic} important?'
+
+    # Verb stem matching
     stems = _KISWAHILI_STEMS if is_kiswahili else _INQUIRY_STEMS
     for verb, template in stems:
         if lower.startswith(verb + ' '):
             body = text[len(verb) + 1:].strip()
-            # Normalise articles: "the X" / "a X" → "X"
+            # Strip colon sub-clauses: "factors for X: detail" -> "factors for X"
+            body = re.sub(r'\s*:.*$', '', body).strip()
+            # Normalise articles: "the X" / "a X" -> "X"
             for article in ('the ', 'a ', 'an '):
                 if body.lower().startswith(article):
                     body = body[len(article):]
             if body:
                 return template.format(body=body)
 
-    # Generic fallback — works for noun-phrase and verb-led SLOs alike.
-    # Prefer a "What is…" / "Why is…important" shape over ungrammatical "Why is it important to <noun>".
+    # Smarter fallback: verb-led -> "How do we ...?", noun-led -> "Why is ... important?"
+    ACTION_VERBS = {
+        'identify', 'describe', 'explain', 'discuss', 'apply', 'solve',
+        'calculate', 'compute', 'analyze', 'analyse', 'demonstrate', 'show',
+        'perform', 'create', 'design', 'build', 'evaluate', 'appreciate',
+        'state', 'list', 'name', 'classify', 'compare', 'differentiate',
+        'use', 'read', 'write', 'draw', 'measure', 'observe',
+        'interpret', 'brainstorm', 'predict', 'investigate', 'outline',
+        'summarise', 'summarize', 'justify', 'distinguish', 'suggest',
+        'recommend', 'plan', 'define', 'give', 'determine', 'express',
+        'represent', 'construct', 'develop', 'formulate', 'propose',
+        'select', 'arrange', 'sequence', 'categorise', 'categorize',
+        'examine', 'explore', 'assess', 'critique', 'reflect', 'relate',
+        'connect', 'simulate', 'model', 'test', 'verify', 'prove',
+        'deduce', 'derive', 'estimate', 'simplify', 'factorise', 'factorize',
+        'expand', 'convert', 'implement', 'configure', 'install',
+        'troubleshoot', 'navigate', 'present', 'collaborate', 'participate',
+        'contribute', 'set', 'make', 'prepare', 'assemble', 'produce',
+        'run', 'execute', 'launch', 'start', 'stop', 'manage', 'operate',
+        'access', 'open', 'close', 'choose', 'find', 'search', 'sort',
+        'filter', 'format', 'edit', 'update', 'transfer', 'send', 'receive',
+        'share', 'save', 'load', 'fix', 'repair', 'debug', 'check',
+        'contrast', 'group', 'collect', 'gather', 'record', 'plot', 'sketch',
+        'label', 'complete', 'fill', 'submit', 'display', 'research', 'study',
+        'review', 'practise', 'practice', 'program', 'code', 'deploy',
+        'mount', 'attach', 'wire', 'cable', 'ping', 'trace', 'browse',
+        'download', 'upload', 'backup', 'restore', 'enable', 'disable',
+        'activate', 'deactivate', 'assign', 'allocate', 'add', 'subtract',
+        'multiply', 'divide', 'order', 'match', 'type', 'enter', 'input',
+        'output', 'print', 'scan', 'copy', 'paste', 'confirm',
+    }
+
+    first_word = lower.split()[0] if lower.split() else ''
+
     if is_kiswahili:
-        return f'Kwa nini {text.lower()} ni muhimu?'
-    # If the SLO starts with a verb-like word we handle it above; here it's usually a noun phrase
-    first_word = text.split(None, 1)[0].lower() if text else ''
-    action_hint = {'to', 'how', 'why', 'what', 'when', 'where'}
-    if first_word in action_hint:
-        return f'Why is {text.lower()} important?'
-    # Noun-phrase SLO: ask "Why is <noun phrase> important in everyday life?"
-    return f'Why is {text.lower()} important in everyday life?'
+        # Kiswahili fallback — never produce English
+        clean_text = re.sub(r'\s*:.*$', '', text).strip()
+        clean_lower = clean_text[0].lower() + clean_text[1:] if clean_text else ''
+        if first_word in ACTION_VERBS:
+            return f'Tunawezaje {clean_lower}?'
+        else:
+            return f'Kwa nini {clean_lower} ni muhimu?'
+    else:
+        if first_word in ACTION_VERBS:
+            clean_text = re.sub(r'\s*:.*$', '', text).strip()
+            slo_lower_start = clean_text[0].lower() + clean_text[1:]
+            return f'How do we {slo_lower_start}?'
+        else:
+            clean_text = re.sub(r'\s*:.*$', '', text).strip()
+            return f'Why is {clean_text.lower()} important?'
 
 
 def format_slo_with_prefix(slo: str, is_kiswahili: bool = False) -> str:

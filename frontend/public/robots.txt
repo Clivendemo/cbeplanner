@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /(admin)/
+Disallow: /auth/reset-password
+
+Sitemap: https://cbeplanner.com/sitemap.xml
