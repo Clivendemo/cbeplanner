@@ -143,7 +143,7 @@ export default function RevisionPapers() {
       } else {
         await Linking.openURL(signedUrl);
       }
-      Alert.alert(
+      notify(
         'Download started',
         `KES ${costPerDownload} charged. New wallet balance: KES ${Number(newBalance ?? 0).toFixed(2)}`,
       );
@@ -157,7 +157,7 @@ export default function RevisionPapers() {
         setTopupMessage(msg);
         setTopupOpen(true);
       } else {
-        Alert.alert(
+        notify(
           'Download failed',
           (typeof detail === 'string' ? detail : detail?.message) || 'Please try again in a moment.',
         );
@@ -170,6 +170,17 @@ export default function RevisionPapers() {
   const goTopUp = () => {
     setTopupOpen(false);
     router.push('/(teacher)/profile');
+  };
+
+  // React Native's Alert is a silent no-op on web — use the real popup so the
+  // user sees "Download started" / "Download failed" messages.
+  const notify = (title: string, body?: string) => {
+    const msg = body ? `${title}\n\n${body}` : title;
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.alert(msg);
+    } else {
+      Alert.alert(title, body);
+    }
   };
 
   return (

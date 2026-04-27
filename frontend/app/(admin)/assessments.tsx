@@ -68,6 +68,17 @@ export default function AdminAssessments() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [pickedFile, setPickedFile] = useState<File | null>(null);
 
+  // React Native's Alert is a silent no-op on web. Use the real window.alert
+  // so admins actually see validation feedback when clicking "Upload to R2".
+  const notify = (title: string, body?: string) => {
+    const msg = body ? `${title}\n\n${body}` : title;
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.alert(msg);
+    } else {
+      Alert.alert(title, body);
+    }
+  };
+
   // Load grades once
   useEffect(() => {
     (async () => {
@@ -98,7 +109,7 @@ export default function AdminAssessments() {
       setPapers(res.data.items || []);
     } catch (e: any) {
       const detail = e?.response?.data?.detail || e?.message;
-      Alert.alert('Unable to load papers', typeof detail === 'string' ? detail : 'Please try again.');
+      notify('Unable to load papers', typeof detail === 'string' ? detail : 'Please try again.');
     } finally {
       setLoadingList(false);
     }
@@ -106,17 +117,12 @@ export default function AdminAssessments() {
 
   useEffect(() => { refreshList(); /* eslint-disable-line react-hooks/exhaustive-deps */ }, [filterGradeId, filterTerm]);
 
-  const handlePickFile = () => {
-    if (Platform.OS !== 'web' || !fileInputRef.current) return;
-    fileInputRef.current.click();
-  };
-
   const handleUpload = useDebouncedAction(async () => {
-    if (!pickedFile) { Alert.alert('Pick a file', 'Please choose a PDF or Word document first.'); return; }
-    if (!gradeId) { Alert.alert('Missing grade', 'Please pick a grade.'); return; }
-    if (!subject.trim()) { Alert.alert('Missing subject', 'Please type a subject name.'); return; }
+    if (!pickedFile) { notify('Pick a file', 'Please choose a PDF or Word document first.'); return; }
+    if (!gradeId) { notify('Missing grade', 'Please pick a grade.'); return; }
+    if (!subject.trim()) { notify('Missing subject', 'Please type a subject name.'); return; }
     const y = parseInt(year, 10);
-    if (!y || y < 2000 || y > 2100) { Alert.alert('Invalid year', 'Enter a 4-digit year.'); return; }
+    if (!y || y < 2000 || y > 2100) { notify('Invalid year', 'Enter a 4-digit year.'); return; }
 
     setUploading(true);
     try {
@@ -130,21 +136,21 @@ export default function AdminAssessments() {
       const res = await axios.post(`${BACKEND_URL}/api/admin/assessments/upload`, fd, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
       });
-      Alert.alert('Uploaded', `Stored as ${res.data.key}`);
+      notify('Uploaded', `Stored as ${res.data.key}`);
       setPickedFile(null);
       setSubject('');
       if (fileInputRef.current) fileInputRef.current.value = '';
       refreshList();
     } catch (e: any) {
       const detail = e?.response?.data?.detail || e?.message;
-      Alert.alert('Upload failed', typeof detail === 'string' ? detail : 'Please try again.');
+      notify('Upload failed', typeof detail === 'string' ? detail : 'Please try again.');
     } finally {
       setUploading(false);
     }
   });
 
   const handleDelete = useDebouncedAction(async (key: string) => {
-    if (!confirm(`Delete this paper?\n\n${key}`)) return;
+    if (typeof window !== 'undefined' && !window.confirm(`Delete this paper?\n\n${key}`)) return;
     try {
       const token = await getIdToken();
       await axios.delete(`${BACKEND_URL}/api/admin/assessments`, {
@@ -154,7 +160,7 @@ export default function AdminAssessments() {
       setPapers((prev) => prev.filter((p) => p.key !== key));
     } catch (e: any) {
       const detail = e?.response?.data?.detail || e?.message;
-      Alert.alert('Delete failed', typeof detail === 'string' ? detail : 'Please try again.');
+      notify('Delete failed', typeof detail === 'string' ? detail : 'Please try again.');
     }
   });
 
@@ -236,28 +242,51 @@ export default function AdminAssessments() {
           </View>
 
           <Text style={[styles.label, { marginTop: 14 }]}>File (.pdf, .doc, .docx)</Text>
-          {Platform.OS === 'web' && (
-            // @ts-ignore — plain DOM input, web-only admin route
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              onChange={(e: any) => setPickedFile(e.target.files?.[0] || null)}
-              style={{ display: 'none' }}
-              data-testid="admin-upload-file-input"
-            />
+          {Platform.OS === 'web' ? (
+            // Plain DOM label → input: RN Web passes these through to real
+            // HTML. TouchableOpacity + hidden input is flaky on RN Web because
+            // refs don't always attach cleanly; a native <label htmlFor> is
+            // bulletproof and still matches the design.
+            // @ts-ignore — web-only escape hatch
+            <label
+              htmlFor="admin-upload-file-input"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                backgroundColor: '#F3F4FF',
+                border: '1px dashed #DDDDF5',
+                borderRadius: 10,
+                padding: '12px 14px',
+                cursor: 'pointer',
+                color: '#283593',
+                fontWeight: 600,
+                fontSize: 13,
+              }}
+              data-testid="admin-upload-pick-file"
+            >
+              <Ionicons name="document-attach" size={18} color="#5C6BC0" />
+              <span>{pickedFile ? `${pickedFile.name} · ${bytes(pickedFile.size)}` : 'Choose file…'}</span>
+              {/* @ts-ignore */}
+              <input
+                id="admin-upload-file-input"
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={(e: any) => setPickedFile(e.target.files?.[0] || null)}
+                style={{ display: 'none' }}
+                data-testid="admin-upload-file-input"
+              />
+            </label>
+          ) : (
+            <TouchableOpacity
+              onPress={() => notify('File picker unavailable', 'Open the admin page in a web browser to upload files.')}
+              style={styles.filePickBtn}
+            >
+              <Ionicons name="document-attach" size={18} color="#5C6BC0" />
+              <Text style={styles.filePickText}>Choose file…</Text>
+            </TouchableOpacity>
           )}
-          <TouchableOpacity
-            onPress={handlePickFile}
-            style={styles.filePickBtn}
-            testID="admin-upload-pick-file"
-            data-testid="admin-upload-pick-file"
-          >
-            <Ionicons name="document-attach" size={18} color="#5C6BC0" />
-            <Text style={styles.filePickText}>
-              {pickedFile ? `${pickedFile.name} · ${bytes(pickedFile.size)}` : 'Choose file…'}
-            </Text>
-          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={handleUpload}
