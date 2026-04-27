@@ -336,6 +336,26 @@ End-to-end ingestion of admin-uploaded curriculum data now captures and stores t
 
 **Live verified**: `GET /api/public/import-template` now serves CSV with the new column populated.
 
+## AI Extraction Pipeline: Key Inquiry Questions End-to-End (Feb 2026)
+
+The Gemini-driven curriculum extraction pipeline (`scripts/curriculum_pipeline.py` → `ai_extractor.py` → `seed_script_generator.py`) now carries Key Inquiry Questions from the source PDF all the way into MongoDB.
+
+**Changes**
+- `scripts/ai_extractor.py`: extended `EXTRACTION_PROMPT` to instruct Gemini to capture `inquiry_questions` per substrand, with a strict "do not paraphrase or invent if absent" rule. Added the field to the JSON output schema.
+- `scripts/seed_script_generator.py`: 
+  - `_format_subject_data` now serializes `inquiry_questions` into the substrand dict literal in the generated `SUBJECT_DATA`.
+  - The runtime `db.learning_activities.insert_one(...)` call in the generated script now writes `"inquiry_questions": ensure_list(ss_data.get("inquiry_questions"))`.
+- `scripts/seed/seed_curriculum.py`: already saves `inquiry_questions` (line 170) — confirmed correct, no change.
+
+**Tests**: `tests/test_seed_pipeline_kiq.py` — 4 cases (literal includes IQs, missing key emits `[]`, generated script contains the runtime insert, full round-trip via `exec` of the SUBJECT_DATA literal). All pass; total session bucket green (42/42).
+
+**Complete loop** now:
+```
+PDF/DOCX/CSV → extractor (admin UI or AI pipeline) → SUBJECT_DATA literal /
+import save handler → learning_activities.inquiry_questions[] → scheme
+generator (priority #2 verbatim) → PDF rendering
+```
+
 ## Next Tasks
 1. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin`, `/lesson_plans` into `routes/`)
 2. Past Papers feature

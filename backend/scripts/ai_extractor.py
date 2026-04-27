@@ -41,6 +41,11 @@ STRICT RULES:
   * extended: Activities containing keywords: practical, project, experiment, field work, assignment, research, investigation, survey, field trip, hands-on
 - If an activity contains those keywords, it MUST go to "extended", not "development"
 - Capture competencies, values, PCIs (Pertinent Contemporary Issues) per substrand
+- Capture Key Inquiry Question(s) per substrand. KICD documents present these
+  under headings like "Key Inquiry Question(s)", "Key Inquiry Questions:" or
+  the singular "Key Inquiry Question:". Extract every distinct question as a
+  separate string, preserving the trailing "?" verbatim. Do NOT paraphrase or
+  invent questions if none are present in the source.
 - Include assessment methods and learning resources when available
 - Estimate lesson count per substrand from the document if mentioned
 
@@ -80,7 +85,8 @@ OUTPUT FORMAT (strict JSON):
           },
           "competencies": ["Competency 1", "Competency 2"],
           "values": ["Value 1", "Value 2"],
-          "pcis": ["PCI 1", "PCI 2"]
+          "pcis": ["PCI 1", "PCI 2"],
+          "inquiry_questions": ["Key inquiry question 1?", "Key inquiry question 2?"]
         }
       ]
     }

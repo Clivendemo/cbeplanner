@@ -424,6 +424,7 @@ async def seed_subject(grade_id):
                 "extended_activities": ensure_list(la.get("extended")),
                 "learning_resources": resources,
                 "assessment_methods": ensure_list(la.get("assessment")),
+                "inquiry_questions": ensure_list(ss_data.get("inquiry_questions")),
                 "createdAt": datetime.utcnow()
             }})
             stats["activities"] += 1
@@ -525,7 +526,10 @@ def _format_subject_data(subject_name: str, strands: list) -> str:
             # Competencies, values, PCIs at substrand level
             lines.append(f'                    "competencies": {json.dumps(ss.get("competencies", []))},')
             lines.append(f'                    "values": {json.dumps(ss.get("values", []))},')
-            lines.append(f'                    "pcis": {json.dumps(ss.get("pcis", []))}')
+            lines.append(f'                    "pcis": {json.dumps(ss.get("pcis", []))},')
+            # Key inquiry questions at substrand level (used verbatim by the scheme
+            # generator — preserves grammatical correctness of curated content).
+            lines.append(f'                    "inquiry_questions": {json.dumps(ss.get("inquiry_questions", []))}')
 
             comma = "," if ssi < len(strand.get("substrands", [])) - 1 else ""
             lines.append(f"                }}{comma}")
