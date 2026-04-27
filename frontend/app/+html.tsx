@@ -85,23 +85,21 @@ export default function Root({ children }: PropsWithChildren) {
               }
               body {
                 overflow-x: hidden;
-                /* World-class premium background: a layered purple/lavender wash
-                   with a large ambient glow and a slow-moving gleam that sweeps
-                   across the viewport. Richer than a flat gradient, but still
-                   restrained so content stays the hero. */
-                background-color: #EFEAFC;
+                /* Royal-blue → navy premium background, inspired by classic
+                   education templates: rich saturation, restrained highlights. */
+                background-color: #0A2A6B;
                 background-image:
-                  /* Soft lavender glow, top-left */
-                  radial-gradient(1200px 820px at 8% 0%, #DDD3FB 0%, transparent 55%),
-                  /* Cool indigo glow, top-right */
-                  radial-gradient(1000px 700px at 100% 12%, #E7DFFD 0%, transparent 60%),
-                  /* Warm magenta-purple haze, bottom-right */
-                  radial-gradient(1100px 760px at 92% 100%, #EADDFC 0%, transparent 55%),
-                  /* Base diagonal gradient */
-                  linear-gradient(135deg, #F5F1FF 0%, #FBF8FF 50%, #EFE7FE 100%);
+                  /* Bright sapphire glow, top-left */
+                  radial-gradient(1300px 880px at 6% 0%, #2A5BC8 0%, transparent 55%),
+                  /* Cooler indigo highlight, top-right */
+                  radial-gradient(1100px 760px at 100% 8%, #1E47A6 0%, transparent 60%),
+                  /* Deep midnight haze, bottom-right */
+                  radial-gradient(1100px 760px at 95% 100%, #0B1F4F 0%, transparent 55%),
+                  /* Base diagonal navy gradient */
+                  linear-gradient(135deg, #0E2F7A 0%, #11357F 45%, #0A1F55 100%);
                 background-attachment: fixed;
               }
-              /* ===== Premium shimmer layer behind everything ===== */
+              /* ===== Premium shimmer layer ===== */
               body::before {
                 content: '';
                 position: fixed;
@@ -109,18 +107,18 @@ export default function Root({ children }: PropsWithChildren) {
                 pointer-events: none;
                 z-index: 0;
                 background:
-                  /* Soft drifting lavender orb */
-                  radial-gradient(780px 460px at 18% 28%,
-                    rgba(167, 139, 250, 0.22) 0%,
-                    rgba(167, 139, 250, 0.00) 65%),
-                  /* Cool amethyst counter-orb on the opposite side */
-                  radial-gradient(640px 420px at 82% 78%,
-                    rgba(139, 92, 246, 0.16) 0%,
-                    rgba(139, 92, 246, 0.00) 70%);
+                  /* Soft cyan-blue orb */
+                  radial-gradient(820px 480px at 18% 28%,
+                    rgba(96, 165, 250, 0.20) 0%,
+                    rgba(96, 165, 250, 0.00) 65%),
+                  /* Cool indigo counter-orb */
+                  radial-gradient(680px 440px at 82% 78%,
+                    rgba(59, 130, 246, 0.16) 0%,
+                    rgba(59, 130, 246, 0.00) 70%);
                 animation: cbepl-glow-drift 28s ease-in-out infinite alternate;
                 filter: blur(2px);
               }
-              /* ===== Diagonal gleam streak — subtle, ~24s cycle ===== */
+              /* ===== Diagonal gleam streak ===== */
               body::after {
                 content: '';
                 position: fixed;
@@ -130,8 +128,8 @@ export default function Root({ children }: PropsWithChildren) {
                 background: linear-gradient(
                   110deg,
                   rgba(255,255,255,0) 42%,
-                  rgba(255,255,255,0.55) 50%,
-                  rgba(221, 214, 254, 0.35) 54%,
+                  rgba(173, 197, 255, 0.35) 50%,
+                  rgba(96, 165, 250, 0.28) 54%,
                   rgba(255,255,255,0) 62%
                 );
                 transform: translateX(-60%) rotate(4deg);
@@ -161,12 +159,12 @@ export default function Root({ children }: PropsWithChildren) {
                 overflow: hidden;
                 padding: 10px 0;
                 background:
-                  linear-gradient(90deg, #2E1065 0%, #5B21B6 35%, #7C3AED 70%, #A78BFA 100%);
+                  linear-gradient(90deg, #061538 0%, #0E2F7A 35%, #1E47A6 70%, #2A5BC8 100%);
                 border-bottom: 1px solid rgba(255,255,255,0.08);
                 box-shadow:
                   inset 0 1px 0 rgba(255,255,255,0.15),
-                  inset 0 -1px 0 rgba(0,0,0,0.25),
-                  0 2px 6px rgba(76, 29, 149, 0.35);
+                  inset 0 -1px 0 rgba(0,0,0,0.30),
+                  0 2px 6px rgba(8, 22, 64, 0.45);
               }
               .cbepl-news-strip::after {
                 /* "Lazy gleam": soft diagonal streak sweeping across the strip. */
@@ -211,15 +209,15 @@ export default function Root({ children }: PropsWithChildren) {
                 font-family: 'Playfair Display', 'Cormorant Garamond', 'Merriweather', Georgia, serif;
                 font-size: 17px;
                 font-weight: 600;
-                color: #F5EFFF;
+                color: #EAF1FF;
                 letter-spacing: 0.3px;
-                /* 3D raised effect via stacked text shadows */
+                /* 3D raised effect via stacked text shadows (royal-blue palette) */
                 text-shadow:
                   0 1px 0 rgba(255,255,255,0.18),
-                  0 2px 0 rgba(76, 29, 149, 0.55),
-                  0 3px 0 rgba(46, 16, 101, 0.55),
+                  0 2px 0 rgba(8, 22, 64, 0.55),
+                  0 3px 0 rgba(6, 21, 56, 0.55),
                   0 4px 10px rgba(0, 0, 0, 0.45),
-                  0 0 18px rgba(167, 139, 250, 0.5);
+                  0 0 18px rgba(96, 165, 250, 0.5);
               }
               .cbepl-news-item strong {
                 color: #FFFFFF;
@@ -228,8 +226,8 @@ export default function Root({ children }: PropsWithChildren) {
                 margin-right: 6px;
                 text-shadow:
                   0 1px 0 rgba(255,255,255,0.25),
-                  0 2px 0 rgba(76, 29, 149, 0.6),
-                  0 3px 0 rgba(46, 16, 101, 0.6),
+                  0 2px 0 rgba(8, 22, 64, 0.6),
+                  0 3px 0 rgba(6, 21, 56, 0.6),
                   0 4px 10px rgba(0, 0, 0, 0.5);
               }
               .cbepl-news-bullet {
@@ -238,7 +236,7 @@ export default function Root({ children }: PropsWithChildren) {
                 display: inline-block;
                 box-shadow:
                   0 0 8px rgba(255,255,255,0.8),
-                  0 0 16px rgba(167, 139, 250, 0.7);
+                  0 0 16px rgba(96, 165, 250, 0.7);
               }
               @media (max-width: 640px) {
                 .cbepl-news-strip { padding: 8px 0; }

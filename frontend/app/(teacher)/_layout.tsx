@@ -266,10 +266,7 @@ const styles = StyleSheet.create({
   // ===== Persistent shell (desktop only) =====
   shellRoot: {
     flex: 1,
-    backgroundColor: '#EEF2FF', // indigo-50, blends with #6366F1 header
-    // @ts-ignore web-only CSS: soft indigo wash
-    backgroundImage:
-      'radial-gradient(900px 500px at 8% 0%, #E0E7FF 0%, transparent 60%), radial-gradient(900px 500px at 92% 100%, #F5F3FF 0%, transparent 60%), linear-gradient(180deg, #EEF2FF 0%, #F8FAFC 100%)',
+    backgroundColor: 'transparent', // body bg shows through (royal blue gradient)
   },
   shellRow: {
     flex: 1,
@@ -280,30 +277,45 @@ const styles = StyleSheet.create({
     paddingHorizontal: GAP,
     paddingVertical: GAP,
   },
+  // Side columns now feel like 3D panels lifted off the page —
+  // glass background + multi-layer shadow + subtle highlight on the top edge.
   sideCol: {
     flexShrink: 0,
     paddingTop: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    // @ts-ignore web-only multi-layer shadow gives a real "floating bar" feel
+    boxShadow:
+      '0 1px 0 rgba(255,255,255,0.85) inset,' +
+      ' 0 18px 36px -10px rgba(8, 22, 64, 0.45),' +
+      ' 0 8px 16px -8px rgba(8, 22, 64, 0.30),' +
+      ' 0 2px 4px rgba(8, 22, 64, 0.16)',
+    // @ts-ignore web-only — graceful slow lift
+    transition: 'transform 220ms ease, box-shadow 220ms ease',
   },
   mainCol: {
     flex: 1,
     maxWidth: MAIN_W,
-    minWidth: 0, // allow the flex child to shrink below its content width
+    minWidth: 0,
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: 'rgba(255, 255, 255, 0.6)',
     overflow: 'hidden',
-    // @ts-ignore web-only shadow
-    boxShadow: '0 6px 24px rgba(17, 24, 39, 0.06)',
+    // @ts-ignore web-only deeper shadow stack gives the "main panel lifted higher"
+    boxShadow:
+      '0 1px 0 rgba(255,255,255,0.95) inset,' +
+      ' 0 28px 56px -12px rgba(8, 22, 64, 0.55),' +
+      ' 0 14px 28px -10px rgba(8, 22, 64, 0.40),' +
+      ' 0 4px 8px rgba(8, 22, 64, 0.18)',
   },
 
   // Mobile/tablet shell (below 1180px): Stack is viewport-height, sidebars below
   mobileRoot: {
     flex: 1,
-    backgroundColor: '#EEF2FF',
-    // @ts-ignore web-only CSS
-    backgroundImage:
-      'radial-gradient(900px 500px at 8% 0%, #E0E7FF 0%, transparent 60%), linear-gradient(180deg, #EEF2FF 0%, #F8FAFC 100%)',
+    backgroundColor: 'transparent',
   },
   mobileSidebars: {
     padding: 16,
