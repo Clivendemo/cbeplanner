@@ -100,7 +100,7 @@ export default function Lessons() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#6366F1" />
+        <ActivityIndicator size="large" color="#5C6BC0" />
       </View>
     );
   }
@@ -110,7 +110,7 @@ export default function Lessons() {
       style={styles.container}
       contentContainerStyle={styles.content}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#6366F1']} />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#5C6BC0']} />
       }
     >
       <View style={styles.header}>
@@ -120,7 +120,7 @@ export default function Lessons() {
 
       {/* Expiration Notice */}
       <View style={styles.noticeBox}>
-        <Ionicons name="information-circle" size={20} color="#6366F1" />
+        <Ionicons name="information-circle" size={20} color="#5C6BC0" />
         <Text style={styles.noticeText}>
           Lesson plans are available for 2 days after creation, then automatically deleted.
         </Text>
@@ -142,7 +142,7 @@ export default function Lessons() {
           >
             <View style={styles.cardHeader}>
               <View style={styles.iconContainer}>
-                <Ionicons name="book" size={24} color="#6366F1" />
+                <Ionicons name="book" size={24} color="#5C6BC0" />
               </View>
               <View style={styles.cardHeaderText}>
                 <Text style={styles.cardTitle}>{lesson.gradeName}</Text>
@@ -153,15 +153,15 @@ export default function Lessons() {
 
             <View style={styles.cardContent}>
               <View style={styles.infoRow}>
-                <Ionicons name="layers-outline" size={16} color="#6B7280" />
+                <Ionicons name="layers-outline" size={16} color="#5A5A7A" />
                 <Text style={styles.infoText}>{lesson.strandName}</Text>
               </View>
               <View style={styles.infoRow}>
-                <Ionicons name="git-branch-outline" size={16} color="#6B7280" />
+                <Ionicons name="git-branch-outline" size={16} color="#5A5A7A" />
                 <Text style={styles.infoText}>{lesson.substrandName}</Text>
               </View>
               <View style={styles.infoRow}>
-                <Ionicons name="checkmark-circle-outline" size={16} color="#6B7280" />
+                <Ionicons name="checkmark-circle-outline" size={16} color="#5A5A7A" />
                 <Text style={styles.infoText} numberOfLines={2}>{lesson.sloName}</Text>
               </View>
             </View>
@@ -199,12 +199,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 4
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   emptyState: {
     alignItems: 'center',
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 16
   },
   emptySubtext: {
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB'
+    borderColor: '#DDDDF5'
   },
   cardHeader: {
     flexDirection: 'row',
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12
@@ -250,11 +250,11 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#111827'
+    color: '#1A1A3A'
   },
   cardSubject: {
     fontSize: 14,
-    color: '#6366F1',
+    color: '#5C6BC0',
     marginTop: 2
   },
   cardContent: {

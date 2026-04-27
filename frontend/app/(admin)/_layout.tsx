@@ -36,7 +36,7 @@ export default function AdminLayout() {
         tabBarStyle: {
           backgroundColor: '#FFFFFF',
           borderTopWidth: 1,
-          borderTopColor: '#E5E7EB',
+          borderTopColor: '#DDDDF5',
           paddingBottom: 5,
           paddingTop: 5,
           height: 60
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   errorText: {
     marginTop: 12,
@@ -165,6 +165,6 @@ const styles = StyleSheet.create({
   errorSubtext: {
     marginTop: 4,
     fontSize: 14,
-    color: '#6B7280'
+    color: '#5A5A7A'
   }
 });

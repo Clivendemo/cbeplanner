@@ -284,7 +284,7 @@ export default function LessonSlotsScreen() {
       {selStrand !== '' && <Picker label="Substrand" items={substrands} selected={selSubstrand} onSelect={onSubstrand} placeholder="Select a strand first" />}
 
       {/* Slots */}
-      {slotsLoading && <ActivityIndicator size="large" color="#6366F1" style={{ marginTop: 24 }} />}
+      {slotsLoading && <ActivityIndicator size="large" color="#5C6BC0" style={{ marginTop: 24 }} />}
 
       {selSubstrand !== '' && !slotsLoading && numLessons === 0 && (
         <View style={S.emptyCard}>
@@ -312,7 +312,7 @@ export default function LessonSlotsScreen() {
             </View>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <TouchableOpacity onPress={() => openEditModal(slot)} style={S.iconBtn} data-testid={`edit-slot-${slot.slot_index}`}>
-                <Ionicons name="create-outline" size={20} color="#6366F1" />
+                <Ionicons name="create-outline" size={20} color="#5C6BC0" />
               </TouchableOpacity>
               {slot.is_customized && (
                 <TouchableOpacity onPress={() => clearSlot(slot.slot_index)} style={S.iconBtn} data-testid={`clear-slot-${slot.slot_index}`}>
@@ -328,7 +328,7 @@ export default function LessonSlotsScreen() {
           {/* Inquiry */}
           {slot.key_inquiry_question ? (
             <View style={S.infoRow}>
-              <Ionicons name="help-circle-outline" size={16} color="#6366F1" />
+              <Ionicons name="help-circle-outline" size={16} color="#5C6BC0" />
               <Text style={S.infoText}>{slot.key_inquiry_question}</Text>
             </View>
           ) : null}
@@ -347,7 +347,7 @@ export default function LessonSlotsScreen() {
             )}
             {(slot.resources || []).map((r, ri) => (
               <View key={ri} style={S.resItem}>
-                <Ionicons name={r.type === 'textbook' ? 'book-outline' : 'cube-outline'} size={14} color="#6B7280" />
+                <Ionicons name={r.type === 'textbook' ? 'book-outline' : 'cube-outline'} size={14} color="#5A5A7A" />
                 <Text style={S.resText} numberOfLines={2}>{r.display_text || r.title || ''}</Text>
                 <TouchableOpacity onPress={() => removeResource(slot.slot_index, ri)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                   <Ionicons name="close-circle" size={18} color="#EF4444" />
@@ -365,7 +365,7 @@ export default function LessonSlotsScreen() {
             <View style={S.modalHeader}>
               <Text style={S.modalTitle}>Edit Lesson {editSlot ? editSlot.slot_index + 1 : ''}</Text>
               <TouchableOpacity onPress={() => setEditModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color="#5A5A7A" />
               </TouchableOpacity>
             </View>
             <ScrollView style={S.modalBody} keyboardShouldPersistTaps="handled" nestedScrollEnabled>
@@ -447,7 +447,7 @@ export default function LessonSlotsScreen() {
             <View style={S.modalHeader}>
               <Text style={S.modalTitle}>Add Resource — Lesson {resSlotIdx + 1}</Text>
               <TouchableOpacity onPress={() => setResModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color="#5A5A7A" />
               </TouchableOpacity>
             </View>
             <ScrollView style={S.modalBody} keyboardShouldPersistTaps="handled">
@@ -457,14 +457,14 @@ export default function LessonSlotsScreen() {
                   style={[S.typeChip, resType === 'textbook' && S.typeChipActive]}
                   onPress={() => setResType('textbook')}
                 >
-                  <Ionicons name="book-outline" size={16} color={resType === 'textbook' ? '#fff' : '#6366F1'} />
+                  <Ionicons name="book-outline" size={16} color={resType === 'textbook' ? '#fff' : '#5C6BC0'} />
                   <Text style={[S.typeChipText, resType === 'textbook' && { color: '#fff' }]}>Textbook</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[S.typeChip, resType === 'material' && S.typeChipActive]}
                   onPress={() => setResType('material')}
                 >
-                  <Ionicons name="cube-outline" size={16} color={resType === 'material' ? '#fff' : '#6366F1'} />
+                  <Ionicons name="cube-outline" size={16} color={resType === 'material' ? '#fff' : '#5C6BC0'} />
                   <Text style={[S.typeChipText, resType === 'material' && { color: '#fff' }]}>Material</Text>
                 </TouchableOpacity>
               </View>
@@ -514,36 +514,36 @@ export default function LessonSlotsScreen() {
 const S = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'transparent' },
   content: { padding: 16 },
-  title: { fontSize: 22, fontWeight: '700', color: '#111827', marginBottom: 4 },
-  subtitle: { fontSize: 13, color: '#6B7280', marginBottom: 16 },
+  title: { fontSize: 22, fontWeight: '700', color: '#1A1A3A', marginBottom: 4 },
+  subtitle: { fontSize: 13, color: '#5A5A7A', marginBottom: 16 },
 
   // Pickers
   pickerWrap: { marginBottom: 12 },
   pickerLabel: { fontSize: 12, fontWeight: '600', color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
   pickerScroll: { flexDirection: 'row' },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5E7EB', marginRight: 8 },
-  chipActive: { backgroundColor: '#6366F1', borderColor: '#6366F1' },
+  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#fff', borderWidth: 1, borderColor: '#DDDDF5', marginRight: 8 },
+  chipActive: { backgroundColor: '#5C6BC0', borderColor: '#5C6BC0' },
   chipText: { fontSize: 13, color: '#374151' },
   chipTextActive: { color: '#fff', fontWeight: '600' },
   pickerEmpty: { fontSize: 13, color: '#9CA3AF', paddingVertical: 8 },
 
   // Slots
   slotsHeader: { marginTop: 8, marginBottom: 12 },
-  slotsTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
-  slotsSubtitle: { fontSize: 12, color: '#6B7280', marginTop: 2 },
+  slotsTitle: { fontSize: 16, fontWeight: '700', color: '#1A1A3A' },
+  slotsSubtitle: { fontSize: 12, color: '#5A5A7A', marginTop: 2 },
 
-  slotCard: { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#E5E7EB' },
-  slotCardCustom: { borderColor: '#6366F1', borderWidth: 1.5 },
+  slotCard: { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#DDDDF5' },
+  slotCardCustom: { borderColor: '#5C6BC0', borderWidth: 1.5 },
   slotHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   slotBadgeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   slotBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  badgeCustom: { backgroundColor: '#EEF2FF' },
+  badgeCustom: { backgroundColor: '#F3F4FF' },
   badgeFallback: { backgroundColor: '#F3F4F6' },
-  badgeText: { fontSize: 10, fontWeight: '600', color: '#6366F1' },
+  badgeText: { fontSize: 10, fontWeight: '600', color: '#5C6BC0' },
   slotNum: { fontSize: 14, fontWeight: '600', color: '#374151' },
   iconBtn: { padding: 6, borderRadius: 8, backgroundColor: '#F9FAFB' },
 
-  slotOutcome: { fontSize: 13, color: '#111827', lineHeight: 18, marginBottom: 6 },
+  slotOutcome: { fontSize: 13, color: '#1A1A3A', lineHeight: 18, marginBottom: 6 },
   infoRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginBottom: 6 },
   infoText: { fontSize: 12, color: '#4B5563', flex: 1 },
 
@@ -564,21 +564,21 @@ const S = StyleSheet.create({
   // Modal
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 16 },
   modal: { backgroundColor: '#fff', borderRadius: 16, width: '100%', maxWidth: 500, maxHeight: '85%', overflow: 'hidden', ...Platform.select({ web: { boxShadow: '0 20px 60px rgba(0,0,0,0.3)' } as any, default: { elevation: 24 } }) },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
-  modalTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#DDDDF5' },
+  modalTitle: { fontSize: 16, fontWeight: '700', color: '#1A1A3A' },
   modalBody: { padding: 16, flexShrink: 1 },
-  modalFooter: { flexDirection: 'row', padding: 16, borderTopWidth: 1, borderTopColor: '#E5E7EB', gap: 12 },
+  modalFooter: { flexDirection: 'row', padding: 16, borderTopWidth: 1, borderTopColor: '#DDDDF5', gap: 12 },
 
   fieldLabel: { fontSize: 12, fontWeight: '600', color: '#374151', marginBottom: 4, marginTop: 12 },
-  input: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, padding: 10, fontSize: 13, color: '#111827', backgroundColor: '#F9FAFB', minHeight: 40 },
+  input: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, padding: 10, fontSize: 13, color: '#1A1A3A', backgroundColor: '#F9FAFB', minHeight: 40 },
 
   cancelBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#F3F4F6', alignItems: 'center' },
   cancelBtnText: { fontSize: 14, fontWeight: '600', color: '#374151' },
-  saveBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#6366F1', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
+  saveBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#5C6BC0', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
   saveBtnText: { fontSize: 14, fontWeight: '600', color: '#fff' },
 
   // Type chips
-  typeChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#6366F1' },
-  typeChipActive: { backgroundColor: '#6366F1' },
-  typeChipText: { fontSize: 13, color: '#6366F1' },
+  typeChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#5C6BC0' },
+  typeChipActive: { backgroundColor: '#5C6BC0' },
+  typeChipText: { fontSize: 13, color: '#5C6BC0' },
 });

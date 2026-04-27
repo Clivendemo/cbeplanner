@@ -253,7 +253,7 @@ export default function AdminAssessments() {
             testID="admin-upload-pick-file"
             data-testid="admin-upload-pick-file"
           >
-            <Ionicons name="document-attach" size={18} color="#5B5BD6" />
+            <Ionicons name="document-attach" size={18} color="#5C6BC0" />
             <Text style={styles.filePickText}>
               {pickedFile ? `${pickedFile.name} · ${bytes(pickedFile.size)}` : 'Choose file…'}
             </Text>
@@ -282,7 +282,7 @@ export default function AdminAssessments() {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Text style={styles.cardTitle}>Existing papers</Text>
             <TouchableOpacity onPress={refreshList} style={styles.refreshBtn} testID="admin-assessments-refresh">
-              <Ionicons name="refresh" size={14} color="#5B5BD6" />
+              <Ionicons name="refresh" size={14} color="#5C6BC0" />
               <Text style={styles.refreshText}>Refresh</Text>
             </TouchableOpacity>
           </View>
@@ -329,7 +329,7 @@ export default function AdminAssessments() {
 
           <View style={{ marginTop: 12 }}>
             {loadingList ? (
-              <ActivityIndicator color="#5B5BD6" />
+              <ActivityIndicator color="#5C6BC0" />
             ) : papers.length === 0 ? (
               <Text style={styles.emptyText}>No papers match these filters yet.</Text>
             ) : (
@@ -367,63 +367,63 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   content: { padding: 16, paddingBottom: 48 },
 
-  pageTitle: { fontSize: 20, fontWeight: '700', color: '#111827' },
-  pageSub: { fontSize: 13, color: '#6B7280', marginTop: 4, marginBottom: 16 },
+  pageTitle: { fontSize: 20, fontWeight: '700', color: '#1A1A3A' },
+  pageSub: { fontSize: 13, color: '#5A5A7A', marginTop: 4, marginBottom: 16 },
 
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 14, padding: 16,
-    borderWidth: 1, borderColor: '#E5E7EB',
+    borderWidth: 1, borderColor: '#DDDDF5',
     marginBottom: 16,
   },
-  cardTitle: { fontSize: 15, fontWeight: '700', color: '#111827' },
+  cardTitle: { fontSize: 15, fontWeight: '700', color: '#1A1A3A' },
 
-  label: { fontSize: 11, fontWeight: '700', color: '#6B7280', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 10, marginBottom: 6 },
+  label: { fontSize: 11, fontWeight: '700', color: '#5A5A7A', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 10, marginBottom: 6 },
 
   chipRow: { flexDirection: 'row', gap: 8, paddingVertical: 2, flexWrap: 'wrap' },
   chip: {
     paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1, borderColor: '#E5E7EB',
+    borderWidth: 1, borderColor: '#DDDDF5',
   },
-  chipActive: { backgroundColor: '#5B5BD6', borderColor: '#5B5BD6' },
+  chipActive: { backgroundColor: '#5C6BC0', borderColor: '#5C6BC0' },
   chipText: { fontSize: 12, color: '#374151', fontWeight: '500' },
   chipTextActive: { color: '#FFFFFF', fontWeight: '700' },
 
   input: {
     backgroundColor: '#F9FAFB',
-    borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 10,
+    borderWidth: 1, borderColor: '#DDDDF5', borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 10,
-    fontSize: 13, color: '#111827',
+    fontSize: 13, color: '#1A1A3A',
   },
 
   filePickBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: '#F5F3FF',
-    borderWidth: 1, borderColor: '#EDE9FE', borderStyle: 'dashed' as any,
+    backgroundColor: '#F3F4FF',
+    borderWidth: 1, borderColor: '#F3F4FF', borderStyle: 'dashed' as any,
     borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
     marginTop: 4,
   },
-  filePickText: { fontSize: 13, color: '#4C1D95', fontWeight: '600', flex: 1 },
+  filePickText: { fontSize: 13, color: '#283593', fontWeight: '600', flex: 1 },
 
   primaryBtn: {
     marginTop: 14, paddingVertical: 12,
-    backgroundColor: '#5B5BD6',
+    backgroundColor: '#5C6BC0',
     borderRadius: 10,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
   },
   primaryBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 13 },
 
   refreshBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  refreshText: { color: '#5B5BD6', fontSize: 12, fontWeight: '600' },
+  refreshText: { color: '#5C6BC0', fontSize: 12, fontWeight: '600' },
 
   paperRow: {
     flexDirection: 'row', alignItems: 'center',
     paddingVertical: 10, gap: 10,
     borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
   },
-  paperTitle: { fontSize: 13, fontWeight: '700', color: '#111827' },
-  paperMeta: { fontSize: 11, color: '#6B7280', marginTop: 2 },
+  paperTitle: { fontSize: 13, fontWeight: '700', color: '#1A1A3A' },
+  paperMeta: { fontSize: 11, color: '#5A5A7A', marginTop: 2 },
   paperKey: { fontSize: 10, color: '#9CA3AF', marginTop: 2 },
   deleteBtn: { padding: 8, borderRadius: 8, backgroundColor: '#FEE2E2' },
 

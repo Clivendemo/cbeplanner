@@ -45,7 +45,7 @@ const TIPS: Record<number, string> = {
 const SUBJECTS = ['Mathematics', 'English', 'Kiswahili', 'Science', 'Social Studies', 'CRE', 'Creative Arts', 'Agriculture', 'Life Skills'];
 
 const FEATURE_TILES = [
-  { icon: 'document-text-outline', label: 'Generate Scheme of Work', bg: '#EEF2FF', color: '#3730A3', border: '#C7D2FE', route: '/(teacher)/schemes' },
+  { icon: 'document-text-outline', label: 'Generate Scheme of Work', bg: '#F3F4FF', color: '#3730A3', border: '#C7D2FE', route: '/(teacher)/schemes' },
   { icon: 'create-outline', label: 'Generate Lesson Plan', bg: '#F0FDF4', color: '#166534', border: '#BBF7D0', route: '/(teacher)/home' },
   { icon: 'book-outline', label: 'Generate Lesson Notes', bg: '#FFF7ED', color: '#9A3412', border: '#FED7AA', route: '/(teacher)/notes' },
   { icon: 'download-outline', label: 'Download CBC Past Papers', bg: '#EFF6FF', color: '#1E40AF', border: '#BFDBFE', route: '/(teacher)/revision' },
@@ -238,7 +238,7 @@ const mpesaStyles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 8,
   },
-  tillLabel: { fontSize: 9, color: '#6B7280', letterSpacing: 0.5, textTransform: 'uppercase' },
+  tillLabel: { fontSize: 9, color: '#5A5A7A', letterSpacing: 0.5, textTransform: 'uppercase' },
   tillNumber: { fontSize: 18, fontWeight: '700', color: '#166534', letterSpacing: 0.8 },
   tillBadge: { backgroundColor: '#dcfce7', borderRadius: 6, paddingVertical: 4, paddingHorizontal: 8 },
   tillBadgeText: { fontSize: 10, fontWeight: '600', color: '#166534' },
@@ -255,7 +255,7 @@ const mpesaStyles = StyleSheet.create({
   stepBulletText: { fontSize: 9, color: '#FFFFFF', fontWeight: '700', lineHeight: 10 },
   stepText: { fontSize: 11, color: '#166534', lineHeight: 16, opacity: 0.85, flex: 1 },
   footerDivider: { height: 1, backgroundColor: '#bbf7d0', marginTop: 10, marginBottom: 8 },
-  footerNote: { fontSize: 10, color: '#6B7280', lineHeight: 15 },
+  footerNote: { fontSize: 10, color: '#5A5A7A', lineHeight: 15 },
   footerEmail: { color: '#16a34a', fontWeight: '500' },
 });
 
@@ -338,11 +338,11 @@ const CalendarWidgetBase: React.FC<{ compact: boolean }> = ({ compact }) => {
       {/* Header */}
       <View style={calStyles.header}>
         <Pressable onPress={goPrev} style={calStyles.navBtn} hitSlop={8} data-testid="calendar-prev">
-          <Ionicons name="chevron-back" size={compact ? 12 : 14} color="#5B5BD6" />
+          <Ionicons name="chevron-back" size={compact ? 12 : 14} color="#5C6BC0" />
         </Pressable>
         <Text style={[calStyles.monthLabel, compact && { fontSize: 11 }]}>{MONTH_NAMES[viewMonth]} {viewYear}</Text>
         <Pressable onPress={goNext} style={calStyles.navBtn} hitSlop={8} data-testid="calendar-next">
-          <Ionicons name="chevron-forward" size={compact ? 12 : 14} color="#5B5BD6" />
+          <Ionicons name="chevron-forward" size={compact ? 12 : 14} color="#5C6BC0" />
         </Pressable>
       </View>
 
@@ -408,7 +408,7 @@ const CalendarWidgetBase: React.FC<{ compact: boolean }> = ({ compact }) => {
               {MONTH_NAMES[viewMonth]} {openDay}
             </Text>
             <Pressable onPress={() => setOpenDay(null)} hitSlop={8} data-testid="calendar-popover-close">
-              <Ionicons name="close" size={12} color="#6B7280" />
+              <Ionicons name="close" size={12} color="#5A5A7A" />
             </Pressable>
           </View>
           {(eventsByDay.get(openDay) ?? []).map((e, i) => (
@@ -422,7 +422,7 @@ const CalendarWidgetBase: React.FC<{ compact: boolean }> = ({ compact }) => {
 
       {/* Legend */}
       <View style={calStyles.legend}>
-        <View style={[styles.legendDot, { backgroundColor: '#5B5BD6' }]} />
+        <View style={[styles.legendDot, { backgroundColor: '#5C6BC0' }]} />
         <Text style={styles.legendText}>Academic</Text>
         <View style={[styles.legendDot, { backgroundColor: '#16A34A', marginLeft: 8 }]} />
         <Text style={styles.legendText}>Co-curr</Text>
@@ -441,7 +441,7 @@ const calStyles = StyleSheet.create({
     marginBottom: 8,
   },
   navBtn: { padding: 4 },
-  monthLabel: { fontSize: 12, fontWeight: '700', color: '#111827' },
+  monthLabel: { fontSize: 12, fontWeight: '700', color: '#1A1A3A' },
   row: { flexDirection: 'row' },
   cell: {
     flex: 1,
@@ -460,7 +460,7 @@ const calStyles = StyleSheet.create({
     position: 'relative',
   },
   dayPillToday: {
-    backgroundColor: '#5B5BD6',
+    backgroundColor: '#5C6BC0',
   },
   dayNum: { fontSize: 11, color: '#374151', fontWeight: '500' },
   dayNumToday: { color: '#FFFFFF', fontWeight: '700' },
@@ -475,7 +475,7 @@ const calStyles = StyleSheet.create({
     marginTop: 10,
     backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     borderRadius: 8,
     padding: 8,
   },
@@ -485,7 +485,7 @@ const calStyles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 4,
   },
-  popoverDate: { fontSize: 11, fontWeight: '700', color: '#111827' },
+  popoverDate: { fontSize: 11, fontWeight: '700', color: '#1A1A3A' },
   popoverRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 2 },
   popoverDot: { width: 5, height: 5, borderRadius: 3 },
   popoverTitle: { fontSize: 10, color: '#374151', flex: 1 },
@@ -505,7 +505,7 @@ const UpcomingEventsWidget: React.FC = () => {
       <View style={styles.widgetHeaderRow}>
         <Text style={styles.widgetTitle}>Upcoming Events</Text>
         <View style={styles.legendRow}>
-          <View style={[styles.legendDot, { backgroundColor: '#5B5BD6' }]} />
+          <View style={[styles.legendDot, { backgroundColor: '#5C6BC0' }]} />
           <Text style={styles.legendText}>Academic</Text>
           <View style={[styles.legendDot, { backgroundColor: '#16A34A', marginLeft: 6 }]} />
           <Text style={styles.legendText}>Co-curr</Text>
@@ -607,10 +607,10 @@ const TermCalendarWidget: React.FC = () => {
             </View>
           </View>
           <View style={styles.termActivitiesSection}>
-            <Text style={[styles.activitiesLabel, { color: '#5B5BD6' }]}>📚 ACADEMIC</Text>
+            <Text style={[styles.activitiesLabel, { color: '#5C6BC0' }]}>📚 ACADEMIC</Text>
             {term.academic.map((a, i) => (
               <View key={i} style={styles.activityRow}>
-                <View style={[styles.activityDot, { backgroundColor: '#5B5BD6' }]} />
+                <View style={[styles.activityDot, { backgroundColor: '#5C6BC0' }]} />
                 <Text style={styles.activityLabel}>{a.label}</Text>
                 <Text style={styles.activityDate}>{a.date}</Text>
               </View>
@@ -811,7 +811,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     padding: 36,
     alignSelf: 'flex-start',
     // @ts-ignore web-only subtle shadow matches the soft violet background
@@ -831,24 +831,24 @@ const styles = StyleSheet.create({
   widgetCard: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     borderRadius: 12,
     padding: 14,
   },
-  widgetTitle: { fontSize: 15, fontWeight: '700', color: '#111827', marginBottom: 8 },
+  widgetTitle: { fontSize: 15, fontWeight: '700', color: '#1A1A3A', marginBottom: 8 },
   widgetSubtitle: { fontSize: 12, color: '#9CA3AF', marginTop: 3 },
-  widgetFact: { fontSize: 13, color: '#6B7280', lineHeight: 20 },
+  widgetFact: { fontSize: 13, color: '#5A5A7A', lineHeight: 20 },
   widgetHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
 
   // Dots
   dotRow: { flexDirection: 'row', gap: 5, marginTop: 10 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#D1D5DB' },
-  dotActive: { backgroundColor: '#5B5BD6' },
+  dotActive: { backgroundColor: '#5C6BC0' },
 
   // Legend
   legendRow: { flexDirection: 'row', alignItems: 'center' },
   legendDot: { width: 7, height: 7, borderRadius: 4 },
-  legendText: { fontSize: 11, color: '#6B7280', marginLeft: 4 },
+  legendText: { fontSize: 11, color: '#5A5A7A', marginLeft: 4 },
 
   // Events
   eventRow: { flexDirection: 'row', alignItems: 'center', gap: 9 },
@@ -867,14 +867,14 @@ const styles = StyleSheet.create({
   eventFooterNote: { fontSize: 11, color: '#9CA3AF', textAlign: 'center', marginTop: 10 },
 
   // Quote
-  quoteBlock: { paddingLeft: 10, borderLeftWidth: 3, borderLeftColor: '#5B5BD6', marginTop: 4 },
+  quoteBlock: { paddingLeft: 10, borderLeftWidth: 3, borderLeftColor: '#5C6BC0', marginTop: 4 },
   quoteText: { fontSize: 13, color: '#374151', fontStyle: 'italic', lineHeight: 20 },
   quoteAuthor: { fontSize: 12, color: '#9CA3AF', marginTop: 6 },
 
   // Useful Links
   usefulLink: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
-  usefulLinkText: { fontSize: 13, color: '#5B5BD6' },
-  linkDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#5B5BD6' },
+  usefulLinkText: { fontSize: 13, color: '#5C6BC0' },
+  linkDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#5C6BC0' },
   linkDivider: { height: 1, backgroundColor: '#F3F4F6', marginVertical: 2 },
 
   // Subjects
@@ -902,14 +902,14 @@ const styles = StyleSheet.create({
   adBox: {
     backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   adPlaceholderText: { color: '#D1D5DB', fontSize: 12 },
 
-  bottomAdSection: { borderTopWidth: 1, borderTopColor: '#E5E7EB', paddingVertical: 40, paddingHorizontal: 16, backgroundColor: '#F3F4F6' },
+  bottomAdSection: { borderTopWidth: 1, borderTopColor: '#DDDDF5', paddingVertical: 40, paddingHorizontal: 16, backgroundColor: '#F3F4F6' },
 
   // On mobile, render sidebar widgets stacked below the main card so users can scroll.
   mobileSidebars: {
@@ -917,7 +917,7 @@ const styles = StyleSheet.create({
     gap: 14,
     backgroundColor: '#F3F4F6',
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: '#DDDDF5',
   },
 
   // Feature tiles
@@ -934,7 +934,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   featureBtnLabel: { fontSize: 12, fontWeight: '500', flex: 1 },
-  featureFooter: { fontSize: 12, color: '#6B7280', textAlign: 'center', marginTop: 14 },
+  featureFooter: { fontSize: 12, color: '#5A5A7A', textAlign: 'center', marginTop: 14 },
 });
 
 export default LandingLayout;

@@ -590,11 +590,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB'
+    borderTopColor: '#DDDDF5'
   },
   footerText: {
     fontSize: 10,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginBottom: 2
   }
 });

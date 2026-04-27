@@ -566,7 +566,7 @@ export default function SchemesOfWork() {
     <View style={styles.stepContent}>
       {loadingTopics ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#6366F1" />
+          <ActivityIndicator size="large" color="#5C6BC0" />
           <Text style={styles.loadingText}>Loading topics...</Text>
         </View>
       ) : (
@@ -605,7 +605,7 @@ export default function SchemesOfWork() {
                       name={isStrandFullySelected(strand) ? "checkbox" : 
                             strand.substrands.some(ss => selectedTopics.has(ss.id)) ? "remove-circle" : "square-outline"}
                       size={22}
-                      color={isStrandFullySelected(strand) ? "#6366F1" : "#9CA3AF"}
+                      color={isStrandFullySelected(strand) ? "#5C6BC0" : "#9CA3AF"}
                     />
                   </TouchableOpacity>
                   <View style={styles.strandInfo}>
@@ -617,7 +617,7 @@ export default function SchemesOfWork() {
                   <Ionicons
                     name={expandedStrands.has(strand.id) ? "chevron-up" : "chevron-down"}
                     size={20}
-                    color="#6B7280"
+                    color="#5A5A7A"
                   />
                 </TouchableOpacity>
                 
@@ -633,7 +633,7 @@ export default function SchemesOfWork() {
                         <Ionicons
                           name={selectedTopics.has(ss.id) ? "checkbox" : "square-outline"}
                           size={20}
-                          color={selectedTopics.has(ss.id) ? "#6366F1" : "#D1D5DB"}
+                          color={selectedTopics.has(ss.id) ? "#5C6BC0" : "#D1D5DB"}
                         />
                         <Text style={[
                           styles.substrandName,
@@ -698,7 +698,7 @@ export default function SchemesOfWork() {
             setBreakModalVisible(true);
           }}
         >
-          <Ionicons name="add" size={20} color="#6366F1" />
+          <Ionicons name="add" size={20} color="#5C6BC0" />
           <Text style={styles.addBreakText}>Add Break</Text>
         </TouchableOpacity>
       </View>
@@ -836,7 +836,7 @@ export default function SchemesOfWork() {
             </View>
             
             <View style={styles.breakDurationInfo}>
-              <Ionicons name="information-circle-outline" size={16} color="#6B7280" />
+              <Ionicons name="information-circle-outline" size={16} color="#5A5A7A" />
               <Text style={styles.breakDurationText}>
                 {calculateBreakDuration(editingBreak)}
               </Text>
@@ -934,7 +934,7 @@ export default function SchemesOfWork() {
       <View style={styles.footer}>
         {currentStep !== 'select' && (
           <TouchableOpacity style={styles.backBtn} onPress={handleBack}>
-            <Ionicons name="arrow-back" size={20} color="#6B7280" />
+            <Ionicons name="arrow-back" size={20} color="#5A5A7A" />
             <Text style={styles.backBtnText}>Back</Text>
           </TouchableOpacity>
         )}
@@ -974,7 +974,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    borderBottomColor: '#DDDDF5'
   },
   stepItem: {
     alignItems: 'center'
@@ -983,13 +983,13 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#DDDDF5',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 4
   },
   stepDotActive: {
-    backgroundColor: '#6366F1'
+    backgroundColor: '#5C6BC0'
   },
   stepDotComplete: {
     backgroundColor: '#10B981'
@@ -997,7 +997,7 @@ const styles = StyleSheet.create({
   stepDotText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   stepDotTextActive: {
     color: '#FFFFFF'
@@ -1007,7 +1007,7 @@ const styles = StyleSheet.create({
     color: '#9CA3AF'
   },
   stepLabelActive: {
-    color: '#6366F1',
+    color: '#5C6BC0',
     fontWeight: '600'
   },
   stepContent: {
@@ -1032,7 +1032,7 @@ const styles = StyleSheet.create({
   },
   sectionSubtitle: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginBottom: 16
   },
   inputGroup: {
@@ -1052,7 +1052,7 @@ const styles = StyleSheet.create({
   },
   overrideLink: {
     fontSize: 12,
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   pickerContainer: {
     borderWidth: 1,
@@ -1076,8 +1076,8 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   termButtonActive: {
-    backgroundColor: '#6366F1',
-    borderColor: '#6366F1'
+    backgroundColor: '#5C6BC0',
+    borderColor: '#5C6BC0'
   },
   termButtonText: {
     fontSize: 14,
@@ -1101,8 +1101,8 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   lessonButtonActive: {
-    backgroundColor: '#6366F1',
-    borderColor: '#6366F1'
+    backgroundColor: '#5C6BC0',
+    borderColor: '#5C6BC0'
   },
   lessonButtonText: {
     fontSize: 16,
@@ -1137,8 +1137,8 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   weekButtonActive: {
-    backgroundColor: '#6366F1',
-    borderColor: '#6366F1'
+    backgroundColor: '#5C6BC0',
+    borderColor: '#5C6BC0'
   },
   weekButtonText: {
     fontSize: 14,
@@ -1156,7 +1156,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   topicsHeader: {
     flexDirection: 'row',
@@ -1165,7 +1165,7 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    borderBottomColor: '#DDDDF5'
   },
   topicsTitle: {
     fontSize: 15,
@@ -1179,12 +1179,12 @@ const styles = StyleSheet.create({
   selectAllBtn: {
     paddingVertical: 6,
     paddingHorizontal: 12,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     borderRadius: 6
   },
   selectAllText: {
     fontSize: 12,
-    color: '#6366F1',
+    color: '#5C6BC0',
     fontWeight: '500'
   },
   deselectAllBtn: {
@@ -1193,7 +1193,7 @@ const styles = StyleSheet.create({
   },
   deselectAllText: {
     fontSize: 12,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   topicsList: {
     padding: 16
@@ -1204,7 +1204,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#E5E7EB'
+    borderColor: '#DDDDF5'
   },
   strandHeader: {
     flexDirection: 'row',
@@ -1226,7 +1226,7 @@ const styles = StyleSheet.create({
   },
   strandMeta: {
     fontSize: 12,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   substrandsContainer: {
     paddingLeft: 48,
@@ -1247,7 +1247,7 @@ const styles = StyleSheet.create({
     marginLeft: 10
   },
   substrandNameSelected: {
-    color: '#6366F1',
+    color: '#5C6BC0',
     fontWeight: '500'
   },
   sloCount: {
@@ -1276,7 +1276,7 @@ const styles = StyleSheet.create({
   },
   breakDetails: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 2
   },
   addBreakBtn: {
@@ -1285,14 +1285,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#6366F1',
+    borderColor: '#5C6BC0',
     borderStyle: 'dashed',
     borderRadius: 8,
     gap: 8
   },
   addBreakText: {
     fontSize: 14,
-    color: '#6366F1',
+    color: '#5C6BC0',
     fontWeight: '500'
   },
   summaryCard: {
@@ -1317,7 +1317,7 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 13,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   summaryValue: {
     fontSize: 13,
@@ -1333,7 +1333,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#DDDDF5',
   },
   previewEditBtn: {
     flexDirection: 'row',
@@ -1342,12 +1342,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 8,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
   },
   previewEditBtnText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#6366F1',
+    color: '#5C6BC0',
   },
   previewDownloadBtn: {
     flexDirection: 'row',
@@ -1356,7 +1356,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
   },
   previewDownloadBtnText: {
     fontSize: 13,
@@ -1371,16 +1371,16 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
   },
   schemeHeaderTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: '#1A1A3A',
   },
   schemeHeaderSub: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 4,
   },
   schemeStatRow: {
@@ -1394,11 +1394,11 @@ const styles = StyleSheet.create({
   schemeStatVal: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#6366F1',
+    color: '#5C6BC0',
   },
   schemeStatLbl: {
     fontSize: 11,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 2,
   },
   // ── Break row ──
@@ -1425,7 +1425,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
   },
   schemeLessonHeader: {
     flexDirection: 'row',
@@ -1436,8 +1436,8 @@ const styles = StyleSheet.create({
   schemeLessonWk: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#6366F1',
-    backgroundColor: '#EEF2FF',
+    color: '#5C6BC0',
+    backgroundColor: '#F3F4FF',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
@@ -1456,12 +1456,12 @@ const styles = StyleSheet.create({
   },
   schemeLessonStrand: {
     fontSize: 11,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginBottom: 4,
   },
   schemeLessonSlo: {
     fontSize: 13,
-    color: '#111827',
+    color: '#1A1A3A',
     lineHeight: 18,
     marginBottom: 4,
   },
@@ -1485,7 +1485,7 @@ const styles = StyleSheet.create({
   },
   schemeLessonRes: {
     fontSize: 11,
-    color: '#6B7280',
+    color: '#5A5A7A',
     flex: 1,
   },
   // ── Keep old styles for other parts ──
@@ -1501,7 +1501,7 @@ const styles = StyleSheet.create({
   },
   previewSubtitle: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 4
   },
   previewStats: {
@@ -1521,11 +1521,11 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   statLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 2
   },
   actionButtons: {
@@ -1537,14 +1537,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     borderRadius: 10,
     gap: 8
   },
   previewBtnText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   // New 3-stage preview styles
   previewSuccessCard: {
@@ -1569,18 +1569,18 @@ const styles = StyleSheet.create({
   previewSuccessTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#111827',
+    color: '#1A1A3A',
     marginTop: 4
   },
   previewSuccessSubject: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6366F1',
+    color: '#5C6BC0',
     marginTop: 6
   },
   previewSuccessMeta: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 4
   },
   previewStatsRow: {
@@ -1600,11 +1600,11 @@ const styles = StyleSheet.create({
   previewStatNum: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#111827'
+    color: '#1A1A3A'
   },
   previewStatLabel: {
     fontSize: 11,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 2,
     textTransform: 'uppercase',
     letterSpacing: 0.5
@@ -1612,7 +1612,7 @@ const styles = StyleSheet.create({
   previewStatDivider: {
     width: 1,
     height: 32,
-    backgroundColor: '#E5E7EB'
+    backgroundColor: '#DDDDF5'
   },
   previewPdfBtn: {
     flexDirection: 'row',
@@ -1620,12 +1620,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
     maxWidth: 480,
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
     paddingVertical: 16,
     borderRadius: 12,
     marginTop: 24,
     gap: 10,
-    shadowColor: '#6366F1',
+    shadowColor: '#5C6BC0',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -1653,7 +1653,7 @@ const styles = StyleSheet.create({
   previewEditBackBtnText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   previewWalletRow: {
     flexDirection: 'row',
@@ -1670,7 +1670,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
     borderRadius: 10,
     gap: 8
   },
@@ -1688,14 +1688,14 @@ const styles = StyleSheet.create({
   },
   walletText: {
     fontSize: 13,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   footer: {
     flexDirection: 'row',
     padding: 16,
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: '#DDDDF5',
     gap: 12
   },
   backBtn: {
@@ -1707,7 +1707,7 @@ const styles = StyleSheet.create({
   },
   backBtnText: {
     fontSize: 14,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   nextBtn: {
     flex: 1,
@@ -1715,7 +1715,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
     borderRadius: 10,
     gap: 8
   },
@@ -1733,14 +1733,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     borderRadius: 10,
     gap: 8
   },
   newSchemeBtnText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   modalOverlay: {
     flex: 1,
@@ -1781,7 +1781,7 @@ const styles = StyleSheet.create({
   },
   fundsModalHint: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#5A5A7A',
     textAlign: 'center',
     marginBottom: 20
   },
@@ -1808,7 +1808,7 @@ const styles = StyleSheet.create({
   },
   cancelBtnText: {
     fontSize: 14,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   breakModal: {
     backgroundColor: '#FFFFFF',
@@ -1841,13 +1841,13 @@ const styles = StyleSheet.create({
   },
   breakModalCancelText: {
     fontSize: 14,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   breakModalAdd: {
     flex: 1,
     paddingVertical: 12,
     borderRadius: 8,
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
     alignItems: 'center'
   },
   breakModalAddText: {
@@ -1889,7 +1889,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     borderRadius: 10,
     marginHorizontal: 16,
     marginBottom: 16,
@@ -1898,7 +1898,7 @@ const styles = StyleSheet.create({
   editSchemeBtnText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   // Double lesson styles
   doubleLessonRow: {
@@ -1917,26 +1917,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF'
   },
   toggleBtnActive: {
-    borderColor: '#6366F1',
-    backgroundColor: '#EEF2FF'
+    borderColor: '#5C6BC0',
+    backgroundColor: '#F3F4FF'
   },
   toggleBtnText: {
     fontSize: 14,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   toggleBtnTextActive: {
-    color: '#6366F1',
+    color: '#5C6BC0',
     fontWeight: '600'
   },
   doubleLessonPosition: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB'
+    borderTopColor: '#DDDDF5'
   },
   subLabel: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginBottom: 8
   },
   subHint: {
@@ -1958,15 +1958,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF'
   },
   positionBtnActive: {
-    borderColor: '#6366F1',
-    backgroundColor: '#EEF2FF'
+    borderColor: '#5C6BC0',
+    backgroundColor: '#F3F4FF'
   },
   positionBtnText: {
     fontSize: 13,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   positionBtnTextActive: {
-    color: '#6366F1',
+    color: '#5C6BC0',
     fontWeight: '600'
   },
   autoHint: {
@@ -1997,7 +1997,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#DDDDF5',
     backgroundColor: '#F9FAFB'
   },
   pdfModalTitle: {
@@ -2013,7 +2013,7 @@ const styles = StyleSheet.create({
   pdfShareBtn: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: '#EEF2FF'
+    backgroundColor: '#F3F4FF'
   },
   pdfModalCloseBtn: {
     padding: 4
@@ -2026,7 +2026,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#DDDDF5',
     gap: 12
   },
   pdfStickyBarLeft: {
@@ -2036,7 +2036,7 @@ const styles = StyleSheet.create({
   },
   pdfStickyBalance: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#5A5A7A',
     fontWeight: '500'
   },
   pdfDownloadBtn: {
@@ -2123,7 +2123,7 @@ const styles = StyleSheet.create({
   pdfLoadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   pdfModalPlaceholder: {
     flex: 1,

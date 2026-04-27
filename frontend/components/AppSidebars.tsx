@@ -107,7 +107,7 @@ const QuoteCard: React.FC = () => {
   return (
     <View style={styles.card} data-testid="app-quote-card">
       <View style={styles.cardHeader}>
-        <Ionicons name="chatbox-ellipses-outline" size={12} color="#5B5BD6" />
+        <Ionicons name="chatbox-ellipses-outline" size={12} color="#5C6BC0" />
         <Text style={styles.cardTitle}>Teacher's Corner</Text>
       </View>
       <View style={styles.quoteBlock}>
@@ -129,7 +129,7 @@ const LINKS = [
 const LinksCard: React.FC = () => (
   <View style={styles.card} data-testid="app-links-card">
     <View style={styles.cardHeader}>
-      <Ionicons name="link-outline" size={12} color="#5B5BD6" />
+      <Ionicons name="link-outline" size={12} color="#5C6BC0" />
       <Text style={styles.cardTitle}>Useful Links</Text>
     </View>
     {LINKS.map((l, i) => (
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     padding: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -186,8 +186,8 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
-  cardTitle: { fontSize: 13, fontWeight: '700', color: '#111827', letterSpacing: 0.2 },
-  cardBody: { fontSize: 12, color: '#6B7280', lineHeight: 17 },
+  cardTitle: { fontSize: 13, fontWeight: '700', color: '#1A1A3A', letterSpacing: 0.2 },
+  cardBody: { fontSize: 12, color: '#5A5A7A', lineHeight: 17 },
 
   bold: { fontWeight: '700' },
 
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     alignItems: 'center',
   },
-  tillLbl: { fontSize: 10, color: '#6B7280', letterSpacing: 0.3, textTransform: 'uppercase' },
+  tillLbl: { fontSize: 10, color: '#5A5A7A', letterSpacing: 0.3, textTransform: 'uppercase' },
   tillNum: { fontSize: 17, fontWeight: '800', color: '#166534', letterSpacing: 0.6 },
   stepRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 5, marginBottom: 3 },
   stepBullet: {
@@ -225,19 +225,19 @@ const styles = StyleSheet.create({
   },
   stepNum: { fontSize: 9, color: '#FFF', fontWeight: '700', lineHeight: 10 },
   stepTxt: { fontSize: 11, color: '#166534', flex: 1, lineHeight: 14 },
-  divider: { height: 1, backgroundColor: '#E5E7EB', marginVertical: 6 },
-  supportTxt: { fontSize: 10, color: '#6B7280', lineHeight: 14 },
+  divider: { height: 1, backgroundColor: '#DDDDF5', marginVertical: 6 },
+  supportTxt: { fontSize: 10, color: '#5A5A7A', lineHeight: 14 },
   supportLink: { color: '#16a34a', fontWeight: '500' },
 
   // Quote
-  quoteBlock: { paddingLeft: 6, borderLeftWidth: 2, borderLeftColor: '#5B5BD6' },
+  quoteBlock: { paddingLeft: 6, borderLeftWidth: 2, borderLeftColor: '#5C6BC0' },
   quoteTxt: { fontSize: 12, color: '#374151', fontStyle: 'italic', lineHeight: 17 },
   quoteAuthor: { fontSize: 11, color: '#9CA3AF', marginTop: 4 },
 
   // Links
   linkRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4 },
-  linkDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#5B5BD6' },
-  linkTxt: { fontSize: 12, color: '#5B5BD6' },
+  linkDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#5C6BC0' },
+  linkTxt: { fontSize: 12, color: '#5C6BC0' },
   linkSep: { height: 1, backgroundColor: '#F3F4F6' },
 
   // Support

@@ -21,7 +21,7 @@ interface PasswordInputProps extends Omit<TextInputProps, 'secureTextEntry' | 's
 export const PasswordInput = forwardRef<TextInput, PasswordInputProps>(({
   containerStyle,
   inputStyle,
-  iconColor = '#6B7280',
+  iconColor = '#5A5A7A',
   testIDPrefix = 'password',
   testID,
   ...textInputProps

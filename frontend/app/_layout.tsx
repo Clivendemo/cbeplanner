@@ -65,7 +65,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   if (loading || !authChecked) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366F1" />
+        <ActivityIndicator size="large" color="#5C6BC0" />
         <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
@@ -117,6 +117,6 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#6B7280'
+    color: '#5A5A7A'
   }
 });

@@ -130,7 +130,7 @@ export default function CurriculumUpload() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Ionicons name="cloud-upload" size={48} color="#6366F1" />
+        <Ionicons name="cloud-upload" size={48} color="#5C6BC0" />
         <Text style={styles.headerTitle}>Curriculum Import</Text>
         <Text style={styles.headerSubtitle}>
           Upload and process curriculum PDFs
@@ -139,7 +139,7 @@ export default function CurriculumUpload() {
 
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <Ionicons name="document-text" size={24} color="#6366F1" />
+          <Ionicons name="document-text" size={24} color="#5C6BC0" />
           <Text style={styles.cardTitle}>Upload PDF</Text>
         </View>
         
@@ -170,7 +170,7 @@ export default function CurriculumUpload() {
           disabled={uploading}
           data-testid="select-pdf-btn"
         >
-          <Ionicons name="folder-open-outline" size={24} color="#6366F1" />
+          <Ionicons name="folder-open-outline" size={24} color="#5C6BC0" />
           <Text style={styles.selectButtonText}>
             {selectedFile ? 'Change File' : 'Select PDF File'}
           </Text>
@@ -214,7 +214,7 @@ export default function CurriculumUpload() {
       {/* Processing Status */}
       {uploading && (
         <View style={styles.statusCard}>
-          <ActivityIndicator size="large" color="#6366F1" />
+          <ActivityIndicator size="large" color="#5C6BC0" />
           <Text style={styles.statusTitle}>Processing Curriculum...</Text>
           <Text style={styles.statusText}>
             This may take a few minutes for large documents.
@@ -258,7 +258,7 @@ export default function CurriculumUpload() {
             style={styles.newUploadBtn}
             onPress={clearSelection}
           >
-            <Ionicons name="add-circle-outline" size={20} color="#6366F1" />
+            <Ionicons name="add-circle-outline" size={20} color="#5C6BC0" />
             <Text style={styles.newUploadBtnText}>Upload Another File</Text>
           </TouchableOpacity>
         </View>
@@ -298,12 +298,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#111827',
+    color: '#1A1A3A',
     marginTop: 12
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 4
   },
   card: {
@@ -321,11 +321,11 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111827'
+    color: '#1A1A3A'
   },
   cardText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#5A5A7A',
     lineHeight: 20,
     marginBottom: 12
   },
@@ -365,12 +365,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#6366F1',
+    borderColor: '#5C6BC0',
     borderStyle: 'dashed',
     width: '100%',
     gap: 8
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   selectButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   selectedFile: {
     flexDirection: 'row',
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 12,
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF'
   },
   statusCard: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     borderRadius: 12,
     padding: 24,
     marginBottom: 16,
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 14,
-    color: '#6366F1',
+    color: '#5C6BC0',
     textAlign: 'center',
     marginTop: 8,
     lineHeight: 20
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
   newUploadBtnText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   errorCard: {
     flexDirection: 'row',

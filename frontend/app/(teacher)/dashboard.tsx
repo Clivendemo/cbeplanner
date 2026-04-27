@@ -76,7 +76,7 @@ export default function Dashboard() {
       title: 'Schemes of Work',
       subtitle: 'Term planning documents',
       icon: 'calendar',
-      color: '#8B5CF6',
+      color: '#5C6BC0',
       route: '/(teacher)/schemes',
       disabled: false
     },
@@ -84,7 +84,7 @@ export default function Dashboard() {
       title: 'Create Lesson Plan',
       subtitle: 'Generate KICD-aligned lesson plans',
       icon: 'document-text',
-      color: '#6366F1',
+      color: '#5C6BC0',
       route: '/(teacher)/home',
       disabled: false,
       badge: freeLessonsRemaining > 0 ? `${freeLessonsRemaining} Free` : undefined
@@ -112,7 +112,7 @@ export default function Dashboard() {
       title: 'My Schemes',
       subtitle: 'View & download schemes',
       icon: 'albums',
-      color: '#8B5CF6',
+      color: '#5C6BC0',
       route: '/(teacher)/my-schemes',
       disabled: false
     },
@@ -146,7 +146,7 @@ export default function Dashboard() {
             <Text style={styles.welcomeText}>Welcome back,</Text>
             <Text style={styles.userName}>{user?.firstName} {user?.lastName}</Text>
             <View style={styles.schoolBadge}>
-              <Ionicons name="business" size={14} color="#6366F1" />
+              <Ionicons name="business" size={14} color="#5C6BC0" />
               <Text style={styles.schoolName}>{user?.schoolName}</Text>
             </View>
           </View>
@@ -165,7 +165,7 @@ export default function Dashboard() {
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Ionicons name="wallet" size={20} color="#6366F1" />
+            <Ionicons name="wallet" size={20} color="#5C6BC0" />
             <Text style={styles.statValue}>KES {user?.walletBalance || 0}</Text>
             <Text style={styles.statLabel}>Balance</Text>
           </View>
@@ -239,18 +239,18 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 14,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   userName: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#111827',
+    color: '#1A1A3A',
     marginTop: 4
   },
   schoolBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -259,12 +259,12 @@ const styles = StyleSheet.create({
   },
   schoolName: {
     fontSize: 12,
-    color: '#6366F1',
+    color: '#5C6BC0',
     marginLeft: 4,
     fontWeight: '500'
   },
   walletCard: {
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
     borderRadius: 12,
     padding: 12,
     alignItems: 'center',
@@ -296,17 +296,17 @@ const styles = StyleSheet.create({
   statDivider: {
     width: 1,
     height: 40,
-    backgroundColor: '#E5E7EB'
+    backgroundColor: '#DDDDF5'
   },
   statValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1A1A3A',
     marginTop: 4
   },
   statLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 2
   },
   sectionTitle: {
@@ -351,12 +351,12 @@ const styles = StyleSheet.create({
   tileTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 4
   },
   tileSubtitle: {
     fontSize: 11,
-    color: '#6B7280',
+    color: '#5A5A7A',
     lineHeight: 15
   },
   badge: {

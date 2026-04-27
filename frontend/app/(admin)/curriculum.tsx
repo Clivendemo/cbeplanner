@@ -53,11 +53,11 @@ const ENTITY_CONFIG: Record<EntityType, {
   parent?: EntityType;
   apiPath: string;
 }> = {
-  grades: { title: 'Grades', singularTitle: 'Grade', icon: 'school', color: '#6366F1', fields: ['name', 'order'], apiPath: 'grades' },
+  grades: { title: 'Grades', singularTitle: 'Grade', icon: 'school', color: '#5C6BC0', fields: ['name', 'order'], apiPath: 'grades' },
   subjects: { title: 'Subjects', singularTitle: 'Subject', icon: 'book', color: '#10B981', fields: ['name'], parent: 'grades', apiPath: 'subjects' },
   strands: { title: 'Strands', singularTitle: 'Strand', icon: 'git-branch', color: '#F59E0B', fields: ['name'], parent: 'subjects', apiPath: 'strands' },
   substrands: { title: 'Sub-strands', singularTitle: 'Sub-strand', icon: 'git-merge', color: '#EF4444', fields: ['name', 'number_of_lessons'], parent: 'strands', apiPath: 'substrands' },
-  slos: { title: 'SLOs', singularTitle: 'SLO', icon: 'checkmark-circle', color: '#8B5CF6', fields: ['name', 'description'], parent: 'substrands', apiPath: 'slos' },
+  slos: { title: 'SLOs', singularTitle: 'SLO', icon: 'checkmark-circle', color: '#5C6BC0', fields: ['name', 'description'], parent: 'substrands', apiPath: 'slos' },
   learning_activities: { title: 'Learning Activities', singularTitle: 'Learning Activities', icon: 'flash', color: '#84CC16', fields: ['introduction_activities', 'development_activities', 'conclusion_activities', 'extended_activities'], parent: 'substrands', apiPath: 'learning-activities' },
   competencies: { title: 'Competencies', singularTitle: 'Competency', icon: 'star', color: '#EC4899', fields: ['name', 'description'], apiPath: 'competencies' },
   values: { title: 'Values', singularTitle: 'Value', icon: 'heart', color: '#14B8A6', fields: ['name', 'description'], apiPath: 'values' },
@@ -1434,13 +1434,13 @@ export default function Curriculum() {
               style={styles.reorderBtn}
               onPress={() => handleMoveItem(item, 'up')}
             >
-              <Ionicons name="chevron-up" size={16} color="#6366F1" />
+              <Ionicons name="chevron-up" size={16} color="#5C6BC0" />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.reorderBtn}
               onPress={() => handleMoveItem(item, 'down')}
             >
-              <Ionicons name="chevron-down" size={16} color="#6366F1" />
+              <Ionicons name="chevron-down" size={16} color="#5C6BC0" />
             </TouchableOpacity>
           </View>
         )}
@@ -1473,12 +1473,12 @@ export default function Curriculum() {
             {/* Mapping Button - Only for SLOs */}
             {canEditMapping && (
               <TouchableOpacity style={styles.mappingButton} onPress={() => handleOpenMappingModal(item)}>
-                <Ionicons name="link" size={18} color="#8B5CF6" />
+                <Ionicons name="link" size={18} color="#5C6BC0" />
               </TouchableOpacity>
             )}
             {canMove && (
               <TouchableOpacity style={styles.moveButton} onPress={() => handleOpenMoveModal(item)}>
-                <Ionicons name="swap-horizontal" size={18} color="#6366F1" />
+                <Ionicons name="swap-horizontal" size={18} color="#5C6BC0" />
               </TouchableOpacity>
             )}
             <TouchableOpacity style={styles.editButton} onPress={() => openEditModal(item)}>
@@ -1541,7 +1541,7 @@ export default function Curriculum() {
           style={[styles.viewToggleButton, currentView === 'main' && styles.viewToggleButtonActive]}
           onPress={() => setCurrentView('main')}
         >
-          <Ionicons name="grid" size={18} color={currentView === 'main' ? '#FFFFFF' : '#6366F1'} />
+          <Ionicons name="grid" size={18} color={currentView === 'main' ? '#FFFFFF' : '#5C6BC0'} />
           <Text style={[styles.viewToggleText, currentView === 'main' && styles.viewToggleTextActive]}>
             All Data
           </Text>
@@ -1555,7 +1555,7 @@ export default function Curriculum() {
             setData(grades);
           }}
         >
-          <Ionicons name="git-network" size={18} color={currentView === 'hierarchy' ? '#FFFFFF' : '#6366F1'} />
+          <Ionicons name="git-network" size={18} color={currentView === 'hierarchy' ? '#FFFFFF' : '#5C6BC0'} />
           <Text style={[styles.viewToggleText, currentView === 'hierarchy' && styles.viewToggleTextActive]}>
             Navigate Hierarchy
           </Text>
@@ -1574,7 +1574,7 @@ export default function Curriculum() {
                 setData(grades);
               }}
             >
-              <Ionicons name="home" size={16} color="#6366F1" />
+              <Ionicons name="home" size={16} color="#5C6BC0" />
             </TouchableOpacity>
             {breadcrumbs.map((crumb, index) => (
               <React.Fragment key={crumb.id}>
@@ -1637,7 +1637,7 @@ export default function Curriculum() {
         {/* Back Button - Show in hierarchy view when not on grades */}
         {currentView === 'hierarchy' && selectedEntity !== 'grades' && (
           <TouchableOpacity style={styles.backButton} onPress={navigateBack}>
-            <Ionicons name="arrow-back" size={20} color="#6366F1" />
+            <Ionicons name="arrow-back" size={20} color="#5C6BC0" />
           </TouchableOpacity>
         )}
         
@@ -1653,7 +1653,7 @@ export default function Curriculum() {
           <Ionicons 
             name="refresh" 
             size={18} 
-            color={refreshing ? "#9CA3AF" : "#6366F1"} 
+            color={refreshing ? "#9CA3AF" : "#5C6BC0"} 
           />
         </TouchableOpacity>
         
@@ -1666,7 +1666,7 @@ export default function Curriculum() {
               setSelectedItems(new Set());
             }}
           >
-            <Ionicons name={bulkEditMode ? "checkmark-done" : "checkbox-outline"} size={18} color={bulkEditMode ? "#FFFFFF" : "#6366F1"} />
+            <Ionicons name={bulkEditMode ? "checkmark-done" : "checkbox-outline"} size={18} color={bulkEditMode ? "#FFFFFF" : "#5C6BC0"} />
             <Text style={[styles.bulkEditToggleText, bulkEditMode && styles.bulkEditToggleTextActive]}>
               {bulkEditMode ? 'Done' : 'Bulk'}
             </Text>
@@ -1695,7 +1695,7 @@ export default function Curriculum() {
             <Ionicons 
               name={selectedItems.size === data.length ? "checkbox" : "square-outline"} 
               size={20} 
-              color="#6366F1" 
+              color="#5C6BC0" 
             />
             <Text style={styles.selectAllText}>
               {selectedItems.size === data.length ? 'Deselect All' : 'Select All'}
@@ -1712,7 +1712,7 @@ export default function Curriculum() {
             
             {selectedEntity === 'slos' && (
               <TouchableOpacity 
-                style={[styles.bulkEditBtn, { backgroundColor: '#8B5CF6' }]} 
+                style={[styles.bulkEditBtn, { backgroundColor: '#5C6BC0' }]} 
                 onPress={() => {
                   setSelectedSlosForMapping(Array.from(selectedItems));
                   handleOpenBulkMappingModal();
@@ -1764,7 +1764,7 @@ export default function Curriculum() {
             style={styles.bulkMappingButton}
             onPress={handleOpenBulkMappingModal}
           >
-            <Ionicons name="link" size={20} color="#8B5CF6" />
+            <Ionicons name="link" size={20} color="#5C6BC0" />
             <Text style={styles.bulkMappingButtonText}>Bulk Edit Mappings</Text>
           </TouchableOpacity>
         </View>
@@ -1773,7 +1773,7 @@ export default function Curriculum() {
       {/* Data List */}
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#6366F1" />
+          <ActivityIndicator size="large" color="#5C6BC0" />
         </View>
       ) : (
         <FlatList
@@ -1785,10 +1785,10 @@ export default function Curriculum() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#6366F1']}
-              tintColor="#6366F1"
+              colors={['#5C6BC0']}
+              tintColor="#5C6BC0"
               title="Pull to refresh from database..."
-              titleColor="#6B7280"
+              titleColor="#5A5A7A"
             />
           }
           ListEmptyComponent={
@@ -1815,7 +1815,7 @@ export default function Curriculum() {
                 {editingItem ? 'Edit' : 'Add'} {ENTITY_CONFIG[selectedEntity].singularTitle}
               </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color="#5A5A7A" />
               </TouchableOpacity>
             </View>
 
@@ -1899,15 +1899,15 @@ export default function Curriculum() {
                 <Text style={styles.modalSubtitle}>{currentSubstrandForActivities?.name}</Text>
               </View>
               <TouchableOpacity onPress={() => setLearningActivitiesModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color="#5A5A7A" />
               </TouchableOpacity>
             </View>
 
             <ScrollView style={styles.modalBody}>
               {renderActivitySection('Introduction', 'introduction_activities', '#10B981', 'play-circle')}
-              {renderActivitySection('Development', 'development_activities', '#6366F1', 'construct')}
+              {renderActivitySection('Development', 'development_activities', '#5C6BC0', 'construct')}
               {renderActivitySection('Conclusion', 'conclusion_activities', '#F59E0B', 'checkmark-done-circle')}
-              {renderActivitySection('Extended', 'extended_activities', '#8B5CF6', 'extension-puzzle')}
+              {renderActivitySection('Extended', 'extended_activities', '#5C6BC0', 'extension-puzzle')}
             </ScrollView>
 
             <View style={styles.modalFooter}>
@@ -1940,8 +1940,8 @@ export default function Curriculum() {
             {/* Fixed Header */}
             <View style={styles.moveModalHeader}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
-                <View style={[styles.moveIconContainer, { backgroundColor: '#EEF2FF' }]}>
-                  <Ionicons name="swap-horizontal" size={24} color="#6366F1" />
+                <View style={[styles.moveIconContainer, { backgroundColor: '#F3F4FF' }]}>
+                  <Ionicons name="swap-horizontal" size={24} color="#5C6BC0" />
                 </View>
                 <Text style={styles.modalTitle} numberOfLines={1}>Move {ENTITY_CONFIG[selectedEntity].singularTitle}</Text>
               </View>
@@ -1950,7 +1950,7 @@ export default function Curriculum() {
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 data-testid="move-modal-close-btn"
               >
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color="#5A5A7A" />
               </TouchableOpacity>
             </View>
 
@@ -2143,7 +2143,7 @@ export default function Curriculum() {
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.saveButton, { backgroundColor: '#6366F1' }]}
+                style={[styles.saveButton, { backgroundColor: '#5C6BC0' }]}
                 onPress={handleExecuteMove}
                 data-testid="move-modal-confirm-btn"
               >
@@ -2175,7 +2175,7 @@ export default function Curriculum() {
                 </View>
               </View>
               <TouchableOpacity onPress={() => setBulkAddModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color="#5A5A7A" />
               </TouchableOpacity>
             </View>
 
@@ -2185,7 +2185,7 @@ export default function Curriculum() {
                 style={[styles.bulkModeTab, bulkAddMode === 'textarea' && styles.bulkModeTabActive]}
                 onPress={() => setBulkAddMode('textarea')}
               >
-                <Ionicons name="document-text" size={18} color={bulkAddMode === 'textarea' ? '#6366F1' : '#6B7280'} />
+                <Ionicons name="document-text" size={18} color={bulkAddMode === 'textarea' ? '#5C6BC0' : '#5A5A7A'} />
                 <Text style={[styles.bulkModeTabText, bulkAddMode === 'textarea' && styles.bulkModeTabTextActive]}>
                   Text Input
                 </Text>
@@ -2194,7 +2194,7 @@ export default function Curriculum() {
                 style={[styles.bulkModeTab, bulkAddMode === 'table' && styles.bulkModeTabActive]}
                 onPress={() => setBulkAddMode('table')}
               >
-                <Ionicons name="grid" size={18} color={bulkAddMode === 'table' ? '#6366F1' : '#6B7280'} />
+                <Ionicons name="grid" size={18} color={bulkAddMode === 'table' ? '#5C6BC0' : '#5A5A7A'} />
                 <Text style={[styles.bulkModeTabText, bulkAddMode === 'table' && styles.bulkModeTabTextActive]}>
                   Table Input
                 </Text>
@@ -2272,7 +2272,7 @@ export default function Curriculum() {
 
                   {/* Add Row Button */}
                   <TouchableOpacity style={styles.bulkAddRowBtn} onPress={addBulkTableRow}>
-                    <Ionicons name="add" size={20} color="#6366F1" />
+                    <Ionicons name="add" size={20} color="#5C6BC0" />
                     <Text style={styles.bulkAddRowBtnText}>Add Row</Text>
                   </TouchableOpacity>
                 </View>
@@ -2281,7 +2281,7 @@ export default function Curriculum() {
 
             {/* Item Count */}
             <View style={styles.bulkItemCount}>
-              <Ionicons name="layers" size={16} color="#6B7280" />
+              <Ionicons name="layers" size={16} color="#5A5A7A" />
               <Text style={styles.bulkItemCountText}>
                 {bulkAddMode === 'textarea'
                   ? bulkTextValue.split('\n').filter(l => l.trim()).length
@@ -2315,7 +2315,7 @@ export default function Curriculum() {
             <View style={styles.modalHeader}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                 <View style={[styles.moveIconContainer, { backgroundColor: '#F3E8FF' }]}>
-                  <Ionicons name="link" size={24} color="#8B5CF6" />
+                  <Ionicons name="link" size={24} color="#5C6BC0" />
                 </View>
                 <View>
                   <Text style={styles.modalTitle}>Edit SLO Mapping</Text>
@@ -2323,7 +2323,7 @@ export default function Curriculum() {
                 </View>
               </View>
               <TouchableOpacity onPress={() => setMappingModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color="#5A5A7A" />
               </TouchableOpacity>
             </View>
 
@@ -2339,7 +2339,7 @@ export default function Curriculum() {
               {/* Core Competencies */}
               <View style={styles.mappingSection}>
                 <Text style={styles.mappingSectionTitle}>
-                  <Ionicons name="star" size={16} color="#6366F1" /> Core Competencies
+                  <Ionicons name="star" size={16} color="#5C6BC0" /> Core Competencies
                 </Text>
                 <Text style={styles.mappingSectionDesc}>Select skills this SLO develops</Text>
                 {allCompetencies.map((comp) => (
@@ -2408,7 +2408,7 @@ export default function Curriculum() {
               <TouchableOpacity style={styles.cancelButton} onPress={() => setMappingModalVisible(false)}>
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.saveButton, { backgroundColor: '#8B5CF6' }]} onPress={handleSaveSloMapping}>
+              <TouchableOpacity style={[styles.saveButton, { backgroundColor: '#5C6BC0' }]} onPress={handleSaveSloMapping}>
                 <Ionicons name="save" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
                 <Text style={styles.saveButtonText}>Save Mapping</Text>
               </TouchableOpacity>
@@ -2437,7 +2437,7 @@ export default function Curriculum() {
                 </View>
               </View>
               <TouchableOpacity onPress={() => setBulkMappingModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color="#5A5A7A" />
               </TouchableOpacity>
             </View>
 
@@ -2454,7 +2454,7 @@ export default function Curriculum() {
               <View style={styles.mappingSection}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={styles.mappingSectionTitle}>
-                    <Ionicons name="checkbox" size={16} color="#6366F1" /> Select SLOs ({selectedSlosForMapping.length} selected)
+                    <Ionicons name="checkbox" size={16} color="#5C6BC0" /> Select SLOs ({selectedSlosForMapping.length} selected)
                   </Text>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
                     <TouchableOpacity style={styles.selectAllBtn} onPress={selectAllSlos}>
@@ -2484,7 +2484,7 @@ export default function Curriculum() {
               {/* Core Competencies */}
               <View style={styles.mappingSection}>
                 <Text style={styles.mappingSectionTitle}>
-                  <Ionicons name="star" size={16} color="#6366F1" /> Core Competencies
+                  <Ionicons name="star" size={16} color="#5C6BC0" /> Core Competencies
                 </Text>
                 {allCompetencies.map((comp) => (
                   <TouchableOpacity
@@ -2575,7 +2575,7 @@ export default function Curriculum() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Bulk Edit {selectedItems.size} Items</Text>
               <TouchableOpacity onPress={() => setBulkEditModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color="#5A5A7A" />
               </TouchableOpacity>
             </View>
             
@@ -2657,7 +2657,7 @@ export default function Curriculum() {
                 Configure Lessons{lessonsSubstrand ? `: ${lessonsSubstrand.name}` : ''}
               </Text>
               <TouchableOpacity onPress={() => setLessonsModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color="#5A5A7A" />
               </TouchableOpacity>
             </View>
 
@@ -2667,7 +2667,7 @@ export default function Curriculum() {
               ) : substrandLessons.length === 0 ? (
                 <View style={{ alignItems: 'center', padding: 20 }}>
                   <Ionicons name="school-outline" size={48} color="#9CA3AF" />
-                  <Text style={{ color: '#6B7280', marginTop: 12, textAlign: 'center', fontSize: 14 }}>
+                  <Text style={{ color: '#5A5A7A', marginTop: 12, textAlign: 'center', fontSize: 14 }}>
                     No lessons configured yet.{'\n'}Set "Number of Lessons" on the substrand, then click "Generate Lesson Slots".
                   </Text>
                   <TouchableOpacity
@@ -2688,7 +2688,7 @@ export default function Curriculum() {
                   </TouchableOpacity>
 
                   {substrandLessons.map((lesson: any, idx: number) => (
-                    <View key={lesson.id || idx} style={{ backgroundColor: '#F9FAFB', borderRadius: 10, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: '#E5E7EB' }}>
+                    <View key={lesson.id || idx} style={{ backgroundColor: '#F9FAFB', borderRadius: 10, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: '#DDDDF5' }}>
                       <Text style={{ fontWeight: 'bold', color: '#1F2937', marginBottom: 8, fontSize: 14 }}>
                         Lesson {lesson.lesson_number}
                       </Text>
@@ -2753,7 +2753,7 @@ const styles = StyleSheet.create({
     padding: 12,
     gap: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    borderBottomColor: '#DDDDF5'
   },
   viewToggleButton: {
     flex: 1,
@@ -2767,12 +2767,12 @@ const styles = StyleSheet.create({
     gap: 8
   },
   viewToggleButtonActive: {
-    backgroundColor: '#6366F1'
+    backgroundColor: '#5C6BC0'
   },
   viewToggleText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   viewToggleTextActive: {
     color: '#FFFFFF'
@@ -2782,17 +2782,17 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    borderBottomColor: '#DDDDF5'
   },
   breadcrumb: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     borderRadius: 4
   },
   breadcrumbText: {
     fontSize: 13,
-    color: '#6366F1',
+    color: '#5C6BC0',
     fontWeight: '500',
     maxWidth: 120
   },
@@ -2801,7 +2801,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#DDDDF5',
     maxHeight: 60
   },
   entityTab: {
@@ -2825,21 +2825,21 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    borderBottomColor: '#DDDDF5'
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#111827',
+    color: '#1A1A3A',
     flex: 1
   },
   headerCount: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginRight: 12
   },
   addButton: {
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -2850,7 +2850,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12
@@ -2859,7 +2859,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8
@@ -2916,11 +2916,11 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827'
+    color: '#1A1A3A'
   },
   itemDescription: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 2
   },
   itemMeta: {
@@ -2939,14 +2939,14 @@ const styles = StyleSheet.create({
     padding: 10,
     alignItems: 'center',
     borderRightWidth: 1,
-    borderRightColor: '#E5E7EB'
+    borderRightColor: '#DDDDF5'
   },
   editButton: {
     flex: 1,
     padding: 10,
     alignItems: 'center',
     borderRightWidth: 1,
-    borderRightColor: '#E5E7EB'
+    borderRightColor: '#DDDDF5'
   },
   deleteButton: {
     flex: 1,
@@ -2979,7 +2979,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 16
   },
   emptySubtext: {
@@ -3004,16 +3004,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    borderBottomColor: '#DDDDF5'
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#111827'
+    color: '#1A1A3A'
   },
   modalSubtitle: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 2
   },
   modalBody: {
@@ -3032,12 +3032,12 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#111827'
+    color: '#1A1A3A'
   },
   textArea: {
     minHeight: 100,
@@ -3051,7 +3051,7 @@ const styles = StyleSheet.create({
     marginRight: 8
   },
   parentOptionSelected: {
-    backgroundColor: '#6366F1'
+    backgroundColor: '#5C6BC0'
   },
   parentOptionText: {
     fontSize: 14,
@@ -3065,7 +3065,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: '#DDDDF5',
     gap: 12
   },
   cancelButton: {
@@ -3084,7 +3084,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 8,
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
     alignItems: 'center'
   },
   saveButtonText: {
@@ -3125,12 +3125,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
-    color: '#111827',
+    color: '#1A1A3A',
     minHeight: 60,
     textAlignVertical: 'top'
   },
@@ -3155,13 +3155,13 @@ const styles = StyleSheet.create({
   moveCurrentItemLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginBottom: 4
   },
   moveCurrentItemName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111827'
+    color: '#1A1A3A'
   },
   moveWarning: {
     flexDirection: 'row',
@@ -3191,7 +3191,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#E5E7EB'
+    borderColor: '#DDDDF5'
   },
   moveOption: {
     flexDirection: 'row',
@@ -3199,7 +3199,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    borderBottomColor: '#DDDDF5'
   },
   moveOptionSelected: {
     backgroundColor: '#ECFDF5'
@@ -3240,7 +3240,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#DDDDF5',
     backgroundColor: '#FFFFFF'
   },
   moveModalBody: {
@@ -3253,7 +3253,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: '#DDDDF5',
     gap: 12,
     backgroundColor: '#FFFFFF'
   },
@@ -3263,7 +3263,7 @@ const styles = StyleSheet.create({
     padding: 12,
     gap: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    borderBottomColor: '#DDDDF5'
   },
   bulkModeTab: {
     flex: 1,
@@ -3276,31 +3276,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB'
   },
   bulkModeTabActive: {
-    backgroundColor: '#EEF2FF'
+    backgroundColor: '#F3F4FF'
   },
   bulkModeTabText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   bulkModeTabTextActive: {
-    color: '#6366F1',
+    color: '#5C6BC0',
     fontWeight: '600'
   },
   bulkTextarea: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     borderRadius: 12,
     padding: 16,
     fontSize: 14,
-    color: '#111827',
+    color: '#1A1A3A',
     backgroundColor: '#F9FAFB',
     minHeight: 180,
     textAlignVertical: 'top'
   },
   bulkHelperText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 8
   },
   bulkTableHeader: {
@@ -3308,7 +3308,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingBottom: 8,
     borderBottomWidth: 2,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#DDDDF5',
     marginBottom: 8
   },
   bulkTableHeaderCell: {
@@ -3323,11 +3323,11 @@ const styles = StyleSheet.create({
   },
   bulkTableInput: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     borderRadius: 8,
     padding: 12,
     fontSize: 14,
-    color: '#111827',
+    color: '#1A1A3A',
     backgroundColor: '#F9FAFB'
   },
   bulkRemoveRowBtn: {
@@ -3342,7 +3342,7 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 12,
     borderWidth: 2,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     borderStyle: 'dashed',
     borderRadius: 10,
     marginTop: 8
@@ -3350,7 +3350,7 @@ const styles = StyleSheet.create({
   bulkAddRowBtnText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   bulkItemCount: {
     flexDirection: 'row',
@@ -3359,12 +3359,12 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: '#DDDDF5',
     backgroundColor: '#F9FAFB'
   },
   bulkItemCountText: {
     fontSize: 13,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   // Mapping Modal Styles
   mappingButton: {
@@ -3372,7 +3372,7 @@ const styles = StyleSheet.create({
     padding: 10,
     alignItems: 'center',
     borderRightWidth: 1,
-    borderRightColor: '#E5E7EB'
+    borderRightColor: '#DDDDF5'
   },
   mappingGuide: {
     flexDirection: 'row',
@@ -3398,12 +3398,12 @@ const styles = StyleSheet.create({
   mappingSectionTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 4
   },
   mappingSectionDesc: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginBottom: 10
   },
   mappingCheckbox: {
@@ -3415,7 +3415,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 6,
     borderWidth: 1,
-    borderColor: '#E5E7EB'
+    borderColor: '#DDDDF5'
   },
   mappingCheckboxSelected: {
     backgroundColor: '#ECFDF5',
@@ -3444,23 +3444,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: '#F3F4F6',
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB'
+    borderTopColor: '#DDDDF5'
   },
   mappingSummaryText: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#5A5A7A',
     textAlign: 'center'
   },
   selectAllBtn: {
     paddingVertical: 6,
     paddingHorizontal: 10,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     borderRadius: 6
   },
   selectAllBtnText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   sloListContainer: {
     maxHeight: 150,
@@ -3473,7 +3473,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    borderBottomColor: '#DDDDF5'
   },
   bulkMappingButton: {
     flex: 1,
@@ -3486,12 +3486,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#F3E8FF',
     borderWidth: 1,
-    borderColor: '#8B5CF6'
+    borderColor: '#5C6BC0'
   },
   bulkMappingButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#8B5CF6'
+    color: '#5C6BC0'
   },
   // Bulk Edit Mode Styles
   bulkEditToggle: {
@@ -3500,18 +3500,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     borderWidth: 1,
-    borderColor: '#6366F1',
+    borderColor: '#5C6BC0',
     gap: 4
   },
   bulkEditToggleActive: {
-    backgroundColor: '#6366F1'
+    backgroundColor: '#5C6BC0'
   },
   bulkEditToggleText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   bulkEditToggleTextActive: {
     color: '#FFFFFF'
@@ -3520,7 +3520,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -3534,7 +3534,7 @@ const styles = StyleSheet.create({
   selectAllText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   bulkActionButtons: {
     flexDirection: 'row',
@@ -3585,8 +3585,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF'
   },
   checkboxSelected: {
-    backgroundColor: '#6366F1',
-    borderColor: '#6366F1'
+    backgroundColor: '#5C6BC0',
+    borderColor: '#5C6BC0'
   },
   reorderButtons: {
     flexDirection: 'column',
@@ -3596,11 +3596,11 @@ const styles = StyleSheet.create({
   reorderBtn: {
     padding: 4,
     borderRadius: 4,
-    backgroundColor: '#EEF2FF'
+    backgroundColor: '#F3F4FF'
   },
   bulkEditNote: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#5A5A7A',
     backgroundColor: '#FEF3C7',
     padding: 12,
     borderRadius: 8,

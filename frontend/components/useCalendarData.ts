@@ -62,9 +62,9 @@ function formatEvent(raw: any): DisplayEvent {
     day: DAY_SHORT[dt.getDay()],
     title: raw.title,
     category: raw.category,
-    bg: raw.palette?.bg ?? '#EEF2FF',
+    bg: raw.palette?.bg ?? '#F3F4FF',
     tc: raw.palette?.tc ?? '#3730A3',
-    dot: raw.palette?.dot ?? '#5B5BD6',
+    dot: raw.palette?.dot ?? '#5C6BC0',
   };
 }
 
@@ -81,7 +81,7 @@ function formatTerm(raw: any): DisplayTerm {
     cocurricular: raw.cocurricular || [],
     headerBg: raw.palette?.headerBg ?? '#F3F4F6',
     headerText: raw.palette?.headerText ?? '#9CA3AF',
-    badgeBorder: raw.palette?.badgeBorder ?? '#E5E7EB',
+    badgeBorder: raw.palette?.badgeBorder ?? '#DDDDF5',
   };
 }
 

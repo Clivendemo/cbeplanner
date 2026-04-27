@@ -80,7 +80,7 @@ export default function MySchemes() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#6366F1" />
+        <ActivityIndicator size="large" color="#5C6BC0" />
       </View>
     );
   }
@@ -89,7 +89,7 @@ export default function MySchemes() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#6366F1']} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#5C6BC0']} />}
     >
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Schemes</Text>
@@ -97,7 +97,7 @@ export default function MySchemes() {
       </View>
 
       <View style={styles.noticeBox}>
-        <Ionicons name="information-circle" size={20} color="#6366F1" />
+        <Ionicons name="information-circle" size={20} color="#5C6BC0" />
         <Text style={styles.noticeText}>
           Preview any scheme for free. Downloading the final PDF costs KES 15.
         </Text>
@@ -129,7 +129,7 @@ export default function MySchemes() {
           >
             <View style={styles.cardHeader}>
               <View style={styles.iconCircle}>
-                <Ionicons name="calendar" size={22} color="#8B5CF6" />
+                <Ionicons name="calendar" size={22} color="#5C6BC0" />
               </View>
               <View style={styles.cardHeaderText}>
                 <Text style={styles.cardTitle}>{s.subjectName}</Text>
@@ -140,12 +140,12 @@ export default function MySchemes() {
 
             <View style={styles.cardBody}>
               <View style={styles.row}>
-                <Ionicons name="time-outline" size={14} color="#6B7280" />
+                <Ionicons name="time-outline" size={14} color="#5A5A7A" />
                 <Text style={styles.rowText}>Term {s.term} · {s.year}</Text>
               </View>
               {s.totalWeeks ? (
                 <View style={styles.row}>
-                  <Ionicons name="layers-outline" size={14} color="#6B7280" />
+                  <Ionicons name="layers-outline" size={14} color="#5A5A7A" />
                   <Text style={styles.rowText}>
                     {s.totalWeeks} weeks · {s.lessonsPerWeek || '—'} lessons/wk
                   </Text>
@@ -153,7 +153,7 @@ export default function MySchemes() {
               ) : null}
               {s.schoolName ? (
                 <View style={styles.row}>
-                  <Ionicons name="business-outline" size={14} color="#6B7280" />
+                  <Ionicons name="business-outline" size={14} color="#5A5A7A" />
                   <Text style={styles.rowText} numberOfLines={1}>{s.schoolName}</Text>
                 </View>
               ) : null}
@@ -187,13 +187,13 @@ const styles = StyleSheet.create({
   content: { padding: 16 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: { marginBottom: 16 },
-  headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#111827', marginBottom: 4 },
-  headerSubtitle: { fontSize: 14, color: '#6B7280' },
+  headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#1A1A3A', marginBottom: 4 },
+  headerSubtitle: { fontSize: 14, color: '#5A5A7A' },
   noticeBox: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 10,
@@ -205,14 +205,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#5C6BC0',
     paddingVertical: 12,
     borderRadius: 10,
     marginBottom: 16,
   },
   newBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
   empty: { alignItems: 'center', justifyContent: 'center', paddingVertical: 64 },
-  emptyTitle: { fontSize: 18, fontWeight: '600', color: '#6B7280', marginTop: 16 },
+  emptyTitle: { fontSize: 18, fontWeight: '600', color: '#5A5A7A', marginTop: 16 },
   emptySub: { fontSize: 13, color: '#9CA3AF', marginTop: 6, textAlign: 'center', maxWidth: 280 },
   card: {
     backgroundColor: '#FFFFFF',
@@ -220,21 +220,21 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   iconCircle: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#F5F3FF',
+    backgroundColor: '#F3F4FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   cardHeaderText: { flex: 1 },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
-  cardSub: { fontSize: 13, color: '#8B5CF6', marginTop: 2, fontWeight: '600' },
+  cardTitle: { fontSize: 16, fontWeight: '700', color: '#1A1A3A' },
+  cardSub: { fontSize: 13, color: '#5C6BC0', marginTop: 2, fontWeight: '600' },
   cardBody: { gap: 6, marginBottom: 10 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   rowText: { flex: 1, fontSize: 13, color: '#374151' },

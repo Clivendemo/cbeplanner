@@ -145,7 +145,7 @@ export default function NewsAdminScreen() {
               data-testid={`news-toggle-${n.id}`}
             />
             <TouchableOpacity onPress={() => setModal(n)} style={styles.iconBtn} data-testid={`news-edit-${n.id}`}>
-              <Ionicons name="pencil" size={16} color="#6366F1" />
+              <Ionicons name="pencil" size={16} color="#5C6BC0" />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => remove(n)} style={styles.iconBtn} data-testid={`news-delete-${n.id}`}>
               <Ionicons name="trash" size={16} color="#EF4444" />
@@ -218,7 +218,7 @@ const NewsEditorModal: React.FC<{
           />
 
           <View style={styles.modalFooter}>
-            <TouchableOpacity onPress={onCancel} style={[styles.modalBtn, { backgroundColor: '#E5E7EB' }]} data-testid="news-cancel">
+            <TouchableOpacity onPress={onCancel} style={[styles.modalBtn, { backgroundColor: '#DDDDF5' }]} data-testid="news-cancel">
               <Text style={[styles.modalBtnText, { color: '#374151' }]}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -239,17 +239,17 @@ const NewsEditorModal: React.FC<{
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'transparent' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  muted: { color: '#6B7280', fontSize: 13, marginTop: 4 },
+  muted: { color: '#5A5A7A', fontSize: 13, marginTop: 4 },
 
   scrollBody: { padding: 16, paddingBottom: 80 },
   sectionHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     marginBottom: 14,
   },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1A1A3A' },
   addBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: '#6D28D9', paddingHorizontal: 12, paddingVertical: 8,
+    backgroundColor: '#5C6BC0', paddingHorizontal: 12, paddingVertical: 8,
     borderRadius: 8,
   },
   addBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
@@ -257,17 +257,17 @@ const styles = StyleSheet.create({
   listCard: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 10, borderWidth: 1, borderColor: '#E5E7EB',
+    borderRadius: 10, borderWidth: 1, borderColor: '#DDDDF5',
     padding: 12, marginBottom: 10, gap: 10,
   },
   tagPill: {
-    backgroundColor: '#EDE9FE',
+    backgroundColor: '#F3F4FF',
     paddingHorizontal: 8, paddingVertical: 4,
     borderRadius: 12,
   },
-  tagPillText: { color: '#6D28D9', fontSize: 11, fontWeight: '700' },
-  cardTitle: { fontSize: 13, color: '#111827' },
-  cardSubtle: { fontSize: 11, color: '#6B7280', marginTop: 3 },
+  tagPillText: { color: '#5C6BC0', fontSize: 11, fontWeight: '700' },
+  cardTitle: { fontSize: 13, color: '#1A1A3A' },
+  cardSubtle: { fontSize: 11, color: '#5A5A7A', marginTop: 3 },
   iconBtn: { padding: 6 },
 
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center', padding: 16 },
@@ -275,18 +275,18 @@ const styles = StyleSheet.create({
     width: '100%', maxWidth: 500, backgroundColor: '#FFFFFF', borderRadius: 12,
     padding: 20,
   },
-  modalTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 12 },
+  modalTitle: { fontSize: 16, fontWeight: '700', color: '#1A1A3A', marginBottom: 12 },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 8, marginBottom: 4 },
   input: {
     borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 8, fontSize: 13,
-    backgroundColor: '#FFFFFF', color: '#111827',
+    backgroundColor: '#FFFFFF', color: '#1A1A3A',
   },
   modalFooter: {
     flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 18,
   },
   modalBtn: {
-    backgroundColor: '#6D28D9', paddingHorizontal: 16, paddingVertical: 10,
+    backgroundColor: '#5C6BC0', paddingHorizontal: 16, paddingVertical: 10,
     borderRadius: 8, alignItems: 'center', justifyContent: 'center',
   },
   modalBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },

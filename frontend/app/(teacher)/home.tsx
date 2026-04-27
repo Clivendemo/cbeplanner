@@ -297,7 +297,7 @@ export default function Home() {
             <Text style={styles.infoLabel}>School: {user?.schoolName}</Text>
           </View>
           <View style={styles.balanceCard}>
-            <Ionicons name="wallet-outline" size={20} color="#6366F1" />
+            <Ionicons name="wallet-outline" size={20} color="#5C6BC0" />
             <Text style={styles.balanceText}>
               {(user?.freeLessonsRemaining ?? 0) > 0 
                 ? `${user?.freeLessonsRemaining} Free Lesson${(user?.freeLessonsRemaining ?? 0) !== 1 ? 's' : ''} Available`
@@ -391,7 +391,7 @@ export default function Home() {
               <Text style={styles.label}>Sub-Strand *</Text>
               {loading ? (
                 <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="small" color="#6366F1" />
+                  <ActivityIndicator size="small" color="#5C6BC0" />
                   <Text style={styles.loadingText}>Loading sub-strands...</Text>
                 </View>
               ) : substrands.length === 0 ? (
@@ -474,7 +474,7 @@ export default function Home() {
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Lesson Plan</Text>
             <TouchableOpacity onPress={() => setShowPlan(false)}>
-              <Ionicons name="close" size={24} color="#6B7280" />
+              <Ionicons name="close" size={24} color="#5A5A7A" />
             </TouchableOpacity>
           </View>
           
@@ -614,14 +614,14 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 16,
-    color: '#6366F1',
+    color: '#5C6BC0',
     fontWeight: '600',
     marginBottom: 4
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 12
   },
   infoCard: {
@@ -638,7 +638,7 @@ const styles = StyleSheet.create({
   balanceCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     padding: 12,
     borderRadius: 8
   },
@@ -663,7 +663,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     overflow: 'hidden'
   },
   picker: {
@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
   },
   generateButton: {
     flexDirection: 'row',
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
     borderRadius: 8,
     paddingVertical: 16,
     alignItems: 'center',
@@ -697,12 +697,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    borderBottomColor: '#DDDDF5'
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#111827'
+    color: '#1A1A3A'
   },
   modalContent: {
     flex: 1,
@@ -714,7 +714,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#6366F1',
+    color: '#5C6BC0',
     marginBottom: 8
   },
   sectionText: {
@@ -724,14 +724,14 @@ const styles = StyleSheet.create({
   },
   sectionDescription: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 4,
     fontStyle: 'italic'
   },
   domainTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1A1A3A',
     marginTop: 8,
     marginBottom: 4
   },
@@ -750,12 +750,12 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 4
   },
   itemDescription: {
     fontSize: 13,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   lessonStep: {
     backgroundColor: '#FFFBEB',
@@ -786,7 +786,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginLeft: 12,
     fontSize: 14,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   emptyContainer: {
     padding: 16,
@@ -806,8 +806,8 @@ const styles = StyleSheet.create({
   },
   gradeBandLabel: {
     fontSize: 11,
-    color: '#6366F1',
-    backgroundColor: '#EEF2FF',
+    color: '#5C6BC0',
+    backgroundColor: '#F3F4FF',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
@@ -833,12 +833,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     borderLeftWidth: 3,
-    borderLeftColor: '#6366F1'
+    borderLeftColor: '#5C6BC0'
   },
   sloPreviewLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6366F1',
+    color: '#5C6BC0',
     marginBottom: 4
   },
   sloPreviewText: {

@@ -557,7 +557,7 @@ export default function DataImport() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerIcon}>
-          <Ionicons name="cloud-upload" size={32} color="#6366F1" />
+          <Ionicons name="cloud-upload" size={32} color="#5C6BC0" />
         </View>
         <Text style={styles.headerTitle}>Data Import</Text>
         <Text style={styles.headerSubtitle}>
@@ -574,7 +574,7 @@ export default function DataImport() {
           <Ionicons 
             name="document-text" 
             size={24} 
-            color={activeTab === 'csv' ? '#6366F1' : '#6B7280'} 
+            color={activeTab === 'csv' ? '#5C6BC0' : '#5A5A7A'} 
           />
           <Text style={[styles.tabText, activeTab === 'csv' && styles.tabTextActive]}>
             CSV Upload
@@ -589,7 +589,7 @@ export default function DataImport() {
           <Ionicons 
             name="document" 
             size={24} 
-            color={activeTab === 'pdf' ? '#6366F1' : '#6B7280'} 
+            color={activeTab === 'pdf' ? '#5C6BC0' : '#5A5A7A'} 
           />
           <Text style={[styles.tabText, activeTab === 'pdf' && styles.tabTextActive]}>
             PDF Extract
@@ -604,7 +604,7 @@ export default function DataImport() {
           <Ionicons 
             name="document-attach" 
             size={24} 
-            color={activeTab === 'docx' ? '#6366F1' : '#6B7280'} 
+            color={activeTab === 'docx' ? '#5C6BC0' : '#5A5A7A'} 
           />
           <Text style={[styles.tabText, activeTab === 'docx' && styles.tabTextActive]}>
             Word Extract
@@ -657,10 +657,10 @@ export default function DataImport() {
                 disabled={loading}
               >
                 {loading ? (
-                  <ActivityIndicator color="#6366F1" />
+                  <ActivityIndicator color="#5C6BC0" />
                 ) : (
                   <>
-                    <Ionicons name="cloud-upload" size={32} color="#6366F1" />
+                    <Ionicons name="cloud-upload" size={32} color="#5C6BC0" />
                     <Text style={styles.uploadBtnText}>Select CSV File</Text>
                     <Text style={styles.uploadBtnHint}>Click to browse files</Text>
                   </>
@@ -717,7 +717,7 @@ export default function DataImport() {
               >
                 {loading ? (
                   <>
-                    <ActivityIndicator color="#6366F1" />
+                    <ActivityIndicator color="#5C6BC0" />
                     <Text style={styles.uploadBtnText}>Extracting...</Text>
                     <Text style={styles.uploadBtnHint}>This may take a moment</Text>
                   </>
@@ -776,7 +776,7 @@ export default function DataImport() {
               >
                 {loading ? (
                   <>
-                    <ActivityIndicator color="#6366F1" />
+                    <ActivityIndicator color="#5C6BC0" />
                     <Text style={styles.uploadBtnText}>Extracting...</Text>
                     <Text style={styles.uploadBtnHint}>This may take a moment</Text>
                   </>
@@ -839,16 +839,16 @@ export default function DataImport() {
       {/* Import History Section */}
       <View style={styles.historySection}>
         <View style={styles.historyHeader}>
-          <Ionicons name="time" size={24} color="#6366F1" />
+          <Ionicons name="time" size={24} color="#5C6BC0" />
           <Text style={styles.historyTitle}>Import History</Text>
           <TouchableOpacity onPress={loadImportHistory} style={styles.refreshBtn}>
-            <Ionicons name="refresh" size={20} color="#6366F1" />
+            <Ionicons name="refresh" size={20} color="#5C6BC0" />
           </TouchableOpacity>
         </View>
         
         {loadingHistory ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#6366F1" />
+            <ActivityIndicator size="small" color="#5C6BC0" />
             <Text style={styles.loadingText}>Loading history...</Text>
           </View>
         ) : importHistory.length === 0 ? (
@@ -866,7 +866,7 @@ export default function DataImport() {
                     <Ionicons 
                       name={item.import_type === 'pdf' ? 'document' : 'document-text'} 
                       size={20} 
-                      color="#6366F1" 
+                      color="#5C6BC0" 
                     />
                   </View>
                   <View style={styles.historyItemInfo}>
@@ -904,7 +904,7 @@ export default function DataImport() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Import Preview</Text>
               <TouchableOpacity onPress={() => setShowPreviewModal(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color="#5A5A7A" />
               </TouchableOpacity>
             </View>
 
@@ -1076,13 +1076,13 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    borderBottomColor: '#DDDDF5'
   },
   headerIcon: {
     width: 64,
     height: 64,
     borderRadius: 16,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12
@@ -1090,11 +1090,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#111827'
+    color: '#1A1A3A'
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#5A5A7A',
     textAlign: 'center',
     marginTop: 4
   },
@@ -1110,20 +1110,20 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#E5E7EB'
+    borderColor: '#DDDDF5'
   },
   tabActive: {
-    borderColor: '#6366F1',
-    backgroundColor: '#EEF2FF'
+    borderColor: '#5C6BC0',
+    backgroundColor: '#F3F4FF'
   },
   tabText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 8
   },
   tabTextActive: {
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   tabDesc: {
     fontSize: 11,
@@ -1163,7 +1163,7 @@ const styles = StyleSheet.create({
   },
   stepNumber: {
     fontWeight: '700',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   warningText: {
     fontSize: 13,
@@ -1191,7 +1191,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 10
@@ -1211,19 +1211,19 @@ const styles = StyleSheet.create({
   uploadTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 4
   },
   uploadDesc: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginBottom: 16
   },
   uploadBtn: {
     width: '100%',
     paddingVertical: 32,
     borderWidth: 2,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     borderStyle: 'dashed',
     borderRadius: 12,
     alignItems: 'center',
@@ -1263,19 +1263,19 @@ const styles = StyleSheet.create({
   guideTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 12
   },
   guideTable: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     borderRadius: 8,
     overflow: 'hidden'
   },
   guideRow: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    borderBottomColor: '#DDDDF5'
   },
   guideCell: {
     width: 140,
@@ -1286,7 +1286,7 @@ const styles = StyleSheet.create({
   guideCellHeader: {
     backgroundColor: '#F3F4F6',
     fontWeight: '700',
-    color: '#111827'
+    color: '#1A1A3A'
   },
   guideCellCode: {
     fontFamily: 'monospace',
@@ -1298,7 +1298,7 @@ const styles = StyleSheet.create({
     fontWeight: '600'
   },
   guideCellOpt: {
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   // Modal styles
   modalOverlay: {
@@ -1321,19 +1321,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    borderBottomColor: '#DDDDF5'
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#111827'
+    color: '#1A1A3A'
   },
   modalBody: {
     padding: 16,
     maxHeight: 500
   },
   summaryCard: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16
@@ -1358,7 +1358,7 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 13,
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   errorCard: {
     backgroundColor: '#FEF2F2',
@@ -1403,7 +1403,7 @@ const styles = StyleSheet.create({
   selectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 12
   },
   selectLabel: {
@@ -1422,12 +1422,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     marginRight: 8
   },
   selectChipActive: {
-    backgroundColor: '#6366F1',
-    borderColor: '#6366F1'
+    backgroundColor: '#5C6BC0',
+    borderColor: '#5C6BC0'
   },
   selectChipText: {
     fontSize: 14,
@@ -1453,14 +1453,14 @@ const styles = StyleSheet.create({
   previewTableRow: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    borderBottomColor: '#DDDDF5'
   },
   previewTableCell: {
     padding: 8,
     fontSize: 12,
     color: '#374151',
     borderRightWidth: 1,
-    borderRightColor: '#E5E7EB'
+    borderRightColor: '#DDDDF5'
   },
   downloadCsvBtn: {
     flexDirection: 'row',
@@ -1482,7 +1482,7 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB'
+    borderTopColor: '#DDDDF5'
   },
   cancelBtn: {
     flex: 1,
@@ -1494,7 +1494,7 @@ const styles = StyleSheet.create({
   cancelBtnText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   saveBtn: {
     flex: 2,
@@ -1521,7 +1521,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#E5E7EB'
+    borderColor: '#DDDDF5'
   },
   historyHeader: {
     flexDirection: 'row',
@@ -1531,14 +1531,14 @@ const styles = StyleSheet.create({
   historyTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: '#1A1A3A',
     marginLeft: 8,
     flex: 1
   },
   refreshBtn: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: '#EEF2FF'
+    backgroundColor: '#F3F4FF'
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -1549,7 +1549,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginLeft: 8,
     fontSize: 14,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   emptyHistory: {
     alignItems: 'center',
@@ -1558,7 +1558,7 @@ const styles = StyleSheet.create({
   emptyHistoryText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 12
   },
   emptyHistorySubtext: {
@@ -1577,7 +1577,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#E5E7EB'
+    borderColor: '#DDDDF5'
   },
   historyItemLeft: {
     flexDirection: 'row',
@@ -1588,7 +1588,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 8,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     alignItems: 'center',
     justifyContent: 'center'
   },
@@ -1599,11 +1599,11 @@ const styles = StyleSheet.create({
   historyFilename: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111827'
+    color: '#1A1A3A'
   },
   historyMeta: {
     fontSize: 12,
-    color: '#6366F1',
+    color: '#5C6BC0',
     marginTop: 2
   },
   historyDate: {
@@ -1626,7 +1626,7 @@ const styles = StyleSheet.create({
   },
   historyStatLabel: {
     fontSize: 10,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 2
   }
 });

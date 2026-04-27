@@ -64,7 +64,7 @@ export default function TeacherLayout() {
   if (loading || !authChecked) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366F1" />
+        <ActivityIndicator size="large" color="#5C6BC0" />
         <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
@@ -74,7 +74,7 @@ export default function TeacherLayout() {
   if (!user) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366F1" />
+        <ActivityIndicator size="large" color="#5C6BC0" />
         <Text style={styles.loadingText}>Redirecting...</Text>
       </View>
     );
@@ -84,7 +84,7 @@ export default function TeacherLayout() {
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#6366F1'
+          backgroundColor: '#283593'
         },
         headerTintColor: '#FFFFFF',
         headerTitleStyle: {
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   headerRight: {
     flexDirection: 'row',
@@ -266,10 +266,10 @@ const styles = StyleSheet.create({
   // ===== Persistent shell (desktop only) =====
   shellRoot: {
     flex: 1,
-    backgroundColor: '#EEF2FF', // indigo-50, blends with #6366F1 header
+    backgroundColor: '#F3F4FF', // indigo-50, blends with #5C6BC0 header
     // @ts-ignore web-only CSS: soft indigo wash
     backgroundImage:
-      'radial-gradient(900px 500px at 8% 0%, #E0E7FF 0%, transparent 60%), radial-gradient(900px 500px at 92% 100%, #F5F3FF 0%, transparent 60%), linear-gradient(180deg, #EEF2FF 0%, #F8FAFC 100%)',
+      'radial-gradient(900px 500px at 8% 0%, #E0E7FF 0%, transparent 60%), radial-gradient(900px 500px at 92% 100%, #F3F4FF 0%, transparent 60%), linear-gradient(180deg, #F3F4FF 0%, #F8FAFC 100%)',
   },
   shellRow: {
     flex: 1,
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     overflow: 'hidden',
     // @ts-ignore web-only subtle shadow
     boxShadow: '0 6px 24px rgba(17, 24, 39, 0.06)',
@@ -300,10 +300,10 @@ const styles = StyleSheet.create({
   // Mobile/tablet shell (below 1180px): Stack is viewport-height, sidebars below
   mobileRoot: {
     flex: 1,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     // @ts-ignore web-only CSS
     backgroundImage:
-      'radial-gradient(900px 500px at 8% 0%, #E0E7FF 0%, transparent 60%), linear-gradient(180deg, #EEF2FF 0%, #F8FAFC 100%)',
+      'radial-gradient(900px 500px at 8% 0%, #E0E7FF 0%, transparent 60%), linear-gradient(180deg, #F3F4FF 0%, #F8FAFC 100%)',
   },
   mobileSidebars: {
     padding: 16,

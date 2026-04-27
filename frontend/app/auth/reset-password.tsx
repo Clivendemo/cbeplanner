@@ -136,7 +136,7 @@ export default function ResetPassword() {
     return (
       <LandingLayout>
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#5B5BD6" />
+          <ActivityIndicator size="large" color="#5C6BC0" />
           <Text style={styles.subtitle}>Verifying reset link…</Text>
         </View>
       </LandingLayout>
@@ -171,7 +171,7 @@ export default function ResetPassword() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         <View style={styles.header}>
-          <Ionicons name="lock-open" size={56} color="#5B5BD6" />
+          <Ionicons name="lock-open" size={56} color="#5C6BC0" />
           <Text style={styles.title}>Set a New Password</Text>
           {email ? (
             <Text style={styles.subtitle}>
@@ -248,9 +248,9 @@ export default function ResetPassword() {
 
 const styles = StyleSheet.create({
   header: { alignItems: 'center', marginBottom: 24 },
-  title: { fontSize: 26, fontWeight: 'bold', color: '#111827', marginTop: 12, textAlign: 'center' },
-  subtitle: { fontSize: 13, color: '#6B7280', marginTop: 6, textAlign: 'center', paddingHorizontal: 12 },
-  emailEmphasis: { color: '#5B5BD6', fontWeight: '600' },
+  title: { fontSize: 26, fontWeight: 'bold', color: '#1A1A3A', marginTop: 12, textAlign: 'center' },
+  subtitle: { fontSize: 13, color: '#5A5A7A', marginTop: 6, textAlign: 'center', paddingHorizontal: 12 },
+  emailEmphasis: { color: '#5C6BC0', fontWeight: '600' },
   form: { width: '100%' },
   inputContainer: {
     flexDirection: 'row',
@@ -260,14 +260,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
   },
   inputIcon: { marginRight: 10 },
-  input: { flex: 1, height: 46, fontSize: 15, color: '#111827' },
-  button: { backgroundColor: '#5B5BD6', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 6 },
+  input: { flex: 1, height: 46, fontSize: 15, color: '#1A1A3A' },
+  button: { backgroundColor: '#E65100', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 6 },
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
   linkButton: { marginTop: 18, alignItems: 'center' },
-  linkText: { color: '#5B5BD6', fontSize: 13, fontWeight: '500' },
+  linkText: { color: '#5C6BC0', fontSize: 13, fontWeight: '500' },
   centered: { alignItems: 'center', paddingVertical: 40 },
 });

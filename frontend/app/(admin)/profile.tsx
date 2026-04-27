@@ -80,7 +80,7 @@ export default function AdminProfile() {
           style={styles.menuItem}
           onPress={() => router.push('/(admin)/dashboard')}
         >
-          <Ionicons name="grid-outline" size={24} color="#6366F1" />
+          <Ionicons name="grid-outline" size={24} color="#5C6BC0" />
           <Text style={styles.menuText}>Dashboard</Text>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </TouchableOpacity>
@@ -98,7 +98,7 @@ export default function AdminProfile() {
           style={styles.menuItem}
           onPress={() => router.push('/(admin)/users')}
         >
-          <Ionicons name="people-outline" size={24} color="#8B5CF6" />
+          <Ionicons name="people-outline" size={24} color="#5C6BC0" />
           <Text style={styles.menuText}>User Management</Text>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </TouchableOpacity>
@@ -111,7 +111,7 @@ export default function AdminProfile() {
           style={styles.menuItem}
           onPress={() => router.push('/(teacher)/home')}
         >
-          <Ionicons name="home-outline" size={24} color="#6B7280" />
+          <Ionicons name="home-outline" size={24} color="#5A5A7A" />
           <Text style={styles.menuText}>Switch to Teacher View</Text>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </TouchableOpacity>
@@ -121,7 +121,7 @@ export default function AdminProfile() {
           onPress={() => Linking.openURL('mailto:legitlabs@outlook.com?subject=CBE%20Planner%20Support')}
           data-testid="admin-help-support-btn"
         >
-          <Ionicons name="help-circle-outline" size={24} color="#6B7280" />
+          <Ionicons name="help-circle-outline" size={24} color="#5A5A7A" />
           <View style={styles.menuTextContainer}>
             <Text style={styles.menuText}>Help & Support</Text>
             <Text style={styles.supportEmailText}>legitlabs@outlook.com</Text>
@@ -173,12 +173,12 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 4
   },
   email: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginBottom: 12
   },
   adminBadge: {
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 12
   },
   menuItem: {
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   },
   supportEmailText: {
     fontSize: 12,
-    color: '#6366F1',
+    color: '#5C6BC0',
     marginTop: 2
   },
   signOutButton: {
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   developerText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   versionText: {
     fontSize: 11,

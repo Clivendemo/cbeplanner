@@ -33,7 +33,7 @@ interface TermDoc {
 }
 
 const CATEGORIES: { value: EventDoc['category']; label: string; color: string }[] = [
-  { value: 'academic', label: 'Academic', color: '#5B5BD6' },
+  { value: 'academic', label: 'Academic', color: '#5C6BC0' },
   { value: 'cocurricular', label: 'Co-curricular', color: '#16A34A' },
   { value: 'exam', label: 'Exam', color: '#EA580C' },
 ];
@@ -187,7 +187,7 @@ export default function CalendarAdminScreen() {
           style={[styles.tabBtn, tab === 'events' && styles.tabBtnActive]}
           onPress={() => setTab('events')}
         >
-          <Ionicons name="calendar-outline" size={16} color={tab === 'events' ? '#FFFFFF' : '#6B7280'} />
+          <Ionicons name="calendar-outline" size={16} color={tab === 'events' ? '#FFFFFF' : '#5A5A7A'} />
           <Text style={[styles.tabBtnText, tab === 'events' && styles.tabBtnTextActive]}>
             Upcoming Events ({events.length})
           </Text>
@@ -197,7 +197,7 @@ export default function CalendarAdminScreen() {
           style={[styles.tabBtn, tab === 'terms' && styles.tabBtnActive]}
           onPress={() => setTab('terms')}
         >
-          <Ionicons name="school-outline" size={16} color={tab === 'terms' ? '#FFFFFF' : '#6B7280'} />
+          <Ionicons name="school-outline" size={16} color={tab === 'terms' ? '#FFFFFF' : '#5A5A7A'} />
           <Text style={[styles.tabBtnText, tab === 'terms' && styles.tabBtnTextActive]}>
             Term Calendar ({terms.length})
           </Text>
@@ -262,13 +262,13 @@ const EventsPanel: React.FC<{
         const cat = CATEGORIES.find((c) => c.value === ev.category);
         return (
           <View key={ev.id} style={styles.listCard}>
-            <View style={[styles.colourStrip, { backgroundColor: cat?.color || '#6B7280' }]} />
+            <View style={[styles.colourStrip, { backgroundColor: cat?.color || '#5A5A7A' }]} />
             <View style={{ flex: 1 }}>
               <Text style={styles.cardTitle}>{ev.title}</Text>
               <Text style={styles.cardSubtle}>{formatIsoForDisplay(ev.date)} · {cat?.label}</Text>
             </View>
             <TouchableOpacity onPress={() => onEdit(ev)} style={styles.iconBtn} data-testid={`cal-edit-event-${ev.id}`}>
-              <Ionicons name="pencil" size={16} color="#6366F1" />
+              <Ionicons name="pencil" size={16} color="#5C6BC0" />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => onDelete(ev)} style={styles.iconBtn} data-testid={`cal-delete-event-${ev.id}`}>
               <Ionicons name="trash" size={16} color="#EF4444" />
@@ -304,7 +304,7 @@ const TermsPanel: React.FC<{
         const st = STATUSES.find((s) => s.value === tm.status);
         return (
           <View key={tm.id} style={styles.listCard}>
-            <View style={[styles.colourStrip, { backgroundColor: st?.color || '#6B7280' }]} />
+            <View style={[styles.colourStrip, { backgroundColor: st?.color || '#5A5A7A' }]} />
             <View style={{ flex: 1 }}>
               <Text style={styles.cardTitle}>{tm.name} · {tm.year}</Text>
               <Text style={styles.cardSubtle}>
@@ -312,7 +312,7 @@ const TermsPanel: React.FC<{
               </Text>
             </View>
             <TouchableOpacity onPress={() => onEdit(tm)} style={styles.iconBtn} data-testid={`cal-edit-term-${tm.id}`}>
-              <Ionicons name="pencil" size={16} color="#6366F1" />
+              <Ionicons name="pencil" size={16} color="#5C6BC0" />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => onDelete(tm)} style={styles.iconBtn} data-testid={`cal-delete-term-${tm.id}`}>
               <Ionicons name="trash" size={16} color="#EF4444" />
@@ -387,7 +387,7 @@ const EventEditorModal: React.FC<{
           />
 
           <View style={styles.modalFooter}>
-            <TouchableOpacity onPress={onCancel} style={[styles.modalBtn, { backgroundColor: '#E5E7EB' }]} data-testid="cal-event-cancel">
+            <TouchableOpacity onPress={onCancel} style={[styles.modalBtn, { backgroundColor: '#DDDDF5' }]} data-testid="cal-event-cancel">
               <Text style={[styles.modalBtnText, { color: '#374151' }]}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -508,7 +508,7 @@ const TermEditorModal: React.FC<{
           </ScrollView>
 
           <View style={styles.modalFooter}>
-            <TouchableOpacity onPress={onCancel} style={[styles.modalBtn, { backgroundColor: '#E5E7EB' }]} data-testid="cal-term-cancel">
+            <TouchableOpacity onPress={onCancel} style={[styles.modalBtn, { backgroundColor: '#DDDDF5' }]} data-testid="cal-term-cancel">
               <Text style={[styles.modalBtnText, { color: '#374151' }]}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -603,7 +603,7 @@ function blankTerm(order: number): TermDoc {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'transparent' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  muted: { color: '#6B7280', fontSize: 13, marginTop: 8 },
+  muted: { color: '#5A5A7A', fontSize: 13, marginTop: 8 },
 
   tabsRow: {
     flexDirection: 'row',
@@ -611,17 +611,17 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#DDDDF5',
   },
   tabBtn: {
     flex: 1,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     paddingVertical: 10, paddingHorizontal: 12,
-    borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB',
+    borderRadius: 8, borderWidth: 1, borderColor: '#DDDDF5',
     backgroundColor: '#FFFFFF',
   },
   tabBtnActive: { backgroundColor: '#F59E0B', borderColor: '#F59E0B' },
-  tabBtnText: { color: '#6B7280', fontSize: 13, fontWeight: '600' },
+  tabBtnText: { color: '#5A5A7A', fontSize: 13, fontWeight: '600' },
   tabBtnTextActive: { color: '#FFFFFF' },
 
   scrollBody: { padding: 16, paddingBottom: 80 },
@@ -629,7 +629,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     marginBottom: 12,
   },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1A1A3A' },
   subSectionTitle: { fontSize: 13, fontWeight: '700', color: '#374151' },
 
   addBtn: {
@@ -640,7 +640,7 @@ const styles = StyleSheet.create({
   addBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
   smallAddBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#6366F1', paddingHorizontal: 8, paddingVertical: 4,
+    backgroundColor: '#5C6BC0', paddingHorizontal: 8, paddingVertical: 4,
     borderRadius: 6,
   },
   smallAddBtnText: { color: '#FFFFFF', fontSize: 11, fontWeight: '600' },
@@ -648,12 +648,12 @@ const styles = StyleSheet.create({
   listCard: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 10, borderWidth: 1, borderColor: '#E5E7EB',
+    borderRadius: 10, borderWidth: 1, borderColor: '#DDDDF5',
     padding: 12, marginBottom: 10, gap: 10,
   },
   colourStrip: { width: 4, height: 40, borderRadius: 2 },
-  cardTitle: { fontSize: 14, fontWeight: '600', color: '#111827' },
-  cardSubtle: { fontSize: 12, color: '#6B7280', marginTop: 2 },
+  cardTitle: { fontSize: 14, fontWeight: '600', color: '#1A1A3A' },
+  cardSubtle: { fontSize: 12, color: '#5A5A7A', marginTop: 2 },
   iconBtn: { padding: 6 },
 
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center', padding: 16 },
@@ -661,12 +661,12 @@ const styles = StyleSheet.create({
     width: '100%', maxWidth: 500, backgroundColor: '#FFFFFF', borderRadius: 12,
     padding: 20, gap: 4,
   },
-  modalTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 10 },
+  modalTitle: { fontSize: 16, fontWeight: '700', color: '#1A1A3A', marginBottom: 10 },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 8, marginBottom: 4 },
   input: {
     borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 8, fontSize: 13,
-    backgroundColor: '#FFFFFF', color: '#111827',
+    backgroundColor: '#FFFFFF', color: '#1A1A3A',
     marginBottom: 4,
   },
   chipRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginBottom: 4 },

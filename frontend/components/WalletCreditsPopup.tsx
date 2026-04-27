@@ -42,7 +42,7 @@ export const WalletCreditsPopup: React.FC<WalletCreditsPopupProps> = ({
           {/* Decorative Header */}
           <View style={styles.headerDecoration}>
             <View style={styles.iconCircle}>
-              <Ionicons name="wallet-outline" size={40} color="#6366F1" />
+              <Ionicons name="wallet-outline" size={40} color="#5C6BC0" />
             </View>
           </View>
 
@@ -59,7 +59,7 @@ export const WalletCreditsPopup: React.FC<WalletCreditsPopupProps> = ({
 
             {/* Balance Display */}
             <View style={styles.balanceCard}>
-              <Ionicons name="information-circle" size={20} color="#6366F1" />
+              <Ionicons name="information-circle" size={20} color="#5C6BC0" />
               <Text style={styles.balanceText}>
                 Current Balance: {freeLessonsRemaining > 0 
                   ? `${freeLessonsRemaining} free lesson${freeLessonsRemaining !== 1 ? 's' : ''}`
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     position: 'relative'
   },
   headerDecoration: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     paddingVertical: 30,
     alignItems: 'center',
     borderBottomLeftRadius: 50,
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#6366F1',
+    shadowColor: '#5C6BC0',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#111827',
+    color: '#1A1A3A',
     textAlign: 'center',
     marginBottom: 12
   },
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   },
   encouragement: {
     fontSize: 14,
-    color: '#6366F1',
+    color: '#5C6BC0',
     textAlign: 'center',
     fontStyle: 'italic',
     marginBottom: 24,
@@ -202,13 +202,13 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     flexDirection: 'row',
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    shadowColor: '#6366F1',
+    shadowColor: '#5C6BC0',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6'
   },
   secondaryButtonText: {
-    color: '#6B7280',
+    color: '#5A5A7A',
     fontSize: 15,
     fontWeight: '600'
   },

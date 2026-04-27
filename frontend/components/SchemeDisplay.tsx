@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   coverSchoolName: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#111827',
+    color: '#1A1A3A',
     textAlign: 'center',
     letterSpacing: 1,
   },
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
   coverMeta: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#5A5A7A',
     textAlign: 'center',
     marginTop: 4,
     letterSpacing: 0.8,
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   coverDivider: {
     width: 80,
     height: 2,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#DDDDF5',
     marginVertical: 20,
   },
   documentHeader: {
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#F9FAFB',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#DDDDF5',
   },
   metaRow: {
     flexDirection: 'row',
@@ -363,14 +363,14 @@ const styles = StyleSheet.create({
     width: 90,
     fontSize: 12,
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#5A5A7A',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   metaValue: {
     flex: 1,
     fontSize: 13,
-    color: '#111827',
+    color: '#1A1A3A',
     fontWeight: '500',
   },
   tableScroll: {
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
   },
   cellText: {
     fontSize: 11,
-    color: '#111827',
+    color: '#1A1A3A',
     lineHeight: 16,
   },
   colWeek: { width: 40, alignItems: 'center' },

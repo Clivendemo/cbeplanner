@@ -236,7 +236,7 @@ export default function SchemeDetail() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#6366F1" />
+        <ActivityIndicator size="large" color="#5C6BC0" />
         <Text style={styles.loadingText}>Loading scheme...</Text>
       </View>
     );
@@ -279,7 +279,7 @@ export default function SchemeDetail() {
           onPress={handleEdit}
           data-testid="scheme-detail-edit-btn"
         >
-          <Ionicons name="create-outline" size={16} color="#6366F1" />
+          <Ionicons name="create-outline" size={16} color="#5C6BC0" />
           <Text style={styles.editBtnText}>Edit</Text>
         </TouchableOpacity>
 
@@ -301,9 +301,9 @@ export default function SchemeDetail() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: '#F9FAFB' },
-  loadingText: { marginTop: 12, fontSize: 14, color: '#6B7280' },
+  loadingText: { marginTop: 12, fontSize: 14, color: '#5A5A7A' },
   errorText: { fontSize: 16, color: '#374151', textAlign: 'center', marginTop: 16, marginBottom: 24 },
-  goBack: { backgroundColor: '#6366F1', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8 },
+  goBack: { backgroundColor: '#5C6BC0', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8 },
   goBackText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
   actionBar: {
     flexDirection: 'row',
@@ -334,10 +334,10 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     borderRadius: 8,
   },
-  editBtnText: { fontSize: 13, color: '#6366F1', fontWeight: '600' },
+  editBtnText: { fontSize: 13, color: '#5C6BC0', fontWeight: '600' },
   deleteBtn: {
     paddingHorizontal: 10,
     paddingVertical: 10,

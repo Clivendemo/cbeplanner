@@ -5,7 +5,7 @@ export default function Index() {
   // This page just shows a loading spinner until redirect happens.
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="#6366F1" />
+      <ActivityIndicator size="large" color="#5C6BC0" />
       <Text style={styles.text}>Loading CBE Planner...</Text>
       <Text style={styles.subtext}>Developed by LEGIT LAB</Text>
     </View>
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   },
   text: {
     marginTop: 16,
-    color: '#6B7280',
+    color: '#5A5A7A',
     fontSize: 14
   },
   subtext: {

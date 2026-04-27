@@ -322,7 +322,7 @@ export default function Notes() {
             onPress={() => setGeneratedNotes(null)}
             data-testid="notes-generate-new-btn"
           >
-            <Ionicons name="add-circle" size={20} color="#6366F1" />
+            <Ionicons name="add-circle" size={20} color="#5C6BC0" />
             <Text style={styles.newBtnText}>New Notes</Text>
           </TouchableOpacity>
         </View>
@@ -430,7 +430,7 @@ export default function Notes() {
 
       {/* Info card */}
       <View style={styles.infoCard}>
-        <Ionicons name="information-circle" size={22} color="#6366F1" />
+        <Ionicons name="information-circle" size={22} color="#5C6BC0" />
         <View style={styles.infoContent}>
           <Text style={styles.infoTitle}>How it works</Text>
           <Text style={styles.infoText}>
@@ -492,15 +492,15 @@ const styles = StyleSheet.create({
 
   // ── Form Card ──
   card: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 20, marginBottom: 16 },
-  cardTitle: { fontSize: 20, fontWeight: 'bold', color: '#111827', marginBottom: 4 },
-  cardSubtitle: { fontSize: 13, color: '#6B7280', marginBottom: 20 },
+  cardTitle: { fontSize: 20, fontWeight: 'bold', color: '#1A1A3A', marginBottom: 4 },
+  cardSubtitle: { fontSize: 13, color: '#5A5A7A', marginBottom: 20 },
   inputGroup: { marginBottom: 14 },
   label: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 6 },
   pickerWrap: {
     backgroundColor: '#F9FAFB',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     overflow: 'hidden',
   },
   picker: { height: 50 },
@@ -519,7 +519,7 @@ const styles = StyleSheet.create({
 
   // ── Info Card ──
   infoCard: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
   },
   infoContent: { marginLeft: 12, flex: 1 },
   infoTitle: { fontSize: 14, fontWeight: '600', color: '#4F46E5', marginBottom: 4 },
-  infoText: { fontSize: 12, color: '#6366F1', lineHeight: 20 },
+  infoText: { fontSize: 12, color: '#5C6BC0', lineHeight: 20 },
 
   // ── Preview ──
   previewHeader: {
@@ -554,11 +554,11 @@ const styles = StyleSheet.create({
   bodyText: { fontSize: 14, color: '#374151', lineHeight: 22, marginBottom: 8, textAlign: 'justify' as any },
 
   conceptBlock: { marginBottom: 14 },
-  conceptTitle: { fontSize: 14, fontWeight: 'bold', color: '#111827', marginBottom: 6 },
+  conceptTitle: { fontSize: 14, fontWeight: 'bold', color: '#1A1A3A', marginBottom: 6 },
   subHeading: { fontSize: 13, fontWeight: '600', color: '#4B5563', marginTop: 6, marginBottom: 4 },
 
   termRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 6 },
-  termLabel: { fontSize: 13, fontWeight: 'bold', color: '#111827' },
+  termLabel: { fontSize: 13, fontWeight: 'bold', color: '#1A1A3A' },
   termMeaning: { fontSize: 13, color: '#374151', flex: 1 },
 
   questionText: { fontSize: 13, color: '#374151', lineHeight: 20, marginBottom: 6 },
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
   actionRow: { flexDirection: 'row', gap: 12, marginTop: 4 },
   downloadBtn: {
     flex: 1,
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -577,14 +577,14 @@ const styles = StyleSheet.create({
   downloadBtnText: { color: '#FFF', fontSize: 15, fontWeight: '600', marginLeft: 8 },
   newBtn: {
     flex: 1,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
     borderRadius: 12,
   },
-  newBtnText: { color: '#6366F1', fontSize: 15, fontWeight: '600', marginLeft: 8 },
+  newBtnText: { color: '#5C6BC0', fontSize: 15, fontWeight: '600', marginLeft: 8 },
 
   // ── Modal ──
   modalOverlay: {
@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
   },
-  modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#111827', textAlign: 'center', marginTop: 12, marginBottom: 8 },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#1A1A3A', textAlign: 'center', marginTop: 12, marginBottom: 8 },
   modalBody: { fontSize: 14, color: '#4B5563', textAlign: 'center', lineHeight: 22, marginBottom: 20 },
   modalTopUpBtn: {
     backgroundColor: '#F59E0B',
@@ -617,5 +617,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
-  modalCancelText: { color: '#6B7280', fontSize: 14, fontWeight: '500' },
+  modalCancelText: { color: '#5A5A7A', fontSize: 14, fontWeight: '500' },
 });

@@ -177,7 +177,7 @@ export default function RevisionPapers() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <View style={styles.headerIconWrap}>
-            <Ionicons name="school" size={28} color="#5B5BD6" />
+            <Ionicons name="school" size={28} color="#5C6BC0" />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Revision Papers</Text>
@@ -186,7 +186,7 @@ export default function RevisionPapers() {
             </Text>
           </View>
           <View style={styles.walletPill}>
-            <Ionicons name="wallet-outline" size={14} color="#4C1D95" />
+            <Ionicons name="wallet-outline" size={14} color="#283593" />
             <Text style={styles.walletPillText}>KES {user?.walletBalance ?? 0}</Text>
           </View>
         </View>
@@ -194,7 +194,7 @@ export default function RevisionPapers() {
         {/* Grade picker */}
         <Text style={styles.sectionLabel}>Grade</Text>
         {loadingGrades ? (
-          <ActivityIndicator color="#5B5BD6" />
+          <ActivityIndicator color="#5C6BC0" />
         ) : (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
             {grades.map((g) => {
@@ -238,7 +238,7 @@ export default function RevisionPapers() {
 
         {loadingList ? (
           <View style={styles.emptyWrap}>
-            <ActivityIndicator color="#5B5BD6" />
+            <ActivityIndicator color="#5C6BC0" />
           </View>
         ) : items.length === 0 ? (
           <View style={styles.emptyWrap}>
@@ -288,7 +288,7 @@ export default function RevisionPapers() {
         <View style={styles.modalBackdrop}>
           <View style={styles.modalCard} data-testid="assessments-topup-modal">
             <View style={styles.modalIconWrap}>
-              <Ionicons name="wallet" size={32} color="#5B5BD6" />
+              <Ionicons name="wallet" size={32} color="#5C6BC0" />
             </View>
             <Text style={styles.modalTitle}>A little more in the tank</Text>
             <Text style={styles.modalBody}>{topupMessage}</Text>
@@ -332,21 +332,21 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     gap: 12,
     borderWidth: 1,
-    borderColor: '#EDE9FE',
+    borderColor: '#F3F4FF',
   },
   headerIconWrap: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     alignItems: 'center', justifyContent: 'center',
   },
-  title: { fontSize: 18, fontWeight: '700', color: '#111827' },
-  subtitle: { fontSize: 12, color: '#6B7280', marginTop: 2 },
+  title: { fontSize: 18, fontWeight: '700', color: '#1A1A3A' },
+  subtitle: { fontSize: 12, color: '#5A5A7A', marginTop: 2 },
   walletPill: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: '#F3E8FF',
     paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12,
   },
-  walletPillText: { fontSize: 11, fontWeight: '700', color: '#4C1D95' },
+  walletPillText: { fontSize: 11, fontWeight: '700', color: '#283593' },
 
   sectionLabel: { fontSize: 12, fontWeight: '700', color: '#374151', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
 
@@ -354,9 +354,9 @@ const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1, borderColor: '#E5E7EB',
+    borderWidth: 1, borderColor: '#DDDDF5',
   },
-  chipActive: { backgroundColor: '#5B5BD6', borderColor: '#5B5BD6' },
+  chipActive: { backgroundColor: '#5C6BC0', borderColor: '#5C6BC0' },
   chipText: { fontSize: 13, color: '#374151', fontWeight: '500' },
   chipTextActive: { color: '#FFFFFF', fontWeight: '600' },
 
@@ -383,11 +383,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
     alignItems: 'center', justifyContent: 'center',
   },
-  paperTitle: { fontSize: 14, fontWeight: '600', color: '#111827' },
-  paperMeta: { fontSize: 11, color: '#6B7280', marginTop: 2 },
+  paperTitle: { fontSize: 14, fontWeight: '600', color: '#1A1A3A' },
+  paperMeta: { fontSize: 11, color: '#5A5A7A', marginTop: 2 },
   downloadBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#5B5BD6',
+    backgroundColor: '#5C6BC0',
     paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8,
     minWidth: 90, justifyContent: 'center',
   },
@@ -408,18 +408,18 @@ const styles = StyleSheet.create({
   },
   modalIconWrap: {
     width: 64, height: 64, borderRadius: 32,
-    backgroundColor: '#EDE9FE',
+    backgroundColor: '#F3F4FF',
     alignItems: 'center', justifyContent: 'center',
     marginBottom: 12,
   },
-  modalTitle: { fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 6 },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: '#1A1A3A', marginBottom: 6 },
   modalBody: { fontSize: 13, color: '#4B5563', textAlign: 'center', lineHeight: 20, marginBottom: 18 },
   modalActions: { flexDirection: 'row', gap: 10, width: '100%' },
-  modalSecondary: { flex: 1, paddingVertical: 12, borderRadius: 10, borderWidth: 1, borderColor: '#E5E7EB', alignItems: 'center' },
+  modalSecondary: { flex: 1, paddingVertical: 12, borderRadius: 10, borderWidth: 1, borderColor: '#DDDDF5', alignItems: 'center' },
   modalSecondaryText: { color: '#374151', fontWeight: '600', fontSize: 13 },
   modalPrimary: {
     flex: 1, paddingVertical: 12, borderRadius: 10,
-    backgroundColor: '#5B5BD6',
+    backgroundColor: '#5C6BC0',
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
   },
   modalPrimaryText: { color: '#FFFFFF', fontWeight: '700', fontSize: 13 },

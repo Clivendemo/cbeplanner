@@ -88,7 +88,7 @@ export default function Login() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         <View style={styles.header}>
-          <Ionicons name="school" size={56} color="#5B5BD6" />
+          <Ionicons name="school" size={56} color="#5C6BC0" />
           <Text style={styles.title}>CBE Planner</Text>
           <Text style={styles.subtitle}>Kenyan Teacher Lesson Planning</Text>
         </View>
@@ -179,7 +179,7 @@ export default function Login() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Reset Password</Text>
               <TouchableOpacity onPress={() => setResetModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color="#5A5A7A" />
               </TouchableOpacity>
             </View>
             <Text style={styles.modalDescription}>
@@ -214,8 +214,8 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   header: { alignItems: 'center', marginBottom: 28 },
-  title: { fontSize: 28, fontWeight: 'bold', color: '#111827', marginTop: 12 },
-  subtitle: { fontSize: 13, color: '#6B7280', marginTop: 6 },
+  title: { fontSize: 28, fontWeight: 'bold', color: '#1A1A3A', marginTop: 12 },
+  subtitle: { fontSize: 13, color: '#5A5A7A', marginTop: 6 },
   form: { width: '100%' },
   inputContainer: {
     flexDirection: 'row',
@@ -225,18 +225,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
   },
   inputIcon: { marginRight: 10 },
-  input: { flex: 1, height: 46, fontSize: 15, color: '#111827' },
-  button: { backgroundColor: '#5B5BD6', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 6 },
+  input: { flex: 1, height: 46, fontSize: 15, color: '#1A1A3A' },
+  button: { backgroundColor: '#E65100', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 6 },
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
   linkButton: { marginTop: 20, alignItems: 'center' },
-  linkText: { color: '#5B5BD6', fontSize: 13, fontWeight: '500' },
+  linkText: { color: '#5C6BC0', fontSize: 13, fontWeight: '500' },
   forgotPasswordButton: { marginTop: 14, alignItems: 'center' },
-  forgotPasswordText: { color: '#6B7280', fontSize: 13 },
-  footer: { marginTop: 28, padding: 14, backgroundColor: '#EEF2FF', borderRadius: 12, alignItems: 'center' },
+  forgotPasswordText: { color: '#5A5A7A', fontSize: 13 },
+  footer: { marginTop: 28, padding: 14, backgroundColor: '#F3F4FF', borderRadius: 12, alignItems: 'center' },
   footerText: { fontSize: 11, color: '#4F46E5', textAlign: 'center', marginBottom: 3 },
   developerText: { fontSize: 10, color: '#9CA3AF', marginTop: 6, fontWeight: '500' },
   rememberMeRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8, marginBottom: 4, paddingVertical: 6 },
@@ -244,18 +244,18 @@ const styles = StyleSheet.create({
     width: 18, height: 18, borderRadius: 4, borderWidth: 2, borderColor: '#D1D5DB',
     alignItems: 'center', justifyContent: 'center', marginRight: 8, backgroundColor: '#FFFFFF',
   },
-  checkboxChecked: { backgroundColor: '#5B5BD6', borderColor: '#5B5BD6' },
+  checkboxChecked: { backgroundColor: '#5C6BC0', borderColor: '#5C6BC0' },
   rememberMeText: { fontSize: 13, color: '#374151' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', padding: 24 },
   modalContent: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 24 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', color: '#111827' },
-  modalDescription: { fontSize: 13, color: '#6B7280', marginBottom: 20, lineHeight: 20 },
+  modalTitle: { fontSize: 18, fontWeight: 'bold', color: '#1A1A3A' },
+  modalDescription: { fontSize: 13, color: '#5A5A7A', marginBottom: 20, lineHeight: 20 },
   modalInputContainer: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB',
-    borderRadius: 12, paddingHorizontal: 16, marginBottom: 20, borderWidth: 1, borderColor: '#E5E7EB',
+    borderRadius: 12, paddingHorizontal: 16, marginBottom: 20, borderWidth: 1, borderColor: '#DDDDF5',
   },
-  modalInput: { flex: 1, height: 46, fontSize: 15, color: '#111827' },
-  resetButton: { backgroundColor: '#5B5BD6', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
+  modalInput: { flex: 1, height: 46, fontSize: 15, color: '#1A1A3A' },
+  resetButton: { backgroundColor: '#E65100', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
   resetButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
 });

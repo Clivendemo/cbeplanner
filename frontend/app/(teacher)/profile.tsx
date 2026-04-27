@@ -337,7 +337,7 @@ export default function Profile() {
       style={styles.container} 
       contentContainerStyle={styles.content}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#6366F1']} />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#5C6BC0']} />
       }
     >
       <View style={styles.header}>
@@ -356,7 +356,7 @@ export default function Profile() {
         <Text style={styles.sectionTitle}>Wallet</Text>
         <View style={styles.walletCard}>
           <View style={styles.walletInfo}>
-            <Ionicons name="wallet" size={32} color="#6366F1" />
+            <Ionicons name="wallet" size={32} color="#5C6BC0" />
             <View style={styles.walletDetails}>
               <Text style={styles.balanceLabel}>Available Balance</Text>
               <Text style={styles.balanceAmount}>{user?.walletBalance || 0} KES</Text>
@@ -378,10 +378,10 @@ export default function Profile() {
               disabled={checkingStatus}
             >
               {checkingStatus ? (
-                <ActivityIndicator size="small" color="#6366F1" />
+                <ActivityIndicator size="small" color="#5C6BC0" />
               ) : (
                 <>
-                  <Ionicons name="refresh" size={16} color="#6366F1" />
+                  <Ionicons name="refresh" size={16} color="#5C6BC0" />
                   <Text style={styles.checkStatusText}>Check Payment Status</Text>
                 </>
               )}
@@ -392,14 +392,14 @@ export default function Profile() {
             style={styles.historyButton}
             onPress={() => setShowTransactions(!showTransactions)}
           >
-            <Ionicons name="receipt-outline" size={16} color="#6B7280" />
+            <Ionicons name="receipt-outline" size={16} color="#5A5A7A" />
             <Text style={styles.historyButtonText}>
               {showTransactions ? 'Hide' : 'View'} Transaction History
             </Text>
             <Ionicons 
               name={showTransactions ? 'chevron-up' : 'chevron-down'} 
               size={16} 
-              color="#6B7280" 
+              color="#5A5A7A" 
             />
           </TouchableOpacity>
         </View>
@@ -407,7 +407,7 @@ export default function Profile() {
         {showTransactions && (
           <View style={styles.transactionsContainer}>
             {loadingTransactions ? (
-              <ActivityIndicator size="small" color="#6366F1" style={{ marginVertical: 20 }} />
+              <ActivityIndicator size="small" color="#5C6BC0" style={{ marginVertical: 20 }} />
             ) : transactions.length > 0 ? (
               transactions.map(renderTransaction)
             ) : (
@@ -454,7 +454,7 @@ export default function Profile() {
           onPress={() => setShowAboutModal(true)}
           data-testid="about-cbe-planner-btn"
         >
-          <Ionicons name="information-circle-outline" size={24} color="#6B7280" />
+          <Ionicons name="information-circle-outline" size={24} color="#5A5A7A" />
           <Text style={styles.menuText}>About CBE Planner</Text>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </TouchableOpacity>
@@ -464,7 +464,7 @@ export default function Profile() {
           onPress={() => Linking.openURL('mailto:legitlabs@outlook.com?subject=CBE%20Planner%20Support')}
           data-testid="help-support-btn"
         >
-          <Ionicons name="help-circle-outline" size={24} color="#6B7280" />
+          <Ionicons name="help-circle-outline" size={24} color="#5A5A7A" />
           <View style={styles.menuTextContainer}>
             <Text style={styles.menuText}>Help & Support</Text>
             <Text style={styles.supportEmailText}>legitlabs@outlook.com</Text>
@@ -522,7 +522,7 @@ export default function Profile() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Top Up via M-Pesa</Text>
               <TouchableOpacity onPress={() => setShowTopUpModal(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color="#5A5A7A" />
               </TouchableOpacity>
             </View>
 
@@ -680,7 +680,7 @@ export default function Profile() {
                 onPress={() => setShowAboutModal(false)}
                 data-testid="close-about-modal-btn"
               >
-                <Ionicons name="close" size={24} color="#6B7280" />
+                <Ionicons name="close" size={24} color="#5A5A7A" />
               </TouchableOpacity>
             </View>
 
@@ -711,7 +711,7 @@ export default function Profile() {
                 <Text style={styles.aboutSectionTitle}>Who Is It For?</Text>
                 <View style={styles.aboutUserCard}>
                   <View style={styles.aboutUserIcon}>
-                    <Ionicons name="school-outline" size={24} color="#6366F1" />
+                    <Ionicons name="school-outline" size={24} color="#5C6BC0" />
                   </View>
                   <View style={styles.aboutUserInfo}>
                     <Text style={styles.aboutUserTitle}>Teachers and Educators</Text>
@@ -739,7 +739,7 @@ export default function Profile() {
                 
                 <View style={styles.aboutFeatureItem}>
                   <View style={styles.aboutFeatureBullet}>
-                    <Ionicons name="document-text-outline" size={18} color="#6366F1" />
+                    <Ionicons name="document-text-outline" size={18} color="#5C6BC0" />
                   </View>
                   <View style={styles.aboutFeatureContent}>
                     <Text style={styles.aboutFeatureTitle}>Lesson Plan Generator</Text>
@@ -823,7 +823,7 @@ export default function Profile() {
 
               {/* Mission */}
               <View style={styles.aboutMission}>
-                <Ionicons name="flag-outline" size={24} color="#6366F1" style={{ marginBottom: 12 }} />
+                <Ionicons name="flag-outline" size={24} color="#5C6BC0" style={{ marginBottom: 12 }} />
                 <Text style={styles.aboutMissionTitle}>Our Mission</Text>
                 <Text style={styles.aboutMissionText}>
                   To empower Kenyan educators with tools that simplify lesson planning, 
@@ -864,7 +864,7 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16
@@ -872,16 +872,16 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 4
   },
   email: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginBottom: 12
   },
   roleBadge: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 16
@@ -889,7 +889,7 @@ const styles = StyleSheet.create({
   roleText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   section: {
     marginBottom: 24
@@ -897,7 +897,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 12
   },
   walletCard: {
@@ -916,12 +916,12 @@ const styles = StyleSheet.create({
   },
   balanceLabel: {
     fontSize: 12,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   balanceAmount: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#111827'
+    color: '#1A1A3A'
   },
   topUpButton: {
     backgroundColor: '#00A859',
@@ -943,12 +943,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     borderRadius: 8,
     marginBottom: 8
   },
   checkStatusText: {
-    color: '#6366F1',
+    color: '#5C6BC0',
     fontSize: 14,
     fontWeight: '500',
     marginLeft: 6
@@ -960,7 +960,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8
   },
   historyButtonText: {
-    color: '#6B7280',
+    color: '#5A5A7A',
     fontSize: 14,
     marginHorizontal: 6
   },
@@ -1002,11 +1002,11 @@ const styles = StyleSheet.create({
   transactionType: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#111827'
+    color: '#1A1A3A'
   },
   transactionDate: {
     fontSize: 12,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   transactionReceipt: {
     fontSize: 11,
@@ -1023,7 +1023,7 @@ const styles = StyleSheet.create({
     color: '#10B981'
   },
   pendingAmount: {
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   transactionStatus: {
     fontSize: 12
@@ -1066,7 +1066,7 @@ const styles = StyleSheet.create({
     color: '#10B981'
   },
   priceBadge: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12
@@ -1074,7 +1074,7 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   freeNotesCard: {
     backgroundColor: '#FFFFFF',
@@ -1105,7 +1105,7 @@ const styles = StyleSheet.create({
   },
   supportEmailText: {
     fontSize: 12,
-    color: '#6366F1',
+    color: '#5C6BC0',
     marginTop: 2
   },
   signOutButton: {
@@ -1162,7 +1162,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#111827'
+    color: '#1A1A3A'
   },
   mpesaLogoContainer: {
     alignItems: 'center',
@@ -1195,7 +1195,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     borderRadius: 8,
     backgroundColor: '#F9FAFB',
     minHeight: 48, // Ensures the field is visibly tap-friendly on mobile.
@@ -1206,7 +1206,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#374151',
     borderRightWidth: 1,
-    borderRightColor: '#E5E7EB',
+    borderRightColor: '#DDDDF5',
   },
   phoneInput: {
     flex: 1,
@@ -1214,7 +1214,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
     fontSize: 16, // Keeps >= 16 to prevent iOS Safari auto-zoom on focus.
-    color: '#111827',
+    color: '#1A1A3A',
   },
   inputHint: {
     fontSize: 12,
@@ -1225,7 +1225,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     borderRadius: 8,
     backgroundColor: '#F9FAFB',
     minHeight: 48,
@@ -1237,7 +1237,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#374151',
     borderRightWidth: 1,
-    borderRightColor: '#E5E7EB',
+    borderRightColor: '#DDDDF5',
   },
   amountInput: {
     flex: 1,
@@ -1246,7 +1246,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 18,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1A1A3A',
   },
   quickAmounts: {
     flexDirection: 'row',
@@ -1260,7 +1260,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#DDDDF5',
     alignItems: 'center',
   },
   quickAmountBtnActive: {
@@ -1270,7 +1270,7 @@ const styles = StyleSheet.create({
   quickAmountText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6B7280',
+    color: '#5A5A7A',
   },
   quickAmountTextActive: {
     color: '#00A859',
@@ -1300,7 +1300,7 @@ const styles = StyleSheet.create({
   },
   secureText: {
     fontSize: 12,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   // ===== M-Pesa manual Buy Goods fallback =====
   mpesaFallback: {
@@ -1411,7 +1411,7 @@ const styles = StyleSheet.create({
   developerText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   versionText: {
     fontSize: 11,
@@ -1441,7 +1441,7 @@ const styles = StyleSheet.create({
   aboutModalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#111827'
+    color: '#1A1A3A'
   },
   aboutScrollView: {
     paddingHorizontal: 20
@@ -1455,7 +1455,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16
@@ -1463,12 +1463,12 @@ const styles = StyleSheet.create({
   aboutHeroTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 4
   },
   aboutHeroSubtitle: {
     fontSize: 14,
-    color: '#6366F1',
+    color: '#5C6BC0',
     fontWeight: '500'
   },
   aboutSection: {
@@ -1477,7 +1477,7 @@ const styles = StyleSheet.create({
   aboutSectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 12
   },
   aboutText: {
@@ -1508,12 +1508,12 @@ const styles = StyleSheet.create({
   aboutUserTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 2
   },
   aboutUserDesc: {
     fontSize: 13,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   aboutFeatureItem: {
     flexDirection: 'row',
@@ -1534,12 +1534,12 @@ const styles = StyleSheet.create({
   aboutFeatureTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 2
   },
   aboutFeatureDesc: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#5A5A7A',
     lineHeight: 19
   },
   aboutBenefitsList: {
@@ -1559,7 +1559,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   aboutMission: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     borderRadius: 12,
     padding: 20,
     alignItems: 'center',
@@ -1587,7 +1587,7 @@ const styles = StyleSheet.create({
   aboutDeveloper: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#6366F1'
+    color: '#5C6BC0'
   },
   aboutVersion: {
     fontSize: 12,

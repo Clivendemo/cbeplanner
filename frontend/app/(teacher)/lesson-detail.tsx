@@ -250,7 +250,7 @@ export default function LessonDetail() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#6366F1" />
+        <ActivityIndicator size="large" color="#5C6BC0" />
         <Text style={styles.loadingText}>Loading lesson plan...</Text>
       </View>
     );
@@ -313,12 +313,12 @@ export default function LessonDetail() {
         >
           {generatingPdf ? (
             <>
-              <ActivityIndicator size={14} color="#6366F1" />
+              <ActivityIndicator size={14} color="#5C6BC0" />
               <Text style={styles.shareButtonText}>Generating...</Text>
             </>
           ) : (
             <>
-              <Ionicons name="document-text-outline" size={16} color="#6366F1" />
+              <Ionicons name="document-text-outline" size={16} color="#5C6BC0" />
               <Text style={styles.shareButtonText}>Share PDF</Text>
             </>
           )}
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#6B7280'
+    color: '#5A5A7A'
   },
   errorText: {
     fontSize: 16,
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     marginBottom: 24
   },
   backButton: {
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 16,
     paddingVertical: 6,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     borderRadius: 16
   },
   shareButtonDisabled: {
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   },
   shareButtonText: {
     fontSize: 13,
-    color: '#6366F1',
+    color: '#5C6BC0',
     fontWeight: '500'
   },
   textShareButton: {

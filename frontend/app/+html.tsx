@@ -40,7 +40,7 @@ export default function Root({ children }: PropsWithChildren) {
         <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/icon.png" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#6366F1" />
+        <meta name="theme-color" content="#5C6BC0" />
 
         {/* Google AdSense */}
         <script
@@ -87,9 +87,9 @@ export default function Root({ children }: PropsWithChildren) {
                 overflow-x: hidden;
                 /* Soft, professional violet-on-white wash. Plenty of breathing
                    room — content stays the hero. */
-                background-color: #F5F3FF;
+                background-color: #F3F4FF;
                 background-image:
-                  radial-gradient(1200px 820px at 8% 0%, #EDE9FE 0%, transparent 55%),
+                  radial-gradient(1200px 820px at 8% 0%, #F3F4FF 0%, transparent 55%),
                   radial-gradient(1000px 700px at 100% 12%, #F3F0FF 0%, transparent 60%),
                   radial-gradient(1100px 760px at 92% 100%, #EEEBFF 0%, transparent 55%),
                   linear-gradient(135deg, #F8F7FF 0%, #FBF9FF 50%, #F2EFFE 100%);
@@ -104,11 +104,11 @@ export default function Root({ children }: PropsWithChildren) {
                 z-index: 0;
                 background:
                   radial-gradient(780px 460px at 18% 28%,
-                    rgba(167, 139, 250, 0.18) 0%,
-                    rgba(167, 139, 250, 0.00) 65%),
+                    rgba(92, 107, 192, 0.18) 0%,
+                    rgba(92, 107, 192, 0.00) 65%),
                   radial-gradient(640px 420px at 82% 78%,
-                    rgba(139, 92, 246, 0.14) 0%,
-                    rgba(139, 92, 246, 0.00) 70%);
+                    rgba(40, 53, 147, 0.14) 0%,
+                    rgba(40, 53, 147, 0.00) 70%);
                 animation: cbepl-glow-drift 28s ease-in-out infinite alternate;
                 filter: blur(2px);
               }
@@ -123,7 +123,7 @@ export default function Root({ children }: PropsWithChildren) {
                   110deg,
                   rgba(255,255,255,0) 42%,
                   rgba(255,255,255,0.55) 50%,
-                  rgba(221, 214, 254, 0.35) 54%,
+                  rgba(221, 222, 245, 0.35) 54%,
                   rgba(255,255,255,0) 62%
                 );
                 transform: translateX(-60%) rotate(4deg);
@@ -152,13 +152,12 @@ export default function Root({ children }: PropsWithChildren) {
                 position: relative;
                 overflow: hidden;
                 padding: 10px 0;
-                background:
-                  linear-gradient(90deg, #2E1065 0%, #5B21B6 35%, #7C3AED 70%, #A78BFA 100%);
+                background: #283593;
                 border-bottom: 1px solid rgba(255,255,255,0.08);
                 box-shadow:
                   inset 0 1px 0 rgba(255,255,255,0.15),
                   inset 0 -1px 0 rgba(0,0,0,0.25),
-                  0 2px 6px rgba(76, 29, 149, 0.35);
+                  0 2px 6px rgba(40, 53, 147, 0.35);
               }
               .cbepl-news-strip::after {
                 /* "Lazy gleam": soft diagonal streak sweeping across the strip. */
@@ -203,15 +202,13 @@ export default function Root({ children }: PropsWithChildren) {
                 font-family: 'Playfair Display', 'Cormorant Garamond', 'Merriweather', Georgia, serif;
                 font-size: 17px;
                 font-weight: 600;
-                color: #F5EFFF;
+                color: #FFFFFF;
                 letter-spacing: 0.3px;
-                /* 3D raised effect via stacked text shadows */
                 text-shadow:
                   0 1px 0 rgba(255,255,255,0.18),
-                  0 2px 0 rgba(76, 29, 149, 0.55),
-                  0 3px 0 rgba(46, 16, 101, 0.55),
-                  0 4px 10px rgba(0, 0, 0, 0.45),
-                  0 0 18px rgba(167, 139, 250, 0.5);
+                  0 2px 0 rgba(22, 29, 90, 0.55),
+                  0 3px 0 rgba(16, 21, 70, 0.55),
+                  0 4px 10px rgba(0, 0, 0, 0.45);
               }
               .cbepl-news-item strong {
                 color: #FFFFFF;
@@ -220,17 +217,17 @@ export default function Root({ children }: PropsWithChildren) {
                 margin-right: 6px;
                 text-shadow:
                   0 1px 0 rgba(255,255,255,0.25),
-                  0 2px 0 rgba(76, 29, 149, 0.6),
-                  0 3px 0 rgba(46, 16, 101, 0.6),
+                  0 2px 0 rgba(22, 29, 90, 0.6),
+                  0 3px 0 rgba(16, 21, 70, 0.6),
                   0 4px 10px rgba(0, 0, 0, 0.5);
               }
               .cbepl-news-bullet {
                 width: 7px; height: 7px; border-radius: 50%;
-                background: rgba(255,255,255,0.85);
+                background: rgba(255,255,255,0.9);
                 display: inline-block;
                 box-shadow:
                   0 0 8px rgba(255,255,255,0.8),
-                  0 0 16px rgba(167, 139, 250, 0.7);
+                  0 0 16px rgba(92, 107, 192, 0.7);
               }
               @media (max-width: 640px) {
                 .cbepl-news-strip { padding: 8px 0; }
@@ -243,12 +240,12 @@ export default function Root({ children }: PropsWithChildren) {
                 text-align: center;
                 padding: 18px 16px;
                 font-size: 12px;
-                color: #6B7280;
+                color: #5A5A7A;
                 background: rgba(255, 255, 255, 0.6);
                 border-top: 1px solid rgba(229, 231, 235, 0.8);
                 backdrop-filter: blur(6px);
               }
-              .cbepl-footer a { color: #6D28D9; text-decoration: none; }
+              .cbepl-footer a { color: #5C6BC0; text-decoration: none; }
               .cbepl-footer a:hover { text-decoration: underline; }
             `,
           }}

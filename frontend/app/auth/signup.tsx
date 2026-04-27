@@ -71,7 +71,7 @@ export default function SignUp() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         <View style={styles.header}>
-          <Ionicons name="school" size={56} color="#5B5BD6" />
+          <Ionicons name="school" size={56} color="#5C6BC0" />
           <Text style={styles.title}>Create Account</Text>
           <Text style={styles.subtitle}>Join CBE Planner today</Text>
         </View>
@@ -215,8 +215,8 @@ export default function SignUp() {
 
 const styles = StyleSheet.create({
   header: { alignItems: 'center', marginBottom: 24 },
-  title: { fontSize: 26, fontWeight: 'bold', color: '#111827', marginTop: 12 },
-  subtitle: { fontSize: 13, color: '#6B7280', marginTop: 6 },
+  title: { fontSize: 26, fontWeight: 'bold', color: '#1A1A3A', marginTop: 12 },
+  subtitle: { fontSize: 13, color: '#5A5A7A', marginTop: 6 },
   form: { width: '100%' },
   inputContainer: {
     flexDirection: 'row',
@@ -226,13 +226,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB'
+    borderColor: '#DDDDF5'
   },
   inputIcon: { marginRight: 10 },
-  input: { flex: 1, height: 46, fontSize: 15, color: '#111827' },
-  button: { backgroundColor: '#5B5BD6', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 6 },
+  input: { flex: 1, height: 46, fontSize: 15, color: '#1A1A3A' },
+  button: { backgroundColor: '#E65100', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 6 },
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
   linkButton: { marginTop: 18, alignItems: 'center' },
-  linkText: { color: '#5B5BD6', fontSize: 13, fontWeight: '500' }
+  linkText: { color: '#5C6BC0', fontSize: 13, fontWeight: '500' }
 });

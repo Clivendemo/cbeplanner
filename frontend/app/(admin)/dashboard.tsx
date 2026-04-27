@@ -57,14 +57,14 @@ export default function AdminDashboard() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Ionicons name="shield-checkmark" size={48} color="#6366F1" />
+        <Ionicons name="shield-checkmark" size={48} color="#5C6BC0" />
         <Text style={styles.headerTitle}>Admin Dashboard</Text>
         <Text style={styles.headerSubtitle}>CBE Lesson Planner - Curriculum Management</Text>
       </View>
 
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <Ionicons name="information-circle" size={24} color="#6366F1" />
+          <Ionicons name="information-circle" size={24} color="#5C6BC0" />
           <Text style={styles.cardTitle}>Welcome Admin!</Text>
         </View>
         <Text style={styles.cardText}>
@@ -138,7 +138,7 @@ export default function AdminDashboard() {
           onPress={() => router.push('/(admin)/curriculum')}
         >
           <View style={styles.quickLinkIcon}>
-            <Ionicons name="layers" size={20} color="#6366F1" />
+            <Ionicons name="layers" size={20} color="#5C6BC0" />
           </View>
           <Text style={styles.quickLinkText}>Manage Curriculum</Text>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
@@ -149,7 +149,7 @@ export default function AdminDashboard() {
           onPress={() => router.push('/(admin)/data-import')}
         >
           <View style={styles.quickLinkIcon}>
-            <Ionicons name="cloud-upload" size={20} color="#6366F1" />
+            <Ionicons name="cloud-upload" size={20} color="#5C6BC0" />
           </View>
           <Text style={styles.quickLinkText}>Import Data</Text>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
@@ -160,7 +160,7 @@ export default function AdminDashboard() {
           onPress={() => router.push('/(admin)/profile')}
         >
           <View style={styles.quickLinkIcon}>
-            <Ionicons name="person" size={20} color="#6366F1" />
+            <Ionicons name="person" size={20} color="#5C6BC0" />
           </View>
           <Text style={styles.quickLinkText}>Admin Profile</Text>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
@@ -188,12 +188,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#111827',
+    color: '#1A1A3A',
     marginTop: 16
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginTop: 4
   },
   card: {
@@ -210,12 +210,12 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#111827',
+    color: '#1A1A3A',
     marginLeft: 12
   },
   cardText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#5A5A7A',
     marginBottom: 12,
     lineHeight: 20
   },
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   quickLinksTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1A1A3A',
     marginBottom: 12
   },
   quickLink: {
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3F4FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   },
   importButton: {
     flexDirection: 'row',
-    backgroundColor: '#6366F1',
+    backgroundColor: '#5C6BC0',
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
