@@ -85,18 +85,17 @@ export default function Root({ children }: PropsWithChildren) {
               }
               body {
                 overflow-x: hidden;
-                /* Royal-blue → navy premium background, inspired by classic
-                   education templates: rich saturation, restrained highlights. */
-                background-color: #0A2A6B;
+                /* Deeper royal-blue → midnight-navy palette for richer depth. */
+                background-color: #061638;
                 background-image:
                   /* Bright sapphire glow, top-left */
-                  radial-gradient(1300px 880px at 6% 0%, #2A5BC8 0%, transparent 55%),
+                  radial-gradient(1300px 880px at 6% 0%, #1E47A6 0%, transparent 55%),
                   /* Cooler indigo highlight, top-right */
-                  radial-gradient(1100px 760px at 100% 8%, #1E47A6 0%, transparent 60%),
-                  /* Deep midnight haze, bottom-right */
-                  radial-gradient(1100px 760px at 95% 100%, #0B1F4F 0%, transparent 55%),
-                  /* Base diagonal navy gradient */
-                  linear-gradient(135deg, #0E2F7A 0%, #11357F 45%, #0A1F55 100%);
+                  radial-gradient(1100px 760px at 100% 8%, #11357F 0%, transparent 60%),
+                  /* Very deep midnight haze, bottom-right */
+                  radial-gradient(1100px 760px at 95% 100%, #03102A 0%, transparent 55%),
+                  /* Base diagonal navy gradient — darker */
+                  linear-gradient(135deg, #07204F 0%, #082658 45%, #050F2E 100%);
                 background-attachment: fixed;
               }
               /* ===== Premium shimmer layer ===== */

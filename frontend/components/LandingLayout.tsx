@@ -783,8 +783,8 @@ export const LandingLayout: React.FC<Props> = ({ children }) => {
 };
 
 const styles = StyleSheet.create({
-  // Page wrapper: navy backdrop so the three columns visibly float above it.
-  page: { flex: 1, backgroundColor: '#0E2F7A' },
+  // Page wrapper: deeper navy backdrop so the three columns visibly float above it.
+  page: { flex: 1, backgroundColor: '#07204F' },
   pageContent: { flexGrow: 1 },
   grid: {
     flexDirection: 'row',
@@ -805,7 +805,8 @@ const styles = StyleSheet.create({
     gap: 0,
   },
   // Each side column is itself a single elevated "bar" — multi-layer shadow
-  // gives a clear 3D lift away from the navy backdrop.
+  // gives a clear 3D lift away from the navy backdrop. A faint cyan rim on the
+  // top edge catches "light" and crisps the 3D feel.
   sidebarLeft: {
     width: 300,
     flexShrink: 0,
@@ -814,12 +815,13 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.6)',
-    // @ts-ignore web-only shadow stack
+    // @ts-ignore web-only shadow stack with cyan rim-light + deep ambient drop
     boxShadow:
-      '0 1px 0 rgba(255,255,255,0.85) inset,' +
-      ' 0 22px 44px -12px rgba(8, 22, 64, 0.55),' +
-      ' 0 10px 20px -8px rgba(8, 22, 64, 0.40),' +
-      ' 0 3px 6px rgba(8, 22, 64, 0.20)',
+      '0 1.5px 0 rgba(125, 211, 252, 0.55) inset,' +
+      ' 0 1px 0 rgba(255,255,255,0.85) inset,' +
+      ' 0 22px 44px -12px rgba(3, 16, 42, 0.65),' +
+      ' 0 10px 20px -8px rgba(3, 16, 42, 0.50),' +
+      ' 0 3px 6px rgba(3, 16, 42, 0.25)',
   },
   sidebarRight: {
     width: 300,
@@ -829,12 +831,13 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.6)',
-    // @ts-ignore web-only shadow stack
+    // @ts-ignore web-only shadow stack with cyan rim-light + deep ambient drop
     boxShadow:
-      '0 1px 0 rgba(255,255,255,0.85) inset,' +
-      ' 0 22px 44px -12px rgba(8, 22, 64, 0.55),' +
-      ' 0 10px 20px -8px rgba(8, 22, 64, 0.40),' +
-      ' 0 3px 6px rgba(8, 22, 64, 0.20)',
+      '0 1.5px 0 rgba(125, 211, 252, 0.55) inset,' +
+      ' 0 1px 0 rgba(255,255,255,0.85) inset,' +
+      ' 0 22px 44px -12px rgba(3, 16, 42, 0.65),' +
+      ' 0 10px 20px -8px rgba(3, 16, 42, 0.50),' +
+      ' 0 3px 6px rgba(3, 16, 42, 0.25)',
   },
   centerCol: {
     flex: 1,
@@ -847,10 +850,11 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     // @ts-ignore deeper shadow → main panel reads as the most-elevated column
     boxShadow:
-      '0 1px 0 rgba(255,255,255,0.95) inset,' +
-      ' 0 32px 64px -14px rgba(8, 22, 64, 0.65),' +
-      ' 0 16px 32px -10px rgba(8, 22, 64, 0.45),' +
-      ' 0 5px 10px rgba(8, 22, 64, 0.22)',
+      '0 2px 0 rgba(125, 211, 252, 0.6) inset,' +
+      ' 0 1px 0 rgba(255,255,255,0.95) inset,' +
+      ' 0 32px 64px -14px rgba(3, 16, 42, 0.75),' +
+      ' 0 16px 32px -10px rgba(3, 16, 42, 0.55),' +
+      ' 0 5px 10px rgba(3, 16, 42, 0.28)',
   },
   centerColMobile: {
     borderRadius: 0,

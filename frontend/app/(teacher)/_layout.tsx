@@ -278,7 +278,8 @@ const styles = StyleSheet.create({
     paddingVertical: GAP,
   },
   // Side columns now feel like 3D panels lifted off the page —
-  // glass background + multi-layer shadow + subtle highlight on the top edge.
+  // glass background + multi-layer shadow + cyan rim-light on the top edge
+  // catches the navy "ambient light" and crisps the 3D feel.
   sideCol: {
     flexShrink: 0,
     paddingTop: 4,
@@ -286,12 +287,13 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.6)',
-    // @ts-ignore web-only multi-layer shadow gives a real "floating bar" feel
+    // @ts-ignore web-only shadow stack — cyan rim + deep navy drop
     boxShadow:
-      '0 1px 0 rgba(255,255,255,0.85) inset,' +
-      ' 0 18px 36px -10px rgba(8, 22, 64, 0.45),' +
-      ' 0 8px 16px -8px rgba(8, 22, 64, 0.30),' +
-      ' 0 2px 4px rgba(8, 22, 64, 0.16)',
+      '0 1.5px 0 rgba(125, 211, 252, 0.55) inset,' +
+      ' 0 1px 0 rgba(255,255,255,0.85) inset,' +
+      ' 0 18px 36px -10px rgba(3, 16, 42, 0.60),' +
+      ' 0 8px 16px -8px rgba(3, 16, 42, 0.45),' +
+      ' 0 2px 4px rgba(3, 16, 42, 0.22)',
     // @ts-ignore web-only — graceful slow lift
     transition: 'transform 220ms ease, box-shadow 220ms ease',
   },
@@ -304,12 +306,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.6)',
     overflow: 'hidden',
-    // @ts-ignore web-only deeper shadow stack gives the "main panel lifted higher"
+    // @ts-ignore web-only — main panel sits highest, brightest cyan rim
     boxShadow:
-      '0 1px 0 rgba(255,255,255,0.95) inset,' +
-      ' 0 28px 56px -12px rgba(8, 22, 64, 0.55),' +
-      ' 0 14px 28px -10px rgba(8, 22, 64, 0.40),' +
-      ' 0 4px 8px rgba(8, 22, 64, 0.18)',
+      '0 2px 0 rgba(125, 211, 252, 0.6) inset,' +
+      ' 0 1px 0 rgba(255,255,255,0.95) inset,' +
+      ' 0 28px 56px -12px rgba(3, 16, 42, 0.70),' +
+      ' 0 14px 28px -10px rgba(3, 16, 42, 0.55),' +
+      ' 0 4px 8px rgba(3, 16, 42, 0.25)',
   },
 
   // Mobile/tablet shell (below 1180px): Stack is viewport-height, sidebars below
