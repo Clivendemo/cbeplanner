@@ -293,10 +293,26 @@ For the reset email to land on the in-app custom screen (enabling the confirm-ne
 
 **Verified**: login, signup, and reset-password screens all render the eye toggle; toggling flips the input's native `type=password` ↔ `type=text` (Playwright check passed). Invalid `oobCode` correctly shows the "Reset Link Problem" screen.
 
+## Scheme IQ: DB-First Priority Order (Feb 2026)
+
+The scheme generator was producing grammatically-incorrect Key Inquiry Questions because `derive_inquiry_from_slo()` ran **first** and only fell back to DB-stored values. Live DB audit revealed:
+- `lesson_slo_slots.key_inquiry_question` (per-lesson, admin-curated): 1/6 slots populated
+- `learning_activities.inquiry_questions[]` (per-substrand, KICD-seeded): 224/345 substrands populated, all 20 subjects covered
+
+**Fix** (`backend/routes/schemes.py`):
+- Inverted priority in the lesson-scheduling block. New order:
+  1. `lesson_slo_slots.key_inquiry_question` (admin-curated, per lesson) — wins verbatim.
+  2. `learning_activities.inquiry_questions[]` cycled by `lessonInSubstrand` position.
+  3. `derive_inquiry_from_slo(...)` — only when both DB sources are empty.
+  4. `generate_inquiry_questions(...)` — final generic fallback.
+- Curriculum-content build phase now also stashes `_substrandInquiries` from `learning_activities` (already-fetched in scope, no extra DB roundtrip).
+- Removed dead `slot_inquiry` variable from `server.py` lesson-plan generation (set but never read).
+
+**Regression**: 7-test pytest suite in `tests/test_scheme_uses_db_inquiry.py` covering DB-slot wins, substrand-array cycling/wraparound, derivation fallback, generic fallback, and falsy-empty-string semantics. **All 27 session tests pass; backend imports clean.**
+
 ## Next Tasks
-1. Apply SLO dedupe helper to the Scheme of Work PDF preview table (P1)
-2. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin`, `/lesson_plans` into `routes/`)
-3. Past Papers feature
-4. Firebase Admin SDK integration
-5. Android APK build + Play Store signing
+1. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin`, `/lesson_plans` into `routes/`)
+2. Past Papers feature
+3. Firebase Admin SDK integration
+4. Android APK build + Play Store signing
 

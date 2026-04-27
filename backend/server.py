@@ -1655,7 +1655,6 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
         lesson_specific_outcomes = []
         substrand_lesson_number = None
         slot_resources = []
-        slot_inquiry = ""
         num_lessons = substrand.get("number_of_lessons")
 
         if num_lessons and num_lessons >= 1:
@@ -1673,7 +1672,6 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
                 if slot.get("description"):
                     lesson_specific_outcomes.append(slot["description"])
                 slot_resources = slot.get("formatted_resources", [])
-                slot_inquiry = slot.get("key_inquiry_question", "")
             else:
                 # Priority 2: legacy substrand_lessons
                 sl = await db.substrand_lessons.find_one({

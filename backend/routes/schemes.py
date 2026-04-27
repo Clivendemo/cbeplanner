@@ -359,6 +359,9 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                     "resources": formatted_resources,
                     "assessmentMethods": assessment,
                     "_slotInquiry": inquiry_q,
+                    # Substrand-level KICD-seeded inquiry questions; cycled per
+                    # lesson position so multi-lesson substrands get variety.
+                    "_substrandInquiries": (learning_act.get("inquiry_questions", []) if learning_act else []),
                 })
 
         if not curriculum_content:
@@ -433,21 +436,30 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                 if content_index < len(curriculum_content):
                     content = curriculum_content[content_index]
                     slot_inquiry = content.get("_slotInquiry")
+                    substrand_iqs = content.get("_substrandInquiries") or []
 
-                    # Key inquiry question is derived directly from the SLO.
-                    # Admin-curated inquiry (slot_inquiry) is used only as a fallback
-                    # when SLO-derivation cannot produce a meaningful question.
-                    derived = derive_inquiry_from_slo(content["slo"], is_kiswahili)
-                    if derived:
-                        inquiry_qs = derived
-                    elif slot_inquiry:
+                    # Key inquiry question priority:
+                    #  1. lesson_slo_slots.key_inquiry_question (admin-curated, per lesson)
+                    #  2. learning_activities.inquiry_questions[] cycled by lesson position
+                    #     (KICD-seeded, hand-curated per substrand — grammatically correct)
+                    #  3. SLO-derived question (algorithmic — used only when DB has nothing)
+                    #  4. Generic fallback
+                    if slot_inquiry:
                         inquiry_qs = slot_inquiry
+                    elif substrand_iqs:
+                        # 1-based lesson position cycled through the array
+                        pos = max(0, content.get("lessonInSubstrand", 1) - 1)
+                        inquiry_qs = substrand_iqs[pos % len(substrand_iqs)]
                     else:
-                        inquiry_qs = generate_inquiry_questions(
-                            content["strand"],
-                            content["substrand"],
-                            content["slo"],
-                        )
+                        derived = derive_inquiry_from_slo(content["slo"], is_kiswahili)
+                        if derived:
+                            inquiry_qs = derived
+                        else:
+                            inquiry_qs = generate_inquiry_questions(
+                                content["strand"],
+                                content["substrand"],
+                                content["slo"],
+                            )
 
                     experiences = content.get("learningActivities", [])
                     if not experiences:
