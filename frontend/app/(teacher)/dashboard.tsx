@@ -125,13 +125,12 @@ export default function Dashboard() {
       disabled: false
     },
     {
-      title: 'Past Papers',
-      subtitle: 'Assessment materials',
+      title: 'Revision Papers',
+      subtitle: 'Past papers per grade & term',
       icon: 'school',
       color: '#EF4444',
       route: '/(teacher)/revision',
-      disabled: true,
-      badge: 'Coming Soon'
+      disabled: false
     }
   ];
 

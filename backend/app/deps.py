@@ -72,6 +72,7 @@ ADMIN_EMAILS = {e.strip().lower() for e in _admin_emails_env.split(',') if e.str
 LESSON_PLAN_COST_KES = 2
 NOTES_DOWNLOAD_COST_KES = 1
 SCHEME_DOWNLOAD_COST = 15  # KES
+ASSESSMENT_DOWNLOAD_COST_KES = 10  # KES — past papers / assessments from R2
 FREE_LESSONS_ON_SIGNUP = 5
 
 # ===========================================

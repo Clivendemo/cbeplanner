@@ -356,9 +356,31 @@ import save handler → learning_activities.inquiry_questions[] → scheme
 generator (priority #2 verbatim) → PDF rendering
 ```
 
+## Revision Papers (Assessments) on Cloudflare R2 (Feb 2026)
+
+Activated the previously "Coming Soon" Revision Papers tile as a working past-paper download feature. Files are stored in Cloudflare R2 (not MongoDB) under the canonical key `assessments/{grade-slug}/term-{N}/{subject-slug}-{year}.{pdf|doc|docx}`.
+
+**Backend (`routes/assessments.py`)**
+- Lazy-initialised boto3 client pointed at `{R2_ACCOUNT_ID}.r2.cloudflarestorage.com`.
+- `GET /api/assessments?gradeId&term` — auth-gated listing; parses filenames into `{subjectName, year, title, ext, sizeBytes, uploadedAt}`. Sort: subject ASC, year DESC.
+- `POST /api/assessments/download` — atomic `walletBalance -= 10` via `find_one_and_update` with `$gte` guard; 402 + polite message on insufficient funds; refunds if the signed-URL generation fails. Returns a 10-min pre-signed GET URL. Writes `wallet_transactions` audit row (non-blocking).
+- `POST /api/admin/assessments/upload` (multipart) — PDF / .doc / .docx only, validates year (2000–2100) and term (1/2/3), slugifies subject, writes to R2.
+- `DELETE /api/admin/assessments` — admin-only.
+- `GET /api/admin/assessments?gradeId&term` — admin-only listing, supports no filters / partial / full filtering.
+- `ASSESSMENT_DOWNLOAD_COST_KES = 10` added to `app/deps.py`.
+
+**Frontend**
+- `app/(teacher)/revision.tsx` — rewritten. Grade chips → Term chips → list of papers with per-row download button (debounced). 402 → polite modal with "Top up now" CTA that routes to `/profile`. Zero state for empty grade+term.
+- `app/(admin)/assessments.tsx` — admin page with file picker, grade/term/subject/year form, upload button, filterable list of existing papers, per-row delete.
+- Added to admin tab bar (`_layout.tsx`).
+- `app/(teacher)/dashboard.tsx` — tile relabelled from "Past Papers — Coming Soon" to "Revision Papers", `disabled: false`.
+
+**Tests**: 10 new pytests in `tests/test_assessments_r2.py` — stubbed R2 client, covers filename parsing (canonical / multi-word / non-canonical), slugifiers, key-builder, grade/term validation, allowed content types, list ordering, and the cost constant. Full session suite: **52/52 pass**.
+
+**Live**: R2 credentials in `backend/.env`; boto3 connection verified against `cbeplanner-past-papers` bucket.
+
 ## Next Tasks
 1. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin`, `/lesson_plans` into `routes/`)
-2. Past Papers feature
-3. Firebase Admin SDK integration
-4. Android APK build + Play Store signing
+2. Firebase Admin SDK integration
+3. Android APK build + Play Store signing
 
