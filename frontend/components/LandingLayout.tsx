@@ -783,7 +783,8 @@ export const LandingLayout: React.FC<Props> = ({ children }) => {
 };
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: 'transparent' },
+  // Page wrapper: navy backdrop so the three columns visibly float above it.
+  page: { flex: 1, backgroundColor: '#0E2F7A' },
   pageContent: { flexGrow: 1 },
   grid: {
     flexDirection: 'row',
@@ -791,33 +792,65 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 1800,
     alignSelf: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 24,
-    gap: 28,
+    paddingHorizontal: 32,
+    paddingVertical: 32,
+    gap: 32,
   },
   gridDesktop: {},
-  gridTablet: { gap: 16, paddingHorizontal: 16 },
+  gridTablet: { gap: 20, paddingHorizontal: 20 },
   gridMobile: {
     flexDirection: 'column',
     paddingHorizontal: 0,
     paddingVertical: 0,
     gap: 0,
   },
-  sidebarLeft: { width: 300, flexShrink: 0 },
-  sidebarRight: { width: 300, flexShrink: 0 },
+  // Each side column is itself a single elevated "bar" — multi-layer shadow
+  // gives a clear 3D lift away from the navy backdrop.
+  sidebarLeft: {
+    width: 300,
+    flexShrink: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    // @ts-ignore web-only shadow stack
+    boxShadow:
+      '0 1px 0 rgba(255,255,255,0.85) inset,' +
+      ' 0 22px 44px -12px rgba(8, 22, 64, 0.55),' +
+      ' 0 10px 20px -8px rgba(8, 22, 64, 0.40),' +
+      ' 0 3px 6px rgba(8, 22, 64, 0.20)',
+  },
+  sidebarRight: {
+    width: 300,
+    flexShrink: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    // @ts-ignore web-only shadow stack
+    boxShadow:
+      '0 1px 0 rgba(255,255,255,0.85) inset,' +
+      ' 0 22px 44px -12px rgba(8, 22, 64, 0.55),' +
+      ' 0 10px 20px -8px rgba(8, 22, 64, 0.40),' +
+      ' 0 3px 6px rgba(8, 22, 64, 0.20)',
+  },
   centerCol: {
     flex: 1,
     maxWidth: 640,
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: 'rgba(255, 255, 255, 0.6)',
     padding: 36,
-    // Let the card size to its natural content height — no forced stretch
-    // that creates awkward empty space at the bottom of short pages.
     alignSelf: 'flex-start',
-    // @ts-ignore web-only subtle shadow matches the premium background
-    boxShadow: '0 12px 40px rgba(76, 29, 149, 0.08)',
+    // @ts-ignore deeper shadow → main panel reads as the most-elevated column
+    boxShadow:
+      '0 1px 0 rgba(255,255,255,0.95) inset,' +
+      ' 0 32px 64px -14px rgba(8, 22, 64, 0.65),' +
+      ' 0 16px 32px -10px rgba(8, 22, 64, 0.45),' +
+      ' 0 5px 10px rgba(8, 22, 64, 0.22)',
   },
   centerColMobile: {
     borderRadius: 0,
@@ -829,11 +862,12 @@ const styles = StyleSheet.create({
     alignSelf: 'auto',
   },
 
-  // Widget card
+  // Widget card — sits INSIDE the elevated sidebar column wrapper,
+  // so it stays flat (no own shadow / border) to avoid card-on-card noise.
   widgetCard: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#EEF2FF',
     borderRadius: 12,
     padding: 14,
   },
