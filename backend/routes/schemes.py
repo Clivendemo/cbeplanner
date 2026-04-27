@@ -37,6 +37,49 @@ from slot_service import format_resource_display
 SCHEME_TTL_HOURS = 24
 
 
+# ==================== KISWAHILI LANGUAGE HELPERS ====================
+
+# Strong Kiswahili-language markers. Presence of any one of these (lowercased
+# word boundary or as a direct prefix) flags the string as "written in
+# Kiswahili" for the purpose of KIQ selection. Kept intentionally narrow so
+# we don't accidentally classify English text that happens to contain a
+# Kiswahili loan-word.
+_KISWAHILI_TOKENS = (
+    " kwa ", " kwanini", "kwa nini", " je ", " je, ", " vipi", " nini ",
+    " nini?", " nani ", " nani?", " lini ", " lini?", " wapi ", " wapi?",
+    " ni ", " ya ", " wa ", " la ", " na ", " katika ", " kuhusu ",
+    " mwanafunzi", " mwalimu", " lugha", " kwenye ", " sarufi", " hadithi",
+    " zipi?", " yapi?", " gani", " kipi",
+)
+
+
+def _looks_kiswahili(text: str) -> bool:
+    """Heuristic: does this string read as Kiswahili prose?
+
+    Used by the scheme generator to avoid mixing English DB-stored KIQs into
+    a Kiswahili scheme row. A string qualifies if at least one of our
+    Kiswahili markers appears, or if it starts with a known Kiswahili
+    question-word prefix.
+    """
+    if not text:
+        return False
+    probe = f" {text.strip().lower()} "
+    if any(tok in probe for tok in _KISWAHILI_TOKENS):
+        return True
+    first = probe.strip().split(" ", 1)[0] if probe.strip() else ""
+    return first in {"kwa", "je", "je,", "vipi", "nini", "nani", "lini", "wapi", "ni"}
+
+
+def _kiswahili_or_english_fallback(content: dict, is_kiswahili: bool) -> str | list:
+    """Final fallback when no DB-stored KIQ is available."""
+    derived = derive_inquiry_from_slo(content["slo"], is_kiswahili)
+    if derived:
+        return derived
+    return generate_inquiry_questions(
+        content["strand"], content["substrand"], content["slo"],
+    )
+
+
 # ==================== SCHEME HELPER FUNCTIONS ====================
 
 def _format_slo_for_scheme(raw_slo: str, is_kiswahili: bool = False) -> str:
@@ -444,22 +487,34 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                     #     (KICD-seeded, hand-curated per substrand — grammatically correct)
                     #  3. SLO-derived question (algorithmic — used only when DB has nothing)
                     #  4. Generic fallback
-                    if slot_inquiry:
+                    # Key inquiry question priority:
+                    #  1. lesson_slo_slots.key_inquiry_question (admin-curated, per lesson)
+                    #  2. learning_activities.inquiry_questions[] cycled by lesson position
+                    #     (KICD-seeded, hand-curated per substrand — grammatically correct)
+                    #  3. SLO-derived question (algorithmic — used only when DB has nothing)
+                    #  4. Generic fallback
+                    #
+                    # For Kiswahili schemes we additionally require the DB-stored
+                    # question to actually be written in Kiswahili — otherwise we
+                    # skip straight to the Kiswahili derivation so the scheme
+                    # never mixes an English KIQ into a Kiswahili row.
+                    if slot_inquiry and (not is_kiswahili or _looks_kiswahili(slot_inquiry)):
                         inquiry_qs = slot_inquiry
                     elif substrand_iqs:
-                        # 1-based lesson position cycled through the array
                         pos = max(0, content.get("lessonInSubstrand", 1) - 1)
-                        inquiry_qs = substrand_iqs[pos % len(substrand_iqs)]
-                    else:
-                        derived = derive_inquiry_from_slo(content["slo"], is_kiswahili)
-                        if derived:
-                            inquiry_qs = derived
-                        else:
-                            inquiry_qs = generate_inquiry_questions(
-                                content["strand"],
-                                content["substrand"],
-                                content["slo"],
+                        candidate = substrand_iqs[pos % len(substrand_iqs)]
+                        if is_kiswahili and not _looks_kiswahili(candidate):
+                            kiswahili_alt = next(
+                                (q for q in substrand_iqs if _looks_kiswahili(q)),
+                                None,
                             )
+                            candidate = kiswahili_alt
+                        if candidate:
+                            inquiry_qs = candidate
+                        else:
+                            inquiry_qs = _kiswahili_or_english_fallback(content, is_kiswahili)
+                    else:
+                        inquiry_qs = _kiswahili_or_english_fallback(content, is_kiswahili)
 
                     experiences = content.get("learningActivities", [])
                     if not experiences:

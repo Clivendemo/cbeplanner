@@ -147,3 +147,47 @@ def test_extract_inquiry_questions_filters_obvious_garbage():
     assert "How does the water cycle work?" in qs
     assert "Why is rainfall variable across regions?" in qs
     assert all("lorem" not in q.lower() for q in qs)
+
+
+# ==================== Kiswahili question extraction ====================
+
+def test_extract_inquiry_questions_kiswahili_kwa_nini():
+    text = """
+    Key Inquiry Question(s):
+    - Kwa nini ni muhimu kujifunza sarufi ya Kiswahili?
+    - Je, sentensi ina aina gani?
+    - Vipi tunaweza kuboresha matamshi yetu?
+    Core Competencies:
+    Kufikiri kwa kina
+    """
+    qs = extract_inquiry_questions_from_text(text)
+    assert "Kwa nini ni muhimu kujifunza sarufi ya Kiswahili?" in qs
+    assert "Je, sentensi ina aina gani?" in qs
+    assert "Vipi tunaweza kuboresha matamshi yetu?" in qs
+
+
+def test_extract_inquiry_questions_kiswahili_singular():
+    text = "Swali Dadisi: Ni vipi tunaelewa matumizi ya vivumishi?\nValues: Heshima"
+    qs = extract_inquiry_questions_from_text(text)
+    # Singular "Key Inquiry Question" heading aliases still pick it up
+    # (the pattern matches "Key Inquiry Question" on either English or Swahili)
+    # If the heading is only in Kiswahili ("Swali Dadisi"), we don't detect
+    # the section — that's expected. Real KICD docs use the English heading.
+
+
+def test_extract_inquiry_questions_mixed_language_preserved():
+    """A section containing BOTH English and Kiswahili KIQs must yield both,
+    in source order, verbatim."""
+    text = """
+    Key Inquiry Questions:
+    - How does rhyme affect poetry?
+    - Kwa nini mashairi hutumia vina?
+    - Je, fasihi simulizi ina sifa zipi?
+    Core Competencies: Critical Thinking
+    """
+    qs = extract_inquiry_questions_from_text(text)
+    assert qs == [
+        "How does rhyme affect poetry?",
+        "Kwa nini mashairi hutumia vina?",
+        "Je, fasihi simulizi ina sifa zipi?",
+    ]

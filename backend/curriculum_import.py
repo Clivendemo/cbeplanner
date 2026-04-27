@@ -623,8 +623,14 @@ def extract_inquiry_questions_from_text(text: str) -> List[str]:
             if not p.endswith('?'):
                 first_word = p.split()[0].lower() if p.split() else ''
                 if first_word not in {
+                    # English question words
                     'how', 'why', 'what', 'when', 'where', 'who', 'which',
-                    'in', 'do', 'does', 'is', 'are', 'can', 'should', 'would'
+                    'in', 'do', 'does', 'is', 'are', 'can', 'should', 'would',
+                    # Kiswahili question words (for Kiswahili / Fasihi ya
+                    # Kiswahili PDFs where KIQs are in the original language,
+                    # e.g. "Kwa nini ...?", "Je, ...?", "Vipi ...?").
+                    'kwa', 'je', 'vipi', 'nini', 'nani', 'lini', 'wapi',
+                    'ni', 'kwanini', 'ni-nini', 'gani', 'kuna', 'ipi', 'yapi',
                 }:
                     continue
             expanded.append(p)
