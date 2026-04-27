@@ -310,6 +310,32 @@ The scheme generator was producing grammatically-incorrect Key Inquiry Questions
 
 **Regression**: 7-test pytest suite in `tests/test_scheme_uses_db_inquiry.py` covering DB-slot wins, substrand-array cycling/wraparound, derivation fallback, generic fallback, and falsy-empty-string semantics. **All 27 session tests pass; backend imports clean.**
 
+## Curriculum Import: Capture Key Inquiry Questions (Feb 2026)
+
+End-to-end ingestion of admin-uploaded curriculum data now captures and stores the **Key Inquiry Question(s)** per learning outcome, so future curriculum updates flow straight into the scheme generator without any developer touch.
+
+**Backend (`backend/curriculum_import.py`)**
+- New `inquiry_questions` field on `CurriculumRow` Pydantic model.
+- New `inquiry_questions` column in `CSV_TEMPLATE_HEADERS` + populated examples in `CSV_TEMPLATE_EXAMPLE` (so the downloadable template teaches admins the format).
+- New header aliases: `Key Inquiry Question`, `Key Inquiry Questions`, `Key Inquiry Question(s)`, `KIQ`, `KIQs`, snake_case, camelCase variants.
+- New `extract_inquiry_questions_from_text(text)` helper covering KICD-style PDFs/Word docs:
+  - Bulleted lists under "Key Inquiry Questions:".
+  - Inline singular form `Key Inquiry Question: ...?`.
+  - Run-on inline `Why X? How Y?` split on `?` boundaries.
+  - Filters non-question fragments unless they begin with question words.
+  - De-dupes case-insensitively, caps at 8 per substrand.
+- Wired into PDF + DOCX extractors and the table-extractor column-map (`inquiry`/`KIQ` headers).
+- `rows_to_csv` round-trips the field for re-export.
+
+**Backend save handler (`server.py:/api/admin/import/save`)**
+- New substrand → `learning_activities.inquiry_questions[]` written from the row.
+- Existing substrand with existing `learning_activities` doc → merge incoming KIQs (de-duped, order preserved) via `update_one`.
+- Existing substrand with NO `learning_activities` doc → backfill insert. Fixes a pre-existing gap.
+
+**Tests**: `tests/test_curriculum_import_kiq.py` — 11 cases (CSV column, header aliases, missing cells, round-trip, KICD-section parsing, dedupe/cap, garbage filter). All pass; full session suite green (38/38).
+
+**Live verified**: `GET /api/public/import-template` now serves CSV with the new column populated.
+
 ## Next Tasks
 1. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin`, `/lesson_plans` into `routes/`)
 2. Past Papers feature

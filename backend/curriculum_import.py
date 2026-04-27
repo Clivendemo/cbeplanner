@@ -31,6 +31,10 @@ class CurriculumRow(BaseModel):
     pcis: Optional[str] = ""
     assessment_methods: Optional[str] = ""
     learning_resources: Optional[str] = ""
+    # Hand-curated key inquiry question(s) per learning outcome.
+    # Multiple questions can be separated by `;` or newline; an empty cell is
+    # accepted and results in `inquiry_questions: []` for the row.
+    inquiry_questions: Optional[str] = ""
 
 class CurriculumImportPreview(BaseModel):
     rows: List[Dict[str, Any]]
@@ -57,7 +61,8 @@ CSV_TEMPLATE_HEADERS = [
     "values",
     "pcis",
     "assessment_methods",
-    "learning_resources"
+    "learning_resources",
+    "inquiry_questions"
 ]
 
 CSV_TEMPLATE_EXAMPLE = [
@@ -74,7 +79,8 @@ CSV_TEMPLATE_EXAMPLE = [
         "values": "Respect; Cultural appreciation",
         "pcis": "Cultural awareness; Life skills",
         "assessment_methods": "Oral questions; Observation; Pronunciation check",
-        "learning_resources": "Alphabet flashcards; Audio recordings; Charts"
+        "learning_resources": "Alphabet flashcards; Audio recordings; Charts",
+        "inquiry_questions": "How are Arabic letters and sounds connected?; Why is correct pronunciation important when learning a new language?"
     },
     {
         "strand_name": "Listening & Speaking",
@@ -89,7 +95,8 @@ CSV_TEMPLATE_EXAMPLE = [
         "values": "Respect; Responsibility",
         "pcis": "Cultural awareness; Effective communication",
         "assessment_methods": "Oral assessment; Word formation test",
-        "learning_resources": "Syllable cards; Word charts; Digital games"
+        "learning_resources": "Syllable cards; Word charts; Digital games",
+        "inquiry_questions": "How do syllables combine to form meaningful words?"
     },
     {
         "strand_name": "Listening & Speaking",
@@ -104,7 +111,8 @@ CSV_TEMPLATE_EXAMPLE = [
         "values": "Respect; Unity; Social justice",
         "pcis": "Cultural awareness; Social cohesion",
         "assessment_methods": "Role-play observation; Peer assessment",
-        "learning_resources": "Audio recordings; Role-play cards; Video clips"
+        "learning_resources": "Audio recordings; Role-play cards; Video clips",
+        "inquiry_questions": "Why are greetings important in different social contexts?; How do greetings differ across cultures?"
     },
     {
         "strand_name": "Reading",
@@ -119,7 +127,8 @@ CSV_TEMPLATE_EXAMPLE = [
         "values": "Respect; Responsibility",
         "pcis": "Cultural awareness; Life skills",
         "assessment_methods": "Written identification test; Observation",
-        "learning_resources": "Alphabet charts; Flashcards; Textbooks"
+        "learning_resources": "Alphabet charts; Flashcards; Textbooks",
+        "inquiry_questions": "How can recognising letters in print help us read fluently?"
     },
     {
         "strand_name": "Writing",
@@ -134,7 +143,8 @@ CSV_TEMPLATE_EXAMPLE = [
         "values": "Responsibility; Discipline",
         "pcis": "Life skills",
         "assessment_methods": "Handwriting checklist; Letter formation assessment",
-        "learning_resources": "Writing worksheets; Tracing guides; Writing boards"
+        "learning_resources": "Writing worksheets; Tracing guides; Writing boards",
+        "inquiry_questions": "Why is legible handwriting important for communication?"
     },
     {
         "strand_name": "Writing",
@@ -149,7 +159,8 @@ CSV_TEMPLATE_EXAMPLE = [
         "values": "Responsibility; Integrity",
         "pcis": "Self-expression; Life skills",
         "assessment_methods": "Sentence writing rubric; Content assessment",
-        "learning_resources": "Topic cards; Sentence starters; Writing frames"
+        "learning_resources": "Topic cards; Sentence starters; Writing frames",
+        "inquiry_questions": "How can simple sentences express our daily experiences?"
     }
 ]
 
@@ -196,7 +207,14 @@ def parse_csv_content(content: str) -> CurriculumImportPreview:
         'conclusion_activities': ['conclusion_activities', 'Conclusion Activities'],
         'extended_activities': ['extended_activities', 'Extended Activities', 'Additional Activities'],
         'assessment_methods': ['assessment_methods', 'Assessment Methods', 'assessment'],
-        'learning_resources': ['learning_resources', 'Learning Resources', 'resources', 'Resources']
+        'learning_resources': ['learning_resources', 'Learning Resources', 'resources', 'Resources'],
+        'inquiry_questions': [
+            'inquiry_questions', 'Inquiry Questions',
+            'key_inquiry_questions', 'Key Inquiry Questions',
+            'key_inquiry_question', 'Key Inquiry Question',
+            'Key Inquiry Question(s)', 'Key Inquiry Question (s)',
+            'KIQ', 'KIQs', 'kiq'
+        ]
     }
     
     def get_field(row, field_name):
@@ -247,7 +265,8 @@ def parse_csv_content(content: str) -> CurriculumImportPreview:
             "values": parse_list_field(get_field(row, 'values')),
             "pcis": parse_list_field(get_field(row, 'pcis')),
             "assessment_methods": parse_list_field(get_field(row, 'assessment_methods')),
-            "learning_resources": parse_list_field(get_field(row, 'learning_resources'))
+            "learning_resources": parse_list_field(get_field(row, 'learning_resources')),
+            "inquiry_questions": parse_list_field(get_field(row, 'inquiry_questions'))
         }
         
         # Warnings for missing optional fields
@@ -368,6 +387,7 @@ def extract_curriculum_from_pdf(pdf_content: bytes) -> CurriculumImportPreview:
             pcis = extract_pcis_from_text(ss_text)
             assessment = extract_assessment_from_text(ss_text)
             resources = extract_resources_from_text(ss_text)
+            inquiry_questions = extract_inquiry_questions_from_text(ss_text)
             
             # If no SLOs found, create one generic row
             if not slos:
@@ -389,7 +409,8 @@ def extract_curriculum_from_pdf(pdf_content: bytes) -> CurriculumImportPreview:
                     "values": values,
                     "pcis": pcis,
                     "assessment_methods": assessment,
-                    "learning_resources": resources
+                    "learning_resources": resources,
+                    "inquiry_questions": inquiry_questions
                 }
                 rows.append(row)
     
@@ -559,6 +580,66 @@ def extract_resources_from_text(text: str) -> List[str]:
     
     return resources if resources else ["Textbooks", "Charts", "Digital devices"]
 
+
+def extract_inquiry_questions_from_text(text: str) -> List[str]:
+    """Extract Key Inquiry Question(s) from a substrand block of text.
+
+    KICD designs typically present these as either:
+      - "Key Inquiry Question(s):\n  - How does X relate to Y?\n  - Why is Z important?"
+      - A single inline question after the heading.
+
+    Returns a list of cleaned question strings (terminating "?" preserved).
+    Empty list if no section is found.
+    """
+    section = re.search(
+        r'Key\s+Inquiry\s+Questions?\s*\(?s?\)?[\s:\.\-]*'
+        r'(.+?)'
+        r'(?:Core\s+Competen|Values\s*[:\.]|Pertinent|Link\s+to|Assessment|Learning\s+Resources|Suggested\s+Learning|Strand|Sub[\s-]?Strand|---PAGE---|$)',
+        text, re.DOTALL | re.IGNORECASE
+    )
+    if not section:
+        return []
+
+    block = section.group(1).strip()
+    # Split first by bullets/numbered markers/newlines
+    raw_items = re.split(
+        r'(?:^|\n)\s*(?:[\u2022\u2023\u25E6•\-\*]|\d+[\.\)]|[a-z][\.\)])\s*',
+        block,
+    )
+    # Some PDFs put multiple questions on one line separated by `?`
+    expanded: List[str] = []
+    for item in raw_items:
+        item = item.strip()
+        if not item:
+            continue
+        # Split on "?" while preserving the terminator
+        parts = re.findall(r'[^?]+\?|[^?]+$', item)
+        for p in parts:
+            p = re.sub(r'\s+', ' ', p).strip().strip('.,;: ')
+            # Quality filter: must be a plausible question
+            if len(p) < 10 or len(p) > 300:
+                continue
+            # Drop fragments that don't end with ? AND don't start with a question word
+            if not p.endswith('?'):
+                first_word = p.split()[0].lower() if p.split() else ''
+                if first_word not in {
+                    'how', 'why', 'what', 'when', 'where', 'who', 'which',
+                    'in', 'do', 'does', 'is', 'are', 'can', 'should', 'would'
+                }:
+                    continue
+            expanded.append(p)
+
+    # De-dupe while preserving order
+    seen = set()
+    out = []
+    for q in expanded:
+        key = q.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(q)
+    return out[:8]  # cap so a misread page can't flood a row
+
 def rows_to_csv(rows: List[Dict[str, Any]]) -> str:
     """Convert rows back to CSV format for download"""
     output = io.StringIO()
@@ -579,7 +660,8 @@ def rows_to_csv(rows: List[Dict[str, Any]]) -> str:
             "values": "; ".join(row.get("values", [])),
             "pcis": "; ".join(row.get("pcis", [])),
             "assessment_methods": "; ".join(row.get("assessment_methods", [])),
-            "learning_resources": "; ".join(row.get("learning_resources", []))
+            "learning_resources": "; ".join(row.get("learning_resources", [])),
+            "inquiry_questions": "; ".join(row.get("inquiry_questions", []))
         }
         writer.writerow(csv_row)
     
@@ -677,6 +759,7 @@ def extract_curriculum_from_docx(docx_content: bytes) -> CurriculumImportPreview
             pcis = extract_pcis_from_text(ss_text)
             assessment = extract_assessment_from_text(ss_text)
             resources = extract_resources_from_text(ss_text)
+            inquiry_questions = extract_inquiry_questions_from_text(ss_text)
             
             # If no SLOs found, create one generic row
             if not slos:
@@ -698,7 +781,8 @@ def extract_curriculum_from_docx(docx_content: bytes) -> CurriculumImportPreview
                     "values": values,
                     "pcis": pcis,
                     "assessment_methods": assessment,
-                    "learning_resources": resources
+                    "learning_resources": resources,
+                    "inquiry_questions": inquiry_questions
                 }
                 rows.append(row)
     
@@ -772,6 +856,8 @@ def extract_from_tables(doc: Document) -> tuple:
                 col_map['resources'] = idx
             elif 'assess' in header:
                 col_map['assessment'] = idx
+            elif 'inquiry' in header or 'kiq' in header:
+                col_map['inquiry'] = idx
         
         # Extract data from rows
         current_strand = ""
@@ -811,7 +897,8 @@ def extract_from_tables(doc: Document) -> tuple:
                 "values": parse_list_field(cells[col_map['values']]) if 'values' in col_map and len(cells) > col_map['values'] else [],
                 "pcis": parse_list_field(cells[col_map['pcis']]) if 'pcis' in col_map and len(cells) > col_map['pcis'] else [],
                 "assessment_methods": parse_list_field(cells[col_map['assessment']]) if 'assessment' in col_map and len(cells) > col_map['assessment'] else [],
-                "learning_resources": parse_list_field(cells[col_map['resources']]) if 'resources' in col_map and len(cells) > col_map['resources'] else []
+                "learning_resources": parse_list_field(cells[col_map['resources']]) if 'resources' in col_map and len(cells) > col_map['resources'] else [],
+                "inquiry_questions": parse_list_field(cells[col_map['inquiry']]) if 'inquiry' in col_map and len(cells) > col_map['inquiry'] else []
             }
             
             rows.append(curriculum_row)

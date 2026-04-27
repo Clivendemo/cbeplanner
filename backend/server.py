@@ -3486,6 +3486,45 @@ async def save_imported_data(request: ImportSaveRequest, user: dict = Depends(ve
             })
             if existing_substrand:
                 substrand_cache[substrand_key] = str(existing_substrand["_id"])
+
+                # If the imported row carries inquiry questions, merge them into
+                # the existing learning_activities doc (de-duplicated, keep order).
+                row_iqs = row.get("inquiry_questions") or []
+                if row_iqs:
+                    existing_la = await db.learning_activities.find_one({
+                        "$or": [
+                            {"substrandId": str(existing_substrand["_id"])},
+                            {"substrandId": existing_substrand["_id"]},
+                        ]
+                    })
+                    if existing_la:
+                        existing_iqs = existing_la.get("inquiry_questions") or []
+                        seen = {q.strip().lower() for q in existing_iqs if q}
+                        merged = list(existing_iqs)
+                        for q in row_iqs:
+                            if q and q.strip().lower() not in seen:
+                                merged.append(q)
+                                seen.add(q.strip().lower())
+                        if merged != existing_iqs:
+                            await db.learning_activities.update_one(
+                                {"_id": existing_la["_id"]},
+                                {"$set": {"inquiry_questions": merged}},
+                            )
+                    else:
+                        # No learning_activities doc yet for this existing substrand
+                        # — create one with the inquiry questions so the scheme
+                        # generator can use them immediately.
+                        await db.learning_activities.insert_one({
+                            "substrandId": existing_substrand["_id"],
+                            "introduction_activities": row.get("introduction_activities", []),
+                            "development_activities": row.get("development_activities", []),
+                            "conclusion_activities": row.get("conclusion_activities", []),
+                            "extended_activities": row.get("extended_activities", []),
+                            "learning_resources": row.get("learning_resources", []),
+                            "assessment_methods": row.get("assessment_methods", []),
+                            "inquiry_questions": row_iqs,
+                        })
+                        stats["activities_created"] += 1
             else:
                 result = await db.substrands.insert_one({
                     "name": substrand_name,
@@ -3503,7 +3542,8 @@ async def save_imported_data(request: ImportSaveRequest, user: dict = Depends(ve
                     "conclusion_activities": row.get("conclusion_activities", []),
                     "extended_activities": row.get("extended_activities", []),
                     "learning_resources": row.get("learning_resources", []),
-                    "assessment_methods": row.get("assessment_methods", [])
+                    "assessment_methods": row.get("assessment_methods", []),
+                    "inquiry_questions": row.get("inquiry_questions", [])
                 }
                 await db.learning_activities.insert_one(activities_data)
                 stats["activities_created"] += 1
