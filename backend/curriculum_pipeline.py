@@ -41,7 +41,7 @@ def repair_json(raw: str) -> dict:
     - Trailing commas
     - Smart quotes (curly quotes)
     - Single-quoted strings
-    - Truncation detection
+    - Truncation (unbalanced brackets / unterminated strings)
     """
     text = raw.strip()
 
@@ -50,11 +50,15 @@ def repair_json(raw: str) -> dict:
     text = re.sub(r'\n?```\s*$', '', text)
     text = text.strip()
 
-    # Extract JSON object from surrounding prose
+    # Clip leading prose: jump to the first `{`. We deliberately do NOT
+    # clip the trailing tail at `rfind('}')` — when Gemini truncates a
+    # response mid-string, that last `}` may be a closing brace of an
+    # inner object and clipping there throws away unbalanced state that
+    # the bracket-balancer below knows how to recover. Trailing prose is
+    # extremely rare with response_mime_type='application/json'.
     brace_start = text.find('{')
-    brace_end = text.rfind('}')
-    if brace_start >= 0 and brace_end > brace_start:
-        text = text[brace_start:brace_end + 1]
+    if brace_start > 0:
+        text = text[brace_start:]
 
     # Fix smart quotes → straight quotes
     text = text.replace('\u201c', '"').replace('\u201d', '"')
@@ -108,12 +112,27 @@ def repair_json(raw: str) -> dict:
 
         suffix = '"' if in_string else ''
         suffix += ''.join(reversed(stack))
+        candidate = repaired + suffix
         try:
-            return json.loads(repaired + suffix)
+            return json.loads(candidate)
         except json.JSONDecodeError:
             pass
 
-    raise ValueError(f"Cannot repair JSON. First 200 chars: {raw[:200]}")
+        # Truncation often leaves a trailing comma right before the
+        # synthetic closing bracket (e.g. `[{"x":1},]`). Strip those and
+        # try once more before giving up. Also drop a dangling colon /
+        # incomplete key-value at the tail (e.g. `,"name":` → `,`).
+        candidate2 = re.sub(r',\s*([}\]])', r'\1', candidate)
+        candidate2 = re.sub(r',\s*"[^"]*"\s*:\s*([}\]])', r'\1', candidate2)
+        try:
+            return json.loads(candidate2)
+        except json.JSONDecodeError:
+            pass
+
+    raise ValueError(
+        f"Cannot repair JSON ({len(raw)} chars). "
+        f"First 200: {raw[:200]!r} … Last 200: {raw[-200:]!r}"
+    )
 
 
 # ---------------------------------------------------------------------------

@@ -138,7 +138,16 @@ def _post_process_grade(result: dict, grade_hint: str = "") -> dict:
 
 
 async def extract_with_gemini(text: str, session_suffix: str = "") -> dict:
-    """Extract curriculum data from PDF text using Gemini 2.5 Flash."""
+    """Extract curriculum data from PDF text using Gemini 2.5 Flash.
+
+    Forces strict JSON output via ``response_mime_type='application/json'``
+    and bumps ``max_output_tokens`` to the Gemini 2.5 Flash ceiling so the
+    response is never truncated mid-document — that was the root cause of
+    intermittent ``Cannot repair JSON`` failures on long KICD PDFs like
+    the Kiswahili Fasihi designs.
+    """
+    from google.genai import types as genai_types
+
     client = _get_client()
 
     prompt = EXTRACTION_PROMPT + text
@@ -149,10 +158,31 @@ async def extract_with_gemini(text: str, session_suffix: str = "") -> dict:
         lambda: client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt,
+            config=genai_types.GenerateContentConfig(
+                response_mime_type="application/json",
+                # Gemini 2.5 Flash supports up to 65 535 output tokens.
+                # Curriculum extractions for the largest KICD PDFs land
+                # around ~30k tokens, so this comfortably avoids truncation.
+                max_output_tokens=65535,
+                # Deterministic-ish output is fine for structured extraction.
+                temperature=0.2,
+            ),
         )
     )
 
-    response_text = response.text.strip()
+    response_text = (response.text or "").strip()
+
+    # Hard fail with a useful message if Gemini still hit the ceiling.
+    finish_reason = None
+    try:
+        finish_reason = response.candidates[0].finish_reason
+    except (AttributeError, IndexError):
+        pass
+    if finish_reason and str(finish_reason).endswith("MAX_TOKENS"):
+        raise ValueError(
+            "Gemini truncated the response (finish_reason=MAX_TOKENS). "
+            "Re-run with a smaller chunk or split the PDF further."
+        )
 
     # Use robust JSON repair (handles fences, trailing commas, smart quotes, truncation)
     from curriculum_pipeline import repair_json
@@ -172,12 +202,14 @@ async def extract_with_gemini_chunked(
     - After merging, the grade is normalized via grade_utils.
     """
     # Single-shot extraction for small documents
-    if len(text) < 30000:
+    if len(text) < 18000:
         result = await extract_with_gemini(text, subject_hint.replace(" ", "_"))
         return _post_process_grade(result, grade_hint)
 
-    # Chunked extraction
-    chunks = _split_into_chunks(text, max_chars=25000)
+    # Chunked extraction. 15 000 chars per chunk keeps each Gemini call
+    # well under the response-token ceiling, which avoids truncation on
+    # dense KICD curriculum tables (Kiswahili / Fasihi etc.).
+    chunks = _split_into_chunks(text, max_chars=15000)
     print(f"  Large PDF detected - splitting into {len(chunks)} chunks")
 
     all_strands = []
