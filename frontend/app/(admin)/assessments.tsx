@@ -87,10 +87,21 @@ export default function AdminAssessments() {
         const res = await axios.get(`${BACKEND_URL}/api/grades`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const list: Grade[] = res.data.map((g: any) => ({ id: g._id || g.id, name: g.name }));
+        // Backend returns { success: true, grades: [...] }; handle both shapes
+        // defensively so this never silently breaks the upload form again.
+        const raw: any[] = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data?.grades)
+          ? res.data.grades
+          : [];
+        const list: Grade[] = raw.map((g: any) => ({ id: g._id || g.id, name: g.name }));
         setGrades(list);
         if (list.length && !gradeId) setGradeId(list[0].id);
-      } catch { /* noop */ }
+      } catch (e) {
+        // surface the failure so admins know why grades didn't load
+        // eslint-disable-next-line no-console
+        console.warn('[admin/assessments] failed to load grades', e);
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

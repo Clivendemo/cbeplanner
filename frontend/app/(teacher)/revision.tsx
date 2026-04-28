@@ -76,7 +76,14 @@ export default function RevisionPapers() {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!alive) return;
-        const list: Grade[] = res.data.map((g: any) => ({ id: g._id || g.id, name: g.name }));
+        // Backend shape: { success: true, grades: [...] } — fall back to a
+        // bare array for safety in case the contract ever flips back.
+        const raw: any[] = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data?.grades)
+          ? res.data.grades
+          : [];
+        const list: Grade[] = raw.map((g: any) => ({ id: g._id || g.id, name: g.name }));
         setGrades(list);
         if (list.length && !gradeId) setGradeId(list[0].id);
       } catch (e) {
