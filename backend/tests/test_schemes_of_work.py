@@ -4,15 +4,20 @@ Tests the multi-step scheme generation flow including:
 - Lessons per week configuration
 - Topic selection
 - Scheme generation (v2)
-- Preview and download with wallet deduction
+- Download with wallet deduction
 """
 
 import pytest
 import requests
 import os
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load backend .env so DB_NAME / MONGO_URL match the running server.
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://magical-shannon-6.preview.emergentagent.com').rstrip('/')
+DB_NAME = os.environ.get('DB_NAME', 'cbeplanner')
 
 
 class TestSchemesAPIHealth:
@@ -80,23 +85,21 @@ class TestSchemeGenerationEndpoints:
         assert response.status_code == 401
         print("PASSED: Generate-v2 endpoint requires auth (401)")
     
-    def test_preview_requires_auth(self):
-        """Test preview endpoint requires authentication"""
-        response = requests.post(
-            f"{BASE_URL}/api/schemes/preview",
-            json={"test": "data"}
-        )
-        assert response.status_code == 401
-        print("PASSED: Preview endpoint requires auth (401)")
-    
     def test_download_requires_auth(self):
-        """Test download endpoint requires authentication"""
+        """Test the parameterised download endpoint requires authentication.
+
+        The current API exposes ``POST /api/schemes/{scheme_id}/download`` as
+        the single download path — there is no plain ``/preview`` or
+        ``/download`` route. Hitting it without an auth header must return
+        401, never 404 (so we know the route is wired up).
+        """
         response = requests.post(
-            f"{BASE_URL}/api/schemes/download",
-            json={"test": "data"}
+            f"{BASE_URL}/api/schemes/test_scheme_id/download",
+            json={},
         )
-        assert response.status_code == 401
-        print("PASSED: Download endpoint requires auth (401)")
+        assert response.status_code == 401, \
+            f"Expected 401 Unauthorized, got {response.status_code}"
+        print("PASSED: Scheme download endpoint requires auth (401)")
 
 
 class TestSchemeListEndpoints:
@@ -125,7 +128,7 @@ class TestDatabaseGradesAndSubjects:
         # Connect to MongoDB
         mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL')
         client = MongoClient(mongo_url)
-        db = client['cbeplanner']
+        db = client[DB_NAME]
         
         grades = list(db.grades.find())
         assert len(grades) > 0, "No grades found in database"
@@ -147,7 +150,7 @@ class TestDatabaseGradesAndSubjects:
         
         mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL')
         client = MongoClient(mongo_url)
-        db = client['cbeplanner']
+        db = client[DB_NAME]
         
         subjects = list(db.subjects.find())
         assert len(subjects) > 0, "No subjects found in database"
@@ -164,7 +167,7 @@ class TestDatabaseGradesAndSubjects:
         
         mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL')
         client = MongoClient(mongo_url)
-        db = client['cbeplanner']
+        db = client[DB_NAME]
         
         strands = list(db.strands.find())
         assert len(strands) > 0, "No strands found in database"
@@ -178,7 +181,7 @@ class TestDatabaseGradesAndSubjects:
         
         mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL')
         client = MongoClient(mongo_url)
-        db = client['cbeplanner']
+        db = client[DB_NAME]
         
         substrands = list(db.substrands.find())
         assert len(substrands) > 0, "No substrands found in database"
@@ -192,7 +195,7 @@ class TestDatabaseGradesAndSubjects:
         
         mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL')
         client = MongoClient(mongo_url)
-        db = client['cbeplanner']
+        db = client[DB_NAME]
         
         slos = list(db.slos.find())
         assert len(slos) > 0, "No SLOs found in database"
@@ -353,7 +356,7 @@ class TestUserWalletForSchemes:
         
         mongo_url = os.environ.get('MONGODB_URI') or os.environ.get('MONGO_URL')
         client = MongoClient(mongo_url)
-        db = client['cbeplanner']
+        db = client[DB_NAME]
         
         user = db.users.find_one({"email": "demo2@example.com"})
         
@@ -370,17 +373,15 @@ class TestUserWalletForSchemes:
         """Verify scheme download cost is set correctly"""
         import sys
         sys.path.insert(0, '/app/backend')
-        
-        # Import from server to check the constant
-        # We'll check the scheme_generator module instead
-        EXPECTED_COST = 15
-        
-        # Read server.py to verify the constant
-        with open('/app/backend/server.py', 'r') as f:
-            content = f.read()
-            assert 'SCHEME_DOWNLOAD_COST = 15' in content, "SCHEME_DOWNLOAD_COST should be 15"
-        
-        print(f"PASSED: Scheme download cost is KES {EXPECTED_COST}")
+
+        # SCHEME_DOWNLOAD_COST lives in app/deps.py and is imported wherever
+        # it's used (server.py, routes/schemes.py). Check the source of truth.
+        from app.deps import SCHEME_DOWNLOAD_COST
+
+        assert SCHEME_DOWNLOAD_COST == 15, \
+            f"SCHEME_DOWNLOAD_COST should be 15, got {SCHEME_DOWNLOAD_COST}"
+
+        print(f"PASSED: Scheme download cost is KES {SCHEME_DOWNLOAD_COST}")
 
 
 class TestEndpointRouting:
@@ -392,8 +393,7 @@ class TestEndpointRouting:
             ("GET", "/api/schemes/config/lessons-per-week?gradeId=test&subjectId=test"),
             ("GET", "/api/schemes/topics/test_id"),
             ("POST", "/api/schemes/generate-v2"),
-            ("POST", "/api/schemes/preview"),
-            ("POST", "/api/schemes/download"),
+            ("POST", "/api/schemes/test_scheme_id/download"),
             ("GET", "/api/schemes"),
         ]
         
