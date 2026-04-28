@@ -351,6 +351,11 @@ class SLO(BaseModel):
     name: str
     description: str
     substrandId: str
+    # Key Inquiry Questions are seeded by the curriculum extractor and may be
+    # edited by admins. This is the single source of truth — schemes and
+    # lesson plans read directly from here. Defaults to [] so legacy SLOs
+    # without KIQs roundtrip cleanly through PUT/POST.
+    key_inquiry_questions: List[str] = []
 
 class Competency(BaseModel):
     id: Optional[str] = None

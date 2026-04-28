@@ -57,7 +57,7 @@ const ENTITY_CONFIG: Record<EntityType, {
   subjects: { title: 'Subjects', singularTitle: 'Subject', icon: 'book', color: '#10B981', fields: ['name'], parent: 'grades', apiPath: 'subjects' },
   strands: { title: 'Strands', singularTitle: 'Strand', icon: 'git-branch', color: '#F59E0B', fields: ['name'], parent: 'subjects', apiPath: 'strands' },
   substrands: { title: 'Sub-strands', singularTitle: 'Sub-strand', icon: 'git-merge', color: '#EF4444', fields: ['name', 'number_of_lessons'], parent: 'strands', apiPath: 'substrands' },
-  slos: { title: 'SLOs', singularTitle: 'SLO', icon: 'checkmark-circle', color: '#5C6BC0', fields: ['name', 'description'], parent: 'substrands', apiPath: 'slos' },
+  slos: { title: 'SLOs', singularTitle: 'SLO', icon: 'checkmark-circle', color: '#5C6BC0', fields: ['name', 'description', 'key_inquiry_questions'], parent: 'substrands', apiPath: 'slos' },
   learning_activities: { title: 'Learning Activities', singularTitle: 'Learning Activities', icon: 'flash', color: '#84CC16', fields: ['introduction_activities', 'development_activities', 'conclusion_activities', 'extended_activities'], parent: 'substrands', apiPath: 'learning-activities' },
   competencies: { title: 'Competencies', singularTitle: 'Competency', icon: 'star', color: '#EC4899', fields: ['name', 'description'], apiPath: 'competencies' },
   values: { title: 'Values', singularTitle: 'Value', icon: 'heart', color: '#14B8A6', fields: ['name', 'description'], apiPath: 'values' },
@@ -519,7 +519,14 @@ export default function Curriculum() {
     setEditingItem(item);
     const initialData: Record<string, string> = {};
     ENTITY_CONFIG[selectedEntity].fields.forEach(field => {
-      initialData[field] = (item as any)[field]?.toString() || '';
+      const raw = (item as any)[field];
+      // KIQs are stored as an array on the SLO row; render them as one
+      // question per line in the textarea so admins can edit naturally.
+      if (field === 'key_inquiry_questions' && Array.isArray(raw)) {
+        initialData[field] = raw.join('\n');
+      } else {
+        initialData[field] = raw?.toString() || '';
+      }
     });
     setFormData(initialData);
     
@@ -699,6 +706,21 @@ export default function Curriculum() {
         }
       } else if (selectedEntity === 'slos' && (selectedParentId || currentParentId)) {
         payload.substrandId = selectedParentId || currentParentId;
+      }
+
+      // KIQs (SLO only) come from the textarea as a newline-joined string;
+      // split, trim, and drop empties before sending to the API. Pulled out
+      // of the parent-relationship block above so it always runs on SLO
+      // edit/create regardless of whether a new parent was picked.
+      if (selectedEntity === 'slos') {
+        if (typeof payload.key_inquiry_questions === 'string') {
+          payload.key_inquiry_questions = payload.key_inquiry_questions
+            .split('\n')
+            .map((q: string) => q.trim())
+            .filter((q: string) => q.length > 0);
+        } else if (!Array.isArray(payload.key_inquiry_questions)) {
+          payload.key_inquiry_questions = [];
+        }
       }
       
       // Convert order to number if present
@@ -1849,22 +1871,48 @@ export default function Curriculum() {
               {/* Form Fields */}
               {ENTITY_CONFIG[selectedEntity].fields
                 .filter(f => !f.includes('activities')) // Filter out activity fields for regular modal
-                .map((field) => (
-                <View key={field} style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>
-                    {field === 'number_of_lessons' ? 'Number of Lessons' : field.charAt(0).toUpperCase() + field.slice(1)} {field === 'number_of_lessons' ? '' : '*'}
-                  </Text>
-                  <TextInput
-                    style={[styles.input, field === 'description' && styles.textArea]}
-                    value={formData[field]?.toString() || ''}
-                    onChangeText={(text) => setFormData({ ...formData, [field]: text })}
-                    placeholder={field === 'number_of_lessons' ? 'e.g. 10 (lessons in this substrand)' : `Enter ${field}`}
-                    multiline={field === 'description'}
-                    numberOfLines={field === 'description' ? 4 : 1}
-                    keyboardType={field === 'order' || field === 'number_of_lessons' ? 'numeric' : 'default'}
-                  />
-                </View>
-              ))}
+                .map((field) => {
+                  // Special case: Key Inquiry Questions on SLOs are stored
+                  // as a string array. Render a multi-line textarea, one
+                  // question per line, with a hint so admins know the
+                  // format expected by the seed contract.
+                  if (field === 'key_inquiry_questions') {
+                    return (
+                      <View key={field} style={styles.inputGroup}>
+                        <Text style={styles.inputLabel}>Key Inquiry Questions</Text>
+                        <Text style={{ fontSize: 11, color: '#5A5A7A', marginBottom: 6 }}>
+                          One question per line. Leave blank if the curriculum design has none for this SLO.
+                        </Text>
+                        <TextInput
+                          style={[styles.input, styles.textArea, { minHeight: 100 }]}
+                          value={formData[field]?.toString() || ''}
+                          onChangeText={(text) => setFormData({ ...formData, [field]: text })}
+                          placeholder={'e.g.\nWhy is this skill important?\nHow can it be applied in everyday life?'}
+                          multiline
+                          numberOfLines={4}
+                          data-testid="admin-slo-kiq-input"
+                          testID="admin-slo-kiq-input"
+                        />
+                      </View>
+                    );
+                  }
+                  return (
+                    <View key={field} style={styles.inputGroup}>
+                      <Text style={styles.inputLabel}>
+                        {field === 'number_of_lessons' ? 'Number of Lessons' : field.charAt(0).toUpperCase() + field.slice(1)} {field === 'number_of_lessons' ? '' : '*'}
+                      </Text>
+                      <TextInput
+                        style={[styles.input, field === 'description' && styles.textArea]}
+                        value={formData[field]?.toString() || ''}
+                        onChangeText={(text) => setFormData({ ...formData, [field]: text })}
+                        placeholder={field === 'number_of_lessons' ? 'e.g. 10 (lessons in this substrand)' : `Enter ${field}`}
+                        multiline={field === 'description'}
+                        numberOfLines={field === 'description' ? 4 : 1}
+                        keyboardType={field === 'order' || field === 'number_of_lessons' ? 'numeric' : 'default'}
+                      />
+                    </View>
+                  );
+                })}
             </ScrollView>
 
             <View style={styles.modalFooter}>
