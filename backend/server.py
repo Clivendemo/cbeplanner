@@ -3576,11 +3576,14 @@ async def save_imported_data(request: ImportSaveRequest, user: dict = Depends(ve
         
         substrand_id = substrand_cache[substrand_key]
         
-        # Create SLO
+        # Create SLO — option-C distribution: every SLO under this substrand
+        # carries the FULL key_inquiry_questions array from the row, so the
+        # scheme generator can read it back verbatim.
         slo_result = await db.slos.insert_one({
             "name": slo_name,
             "description": row.get("slo_description", slo_name),
-            "substrandId": substrand_id
+            "substrandId": substrand_id,
+            "key_inquiry_questions": row.get("inquiry_questions", []),
         })
         slo_id = str(slo_result.inserted_id)
         stats["slos_created"] += 1

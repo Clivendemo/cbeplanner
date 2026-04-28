@@ -401,6 +401,23 @@ User reported the STK prompt was "slow"; users saw a multi-second pause between 
 
 **Tests**: full session suite still green (63/63); backend imports + boots cleanly.
 
+## KIQ Single-Source-Of-Truth Refactor (Feb 2026)
+
+After repeated KIQ correctness issues (Kiswahili language mixing, English filter dropping `Kwa nini` questions, etc.), KIQ storage moved DOWN from substrand-level (`learning_activities.inquiry_questions[]`) onto the per-lesson `slos` collection itself.
+
+**New canonical field**: `slos.key_inquiry_questions: List[str]` (Option-C distribution — every SLO under a substrand inherits the FULL substrand-level KIQ array).
+
+**Changes**
+- `backend/scripts/migrate_iq_to_slos.py` — idempotent dry-run/apply migration script. Bulk-writes via `pymongo.UpdateOne` in batches of 200.
+- Migration **applied to production data**: 1031 of 1586 SLOs got their KIQs in one pass. The remaining 555 SLOs (Fasihi ya Kiswahili etc.) had no source data; they will populate when their PDFs are re-uploaded through the new save handler.
+- `backend/server.py:/api/admin/import/save` — the SLO insert now writes `key_inquiry_questions` directly onto each `slos` doc.
+- `backend/routes/schemes.py` — priority block collapsed to: 1) `lesson_slo_slots.key_inquiry_question` admin override; 2) `slos.key_inquiry_questions[0]`; 3) algorithmic derivation. Dropped the substrand-array cycling, the `_substrandInquiries` plumbing, the `_looks_kiswahili` heuristic, and the `_kiswahili_or_english_fallback` helper (no dead code remaining).
+- Tests rewritten: `tests/test_scheme_uses_db_inquiry.py` (7 cases for the new single-source mirror) + new `tests/test_kiq_migration.py` (3 cases — distribution, idempotency, no-source skip). All 58 session tests pass.
+
+**Why this is the final word on KIQ correctness**
+- Each SLO row already exists per-lesson in the canonical language of its subject. Storing KIQs on the SLO row means: no language detection, no positional cycling, no English-into-Kiswahili leakage. The scheme generator literally returns the string from the DB.
+- Re-running the migration is safe; rolling back is trivial (just stop reading `key_inquiry_questions` — `learning_activities.inquiry_questions[]` is preserved).
+
 ## Next Tasks
 1. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin`, `/lesson_plans` into `routes/`)
 2. Firebase Admin SDK integration
