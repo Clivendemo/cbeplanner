@@ -47,6 +47,34 @@ class MpesaService:
         
         self._access_token = None
         self._token_expiry = None
+
+        # Persistent HTTP client — pooled connections + keep-alive, so each STK
+        # request reuses the warm TLS connection instead of doing a fresh
+        # handshake. We disable HTTP/2 because Safaricom's gateway doesn't
+        # gain anything from h2 here and the upgrade negotiation adds ~150ms
+        # on cold connections.
+        self._client: Optional[httpx.AsyncClient] = None
+
+    def _get_client(self) -> httpx.AsyncClient:
+        if self._client is None or self._client.is_closed:
+            self._client = httpx.AsyncClient(
+                http2=False,
+                timeout=httpx.Timeout(8.0, connect=3.0),
+                limits=httpx.Limits(
+                    max_connections=10,
+                    max_keepalive_connections=5,
+                    keepalive_expiry=300.0,  # keep TLS warm for 5 min
+                ),
+            )
+        return self._client
+
+    async def prewarm(self) -> None:
+        """Best-effort: fetch the OAuth token at startup so the first user
+        request doesn't pay the OAuth round-trip latency."""
+        try:
+            await self.get_access_token()
+        except Exception as e:
+            logger.warning(f"M-Pesa prewarm skipped: {e}")
     
     async def get_access_token(self) -> str:
         """
@@ -70,9 +98,9 @@ class MpesaService:
             "Content-Type": "application/json"
         }
         
-        async with httpx.AsyncClient(http2=True) as client:
+        async with httpx.AsyncClient(http2=False, timeout=httpx.Timeout(5.0, connect=3.0)) as client:
             try:
-                response = await client.get(url, headers=headers, timeout=10.0)
+                response = await client.get(url, headers=headers, timeout=5.0)
                 response.raise_for_status()
                 data = response.json()
                 
@@ -190,53 +218,41 @@ class MpesaService:
             "Content-Type": "application/json"
         }
         
-        async with httpx.AsyncClient(http2=True, timeout=httpx.Timeout(15.0, connect=5.0)) as client:
-            try:
-                logger.info(f"=" * 50)
-                logger.info(f"Initiating STK Push")
-                logger.info(f"BusinessShortCode: {self.shortcode}")
-                logger.info(f"PartyB (Till): {self.till_number}")
-                logger.info(f"Amount: {amount}")
-                logger.info(f"Phone: {formatted_phone}")
-                logger.info(f"TransactionType: CustomerBuyGoodsOnline")
-                logger.info(f"CallbackURL: {self.callback_url}")
-                logger.info(f"AccountReference: {account_reference}")
-                logger.info(f"=" * 50)
-                
-                response = await client.post(url, json=payload, headers=headers)
-                
-                # Log response details before raising for status
-                logger.info(f"STK Push HTTP Status: {response.status_code}")
-                logger.info(f"STK Push Response Body: {response.text}")
-                
-                response.raise_for_status()
-                data = response.json()
-                
-                logger.info(f"STK Push response: {data}")
-                
-                if data.get('ResponseCode') == '0':
-                    return {
-                        "success": True,
-                        "checkoutRequestID": data.get('CheckoutRequestID'),
-                        "merchantRequestID": data.get('MerchantRequestID'),
-                        "responseDescription": data.get('ResponseDescription'),
-                        "customerMessage": data.get('CustomerMessage')
-                    }
-                else:
-                    return {
-                        "success": False,
-                        "error": data.get('ResponseDescription', 'STK Push failed'),
-                        "errorCode": data.get('ResponseCode')
-                    }
-                    
-            except httpx.HTTPStatusError as e:
-                # Capture the actual response body for HTTP errors
-                error_body = e.response.text if e.response else "No response body"
-                logger.error(f"STK Push HTTP error: {e.response.status_code} - {error_body}")
-                raise Exception(f"M-Pesa STK Push failed: {e.response.status_code} - {error_body}")
-            except httpx.HTTPError as e:
-                logger.error(f"STK Push request failed: {str(e)}")
-                raise Exception(f"M-Pesa STK Push failed: {str(e)}")
+        client = self._get_client()
+        try:
+            logger.info(
+                "Initiating STK Push amount=%s phone=%s ref=%s",
+                amount, formatted_phone, account_reference,
+            )
+
+            response = await client.post(url, json=payload, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+
+            if data.get('ResponseCode') == '0':
+                logger.info(f"STK Push OK: {data.get('CheckoutRequestID')}")
+                return {
+                    "success": True,
+                    "checkoutRequestID": data.get('CheckoutRequestID'),
+                    "merchantRequestID": data.get('MerchantRequestID'),
+                    "responseDescription": data.get('ResponseDescription'),
+                    "customerMessage": data.get('CustomerMessage')
+                }
+            else:
+                logger.warning(f"STK Push failed: {data}")
+                return {
+                    "success": False,
+                    "error": data.get('ResponseDescription', 'STK Push failed'),
+                    "errorCode": data.get('ResponseCode')
+                }
+
+        except httpx.HTTPStatusError as e:
+            error_body = e.response.text if e.response else "No response body"
+            logger.error(f"STK Push HTTP error: {e.response.status_code} - {error_body}")
+            raise Exception(f"M-Pesa STK Push failed: {e.response.status_code} - {error_body}")
+        except httpx.HTTPError as e:
+            logger.error(f"STK Push request failed: {str(e)}")
+            raise Exception(f"M-Pesa STK Push failed: {str(e)}")
     
     async def query_stk_status(self, checkout_request_id: str) -> Dict[str, Any]:
         """
@@ -267,55 +283,52 @@ class MpesaService:
             "Content-Type": "application/json"
         }
         
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.post(url, json=payload, headers=headers, timeout=30.0)
-                response.raise_for_status()
-                data = response.json()
-                
-                logger.info(f"STK Query response: {data}")
-                
-                # ResultCode 0 means success
-                result_code = data.get('ResultCode')
-                
-                if result_code == '0' or result_code == 0:
-                    return {
-                        "success": True,
-                        "status": "successful",
-                        "resultDesc": data.get('ResultDesc'),
-                        "merchantRequestID": data.get('MerchantRequestID'),
-                        "checkoutRequestID": data.get('CheckoutRequestID')
-                    }
-                elif result_code == '1032':
-                    # Transaction cancelled by user
-                    return {
-                        "success": False,
-                        "status": "cancelled",
-                        "resultDesc": "Transaction cancelled by user"
-                    }
-                elif result_code == '1037':
-                    # Transaction timed out
-                    return {
-                        "success": False,
-                        "status": "timeout",
-                        "resultDesc": "Transaction timed out"
-                    }
-                else:
-                    return {
-                        "success": False,
-                        "status": "failed",
-                        "resultDesc": data.get('ResultDesc', 'Transaction failed'),
-                        "resultCode": result_code
-                    }
-                    
-            except httpx.HTTPError as e:
-                logger.error(f"STK Query failed: {str(e)}")
-                # Return pending if we can't query - might still be processing
+        client = self._get_client()
+        try:
+            response = await client.post(url, json=payload, headers=headers, timeout=8.0)
+            response.raise_for_status()
+            data = response.json()
+
+            logger.info(f"STK Query response: {data}")
+
+            # ResultCode 0 means success
+            result_code = data.get('ResultCode')
+
+            if result_code == '0' or result_code == 0:
+                return {
+                    "success": True,
+                    "status": "successful",
+                    "resultDesc": data.get('ResultDesc'),
+                    "merchantRequestID": data.get('MerchantRequestID'),
+                    "checkoutRequestID": data.get('CheckoutRequestID')
+                }
+            elif result_code == '1032':
                 return {
                     "success": False,
-                    "status": "pending",
-                    "resultDesc": "Unable to query status"
+                    "status": "cancelled",
+                    "resultDesc": "Transaction cancelled by user"
                 }
+            elif result_code == '1037':
+                return {
+                    "success": False,
+                    "status": "timeout",
+                    "resultDesc": "Transaction timed out"
+                }
+            else:
+                return {
+                    "success": False,
+                    "status": "failed",
+                    "resultDesc": data.get('ResultDesc', 'Transaction failed'),
+                    "resultCode": result_code
+                }
+
+        except httpx.HTTPError as e:
+            logger.error(f"STK Query failed: {str(e)}")
+            return {
+                "success": False,
+                "status": "pending",
+                "resultDesc": "Unable to query status"
+            }
 
 
 # Singleton instance

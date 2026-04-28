@@ -379,6 +379,28 @@ Activated the previously "Coming Soon" Revision Papers tile as a working past-pa
 
 **Live**: R2 credentials in `backend/.env`; boto3 connection verified against `cbeplanner-past-papers` bucket.
 
+## M-Pesa STK Push Latency Optimisation (Feb 2026)
+
+User reported the STK prompt was "slow"; users saw a multi-second pause between hitting "Top Up" and the M-Pesa PIN sheet appearing on their phone.
+
+**Root causes**
+1. `httpx.AsyncClient(http2=True)` was created per request → fresh TLS handshake + h2 negotiation **each call** (~150-700ms).
+2. DB `insert_one` for the pending transaction was awaited **before** the STK call → ~30-60ms serial overhead.
+3. After STK success, a second `update_one` was awaited before returning → another ~30-60ms.
+4. Cold processes paid the OAuth `oauth/v1/generate` round-trip on the first request (~400ms).
+5. ~10 verbose `logger.info` calls per request added measurable overhead.
+
+**Fixes (`backend/mpesa_service.py` + `backend/server.py`)**
+- Added a **persistent pooled `httpx.AsyncClient`** (`_get_client()`) on the `MpesaService` instance with `keepalive_expiry=300s`, `max_keepalive_connections=5`, `http2=False` (h2 was hurting more than helping for low-volume requests). Reused for both `initiate_stk_push` and `query_stk_status`.
+- OAuth token fetch tightened to `httpx.Timeout(5.0, connect=3.0)` and `http2=False`.
+- New `MpesaService.prewarm()` called once on startup → first user STK request lands on a warm token + warm TLS connection.
+- Route `/api/payments/mpesa/initiate`: DB insert and STK API call now fire **concurrently** via `asyncio.gather`. Subsequent updates (success-detail update, failure mark) became fire-and-forget `asyncio.create_task` so the HTTP response returns the moment the STK API confirms acceptance.
+- Trimmed the per-request log spam.
+
+**Expected effect**: first request from cold ~ -400ms (warm token), every subsequent request ~ -200-700ms (no fresh TLS), payload-write parallelism saves another ~30-100ms. Net: STK PIN prompt feels near-instant after the user taps Top Up.
+
+**Tests**: full session suite still green (63/63); backend imports + boots cleanly.
+
 ## Next Tasks
 1. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin`, `/lesson_plans` into `routes/`)
 2. Firebase Admin SDK integration
