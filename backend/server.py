@@ -33,7 +33,7 @@ from notes_pdf import generate_notes_pdf
 # backward-compat with any downstream admin code that may still reference them).
 from scheme_generator import (
     generate_scheme_pdf, get_lessons_per_week, get_assessment_for_slo,
-    generate_inquiry_questions, generate_learning_experiences, generate_learning_resources
+    generate_learning_experiences, generate_learning_resources
 )
 
 # Import lesson SLO service layer (legacy — kept for backward compat)

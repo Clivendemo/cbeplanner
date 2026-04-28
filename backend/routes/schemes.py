@@ -25,8 +25,8 @@ from app.deps import (
 )
 from scheme_generator import (
     generate_scheme_pdf, get_lessons_per_week, get_assessment_for_slo,
-    generate_inquiry_questions, generate_learning_experiences, generate_learning_resources,
-    derive_inquiry_from_slo, format_slo_with_prefix,
+    generate_learning_experiences, generate_learning_resources,
+    format_slo_with_prefix,
 )
 from slot_service import format_resource_display
 
@@ -440,28 +440,23 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                     slot_inquiry = content.get("_slotInquiry")
                     slo_inquiries = content.get("_sloInquiries") or []
 
-                    # Single source of truth: slos.key_inquiry_questions.
+                    # Single source of truth: the curriculum extractor seeds
+                    # Key Inquiry Questions onto slos.key_inquiry_questions[].
                     # Priority:
                     #   1. lesson_slo_slots.key_inquiry_question — admin's
-                    #      per-lesson override, kept for the rare cases where
-                    #      a teacher wants to swap one specific lesson's KIQ.
+                    #      per-lesson override.
                     #   2. slos.key_inquiry_questions[0] — the canonical,
-                    #      KICD-seeded value stored directly on the SLO row.
-                    #      Stored verbatim in source language, so no Kiswahili
-                    #      heuristics are needed.
-                    #   3. Algorithmic derivation from the SLO text — only
-                    #      when neither DB source has a value.
+                    #      KICD-extracted value stored on the SLO row.
+                    #   3. Blank string — never algorithmically generate. If
+                    #      the curriculum extractor didn't capture a KIQ for
+                    #      this SLO, the lesson stays blank until an admin
+                    #      backfills it via the curriculum editor.
                     if slot_inquiry:
                         inquiry_qs = slot_inquiry
                     elif slo_inquiries:
                         inquiry_qs = slo_inquiries[0]
                     else:
-                        derived = derive_inquiry_from_slo(content["slo"], is_kiswahili)
-                        inquiry_qs = derived or generate_inquiry_questions(
-                            content["strand"],
-                            content["substrand"],
-                            content["slo"],
-                        )
+                        inquiry_qs = ""
 
                     experiences = content.get("learningActivities", [])
                     if not experiences:

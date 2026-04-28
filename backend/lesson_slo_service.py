@@ -51,19 +51,6 @@ def _generate_lesson_outcome(
     return f"{verb} {slo_lower} in the context of {substrand_name}"
 
 
-def _generate_inquiry_questions_from_outcome(outcome: str) -> List[str]:
-    """Generate max 2 concise inquiry questions from a lesson outcome."""
-    outcome_clean = outcome.strip().rstrip(".")
-    # Extract the core topic (after first verb phrase)
-    parts = outcome_clean.split(" ", 2)
-    topic = parts[-1] if len(parts) > 2 else outcome_clean
-
-    return [
-        f"What do we understand about {topic.lower()}?",
-        f"How can we apply knowledge of {topic.lower()} in everyday life?",
-    ]
-
-
 # ---------------------------------------------------------------------------
 # Core service functions (all take `db` as first arg — no global state)
 # ---------------------------------------------------------------------------
@@ -121,7 +108,11 @@ async def sync_lesson_slos_for_substrand(db, substrand_id: str) -> Dict[str, Any
                 subject_name, strand_name, substrand["name"],
                 used_slo_name, i, num_lessons,
             )
-            inquiry = _generate_inquiry_questions_from_outcome(outcome)
+            # KIQs are seeded directly from the curriculum extractor onto
+            # the parent SLO row. No algorithmic generation. If the parent
+            # has no extracted KIQs, the lesson stays blank — admins can
+            # fill it in via the curriculum editor.
+            inquiry = list(parent_slo.get("key_inquiry_questions") or []) if parent_slo else []
 
             await db.lesson_slos.insert_one({
                 "strandId": substrand.get("strandId", ""),

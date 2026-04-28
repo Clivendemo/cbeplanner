@@ -276,18 +276,6 @@ class TestSchemeGeneratorModule:
         
         print("PASSED: Assessment method generation")
     
-    def test_generate_inquiry_questions(self):
-        """Test inquiry question generation"""
-        import sys
-        sys.path.insert(0, '/app/backend')
-        from scheme_generator import generate_inquiry_questions
-        
-        questions = generate_inquiry_questions("Numbers", "Whole Numbers", "Count objects")
-        assert len(questions) >= 2, "Should generate at least 2 inquiry questions"
-        assert any("importance" in q.lower() for q in questions), "Should include importance question"
-        
-        print("PASSED: Inquiry question generation")
-    
     def test_generate_learning_experiences(self):
         """Test learning experience generation"""
         import sys
