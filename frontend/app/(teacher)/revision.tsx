@@ -66,9 +66,17 @@ export default function RevisionPapers() {
   const [topupMessage, setTopupMessage] = useState<string>('');
   const abortRef = useRef<AbortController | null>(null);
 
-  // Fetch grades once
+  // Fetch grades once auth is ready. Depending on `firebaseUser` is
+  // critical: the screen often mounts before Firebase has restored the
+  // session, in which case `getIdToken()` would throw "Not authenticated"
+  // on first run, the catch block would clear the grades, and the chip
+  // row would render permanently empty (the bug a user reported as
+  // "grade selection is not active"). Re-running once auth resolves
+  // populates the chips correctly.
   useEffect(() => {
+    if (!firebaseUser) return;
     let alive = true;
+    setLoadingGrades(true);
     (async () => {
       try {
         const token = await getIdToken();
@@ -87,15 +95,16 @@ export default function RevisionPapers() {
         setGrades(list);
         if (list.length && !gradeId) setGradeId(list[0].id);
       } catch (e) {
-        // keep UI usable even if grades fail to load
-        setGrades([]);
+        // surface the failure so we can diagnose the empty-chip case
+        // eslint-disable-next-line no-console
+        console.warn('[revision] failed to load grades', e);
       } finally {
         if (alive) setLoadingGrades(false);
       }
     })();
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [firebaseUser]);
 
   // Fetch list whenever grade or term changes
   useEffect(() => {
