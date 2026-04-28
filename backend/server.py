@@ -735,30 +735,40 @@ async def initiate_mpesa_payment(request: InitiatePaymentRequest, user: dict = D
         }
 
         try:
-            insert_task = asyncio.create_task(db.wallet_transactions.insert_one(transaction))
-            stk_task = asyncio.create_task(mpesa_service.initiate_stk_push(
-                phone_number=formatted_phone,
-                amount=request.amount,
-                account_reference=tx_ref,
-                transaction_desc="CBE Planner Wallet Top Up",
-            ))
-            insert_result, stk_response = await asyncio.gather(insert_task, stk_task)
+            # asyncio.gather accepts any awaitable (coroutines, Futures, Motor's
+            # _MotorFuture). We must NOT wrap Motor calls in asyncio.create_task
+            # because Python 3.11 requires a coroutine for create_task and
+            # Motor returns a Future-style awaitable.
+            insert_result, stk_response = await asyncio.gather(
+                db.wallet_transactions.insert_one(transaction),
+                mpesa_service.initiate_stk_push(
+                    phone_number=formatted_phone,
+                    amount=request.amount,
+                    account_reference=tx_ref,
+                    transaction_desc="CBE Planner Wallet Top Up",
+                ),
+            )
             transaction_id = str(insert_result.inserted_id)
             logger.info(f"Created pending transaction {tx_ref} for user {user['id']}, amount: {request.amount}")
 
             if stk_response.get("success"):
-                # Update transaction with M-Pesa response details (fire-and-forget
-                # so we don't block the HTTP response on a 2nd DB roundtrip).
-                asyncio.create_task(db.wallet_transactions.update_one(
-                    {"_id": ObjectId(transaction_id)},
-                    {
-                        "$set": {
-                            "checkoutRequestID": stk_response.get("checkoutRequestID"),
-                            "merchantRequestID": stk_response.get("merchantRequestID"),
-                            "updatedAt": datetime.utcnow()
-                        }
-                    }
-                ))
+                # Fire-and-forget the success-detail update. We wrap the Motor
+                # call in a real coroutine so asyncio.create_task() accepts it.
+                async def _persist_stk_ids():
+                    try:
+                        await db.wallet_transactions.update_one(
+                            {"_id": ObjectId(transaction_id)},
+                            {
+                                "$set": {
+                                    "checkoutRequestID": stk_response.get("checkoutRequestID"),
+                                    "merchantRequestID": stk_response.get("merchantRequestID"),
+                                    "updatedAt": datetime.utcnow()
+                                }
+                            }
+                        )
+                    except Exception as ex:  # pragma: no cover — defensive
+                        logger.warning(f"Background STK detail update failed: {ex}")
+                asyncio.create_task(_persist_stk_ids())
 
                 return {
                     "success": True,
@@ -769,17 +779,22 @@ async def initiate_mpesa_payment(request: InitiatePaymentRequest, user: dict = D
                     "customerMessage": stk_response.get("customerMessage")
                 }
             else:
-                # Mark transaction as failed (fire-and-forget)
-                asyncio.create_task(db.wallet_transactions.update_one(
-                    {"_id": ObjectId(transaction_id)},
-                    {
-                        "$set": {
-                            "status": "failed",
-                            "resultDesc": stk_response.get("error", "STK Push failed"),
-                            "updatedAt": datetime.utcnow()
-                        }
-                    }
-                ))
+                # Fire-and-forget failure mark — same coroutine wrapping pattern.
+                async def _mark_failed_from_stk():
+                    try:
+                        await db.wallet_transactions.update_one(
+                            {"_id": ObjectId(transaction_id)},
+                            {
+                                "$set": {
+                                    "status": "failed",
+                                    "resultDesc": stk_response.get("error", "STK Push failed"),
+                                    "updatedAt": datetime.utcnow()
+                                }
+                            }
+                        )
+                    except Exception as ex:  # pragma: no cover — defensive
+                        logger.warning(f"Background failure update failed: {ex}")
+                asyncio.create_task(_mark_failed_from_stk())
                 raise HTTPException(
                     status_code=400, 
                     detail=stk_response.get("error", "Failed to initiate payment")
@@ -788,22 +803,26 @@ async def initiate_mpesa_payment(request: InitiatePaymentRequest, user: dict = D
         except HTTPException:
             raise
         except Exception as e:
-            # If the STK call (or DB insert) failed, mark any tx that did get
-            # created as failed. transaction_id may be unset if the insert
-            # task itself errored — `locals().get` keeps this safe.
             tid = locals().get("transaction_id")
             if tid:
-                # fire-and-forget; don't block the error response on a 2nd DB hop
-                asyncio.create_task(db.wallet_transactions.update_one(
-                    {"_id": ObjectId(tid)},
-                    {
-                        "$set": {
-                            "status": "failed",
-                            "resultDesc": str(e),
-                            "updatedAt": datetime.utcnow()
-                        }
-                    }
-                ))
+                # Fire-and-forget failure mark — wrap Motor call in a real
+                # coroutine so asyncio.create_task() doesn't reject it.
+                err_msg = str(e)
+                async def _mark_failed_from_exc():
+                    try:
+                        await db.wallet_transactions.update_one(
+                            {"_id": ObjectId(tid)},
+                            {
+                                "$set": {
+                                    "status": "failed",
+                                    "resultDesc": err_msg,
+                                    "updatedAt": datetime.utcnow()
+                                }
+                            }
+                        )
+                    except Exception as ex:  # pragma: no cover — defensive
+                        logger.warning(f"Background failure mark failed: {ex}")
+                asyncio.create_task(_mark_failed_from_exc())
             logger.error(f"STK Push failed for {tx_ref}: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Payment initiation failed: {str(e)}")
             
