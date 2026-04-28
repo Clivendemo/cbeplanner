@@ -176,11 +176,20 @@ STRICT RULES:
   * extended: Activities containing keywords: practical, project, experiment, field work, assignment, research, investigation, survey, field trip, hands-on
 - If an activity contains those keywords, it MUST go to "extended", not "development"
 - Capture competencies, values, PCIs (Pertinent Contemporary Issues) per substrand
-- Capture Key Inquiry Question(s) per substrand. KICD documents present these
-  under headings like "Key Inquiry Question(s)", "Key Inquiry Questions:" or
-  the singular "Key Inquiry Question:". Extract every distinct question as a
-  separate string, preserving the trailing "?" verbatim. Do NOT paraphrase or
-  invent questions if none are present in the source.
+- Capture Key Inquiry Question(s) per substrand. KICD documents present
+  these under several headings depending on the language of the design:
+    * English: "Key Inquiry Question(s)", "Key Inquiry Questions:" or
+      the singular "Key Inquiry Question:"; sometimes abbreviated "KIQ".
+    * Kiswahili (Lugha ya Kiswahili / Fasihi ya Kiswahili / CSL):
+      "Swali Ibuka", "Maswali Ibuka", "Maswali Ibukaji",
+      "Swali Dadisi", "Maswali Dadisi", "Maswali ya Kudadisi"
+      (the Kiswahili term used in Fasihi designs is **Swali Ibuka /
+      Maswali Ibuka**).
+  Extract every distinct question as a separate string, preserving the
+  trailing "?" verbatim AND preserving the original language — do NOT
+  translate Kiswahili questions into English. Do NOT paraphrase or invent
+  questions if none are present in the source. The JSON field name stays
+  ``inquiry_questions`` regardless of source language.
 - Include assessment methods and learning resources when available
 - Estimate lesson count per substrand from the document if mentioned
 

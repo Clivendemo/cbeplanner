@@ -320,16 +320,38 @@ async def insert_curriculum_data(db, extracted: dict) -> Dict[str, int]:
                 if aid:
                     assess_ids.append(aid)
 
+            # The AI extractor returns inquiry_questions at the SUBSTRAND
+            # level (one array per substrand). The scheme generator,
+            # however, reads them off the SLO row — every SLO carries
+            # the FULL substrand-level KIQ array (option C). Pull them
+            # once here so each SLO insert below copies the same list.
+            ss_inquiry_questions = ensure_list(ss_data.get("inquiry_questions"))
+
             # Insert SLOs with populated mappings
             for slo_idx, slo_data in enumerate(ss_data.get("slos", [])):
                 slo_name = slo_data.get("name", "") if isinstance(slo_data, dict) else str(slo_data)
                 slo_desc = slo_data.get("description", slo_name) if isinstance(slo_data, dict) else slo_name
+
+                # SLO-level override: the JSON schema also allows a per-SLO
+                # inquiry_questions list. If present, prefer that; else
+                # fall back to the substrand-level list. Empty array is a
+                # legitimate "no KIQs available" signal.
+                slo_inquiry = (
+                    ensure_list(slo_data.get("inquiry_questions"))
+                    if isinstance(slo_data, dict) and slo_data.get("inquiry_questions")
+                    else ss_inquiry_questions
+                )
 
                 slo_result = await db.slos.insert_one({
                     "name": slo_name,
                     "description": slo_desc,
                     "substrandId": ss_id,
                     "order": slo_idx + 1,
+                    # Single source of truth for Key Inquiry Questions.
+                    # Stored verbatim in the source language (Kiswahili
+                    # questions stay in Kiswahili). Schemes & lesson
+                    # plans read directly from this field.
+                    "key_inquiry_questions": slo_inquiry,
                     "createdAt": datetime.utcnow(),
                 })
                 slo_id = str(slo_result.inserted_id)

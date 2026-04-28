@@ -213,7 +213,12 @@ def parse_csv_content(content: str) -> CurriculumImportPreview:
             'key_inquiry_questions', 'Key Inquiry Questions',
             'key_inquiry_question', 'Key Inquiry Question',
             'Key Inquiry Question(s)', 'Key Inquiry Question (s)',
-            'KIQ', 'KIQs', 'kiq'
+            'KIQ', 'KIQs', 'kiq',
+            # Kiswahili equivalents (Lugha ya Kiswahili / Fasihi ya
+            # Kiswahili / CSL designs).
+            'swali_ibuka', 'Swali Ibuka', 'Maswali Ibuka',
+            'maswali_ibuka', 'Maswali Ibukaji', 'maswali_ibukaji',
+            'Swali Dadisi', 'Maswali Dadisi', 'Maswali ya Kudadisi',
         ]
     }
     
@@ -592,9 +597,26 @@ def extract_inquiry_questions_from_text(text: str) -> List[str]:
     Empty list if no section is found.
     """
     section = re.search(
-        r'Key\s+Inquiry\s+Questions?\s*\(?s?\)?[\s:\.\-]*'
+        # Heading variants: English ("Key Inquiry Question(s)", "KIQ") and
+        # Kiswahili ("Swali Ibuka", "Maswali Ibuka", "Maswali Ibukaji",
+        # "Swali Dadisi", "Maswali Dadisi", "Maswali ya Kudadisi"). The
+        # Kiswahili term used in Fasihi ya Kiswahili designs is
+        # **Swali Ibuka / Maswali Ibuka**.
+        r'(?:'
+        r'Key\s+Inquiry\s+Questions?\s*\(?s?\)?'
+        r'|KIQs?'
+        r'|Maswali\s+Ibukaji?'
+        r'|Maswali\s+Ibuka'
+        r'|Swali\s+Ibuka'
+        r'|Maswali\s+ya\s+Kudadisi'
+        r'|Maswali\s+Dadisi'
+        r'|Swali\s+Dadisi'
+        r')'
+        r'[\s:\.\-]*'
         r'(.+?)'
-        r'(?:Core\s+Competen|Values\s*[:\.]|Pertinent|Link\s+to|Assessment|Learning\s+Resources|Suggested\s+Learning|Strand|Sub[\s-]?Strand|---PAGE---|$)',
+        r'(?:Core\s+Competen|Values\s*[:\.]|Pertinent|Link\s+to|Assessment|'
+        r'Learning\s+Resources|Suggested\s+Learning|Strand|Sub[\s-]?Strand|'
+        r'Maadili|Stadi\s+za|Umilisi|Nyenzo\s+za|---PAGE---|$)',
         text, re.DOTALL | re.IGNORECASE
     )
     if not section:
