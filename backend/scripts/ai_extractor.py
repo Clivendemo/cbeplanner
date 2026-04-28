@@ -12,7 +12,9 @@ Responsibility boundary:
 import os
 import json
 import asyncio
+import hashlib
 import re
+from pathlib import Path
 from dotenv import load_dotenv
 from google import genai
 
@@ -20,6 +22,139 @@ from google import genai
 from grade_utils import normalize_grade_name
 
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
+
+
+# ---------------------------------------------------------------------------
+# Checkpointing — survive 503s / network blips during multi-chunk extraction.
+# ---------------------------------------------------------------------------
+#
+# A long PDF (≥18 KB of text) is split into 15 KB chunks, and each chunk is a
+# separate Gemini call. If chunk 7 of 12 hits a transient 503, we don't want
+# to re-pay the cost of chunks 1-6. The checkpoint file persists per-chunk
+# results to disk after each success; on restart, we skip what's already
+# done and only re-call Gemini for the remainder. The file is deleted once
+# the extraction completes successfully.
+#
+# Checkpoint location is configurable via CURRICULUM_CHECKPOINT_DIR.
+
+CHECKPOINT_DIR = Path(
+    os.environ.get("CURRICULUM_CHECKPOINT_DIR")
+    or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "checkpoints")
+)
+
+
+def _checkpoint_slug(value: str) -> str:
+    """Filesystem-safe slug for filenames: lowercase, alphanum + dashes."""
+    if not value:
+        return "unknown"
+    slug = re.sub(r"[^a-zA-Z0-9]+", "-", value.strip()).strip("-").lower()
+    return slug or "unknown"
+
+
+def _checkpoint_path(subject_hint: str, grade_hint: str) -> Path:
+    """Build the checkpoint file path for a (subject, grade) pair."""
+    CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
+    return CHECKPOINT_DIR / f"checkpoint_{_checkpoint_slug(subject_hint)}_{_checkpoint_slug(grade_hint)}.json"
+
+
+def _text_fingerprint(text: str) -> str:
+    """Short hash of the source text — invalidates the checkpoint when the
+    underlying PDF changes between runs (e.g. user re-uploads a corrected
+    version)."""
+    return hashlib.sha256(text.encode("utf-8", errors="ignore")).hexdigest()[:16]
+
+
+def _load_checkpoint(path: Path, expected_fingerprint: str, expected_chunk_count: int) -> dict:
+    """Load a checkpoint if it matches the current text + chunk count.
+
+    Returns an empty fresh-state dict if the file is missing, corrupt, or
+    stale. Stale checkpoints are deleted so the run starts clean.
+    """
+    fresh = {
+        "fingerprint": expected_fingerprint,
+        "chunk_count": expected_chunk_count,
+        "completed_chunks": {},   # {"<index>": {<gemini result dict>}}
+        "detected_grade": None,
+        "subject_name": "",
+    }
+    if not path.exists():
+        return fresh
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        # Corrupt — treat as missing and start fresh
+        try:
+            path.unlink()
+        except OSError:
+            pass
+        return fresh
+
+    if (
+        data.get("fingerprint") != expected_fingerprint
+        or data.get("chunk_count") != expected_chunk_count
+    ):
+        # Source PDF or chunking changed — invalid resume target
+        try:
+            path.unlink()
+        except OSError:
+            pass
+        return fresh
+
+    # Make sure shape matches what the rest of the code expects
+    data.setdefault("completed_chunks", {})
+    data.setdefault("detected_grade", None)
+    data.setdefault("subject_name", "")
+    return data
+
+
+def _save_checkpoint(path: Path, state: dict) -> None:
+    """Atomic write — temp file + rename, so a crash mid-write doesn't
+    corrupt the checkpoint."""
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
+    tmp.replace(path)
+
+
+def _delete_checkpoint(path: Path) -> None:
+    """Best-effort cleanup. Missing file is fine."""
+    try:
+        path.unlink()
+    except FileNotFoundError:
+        pass
+    except OSError:
+        # Don't fail the extraction over a stuck file lock
+        pass
+
+
+async def _call_gemini_with_retry(
+    text: str,
+    suffix: str,
+    *,
+    max_attempts: int = 3,
+    base_delay: float = 2.0,
+) -> dict:
+    """Wrap ``extract_with_gemini`` with exponential-backoff retries.
+
+    Retries on ANY exception (503s from the Gemini service, transient
+    network errors, momentary JSON-repair failures). Backoff: 2s, 4s, 8s.
+    Re-raises the last exception when ``max_attempts`` is exhausted.
+    """
+    last_exc: Exception | None = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return await extract_with_gemini(text, suffix)
+        except Exception as exc:  # noqa: BLE001 — intentional: retry any failure
+            last_exc = exc
+            if attempt >= max_attempts:
+                break
+            delay = base_delay * (2 ** (attempt - 1))
+            print(
+                f"    Gemini call failed (attempt {attempt}/{max_attempts}): "
+                f"{exc!s}. Retrying in {delay:.0f}s…"
+            )
+            await asyncio.sleep(delay)
+    assert last_exc is not None  # for type-checkers; loop guarantees this
+    raise last_exc
 
 
 # ---------------------------------------------------------------------------
@@ -212,14 +347,44 @@ async def extract_with_gemini_chunked(
     chunks = _split_into_chunks(text, max_chars=15000)
     print(f"  Large PDF detected - splitting into {len(chunks)} chunks")
 
-    all_strands = []
-    detected_grade = None    # First confident detection wins
-    subject_name = subject_hint
+    # ── Checkpoint setup ────────────────────────────────────────────────
+    # Persist per-chunk results so a 503 / network blip mid-extraction
+    # only costs us the failing chunk, not the whole document.
+    fingerprint = _text_fingerprint(text)
+    ckpt_path = _checkpoint_path(subject_hint, grade_hint)
+    state = _load_checkpoint(ckpt_path, fingerprint, len(chunks))
+
+    completed: dict = state["completed_chunks"]
+    detected_grade = state.get("detected_grade")    # First confident detection wins
+    subject_name = state.get("subject_name") or subject_hint
+
+    if completed:
+        print(
+            f"  Resuming from checkpoint: {len(completed)}/{len(chunks)} chunks "
+            f"already extracted (file: {ckpt_path.name})"
+        )
 
     for i, chunk in enumerate(chunks):
+        key = str(i)
+        if key in completed:
+            # Already done in a prior run — replay grade detection so the
+            # priority order is preserved if chunk 1 was the one cached.
+            cached = completed[key]
+            chunk_grade = cached.get("grade")
+            if chunk_grade and not detected_grade:
+                normalized = normalize_grade_name(chunk_grade)
+                if normalized:
+                    detected_grade = normalized
+                    state["detected_grade"] = detected_grade
+            if cached.get("subject_name") and not state.get("subject_name"):
+                subject_name = cached["subject_name"]
+                state["subject_name"] = subject_name
+            print(f"  Chunk {i+1}/{len(chunks)}: skipped (cached)")
+            continue
+
         print(f"  Extracting chunk {i+1}/{len(chunks)}...")
         hint = f"\nContext: This is part {i+1} of {len(chunks)} from {subject_hint}.\n"
-        result = await extract_with_gemini(hint + chunk, f"{subject_hint}_{i}")
+        result = await _call_gemini_with_retry(hint + chunk, f"{subject_hint}_{i}")
 
         # Grade: keep the first non-null detection, don't let later chunks overwrite
         chunk_grade = result.get("grade")
@@ -232,7 +397,19 @@ async def extract_with_gemini_chunked(
         if result.get("subject_name"):
             subject_name = result["subject_name"]
 
-        all_strands.extend(result.get("strands", []))
+        # Persist this chunk's result before moving on. If the next chunk
+        # fails, the next run will skip everything up to and including
+        # this index.
+        completed[key] = result
+        state["completed_chunks"] = completed
+        state["detected_grade"] = detected_grade
+        state["subject_name"] = subject_name
+        _save_checkpoint(ckpt_path, state)
+
+    # All chunks succeeded — flatten strands in original chunk order.
+    all_strands: list = []
+    for i in range(len(chunks)):
+        all_strands.extend(completed[str(i)].get("strands", []))
 
     merged = _merge_strands(all_strands)
 
@@ -241,6 +418,11 @@ async def extract_with_gemini_chunked(
         "subject_name": subject_name,
         "strands": merged,
     }
+
+    # Successful end-to-end — clean up the checkpoint so the next run
+    # of the same (subject, grade) pair starts fresh.
+    _delete_checkpoint(ckpt_path)
+
     return _post_process_grade(final, grade_hint)
 
 
