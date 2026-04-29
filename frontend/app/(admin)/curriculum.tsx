@@ -1483,6 +1483,28 @@ export default function Curriculum() {
             {item.order !== undefined && (
               <Text style={styles.itemMeta}>Order: {item.order}</Text>
             )}
+            {/* KIQ status badge — only on SLO rows so admins can see at a
+                glance which SLOs already have Key Inquiry Questions stored
+                and which need to be filled in via the Edit modal. */}
+            {selectedEntity === 'slos' && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                <Ionicons
+                  name={Array.isArray(item.key_inquiry_questions) && item.key_inquiry_questions.length > 0 ? 'help-circle' : 'help-circle-outline'}
+                  size={12}
+                  color={Array.isArray(item.key_inquiry_questions) && item.key_inquiry_questions.length > 0 ? '#10B981' : '#9CA3AF'}
+                />
+                <Text style={{
+                  fontSize: 11,
+                  marginLeft: 4,
+                  color: Array.isArray(item.key_inquiry_questions) && item.key_inquiry_questions.length > 0 ? '#10B981' : '#9CA3AF',
+                  fontWeight: '600',
+                }}>
+                  {Array.isArray(item.key_inquiry_questions) && item.key_inquiry_questions.length > 0
+                    ? `${item.key_inquiry_questions.length} KIQ${item.key_inquiry_questions.length === 1 ? '' : 's'}`
+                    : 'No KIQs — tap Edit to add'}
+                </Text>
+              </View>
+            )}
           </View>
           
           {canNavigate && !bulkEditMode && (
@@ -1869,33 +1891,47 @@ export default function Curriculum() {
               )}
 
               {/* Form Fields */}
+              {/* For SLOs: render the Key Inquiry Questions textarea FIRST so
+                  it's prominently visible — this is the manual-entry surface
+                  admins use to populate ``slos.key_inquiry_questions`` for
+                  subjects whose KIQs weren't captured by the curriculum
+                  extractor. */}
+              {selectedEntity === 'slos' && (
+                <View
+                  style={[
+                    styles.inputGroup,
+                    {
+                      backgroundColor: '#F0FDF4',
+                      borderWidth: 1,
+                      borderColor: '#10B981',
+                      borderRadius: 8,
+                      padding: 12,
+                      marginBottom: 16,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.inputLabel, { color: '#065F46' }]}>
+                    Key Inquiry Questions{editingItem ? '' : ' (optional)'}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: '#047857', marginBottom: 6 }}>
+                    One question per line. Leave blank if the curriculum design has none for this SLO.
+                  </Text>
+                  <TextInput
+                    style={[styles.input, styles.textArea, { minHeight: 100, backgroundColor: '#FFFFFF' }]}
+                    value={formData['key_inquiry_questions']?.toString() || ''}
+                    onChangeText={(text) => setFormData({ ...formData, key_inquiry_questions: text })}
+                    placeholder={'e.g.\nWhy is this skill important?\nHow can it be applied in everyday life?'}
+                    multiline
+                    numberOfLines={4}
+                    data-testid="admin-slo-kiq-input"
+                    testID="admin-slo-kiq-input"
+                  />
+                </View>
+              )}
+
               {ENTITY_CONFIG[selectedEntity].fields
-                .filter(f => !f.includes('activities')) // Filter out activity fields for regular modal
+                .filter(f => !f.includes('activities') && f !== 'key_inquiry_questions') // Filter out activity fields and KIQ (rendered above)
                 .map((field) => {
-                  // Special case: Key Inquiry Questions on SLOs are stored
-                  // as a string array. Render a multi-line textarea, one
-                  // question per line, with a hint so admins know the
-                  // format expected by the seed contract.
-                  if (field === 'key_inquiry_questions') {
-                    return (
-                      <View key={field} style={styles.inputGroup}>
-                        <Text style={styles.inputLabel}>Key Inquiry Questions</Text>
-                        <Text style={{ fontSize: 11, color: '#5A5A7A', marginBottom: 6 }}>
-                          One question per line. Leave blank if the curriculum design has none for this SLO.
-                        </Text>
-                        <TextInput
-                          style={[styles.input, styles.textArea, { minHeight: 100 }]}
-                          value={formData[field]?.toString() || ''}
-                          onChangeText={(text) => setFormData({ ...formData, [field]: text })}
-                          placeholder={'e.g.\nWhy is this skill important?\nHow can it be applied in everyday life?'}
-                          multiline
-                          numberOfLines={4}
-                          data-testid="admin-slo-kiq-input"
-                          testID="admin-slo-kiq-input"
-                        />
-                      </View>
-                    );
-                  }
                   return (
                     <View key={field} style={styles.inputGroup}>
                       <Text style={styles.inputLabel}>
