@@ -158,6 +158,11 @@ export default function Curriculum() {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [bulkEditModalVisible, setBulkEditModalVisible] = useState(false);
   const [bulkEditFormData, setBulkEditFormData] = useState<Record<string, any>>({});
+
+  // KIQ coverage stats per substrand — populated when navigating into a
+  // strand so each substrand row can show how many of its SLOs are
+  // missing Key Inquiry Questions. Map: { [substrandId]: { total, missing } }.
+  const [substrandKiqStats, setSubstrandKiqStats] = useState<Record<string, { total: number; missing: number }>>({});
   
   // Pull-to-refresh state
   const [refreshing, setRefreshing] = useState(false);
@@ -407,11 +412,26 @@ export default function Curriculum() {
     setCurrentParentId(strand.id);
     setSelectedEntity('substrands');
     setLoading(true);
+    // Reset stats — they're scoped to the strand we're entering.
+    setSubstrandKiqStats({});
     try {
       const headers = await getHeaders();
       const response = await axios.get(`${BACKEND_URL}/api/admin/substrands?strandId=${strand.id}`, { headers });
       if (response.data.success) {
         setData(response.data.substrands);
+      }
+      // Fetch KIQ coverage stats in parallel — best-effort, doesn't block
+      // the list from rendering. Used by the substrand row badge.
+      try {
+        const statsRes = await axios.get(
+          `${BACKEND_URL}/api/admin/strands/${strand.id}/kiq-stats`,
+          { headers },
+        );
+        if (statsRes.data?.success) {
+          setSubstrandKiqStats(statsRes.data.stats || {});
+        }
+      } catch {
+        // non-fatal — list still renders, badge just won't show
       }
     } catch (error) {
       
@@ -1482,6 +1502,30 @@ export default function Curriculum() {
             )}
             {item.order !== undefined && (
               <Text style={styles.itemMeta}>Order: {item.order}</Text>
+            )}
+            {/* Substrand KIQ-coverage badge — red when at least one of
+                the substrand's SLOs is missing Key Inquiry Questions, so
+                admins can spot weak substrands without drilling all the
+                way down to each SLO row. Hidden when stats haven't loaded
+                yet or when the substrand has zero SLOs. */}
+            {selectedEntity === 'substrands' && substrandKiqStats[item.id] && substrandKiqStats[item.id].total > 0 && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                <Ionicons
+                  name={substrandKiqStats[item.id].missing > 0 ? 'alert-circle' : 'checkmark-circle'}
+                  size={12}
+                  color={substrandKiqStats[item.id].missing > 0 ? '#DC2626' : '#10B981'}
+                />
+                <Text style={{
+                  fontSize: 11,
+                  marginLeft: 4,
+                  color: substrandKiqStats[item.id].missing > 0 ? '#DC2626' : '#10B981',
+                  fontWeight: '600',
+                }}>
+                  {substrandKiqStats[item.id].missing > 0
+                    ? `${substrandKiqStats[item.id].missing} of ${substrandKiqStats[item.id].total} SLOs missing KIQs`
+                    : `All ${substrandKiqStats[item.id].total} SLOs have KIQs`}
+                </Text>
+              </View>
             )}
             {/* KIQ status badge — only on SLO rows so admins can see at a
                 glance which SLOs already have Key Inquiry Questions stored

@@ -1299,6 +1299,58 @@ async def get_substrands(strandId: str, user: dict = Depends(verify_token)):
     logger.info(f"[SUBSTRANDS] Found {len(substrands)} substrands for strandId: {strandId}")
     return {"success": True, "substrands": [serialize_doc(s) for s in substrands]}
 
+
+@api_router.get("/admin/strands/{strandId}/kiq-stats")
+async def admin_strand_kiq_stats(strandId: str, user: dict = Depends(verify_admin)):
+    """Return per-substrand SLO counts + how many SLOs are missing KIQs.
+
+    Used by the admin Curriculum screen to render a red 'N of M SLOs
+    missing KIQs' badge on each substrand row, so admins can spot weak
+    substrands without drilling down to each SLO. One batch call replaces
+    what would otherwise be N+1 ``/api/slos?substrandId=...`` requests.
+    """
+    substrand_ids = [
+        str(s["_id"]) async for s in db.substrands.find(
+            {"strandId": strandId}, {"_id": 1}
+        )
+    ]
+    if not substrand_ids:
+        return {"success": True, "stats": {}}
+
+    # Aggregate SLO totals + KIQ-missing counts grouped by substrandId.
+    pipeline = [
+        {"$match": {"substrandId": {"$in": substrand_ids}}},
+        {
+            "$group": {
+                "_id": "$substrandId",
+                "total": {"$sum": 1},
+                "missing": {
+                    "$sum": {
+                        "$cond": [
+                            {
+                                "$or": [
+                                    # Field absent or null
+                                    {"$eq": [{"$ifNull": ["$key_inquiry_questions", []]}, []]},
+                                    # Field present but empty array
+                                    {"$eq": [{"$size": {"$ifNull": ["$key_inquiry_questions", []]}}, 0]},
+                                ]
+                            },
+                            1,
+                            0,
+                        ]
+                    }
+                },
+            }
+        },
+    ]
+    rows = await db.slos.aggregate(pipeline).to_list(1000)
+    stats = {row["_id"]: {"total": row["total"], "missing": row["missing"]} for row in rows}
+    # Substrands with zero SLOs don't appear in the aggregation; surface
+    # them with total=0 so the UI can render a neutral 'No SLOs yet' state.
+    for sid in substrand_ids:
+        stats.setdefault(sid, {"total": 0, "missing": 0})
+    return {"success": True, "stats": stats}
+
 @api_router.get("/slos")
 async def get_slos(substrandId: str, user: dict = Depends(verify_token)):
     # NO SORTING - preserve curriculum teaching order (insertion order)
