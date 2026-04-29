@@ -299,7 +299,44 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                 parent_slo = parent_slos[idx % len(parent_slos)]
                 parent_slo_id = str(parent_slo["_id"])
 
-                slo_text = slot["outcome"] if (slot and slot.get("outcome")) else parent_slo["name"]
+                # Single-lesson substrand with multiple SLOs: combine ALL of
+                # them into one bulleted list so the scheme row reflects the
+                # full lesson scope. Only the SLO text (and KIQs / mappings)
+                # change shape — everything downstream (sloId pointer,
+                # ordering, lessonInSubstrand counter) stays untouched so
+                # checkpointing and per-SLO download flows are unaffected.
+                combine_all_slos = num_lessons == 1 and len(parent_slos) > 1
+
+                if combine_all_slos:
+                    # Build "By the end of the lesson the learner should be
+                    # able to:\n- …\n- …" with bodies stripped of any
+                    # existing preamble. We let format_slo_with_prefix
+                    # append the preamble later from the merged body, but
+                    # because we want bullets we pre-format here and bypass
+                    # the prefix step in the lessons.append() call below
+                    # (signalled via the leading newline in the body).
+                    bullets = []
+                    for s in parent_slos:
+                        body = _format_slo_for_scheme(s.get("name", ""), is_kiswahili)
+                        if body:
+                            bullets.append(f"- {body}")
+                    if is_kiswahili:
+                        slo_text = (
+                            "Kufikia mwisho wa somo, mwanafunzi aweze:\n"
+                            + "\n".join(bullets)
+                        )
+                    else:
+                        slo_text = (
+                            "By the end of the lesson the learner should be able to:\n"
+                            + "\n".join(bullets)
+                        )
+                    # Skip the standard prefix logic later — flag with
+                    # leading newline that the slo string is already
+                    # fully formatted.
+                    slo_text_pre_formatted = True
+                else:
+                    slo_text = slot["outcome"] if (slot and slot.get("outcome")) else parent_slo["name"]
+                    slo_text_pre_formatted = False
 
                 inquiry_q = ""
                 if slot and slot.get("key_inquiry_question"):
@@ -327,6 +364,32 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                                 if doc:
                                     pcis.append(doc["name"])
 
+                # When combining all SLOs into one row, also union the
+                # competency / value / PCI mappings of the *other* SLOs so
+                # the row reflects the full coverage of the lesson.
+                if combine_all_slos:
+                    seen_c = {c.lower() for c in competencies if c}
+                    seen_v = {v.lower() for v in values_list if v}
+                    seen_p = {p.lower() for p in pcis if p}
+                    for other in parent_slos:
+                        if str(other["_id"]) == parent_slo_id:
+                            continue
+                        m = await db.slo_mappings.find_one({"sloId": str(other["_id"])})
+                        if not m:
+                            continue
+                        for cid in m.get("competencyIds", []):
+                            doc = await db.competencies.find_one({"_id": ObjectId(cid)})
+                            if doc and doc["name"].lower() not in seen_c:
+                                competencies.append(doc["name"]); seen_c.add(doc["name"].lower())
+                        for vid in m.get("valueIds", []):
+                            doc = await db.values.find_one({"_id": ObjectId(vid)})
+                            if doc and doc["name"].lower() not in seen_v:
+                                values_list.append(doc["name"]); seen_v.add(doc["name"].lower())
+                        for pid in m.get("pciIds", []):
+                            doc = await db.pcis.find_one({"_id": ObjectId(pid)})
+                            if doc and doc["name"].lower() not in seen_p:
+                                pcis.append(doc["name"]); seen_p.add(doc["name"].lower())
+
                 raw_resources = (slot.get("resources") if slot else None) or []
                 if raw_resources:
                     formatted_resources = [format_resource_display(r) for r in raw_resources]
@@ -349,6 +412,7 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                     "substrand": substrand["name"],
                     "sloId": parent_slo_id,
                     "slo": slo_text,
+                    "sloPreFormatted": slo_text_pre_formatted,
                     "sloDescription": parent_slo.get("description", parent_slo["name"]),
                     "lessonInSubstrand": idx + 1,
                     "totalLessonsInSubstrand": num_lessons,
@@ -366,7 +430,19 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                     # list here so any historical fragments ("Je", "Kwa nini")
                     # that slipped through the AI extractor never make it into
                     # the rendered scheme — the cell stays blank instead.
-                    "_sloInquiries": clean_kiq_list(parent_slo.get("key_inquiry_questions")),
+                    #
+                    # Single-lesson + multi-SLO substrand: union the KIQs
+                    # across every SLO in the substrand so the row reflects
+                    # the full scope of the merged outcomes.
+                    "_sloInquiries": (
+                        clean_kiq_list([
+                            q
+                            for s in parent_slos
+                            for q in (s.get("key_inquiry_questions") or [])
+                        ])
+                        if combine_all_slos
+                        else clean_kiq_list(parent_slo.get("key_inquiry_questions"))
+                    ),
                 })
 
         if not curriculum_content:
@@ -486,9 +562,19 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                         "isDouble": is_double,
                         "strand": content["strand"],
                         "substrand": content["substrand"],
-                        "slo": format_slo_with_prefix(
-                            _format_slo_for_scheme(content["slo"], is_kiswahili),
-                            is_kiswahili,
+                        # If the route already pre-formatted the SLO into a
+                        # bulleted list (single-lesson substrand with
+                        # multiple SLOs), pass it through unchanged so the
+                        # bullets and preamble render as-built. Otherwise
+                        # apply the standard "By the end of the lesson…"
+                        # prefix.
+                        "slo": (
+                            content["slo"]
+                            if content.get("sloPreFormatted")
+                            else format_slo_with_prefix(
+                                _format_slo_for_scheme(content["slo"], is_kiswahili),
+                                is_kiswahili,
+                            )
                         ),
                         "lessonInSubstrand": content.get("lessonInSubstrand", 1),
                         "totalLessonsInSubstrand": content.get("totalLessonsInSubstrand", 1),

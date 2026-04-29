@@ -467,7 +467,11 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
             Paragraph(lsn_display, styles['TableCell']),
             _cell(strand_display, max_chars=120),
             _cell(substrand_display, max_chars=120),
-            _cell(slo, max_chars=280),
+            # SLO can be a multi-bullet list when a single-lesson substrand
+            # has multiple parent SLOs (the route concatenates them with
+            # "- bullets"). Allow more room than the other cells so a
+            # 4-bullet list still fits cleanly without truncation.
+            _cell(slo, max_chars=600),
             _cell(inquiry, max_chars=240),
             _cell(experiences, max_chars=320, max_items=3),
             _cell(resources, max_chars=200, max_items=4),
