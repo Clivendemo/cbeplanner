@@ -214,6 +214,13 @@ def create_scheme_styles():
     styles.add(ParagraphStyle(
         name='TableCell', parent=styles['Normal'],
         fontSize=10, textColor=colors.black, leading=12, alignment=TA_LEFT,
+        # ``splitLongWords`` lets ReportLab break a single absurdly long
+        # token at any character, and ``wordWrap='LTR'`` makes every line
+        # break candidate explicit. Together they prevent the
+        # "Flowable too large on page" crash on schemes whose SLOs or
+        # learning-experience strings happen to contain a long word with
+        # no whitespace (URLs, hyphenated KICD descriptors, etc.).
+        splitLongWords=1, wordWrap='LTR',
     ))
     styles.add(ParagraphStyle(
         name='TableHeader', parent=styles['Normal'],
@@ -354,6 +361,32 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
             return ''
         return ' '.join(cleaned.split())
 
+    # Cell-content cap: a single Paragraph that is *taller than a page*
+    # crashes ReportLab with "Flowable too large on page" because rows are
+    # atomic. We cap free-form cells (SLO, KIQ, learning experiences,
+    # resources, assessment) at a safe character budget and convert any
+    # newlines into ``<br/>`` so the resulting Paragraph wraps cleanly and
+    # is splittable across lines (rows are still atomic, but capped cells
+    # never exceed the row-height ceiling).
+    _MAX_CELL_CHARS = 800
+
+    def _cell(value, *, max_chars: int = _MAX_CELL_CHARS, max_items: int | None = None) -> Paragraph:
+        if value is None or value == '':
+            return Paragraph('', styles['TableCell'])
+        if isinstance(value, list):
+            items = [str(v).strip() for v in value if v is not None and str(v).strip()]
+            if max_items is not None:
+                items = items[:max_items]
+            text = '<br/>'.join(items)
+        else:
+            text = str(value)
+        # Replace literal newlines with HTML breaks so they render but
+        # don't force ReportLab to treat them as separate Flowables.
+        text = text.replace('\r\n', '\n').replace('\r', '\n').replace('\n', '<br/>')
+        if len(text) > max_chars:
+            text = text[: max_chars - 1].rstrip() + '…'
+        return Paragraph(text, styles['TableCell'])
+
     # Content rows with week / strand / substrand deduplication
     # Also: merge consecutive break rows of the same type into a single row,
     # keep the week column visible, span columns 2-10 for the break name.
@@ -432,13 +465,13 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
         row = [
             Paragraph(week_display, styles['TableCell']),
             Paragraph(lsn_display, styles['TableCell']),
-            Paragraph(strand_display, styles['TableCell']),
-            Paragraph(substrand_display, styles['TableCell']),
-            Paragraph(slo, styles['TableCell']),
-            Paragraph(inquiry, styles['TableCell']),
-            Paragraph(experiences if isinstance(experiences, str) else '\n'.join(experiences[:3]) if experiences else '', styles['TableCell']),
-            Paragraph(resources if isinstance(resources, str) else ', '.join(resources[:4]) if resources else '', styles['TableCell']),
-            Paragraph(assessment if isinstance(assessment, str) else ', '.join(assessment[:2]) if assessment else '', styles['TableCell']),
+            _cell(strand_display, max_chars=120),
+            _cell(substrand_display, max_chars=120),
+            _cell(slo, max_chars=280),
+            _cell(inquiry, max_chars=240),
+            _cell(experiences, max_chars=320, max_items=3),
+            _cell(resources, max_chars=200, max_items=4),
+            _cell(assessment, max_chars=160, max_items=2),
             Paragraph('', styles['TableCell'])  # Reflection column (empty for teacher to fill)
         ]
         table_data.append(row)
