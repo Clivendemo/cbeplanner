@@ -26,6 +26,8 @@ from typing import Any, Dict, List, Optional
 import pdfplumber
 from bson import ObjectId
 
+from scheme_generator import clean_kiq_list
+
 logger = logging.getLogger("pipeline")
 
 # ---------------------------------------------------------------------------
@@ -325,7 +327,9 @@ async def insert_curriculum_data(db, extracted: dict) -> Dict[str, int]:
             # however, reads them off the SLO row — every SLO carries
             # the FULL substrand-level KIQ array (option C). Pull them
             # once here so each SLO insert below copies the same list.
-            ss_inquiry_questions = ensure_list(ss_data.get("inquiry_questions"))
+            # ``clean_kiq_list`` drops fragments like a bare "Je," that
+            # the AI sometimes lifts from soft-wrapped Fasihi PDFs.
+            ss_inquiry_questions = clean_kiq_list(ss_data.get("inquiry_questions"))
 
             # Insert SLOs with populated mappings
             for slo_idx, slo_data in enumerate(ss_data.get("slos", [])):
@@ -337,7 +341,7 @@ async def insert_curriculum_data(db, extracted: dict) -> Dict[str, int]:
                 # fall back to the substrand-level list. Empty array is a
                 # legitimate "no KIQs available" signal.
                 slo_inquiry = (
-                    ensure_list(slo_data.get("inquiry_questions"))
+                    clean_kiq_list(slo_data.get("inquiry_questions"))
                     if isinstance(slo_data, dict) and slo_data.get("inquiry_questions")
                     else ss_inquiry_questions
                 )

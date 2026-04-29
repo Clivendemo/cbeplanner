@@ -14,6 +14,81 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 
+# ---------------------------------------------------------------------------
+# Key Inquiry Question (KIQ / Swali Ibuka / Maswali Dadisi) sanitisation
+# ---------------------------------------------------------------------------
+#
+# Some KICD PDFs wrap a Kiswahili KIQ across two lines in the source layout
+# (e.g. "Je,\n  nini umuhimu wa fasihi…?"). Earlier renderer logic split on
+# '\n' and kept only the first physical line, so the user saw a bare "Je,"
+# in the Swali Ibuka column. We also occasionally see the AI extractor pick
+# up an isolated question particle ("Je", "Kwa nini") with no follow-up
+# clause. ``_is_meaningful_kiq`` rejects those fragments so the cell stays
+# blank instead of misleading the teacher.
+
+_KIQ_PARTICLES = {
+    # Kiswahili question particles that, when alone, are NOT a question.
+    'je', 'je,', 'je.', 'je?', 'je:',
+    'kwa', 'kwa nini', 'kwa nini?',
+    'vipi', 'vipi?',
+    'nini', 'nini?',
+    'nani', 'nani?',
+    'lini', 'lini?',
+    'wapi', 'wapi?',
+    'gani', 'gani?',
+    'ipi', 'ipi?', 'yapi', 'yapi?',
+    # English question stems likewise meaningless on their own
+    'what', 'why', 'how', 'when', 'where', 'who', 'which',
+    'what?', 'why?', 'how?', 'when?', 'where?', 'who?', 'which?',
+}
+
+
+def _is_meaningful_kiq(text: str) -> bool:
+    """True iff `text` looks like a real, complete inquiry question.
+
+    A meaningful KIQ has at least 3 words (so "Je nini umuhimu" passes but
+    "Je nini" doesn't), spans at least 12 characters once whitespace is
+    collapsed, and is not just a question particle in isolation.
+    """
+    if not text:
+        return False
+    collapsed = ' '.join(str(text).split()).strip()
+    if not collapsed:
+        return False
+    if collapsed.lower().rstrip('.,;: ?!') in _KIQ_PARTICLES:
+        return False
+    if len(collapsed) < 12:
+        return False
+    if len(collapsed.split()) < 3:
+        return False
+    return True
+
+
+def clean_kiq_list(items) -> List[str]:
+    """Return a de-duplicated list of meaningful KIQs from a raw input.
+
+    Accepts a list, a single string, or None. Drops fragments that fail
+    ``_is_meaningful_kiq`` and collapses internal whitespace so KIQs that
+    were soft-wrapped in the source PDF render as single-line cells.
+    """
+    if not items:
+        return []
+    if isinstance(items, str):
+        items = [items]
+    out: List[str] = []
+    seen = set()
+    for raw in items:
+        cleaned = ' '.join(str(raw).split()).strip()
+        if not _is_meaningful_kiq(cleaned):
+            continue
+        key = cleaned.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(cleaned)
+    return out
+
+
 # Default lessons per week based on subject and grade level
 LESSONS_PER_WEEK_CONFIG = {
     # Lower Primary (Grade 1-3)
@@ -255,13 +330,29 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
     header_row = [Paragraph(h, styles['TableHeader']) for h in headers]
     table_data.append(header_row)
     
-    # Helper: pick first inquiry question from list/string
+    # Helper: pick first inquiry question from list/string.
+    # KIQs may arrive as either a list (preferred — one entry per question)
+    # or a single string. We must NOT split a single-string KIQ on newlines:
+    # KICD designs often wrap a question across two lines in the source PDF,
+    # so a Kiswahili KIQ like "Je,\nKwa nini fasihi ni muhimu?" must render
+    # as the full question — not just "Je," (the bug a user reported as a
+    # bare "Je" appearing in the Swali Ibuka column). If the upstream array
+    # is empty we still return '' so the cell stays blank.
     def _single_inquiry(val) -> str:
         if not val:
             return ''
         if isinstance(val, list):
-            return str(val[0]).strip() if val else ''
-        return str(val).strip().split('\n')[0].strip()
+            for q in val:
+                cleaned = str(q).strip()
+                if _is_meaningful_kiq(cleaned):
+                    # Collapse internal whitespace so wrapped source lines
+                    # render as one continuous question in the PDF cell.
+                    return ' '.join(cleaned.split())
+            return ''
+        cleaned = str(val).strip()
+        if not _is_meaningful_kiq(cleaned):
+            return ''
+        return ' '.join(cleaned.split())
 
     # Content rows with week / strand / substrand deduplication
     # Also: merge consecutive break rows of the same type into a single row,

@@ -26,7 +26,7 @@ from app.deps import (
 from scheme_generator import (
     generate_scheme_pdf, get_lessons_per_week, get_assessment_for_slo,
     generate_learning_experiences, generate_learning_resources,
-    format_slo_with_prefix,
+    format_slo_with_prefix, clean_kiq_list,
 )
 from slot_service import format_resource_display
 
@@ -362,8 +362,11 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                     # NEW: questions stored directly on the SLO doc itself
                     # (option C — every SLO under a substrand carries the full
                     # KIQ array for that substrand). This is the new authoritative
-                    # source the scheme generator reads from.
-                    "_sloInquiries": list(parent_slo.get("key_inquiry_questions") or []),
+                    # source the scheme generator reads from. We sanitise the
+                    # list here so any historical fragments ("Je", "Kwa nini")
+                    # that slipped through the AI extractor never make it into
+                    # the rendered scheme — the cell stays blank instead.
+                    "_sloInquiries": clean_kiq_list(parent_slo.get("key_inquiry_questions")),
                 })
 
         if not curriculum_content:
