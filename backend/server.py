@@ -1287,15 +1287,19 @@ async def get_subjects(gradeId: str, user: dict = Depends(verify_token)):
 
 @api_router.get("/strands")
 async def get_strands(subjectId: str, user: dict = Depends(verify_token)):
-    # NO SORTING - preserve curriculum teaching order (insertion order)
-    strands = await db.strands.find({"subjectId": subjectId}).to_list(100)
+    # Sort by `order` ASC with `_id` (insertion timestamp) as tiebreaker.
+    # This makes admin reordering visible to teachers and falls back
+    # gracefully for legacy strands that have no order yet (they appear
+    # first in insertion order until an admin moves any sibling, at
+    # which point the move endpoint backfills the whole sibling set).
+    strands = await db.strands.find({"subjectId": subjectId}).sort([("order", 1), ("_id", 1)]).to_list(100)
     return {"success": True, "strands": [serialize_doc(s) for s in strands]}
 
 @api_router.get("/substrands")
 async def get_substrands(strandId: str, user: dict = Depends(verify_token)):
     logger.info(f"[SUBSTRANDS] Fetching substrands for strandId: {strandId}")
-    # NO SORTING - preserve curriculum teaching order (insertion order)
-    substrands = await db.substrands.find({"strandId": strandId}).to_list(100)
+    # Sort by `order` ASC + `_id` tiebreaker — see /strands for rationale.
+    substrands = await db.substrands.find({"strandId": strandId}).sort([("order", 1), ("_id", 1)]).to_list(100)
     logger.info(f"[SUBSTRANDS] Found {len(substrands)} substrands for strandId: {strandId}")
     return {"success": True, "substrands": [serialize_doc(s) for s in substrands]}
 
@@ -2214,7 +2218,9 @@ async def admin_delete_subject(subject_id: str, user: dict = Depends(verify_admi
 @api_router.get("/admin/strands")
 async def admin_get_strands(subjectId: Optional[str] = None, user: dict = Depends(verify_admin)):
     query = {"subjectId": subjectId} if subjectId else {}
-    strands = await db.strands.find(query).to_list(2000)
+    # Sort by `order` ASC + `_id` tiebreaker so admin reordering takes
+    # immediate effect on the next list refresh (matches the public endpoint).
+    strands = await db.strands.find(query).sort([("order", 1), ("_id", 1)]).to_list(2000)
     return {"success": True, "strands": [serialize_doc(s) for s in strands]}
 
 @api_router.post("/admin/strands")
@@ -2236,7 +2242,9 @@ async def admin_delete_strand(strand_id: str, user: dict = Depends(verify_admin)
 @api_router.get("/admin/substrands")
 async def admin_get_substrands(strandId: Optional[str] = None, user: dict = Depends(verify_admin)):
     query = {"strandId": strandId} if strandId else {}
-    substrands = await db.substrands.find(query).to_list(2000)
+    # Sort by `order` ASC + `_id` tiebreaker so admin reordering takes
+    # immediate effect on the next list refresh.
+    substrands = await db.substrands.find(query).sort([("order", 1), ("_id", 1)]).to_list(2000)
     return {"success": True, "substrands": [serialize_doc(s) for s in substrands]}
 
 @api_router.post("/admin/substrands")
@@ -3901,7 +3909,14 @@ async def move_item_order(
     direction: str,  # "up" or "down"
     user: dict = Depends(verify_admin)
 ):
-    """Move a single item up or down in the order"""
+    """Move a single item up or down in the order.
+
+    Robust to legacy items that have no ``order`` field at all. When any
+    sibling under the same parent is missing an order, all siblings get
+    assigned a sequential order based on natural ObjectId insertion order
+    *before* the swap runs. This is idempotent — once an item has been
+    backfilled, subsequent moves use the existing values.
+    """
     collection_map = {
         "strand": db.strands,
         "substrand": db.substrands,
@@ -3925,10 +3940,33 @@ async def move_item_order(
     item = await collection.find_one({"_id": ObjectId(item_id)})
     if not item:
         raise HTTPException(status_code=404, detail=f"{item_type} not found")
-    
-    current_order = item.get("order", 0)
+
     parent_id = item.get(parent_field)
-    
+
+    # Backfill `order` if any sibling lacks it. Using ``$exists: False``
+    # picks up legacy rows that were inserted before the order field was
+    # added to the schema (the 20 strands / 69 substrands / 70 SLOs
+    # currently in this state). Without this, all unordered siblings
+    # default to 0 and the swap query below can never find a distinct
+    # neighbour, leaving the up/down buttons silently inert.
+    missing_order = await collection.count_documents({
+        parent_field: parent_id,
+        "order": {"$exists": False},
+    })
+    if missing_order > 0:
+        siblings = await collection.find(
+            {parent_field: parent_id}
+        ).sort("_id", 1).to_list(1000)
+        for idx, sib in enumerate(siblings):
+            await collection.update_one(
+                {"_id": sib["_id"]},
+                {"$set": {"order": idx + 1}},
+            )
+        # Re-read the moving item so we work with its fresh order
+        item = await collection.find_one({"_id": ObjectId(item_id)})
+
+    current_order = item.get("order", 0)
+
     # Find the sibling to swap with
     if direction == "up":
         sibling = await collection.find_one({
