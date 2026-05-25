@@ -5,7 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Dimensions
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
@@ -13,392 +13,333 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
-const { width } = Dimensions.get('window');
-const tileWidth = (width - 48) / 2;
+// ---------------------------------------------------------------------------
+// Sidebar navigation items
+// ---------------------------------------------------------------------------
+//
+// Order, labels and destinations are intentionally fixed — these are the
+// seven top-level pages a teacher reaches from the dashboard. Each row
+// pushes the existing expo-router route used by the legacy tile grid so
+// the rest of the app is unaffected.
 
-interface TileProps {
+type MenuItem = {
   title: string;
-  subtitle: string;
   icon: string;
   color: string;
-  onPress: () => void;
-  disabled?: boolean;
+  route: string;
   badge?: string;
-}
+};
 
-const Tile: React.FC<TileProps> = ({ title, subtitle, icon, color, onPress, disabled, badge }) => (
-  <TouchableOpacity
-    style={[
-      styles.tile,
-      { borderLeftColor: color },
-      disabled && styles.tileDisabled
-    ]}
-    onPress={onPress}
-    disabled={disabled}
-    activeOpacity={0.7}
-  >
-    <View style={[styles.tileIconContainer, { backgroundColor: color + '15' }]}>
-      <Ionicons name={icon as any} size={32} color={color} />
-    </View>
-    <Text style={styles.tileTitle}>{title}</Text>
-    <Text style={styles.tileSubtitle}>{subtitle}</Text>
-    {badge && (
-      <View style={[styles.badge, { backgroundColor: color }]}>
-        <Text style={styles.badgeText}>{badge}</Text>
-      </View>
-    )}
-    {disabled && (
-      <View style={styles.comingSoonBadge}>
-        <Text style={styles.comingSoonText}>Coming Soon</Text>
-      </View>
-    )}
-  </TouchableOpacity>
-);
+// Mobile breakpoint: on narrow screens the sidebar collapses to a single
+// vertical column above the welcome pane (no overlay, no hamburger).
+const MOBILE_BREAKPOINT = 768;
 
 export default function Dashboard() {
   const router = useRouter();
   const { user, refreshProfile } = useAuth();
+  const { width } = useWindowDimensions();
+  const isMobile = width < MOBILE_BREAKPOINT;
 
-  // Refresh profile every time dashboard comes into focus (e.g. after top-up)
+  // Refresh wallet/free-lesson counters every time the dashboard regains
+  // focus (e.g. returning here after a top-up or a generation).
   useFocusEffect(
     useCallback(() => {
       refreshProfile();
-    }, [])
+    }, []),
   );
 
   const freeLessonsRemaining = user?.freeLessonsRemaining ?? 0;
 
-  // Dashboard tiles - arranged in two columns
-  // LEFT (4): Schemes of Work, Create Lesson Plan, Generate Notes, My Profile
-  // RIGHT (3): My Schemes, My Lesson Plans, Past Papers
-  const leftColumnTiles = [
+  const menuItems: MenuItem[] = [
     {
       title: 'Schemes of Work',
-      subtitle: 'Term planning documents',
       icon: 'calendar',
       color: '#5C6BC0',
       route: '/(teacher)/schemes',
-      disabled: false
     },
-    {
-      title: 'Create Lesson Plan',
-      subtitle: 'Generate KICD-aligned lesson plans',
-      icon: 'document-text',
-      color: '#5C6BC0',
-      route: '/(teacher)/home',
-      disabled: false,
-      badge: freeLessonsRemaining > 0 ? `${freeLessonsRemaining} Free` : undefined
-    },
-    {
-      title: 'Generate Notes',
-      subtitle: 'Create learner-friendly notes',
-      icon: 'create',
-      color: '#10B981',
-      route: '/(teacher)/notes',
-      disabled: false
-    },
-    {
-      title: 'My Profile',
-      subtitle: 'Settings & account',
-      icon: 'person-circle',
-      color: '#06B6D4',
-      route: '/(teacher)/profile',
-      disabled: false
-    }
-  ];
-  
-  const rightColumnTiles = [
     {
       title: 'My Schemes',
-      subtitle: 'View & download schemes',
       icon: 'albums',
       color: '#5C6BC0',
       route: '/(teacher)/my-schemes',
-      disabled: false
+    },
+    {
+      title: 'Create Lesson Plan',
+      icon: 'document-text',
+      color: '#5C6BC0',
+      route: '/(teacher)/home',
+      badge: freeLessonsRemaining > 0 ? `${freeLessonsRemaining} Free` : undefined,
     },
     {
       title: 'My Lesson Plans',
-      subtitle: 'View your saved plans',
       icon: 'folder-open',
       color: '#F59E0B',
       route: '/(teacher)/lessons',
-      disabled: false
+    },
+    {
+      title: 'Generate Notes',
+      icon: 'create',
+      color: '#10B981',
+      route: '/(teacher)/notes',
     },
     {
       title: 'Revision Papers',
-      subtitle: 'Past papers per grade & term',
       icon: 'school',
       color: '#EF4444',
       route: '/(teacher)/revision',
-      disabled: false
-    }
+    },
+    {
+      title: 'Profile',
+      icon: 'person-circle',
+      color: '#06B6D4',
+      route: '/(teacher)/profile',
+    },
   ];
+
+  const SideMenu = (
+    <View
+      style={[
+        styles.sidebar,
+        isMobile ? styles.sidebarMobile : styles.sidebarDesktop,
+      ]}
+      data-testid="dashboard-sidebar"
+    >
+      <Text style={styles.sidebarHeading}>Workspace</Text>
+      {menuItems.map((item) => (
+        <TouchableOpacity
+          key={item.route}
+          style={styles.menuItem}
+          onPress={() => router.push(item.route as any)}
+          activeOpacity={0.7}
+          data-testid={`dashboard-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+          testID={`dashboard-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+        >
+          <View style={[styles.menuIcon, { backgroundColor: item.color + '18' }]}>
+            <Ionicons name={item.icon as any} size={18} color={item.color} />
+          </View>
+          <Text style={styles.menuLabel} numberOfLines={1}>
+            {item.title}
+          </Text>
+          {item.badge && (
+            <View style={[styles.menuBadge, { backgroundColor: item.color }]}>
+              <Text style={styles.menuBadgeText}>{item.badge}</Text>
+            </View>
+          )}
+          <Ionicons
+            name="chevron-forward"
+            size={16}
+            color="#94A3B8"
+            style={styles.menuChevron}
+          />
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+
+  const WelcomePane = (
+    <ScrollView
+      style={styles.welcomePane}
+      contentContainerStyle={styles.welcomeContent}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Greeting */}
+      <View style={styles.greetingBlock}>
+        <Text style={styles.greetingHello}>Welcome back,</Text>
+        <Text style={styles.greetingName}>
+          {user?.firstName || ''} {user?.lastName || ''}
+        </Text>
+        {!!user?.schoolName && (
+          <View style={styles.schoolPill}>
+            <Ionicons name="business" size={13} color="#5C6BC0" />
+            <Text style={styles.schoolPillText}>{user.schoolName}</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Stats row */}
+      <View style={styles.statsRow}>
+        <View style={styles.statCard}>
+          <Ionicons name="wallet" size={20} color="#5C6BC0" />
+          <Text style={styles.statValue}>KES {user?.walletBalance ?? 0}</Text>
+          <Text style={styles.statLabel}>Wallet Balance</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+          <Text style={styles.statValue}>
+            {freeLessonsRemaining > 0 ? `${freeLessonsRemaining} Left` : 'Used'}
+          </Text>
+          <Text style={styles.statLabel}>Free Lessons</Text>
+        </View>
+      </View>
+
+      {/* Hint card */}
+      <View style={styles.hintCard}>
+        <Ionicons name="bulb-outline" size={18} color="#E65100" />
+        <Text style={styles.hintText}>
+          Pick a section from the menu to get started. Need help?
+          {'  '}
+          <Text
+            style={styles.hintLink}
+            onPress={() => router.push('/(teacher)/profile' as any)}
+          >
+            Visit Profile
+          </Text>{' '}
+          for support.
+        </Text>
+      </View>
+    </ScrollView>
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+      <View
+        style={[
+          styles.layout,
+          isMobile ? styles.layoutMobile : styles.layoutDesktop,
+        ]}
       >
-        {/* Welcome Section */}
-        <View style={styles.welcomeSection}>
-          <View style={styles.welcomeContent}>
-            <Text style={styles.welcomeText}>Welcome back,</Text>
-            <Text style={styles.userName}>{user?.firstName} {user?.lastName}</Text>
-            <View style={styles.schoolBadge}>
-              <Ionicons name="business" size={14} color="#5C6BC0" />
-              <Text style={styles.schoolName}>{user?.schoolName}</Text>
-            </View>
-          </View>
-          <View style={styles.walletCard}>
-            <Text style={styles.walletLabel}>Wallet Balance</Text>
-            <Text style={styles.walletAmount}>KES {user?.walletBalance || 0}</Text>
-          </View>
-        </View>
-
-        {/* Quick Stats */}
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-            <Text style={styles.statValue}>{freeLessonsRemaining > 0 ? `${freeLessonsRemaining} Left` : 'Used'}</Text>
-            <Text style={styles.statLabel}>Free Lessons</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Ionicons name="wallet" size={20} color="#5C6BC0" />
-            <Text style={styles.statValue}>KES {user?.walletBalance || 0}</Text>
-            <Text style={styles.statLabel}>Balance</Text>
-          </View>
-        </View>
-
-        {/* Tiles Grid - Two Columns */}
-        <Text style={styles.sectionTitle}>What would you like to do?</Text>
-        <View style={styles.twoColumnContainer}>
-          {/* Left Column */}
-          <View style={styles.column}>
-            {leftColumnTiles.map((tile, index) => (
-              <Tile
-                key={`left-${index}`}
-                title={tile.title}
-                subtitle={tile.subtitle}
-                icon={tile.icon}
-                color={tile.color}
-                onPress={() => router.push(tile.route as any)}
-                disabled={tile.disabled}
-                badge={tile.badge}
-              />
-            ))}
-          </View>
-          
-          {/* Right Column */}
-          <View style={styles.column}>
-            {rightColumnTiles.map((tile, index) => (
-              <Tile
-                key={`right-${index}`}
-                title={tile.title}
-                subtitle={tile.subtitle}
-                icon={tile.icon}
-                color={tile.color}
-                onPress={() => router.push(tile.route as any)}
-                disabled={tile.disabled}
-                badge={tile.badge}
-              />
-            ))}
-          </View>
-        </View>
-
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>KICD-Aligned Competency Based Education</Text>
-          <Text style={styles.footerSubtext}>For Kenyan Teachers</Text>
-        </View>
-      </ScrollView>
+        {SideMenu}
+        {WelcomePane}
+      </View>
     </SafeAreaView>
   );
 }
 
+// ---------------------------------------------------------------------------
+// Styles
+// ---------------------------------------------------------------------------
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent'
-  },
-  scrollContent: {
-    padding: 16
-  },
-  welcomeSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+  container: { flex: 1, backgroundColor: '#F3F4FF' },
+
+  // Layout shell
+  layout: { flex: 1 },
+  layoutDesktop: { flexDirection: 'row' },
+  layoutMobile: { flexDirection: 'column' },
+
+  // Sidebar
+  sidebar: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16
+    borderRightWidth: 1,
+    borderRightColor: '#E5E7EB',
+    paddingVertical: 16,
+    paddingHorizontal: 12,
   },
-  welcomeContent: {
-    flex: 1
+  sidebarDesktop: { width: 260 },
+  sidebarMobile: {
+    width: '100%',
+    borderRightWidth: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
-  welcomeText: {
-    fontSize: 14,
-    color: '#5A5A7A'
+  sidebarHeading: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: 10,
+    marginLeft: 8,
   },
-  userName: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#1A1A3A',
-    marginTop: 4
-  },
-  schoolBadge: {
+  menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3F4FF',
+    paddingVertical: 10,
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginTop: 8,
-    alignSelf: 'flex-start'
+    borderRadius: 8,
+    marginBottom: 4,
+    backgroundColor: 'transparent',
   },
-  schoolName: {
-    fontSize: 12,
-    color: '#5C6BC0',
-    marginLeft: 4,
-    fontWeight: '500'
-  },
-  walletCard: {
-    backgroundColor: '#5C6BC0',
-    borderRadius: 12,
-    padding: 12,
+  menuIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
     alignItems: 'center',
-    minWidth: 100
+    justifyContent: 'center',
+    marginRight: 12,
   },
-  walletLabel: {
-    fontSize: 10,
-    color: '#C7D2FE',
-    textTransform: 'uppercase'
+  menuLabel: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1E293B',
   },
-  walletAmount: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  menuBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginRight: 6,
+  },
+  menuBadgeText: {
     color: '#FFFFFF',
-    marginTop: 2
+    fontSize: 10,
+    fontWeight: '700',
   },
+  menuChevron: { marginLeft: 4 },
+
+  // Welcome pane
+  welcomePane: { flex: 1, backgroundColor: '#F3F4FF' },
+  welcomeContent: { padding: 20 },
+  greetingBlock: { marginBottom: 20 },
+  greetingHello: { fontSize: 14, color: '#64748B', marginBottom: 4 },
+  greetingName: { fontSize: 24, fontWeight: '800', color: '#1E293B' },
+  schoolPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    backgroundColor: '#E0E7FF',
+    alignSelf: 'flex-start',
+  },
+  schoolPillText: {
+    marginLeft: 6,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#3730A3',
+  },
+
+  // Stats
   statsRow: {
     flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
+    flexWrap: 'wrap',
+  },
+  statCard: {
+    flex: 1,
+    minWidth: 140,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
-    marginBottom: 20,
-    alignItems: 'center'
+    alignItems: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
-  statItem: {
-    flex: 1,
-    alignItems: 'center'
-  },
-  statDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: '#DDDDF5'
-  },
-  statValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1A1A3A',
-    marginTop: 4
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#5A5A7A',
-    marginTop: 2
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 12
-  },
-  twoColumnContainer: {
+  statValue: { fontSize: 18, fontWeight: '700', color: '#1E293B', marginTop: 6 },
+  statLabel: { fontSize: 12, color: '#64748B', marginTop: 2 },
+
+  // Hint card
+  hintCard: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 10
+    alignItems: 'flex-start',
+    backgroundColor: '#FFF7ED',
+    borderColor: '#FED7AA',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    gap: 10,
   },
-  column: {
+  hintText: {
     flex: 1,
-    gap: 12
+    fontSize: 13,
+    color: '#7C2D12',
+    lineHeight: 18,
   },
-  tilesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between'
-  },
-  tile: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 0,
-    borderLeftWidth: 4,
-    position: 'relative'
-  },
-  tileDisabled: {
-    opacity: 0.7
-  },
-  tileIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12
-  },
-  tileTitle: {
-    fontSize: 14,
+  hintLink: {
+    color: '#E65100',
     fontWeight: '700',
-    color: '#1A1A3A',
-    marginBottom: 4
+    textDecorationLine: 'underline',
   },
-  tileSubtitle: {
-    fontSize: 11,
-    color: '#5A5A7A',
-    lineHeight: 15
-  },
-  badge: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10
-  },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#FFFFFF'
-  },
-  comingSoonBadge: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: '#9CA3AF',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10
-  },
-  comingSoonText: {
-    fontSize: 9,
-    fontWeight: '600',
-    color: '#FFFFFF'
-  },
-  footer: {
-    marginTop: 20,
-    alignItems: 'center',
-    paddingVertical: 16
-  },
-  footerText: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    fontWeight: '500'
-  },
-  footerSubtext: {
-    fontSize: 11,
-    color: '#D1D5DB',
-    marginTop: 2
-  }
 });
