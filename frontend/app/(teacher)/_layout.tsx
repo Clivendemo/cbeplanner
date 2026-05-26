@@ -4,9 +4,12 @@ import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { AppLeftSidebar, AppRightSidebar } from '../../components/AppSidebars';
+import { TeacherSideNav } from '../../components/TeacherSideNav';
 
-// Layout constants for the persistent shell (desktop only)
-const LEFT_SIDEBAR_W = 180;
+// Layout constants for the persistent shell (desktop only).
+// LEFT_SIDEBAR_W is the dark TeacherSideNav (formerly the AppLeftSidebar
+// at 180 px) — wider now so menu labels never truncate.
+const LEFT_SIDEBAR_W = 240;
 const MAIN_W = 950;
 const RIGHT_SIDEBAR_W = 180;
 const GAP = 16;
@@ -190,14 +193,15 @@ export default function TeacherLayout() {
   }
 
   // Desktop: wrap the Stack in a centered, responsive shell.
-  // Left & right sidebars are fixed 180px. Main column grows/shrinks with the
-  // viewport so content always fits without horizontal scroll or zooming.
+  // Left column hosts the dark persistent TeacherSideNav (replaces the
+  // previous news/marquee AppLeftSidebar). Right sidebar stays at 180 px.
+  // Main column grows/shrinks with the viewport so content always fits.
   return (
     <View style={styles.shellRoot}>
       <View style={styles.shellRow}>
-        {/* Left sidebar */}
+        {/* Left sidebar — persistent dark nav */}
         <View style={[styles.sideCol, { width: LEFT_SIDEBAR_W }]}>
-          <AppLeftSidebar />
+          <TeacherSideNav />
         </View>
 
         {/* Central app column — flexes to fill available space up to MAIN_W */}

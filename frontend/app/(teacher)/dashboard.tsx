@@ -214,7 +214,12 @@ export default function Dashboard() {
           isMobile ? styles.layoutMobile : styles.layoutDesktop,
         ]}
       >
-        {SideMenu}
+        {/* On desktop the persistent dark nav lives in the global teacher
+            shell (_layout.tsx). Embedding it again here would render two
+            sidebars side-by-side. Mobile widths skip the shell sidebar,
+            so the dashboard still renders the menu inline for those
+            users. */}
+        {isMobile && SideMenu}
         {WelcomePane}
       </View>
     </SafeAreaView>
