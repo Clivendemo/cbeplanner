@@ -6,222 +6,269 @@ import {
   TouchableOpacity,
   StyleSheet,
   useWindowDimensions,
+  Linking,
+  Pressable,
 } from 'react-native';
-import { useRouter, usePathname } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
 // ---------------------------------------------------------------------------
-// Sidebar navigation items
+// Dashboard layout (WordPress-style)
 // ---------------------------------------------------------------------------
 //
-// Order, labels and destinations are intentionally fixed — these are the
-// seven top-level pages a teacher reaches from the dashboard. Each row
-// pushes the existing expo-router route used by the legacy tile grid.
+// Reference: the WordPress admin dashboard the user shared on 2026-05-26.
+// Single full-width "Welcome" banner at the top with three quick-action
+// columns (Get Started / Next Steps / More Actions), then a 2-column grid
+// of widget cards below. The wallet balance and free-lessons counters are
+// intentionally NOT shown here — they belong on the Profile page.
 
-type MenuItem = {
-  title: string;
-  icon: string;
-  route: string;
-  badge?: string;
-};
-
-// Mobile breakpoint: on narrow screens the dark sidebar stacks on top of
-// the main pane as a full-width vertical column.
 const MOBILE_BREAKPOINT = 768;
+const NARROW_BREAKPOINT = 1024;
 
-// Theme colours for the dark editorial style modelled on the reference UI.
 const COLORS = {
-  sidebarBg: '#111827',     // charcoal — softer than pure black, icons stay readable
-  sidebarBgHover: '#1F2937',
-  sidebarText: '#E5E7EB',
-  sidebarIcon: '#9CA3AF',
-  activeBg: '#FFFFFF',
-  activeText: '#111827',
-  activeIcon: '#1E293B',
-  divider: '#1F2937',
-  mainBg: '#FFFFFF',
-  mainTextPrimary: '#111827',
-  mainTextSecondary: '#6B7280',
-  pillBg: '#F3F4F6',
-  pillText: '#374151',
-  hintBg: '#FFF7ED',
-  hintBorder: '#FED7AA',
-  hintText: '#7C2D12',
-  hintAccent: '#E65100',
+  bg: '#F3F4F6',
+  card: '#FFFFFF',
+  cardBorder: '#E5E7EB',
+  textPrimary: '#111827',
+  textSecondary: '#6B7280',
+  accent: '#5C6BC0',
+  accentSoft: '#EEF2FF',
+  accentBorder: '#C7D2FE',
+  warning: '#E65100',
+  warningSoft: '#FFF7ED',
+  warningBorder: '#FED7AA',
+  warningText: '#7C2D12',
+  link: '#2563EB',
+  success: '#166534',
+  successSoft: '#DCFCE7',
+  successBorder: '#BBF7D0',
 };
+
+const USEFUL_LINKS = [
+  { label: 'Ministry of Education', url: 'https://education.go.ke' },
+  { label: 'KNEC Portal', url: 'https://www.knec.ac.ke' },
+  { label: 'CBC Portal', url: 'https://cbcportal.ac.ke' },
+  { label: 'KICD Resources', url: 'https://kicd.ac.ke' },
+  { label: 'TSC Online', url: 'https://www.tsc.go.ke' },
+];
+
+const QUOTES = [
+  { t: 'Education is not the filling of a pail, but the lighting of a fire.', a: 'W.B. Yeats' },
+  { t: 'The art of teaching is the art of assisting discovery.', a: 'Mark Van Doren' },
+  { t: 'A good teacher can inspire hope and ignite the imagination.', a: 'Brad Henry' },
+];
 
 export default function Dashboard() {
   const router = useRouter();
-  const pathname = usePathname();
   const { user, refreshProfile } = useAuth();
   const { width } = useWindowDimensions();
   const isMobile = width < MOBILE_BREAKPOINT;
+  const isNarrow = width < NARROW_BREAKPOINT;
 
-  // Refresh wallet/free-lesson counters every time the dashboard regains
-  // focus (e.g. returning here after a top-up or a generation).
   useFocusEffect(
     useCallback(() => {
       refreshProfile();
     }, []),
   );
 
-  const freeLessonsRemaining = user?.freeLessonsRemaining ?? 0;
+  // Pick a fresh quote each visit — no auto-rotation needed inline.
+  const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
 
-  const menuItems: MenuItem[] = [
-    { title: 'Schemes of Work', icon: 'calendar-outline', route: '/(teacher)/schemes' },
-    { title: 'My Schemes', icon: 'albums-outline', route: '/(teacher)/my-schemes' },
-    {
-      title: 'Create Lesson Plan',
-      icon: 'document-text-outline',
-      route: '/(teacher)/home',
-      badge: freeLessonsRemaining > 0 ? `${freeLessonsRemaining}` : undefined,
-    },
-    { title: 'My Lesson Plans', icon: 'folder-open-outline', route: '/(teacher)/lessons' },
-    { title: 'Generate Notes', icon: 'create-outline', route: '/(teacher)/notes' },
-    { title: 'Revision Papers', icon: 'school-outline', route: '/(teacher)/revision' },
-    { title: 'Profile', icon: 'person-circle-outline', route: '/(teacher)/profile' },
-  ];
+  const go = (route: string) => () => router.push(route as any);
 
-  // Active-route detection — if the user is browsing /(teacher)/schemes,
-  // the Schemes of Work row gets the white-pill treatment. Dashboard is
-  // not in the menu, so on /(teacher)/dashboard nothing is active.
-  const isActive = (route: string) => {
-    if (!pathname) return false;
-    // Strip the leading group "(teacher)" since expo-router resolves it
-    // away in the pathname. Compare on the trailing segment.
-    const normalize = (p: string) => p.replace('/(teacher)', '');
-    return normalize(pathname) === normalize(route);
-  };
+  // -------------------------------------------------------------------------
+  // Welcome banner — Get Started / Next Steps / More Actions
+  // -------------------------------------------------------------------------
+  const WelcomeBanner = (
+    <View style={styles.welcomeCard} data-testid="dashboard-welcome-banner">
+      <Text style={styles.welcomeTitle}>
+        Welcome back, {user?.firstName || 'Teacher'}!
+      </Text>
+      <Text style={styles.welcomeSub}>
+        We&apos;ve assembled some shortcuts to get you started:
+      </Text>
 
-  const SideMenu = (
-    <View
-      style={[
-        styles.sidebar,
-        isMobile ? styles.sidebarMobile : styles.sidebarDesktop,
-      ]}
-      data-testid="dashboard-sidebar"
-    >
-      {/* Brand header */}
-      <View style={styles.brandRow}>
-        <Ionicons name="menu" size={20} color={COLORS.sidebarText} />
-        <Text style={styles.brandText}>CBE Planner</Text>
-      </View>
-
-      <View style={styles.brandDivider} />
-
-      {/* Menu items */}
-      <View style={isMobile ? null : styles.menuList}>
-        {menuItems.map((item) => {
-          const active = isActive(item.route);
-          return (
-            <TouchableOpacity
-              key={item.route}
-              style={[styles.menuItem, active && styles.menuItemActive]}
-              onPress={() => router.push(item.route as any)}
-              activeOpacity={0.7}
-              data-testid={`dashboard-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-              testID={`dashboard-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+      <View style={[styles.row3, isNarrow && styles.row3Stacked]}>
+        {/* Get Started — large indigo CTA */}
+        <View style={styles.actionCol}>
+          <Text style={styles.actionColHeading}>Get Started</Text>
+          <TouchableOpacity
+            style={styles.primaryCta}
+            onPress={go('/(teacher)/schemes')}
+            activeOpacity={0.85}
+            data-testid="dashboard-cta-schemes"
+          >
+            <Text style={styles.primaryCtaText}>Generate Scheme of Work</Text>
+          </TouchableOpacity>
+          <Text style={styles.actionColCaption}>
+            …or{' '}
+            <Text
+              style={styles.inlineLink}
+              onPress={go('/(teacher)/home')}
             >
-              <Ionicons
-                name={item.icon as any}
-                size={18}
-                color={active ? COLORS.activeIcon : COLORS.sidebarIcon}
-                style={styles.menuIcon}
-              />
-              <Text
-                style={[styles.menuLabel, active && styles.menuLabelActive]}
-                numberOfLines={1}
-              >
-                {item.title}
-              </Text>
-              {item.badge && (
-                <View style={[styles.menuBadge, active && styles.menuBadgeActive]}>
-                  <Text style={[styles.menuBadgeText, active && styles.menuBadgeTextActive]}>
-                    {item.badge}
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          );
-        })}
+              create a lesson plan
+            </Text>{' '}
+            instead.
+          </Text>
+        </View>
+
+        {/* Next Steps — link list */}
+        <View style={styles.actionCol}>
+          <Text style={styles.actionColHeading}>Next Steps</Text>
+          <Pressable style={styles.linkRow} onPress={go('/(teacher)/home')}>
+            <Ionicons name="document-text-outline" size={14} color={COLORS.link} />
+            <Text style={styles.linkText}>Create a lesson plan</Text>
+          </Pressable>
+          <Pressable style={styles.linkRow} onPress={go('/(teacher)/notes')}>
+            <Ionicons name="create-outline" size={14} color={COLORS.link} />
+            <Text style={styles.linkText}>Generate lesson notes</Text>
+          </Pressable>
+          <Pressable style={styles.linkRow} onPress={go('/(teacher)/revision')}>
+            <Ionicons name="school-outline" size={14} color={COLORS.link} />
+            <Text style={styles.linkText}>Download revision papers</Text>
+          </Pressable>
+        </View>
+
+        {/* More Actions — secondary nav */}
+        <View style={styles.actionCol}>
+          <Text style={styles.actionColHeading}>More Actions</Text>
+          <Pressable style={styles.linkRow} onPress={go('/(teacher)/my-schemes')}>
+            <Ionicons name="albums-outline" size={14} color={COLORS.link} />
+            <Text style={styles.linkText}>Review my schemes</Text>
+          </Pressable>
+          <Pressable style={styles.linkRow} onPress={go('/(teacher)/lessons')}>
+            <Ionicons name="folder-open-outline" size={14} color={COLORS.link} />
+            <Text style={styles.linkText}>My lesson plans</Text>
+          </Pressable>
+          <Pressable style={styles.linkRow} onPress={go('/(teacher)/profile')}>
+            <Ionicons name="person-circle-outline" size={14} color={COLORS.link} />
+            <Text style={styles.linkText}>Profile & support</Text>
+          </Pressable>
+        </View>
       </View>
     </View>
   );
 
-  const WelcomePane = (
-    <ScrollView
-      style={styles.mainPane}
-      contentContainerStyle={styles.mainContent}
-      showsVerticalScrollIndicator={false}
+  // -------------------------------------------------------------------------
+  // Widget grid — At a Glance, Quick Draft (Useful Links + Teacher's Corner)
+  // -------------------------------------------------------------------------
+  const UsefulLinksCard = (
+    <View style={styles.widgetCard} data-testid="dashboard-widget-useful-links">
+      <View style={styles.widgetHeader}>
+        <Ionicons name="link-outline" size={14} color={COLORS.accent} />
+        <Text style={styles.widgetTitle}>Useful Links</Text>
+      </View>
+      <View style={styles.widgetBody}>
+        {USEFUL_LINKS.map((l, i) => (
+          <React.Fragment key={l.label}>
+            {i > 0 && <View style={styles.itemSep} />}
+            <Pressable
+              onPress={() => Linking.openURL(l.url)}
+              style={styles.usefulLinkRow}
+            >
+              <View style={styles.linkDot} />
+              <Text style={styles.usefulLinkText}>{l.label}</Text>
+              <Ionicons name="open-outline" size={12} color={COLORS.textSecondary} />
+            </Pressable>
+          </React.Fragment>
+        ))}
+      </View>
+    </View>
+  );
+
+  const TeachersCornerCard = (
+    <View style={styles.widgetCard} data-testid="dashboard-widget-quote">
+      <View style={styles.widgetHeader}>
+        <Ionicons
+          name="chatbox-ellipses-outline"
+          size={14}
+          color={COLORS.accent}
+        />
+        <Text style={styles.widgetTitle}>Teacher&apos;s Corner</Text>
+      </View>
+      <View style={styles.widgetBody}>
+        <Text style={styles.quoteText}>&ldquo;{quote.t}&rdquo;</Text>
+        <Text style={styles.quoteAuthor}>— {quote.a}</Text>
+      </View>
+    </View>
+  );
+
+  const SupportCard = (
+    <View
+      style={[styles.widgetCard, styles.widgetCardSuccess]}
+      data-testid="dashboard-widget-support"
     >
-      {/* Greeting block */}
-      <View style={styles.greetingBlock}>
-        <Text style={styles.greetingHello}>Welcome back,</Text>
-        <Text style={styles.greetingName}>
-          {user?.firstName || ''} {user?.lastName || ''}
-        </Text>
-        {!!user?.schoolName && (
-          <View style={styles.schoolPill}>
-            <Ionicons name="business-outline" size={13} color={COLORS.pillText} />
-            <Text style={styles.schoolPillText}>{user.schoolName}</Text>
-          </View>
-        )}
-      </View>
-
-      <View style={styles.thinDivider} />
-
-      {/* Stats row */}
-      <View style={styles.statsRow}>
-        <View style={styles.statCard}>
-          <Ionicons name="wallet-outline" size={20} color={COLORS.mainTextPrimary} />
-          <Text style={styles.statValue}>KES {user?.walletBalance ?? 0}</Text>
-          <Text style={styles.statLabel}>Wallet Balance</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Ionicons name="checkmark-circle-outline" size={20} color={COLORS.mainTextPrimary} />
-          <Text style={styles.statValue}>
-            {freeLessonsRemaining > 0 ? `${freeLessonsRemaining} Left` : 'Used'}
-          </Text>
-          <Text style={styles.statLabel}>Free Lessons</Text>
-        </View>
-      </View>
-
-      {/* Hint card */}
-      <View style={styles.hintCard}>
-        <Ionicons name="bulb-outline" size={18} color={COLORS.hintAccent} />
-        <Text style={styles.hintText}>
-          Pick a section from the menu to get started. Need help?{'  '}
-          <Text
-            style={styles.hintLink}
-            onPress={() => router.push('/(teacher)/profile' as any)}
-          >
-            Visit Profile
-          </Text>{' '}
-          for support.
+      <View style={styles.widgetHeader}>
+        <Ionicons name="mail-outline" size={14} color={COLORS.success} />
+        <Text style={[styles.widgetTitle, { color: COLORS.success }]}>
+          Support
         </Text>
       </View>
-    </ScrollView>
+      <View style={styles.widgetBody}>
+        <Text style={styles.supportText}>
+          Questions or feedback? Reach us anytime — we read every email.
+        </Text>
+        <Pressable
+          onPress={() => Linking.openURL('mailto:legitlab@outlook.com')}
+          style={styles.supportBtn}
+          data-testid="dashboard-support-email-btn"
+        >
+          <Ionicons name="send-outline" size={11} color="#FFFFFF" />
+          <Text style={styles.supportBtnText}>Email Us</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+
+  const PlanningTipCard = (
+    <View
+      style={[styles.widgetCard, styles.widgetCardWarning]}
+      data-testid="dashboard-widget-tip"
+    >
+      <View style={styles.widgetHeader}>
+        <Ionicons name="bulb-outline" size={14} color={COLORS.warning} />
+        <Text style={[styles.widgetTitle, { color: COLORS.warning }]}>
+          Lesson Planning Tip
+        </Text>
+      </View>
+      <View style={styles.widgetBody}>
+        <Text style={styles.tipText}>
+          Use differentiated tasks to cater for all learner abilities — start
+          with a guided example, then a paired practice, and finish with an
+          independent challenge.
+        </Text>
+      </View>
+    </View>
   );
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      <View
-        style={[
-          styles.layout,
-          isMobile ? styles.layoutMobile : styles.layoutDesktop,
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isMobile && styles.scrollContentMobile,
         ]}
+        showsVerticalScrollIndicator={false}
       >
-        {/* On desktop the persistent dark nav lives in the global teacher
-            shell (_layout.tsx). Embedding it again here would render two
-            sidebars side-by-side. Mobile widths skip the shell sidebar,
-            so the dashboard still renders the menu inline for those
-            users. */}
-        {isMobile && SideMenu}
-        {WelcomePane}
-      </View>
+        <Text style={styles.pageTitle}>Dashboard</Text>
+
+        {WelcomeBanner}
+
+        <View style={[styles.widgetGrid, isNarrow && styles.widgetGridStacked]}>
+          <View style={styles.widgetCol}>
+            {UsefulLinksCard}
+            {PlanningTipCard}
+          </View>
+          <View style={styles.widgetCol}>
+            {TeachersCornerCard}
+            {SupportCard}
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -231,173 +278,149 @@ export default function Dashboard() {
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.mainBg },
-
-  // Layout shell
-  layout: { flex: 1 },
-  layoutDesktop: { flexDirection: 'row' },
-  layoutMobile: { flexDirection: 'column' },
-
-  // Sidebar
-  sidebar: {
-    backgroundColor: COLORS.sidebarBg,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
+  container: { flex: 1, backgroundColor: COLORS.bg },
+  scroll: { flex: 1 },
+  scrollContent: {
+    paddingHorizontal: 32,
+    paddingVertical: 24,
+    maxWidth: 1280,
+    width: '100%',
+    alignSelf: 'center',
   },
-  sidebarDesktop: { width: 260, minHeight: '100%' },
-  sidebarMobile: { width: '100%' },
+  scrollContentMobile: { paddingHorizontal: 16 },
 
-  // Brand header
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-  },
-  brandText: {
-    marginLeft: 12,
-    color: COLORS.sidebarText,
-    fontSize: 16,
+  pageTitle: {
+    fontSize: 22,
     fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-  brandDivider: {
-    height: 1,
-    backgroundColor: COLORS.divider,
-    marginVertical: 10,
+    color: COLORS.textPrimary,
+    marginBottom: 16,
   },
 
-  // Menu
-  menuList: {},
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 11,
-    paddingHorizontal: 14,
+  // Welcome banner
+  welcomeCard: {
+    backgroundColor: COLORS.card,
     borderRadius: 8,
-    marginBottom: 2,
-    backgroundColor: 'transparent',
+    padding: 24,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder,
+    marginBottom: 20,
   },
-  menuItemActive: {
-    backgroundColor: COLORS.activeBg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  menuIcon: { marginRight: 14 },
-  menuLabel: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.sidebarText,
-  },
-  menuLabelActive: { color: COLORS.activeText, fontWeight: '700' },
-  menuBadge: {
-    paddingHorizontal: 7,
-    paddingVertical: 1,
-    borderRadius: 999,
-    backgroundColor: '#E65100',
-    minWidth: 20,
-    alignItems: 'center',
-  },
-  menuBadgeActive: { backgroundColor: '#FED7AA' },
-  menuBadgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '700' },
-  menuBadgeTextActive: { color: '#7C2D12' },
-
-  // Main pane
-  mainPane: { flex: 1, backgroundColor: COLORS.mainBg },
-  mainContent: { paddingHorizontal: 40, paddingVertical: 32, maxWidth: 880 },
-
-  // Greeting
-  greetingBlock: { marginBottom: 18 },
-  greetingHello: {
-    fontSize: 13,
-    color: COLORS.mainTextSecondary,
-    marginBottom: 2,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  greetingName: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: COLORS.mainTextPrimary,
-    marginBottom: 8,
-  },
-  schoolPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.pillBg,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    alignSelf: 'flex-start',
-  },
-  schoolPillText: {
-    marginLeft: 6,
-    fontSize: 12,
+  welcomeTitle: {
+    fontSize: 22,
     fontWeight: '600',
-    color: COLORS.pillText,
+    color: COLORS.textPrimary,
+    marginBottom: 6,
+  },
+  welcomeSub: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 20,
   },
 
-  thinDivider: {
-    height: 1,
-    backgroundColor: '#E5E7EB',
-    marginVertical: 24,
-  },
+  row3: { flexDirection: 'row', gap: 32 },
+  row3Stacked: { flexDirection: 'column', gap: 20 },
 
-  // Stats
-  statsRow: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 24,
-    flexWrap: 'wrap',
-  },
-  statCard: {
-    flex: 1,
-    minWidth: 200,
-    backgroundColor: COLORS.mainBg,
-    borderRadius: 10,
-    padding: 18,
-    alignItems: 'flex-start',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  statValue: {
-    fontSize: 20,
+  actionCol: { flex: 1, minWidth: 200 },
+  actionColHeading: {
+    fontSize: 15,
     fontWeight: '700',
-    color: COLORS.mainTextPrimary,
-    marginTop: 8,
+    color: COLORS.textPrimary,
+    marginBottom: 12,
   },
-  statLabel: {
-    fontSize: 12,
-    color: COLORS.mainTextSecondary,
-    marginTop: 2,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+  primaryCta: {
+    backgroundColor: COLORS.accent,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 4,
+    alignItems: 'center',
+    marginBottom: 10,
   },
+  primaryCtaText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
+  actionColCaption: { fontSize: 12, color: COLORS.textSecondary, lineHeight: 18 },
+  inlineLink: { color: COLORS.link, textDecorationLine: 'underline' },
 
-  // Hint card
-  hintCard: {
+  linkRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: COLORS.hintBg,
-    borderColor: COLORS.hintBorder,
+    alignItems: 'center',
+    paddingVertical: 6,
+    gap: 8,
+  },
+  linkText: { fontSize: 13, color: COLORS.link },
+
+  // Widget grid
+  widgetGrid: { flexDirection: 'row', gap: 20 },
+  widgetGridStacked: { flexDirection: 'column' },
+  widgetCol: { flex: 1, gap: 20 },
+
+  widgetCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: 6,
     borderWidth: 1,
-    borderRadius: 10,
-    padding: 14,
+    borderColor: COLORS.cardBorder,
+    overflow: 'hidden',
+  },
+  widgetCardWarning: {
+    backgroundColor: COLORS.warningSoft,
+    borderColor: COLORS.warningBorder,
+  },
+  widgetCardSuccess: {
+    backgroundColor: COLORS.successSoft,
+    borderColor: COLORS.successBorder,
+  },
+  widgetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.cardBorder,
+  },
+  widgetTitle: { fontSize: 13, fontWeight: '700', color: COLORS.textPrimary },
+  widgetBody: { padding: 14 },
+
+  // Useful links rows
+  usefulLinkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
     gap: 10,
   },
-  hintText: {
-    flex: 1,
-    fontSize: 13,
-    color: COLORS.hintText,
-    lineHeight: 19,
+  linkDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.accent,
   },
-  hintLink: {
-    color: COLORS.hintAccent,
-    fontWeight: '700',
-    textDecorationLine: 'underline',
+  usefulLinkText: { flex: 1, fontSize: 13, color: COLORS.textPrimary },
+  itemSep: { height: 1, backgroundColor: '#F3F4F6' },
+
+  // Quote
+  quoteText: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    color: COLORS.textPrimary,
+    lineHeight: 21,
   },
+  quoteAuthor: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 8,
+    textAlign: 'right',
+  },
+
+  // Tip & support
+  tipText: { fontSize: 13, color: COLORS.warningText, lineHeight: 19 },
+  supportText: { fontSize: 13, color: COLORS.success, lineHeight: 19, marginBottom: 12 },
+  supportBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: COLORS.success,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+  },
+  supportBtnText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
 });

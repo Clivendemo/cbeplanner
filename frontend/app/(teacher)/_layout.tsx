@@ -1,9 +1,8 @@
 import React from 'react';
-import { TouchableOpacity, View, Text, StyleSheet, ActivityIndicator, Platform, useWindowDimensions, ScrollView } from 'react-native';
+import { TouchableOpacity, View, Text, StyleSheet, ActivityIndicator, Platform, useWindowDimensions } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
-import { AppLeftSidebar, AppRightSidebar } from '../../components/AppSidebars';
 import { TeacherSideNav } from '../../components/TeacherSideNav';
 
 // Layout constants for the persistent shell (desktop only).
@@ -172,30 +171,23 @@ export default function TeacherLayout() {
     </Stack>
   );
 
-  // Mobile/tablet: Stack covers the full viewport. Sidebars sit below in an
-  // outer scroll so users can swipe up to see them.
+  // Mobile/tablet: Stack covers the full viewport. Sidebar widgets used
+  // to render below the page — now the dashboard hosts them inline in
+  // its main pane, so we just render the stack full-width and trust each
+  // route to lay out its own content.
   if (!showSidebars) {
     return (
-      <ScrollView
-        style={styles.mobileRoot}
-        contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={{ height, backgroundColor: '#FFFFFF' }}>
-          {stack}
-        </View>
-        <View style={styles.mobileSidebars}>
-          <AppLeftSidebar />
-          <AppRightSidebar />
-        </View>
-      </ScrollView>
+      <View style={[styles.mobileRoot, { flex: 1 }]}>
+        {stack}
+      </View>
     );
   }
 
   // Desktop: wrap the Stack in a centered, responsive shell.
-  // Left column hosts the dark persistent TeacherSideNav (replaces the
-  // previous news/marquee AppLeftSidebar). Right sidebar stays at 180 px.
-  // Main column grows/shrinks with the viewport so content always fits.
+  // Left column hosts the dark persistent TeacherSideNav. The right
+  // sidebar was retired — its widgets (Useful Links, Teacher's Corner,
+  // Support) now live on the dashboard's main pane so the central column
+  // can use the full remaining width.
   return (
     <View style={styles.shellRoot}>
       <View style={styles.shellRow}>
@@ -204,14 +196,9 @@ export default function TeacherLayout() {
           <TeacherSideNav />
         </View>
 
-        {/* Central app column — flexes to fill available space up to MAIN_W */}
+        {/* Central app column — flexes to fill all remaining space */}
         <View style={[styles.mainCol]}>
           {stack}
-        </View>
-
-        {/* Right sidebar */}
-        <View style={[styles.sideCol, { width: RIGHT_SIDEBAR_W }]}>
-          <AppRightSidebar />
         </View>
       </View>
     </View>
