@@ -7,7 +7,7 @@ import {
   StyleSheet,
   useWindowDimensions,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,23 +19,43 @@ import { useFocusEffect } from '@react-navigation/native';
 //
 // Order, labels and destinations are intentionally fixed — these are the
 // seven top-level pages a teacher reaches from the dashboard. Each row
-// pushes the existing expo-router route used by the legacy tile grid so
-// the rest of the app is unaffected.
+// pushes the existing expo-router route used by the legacy tile grid.
 
 type MenuItem = {
   title: string;
   icon: string;
-  color: string;
   route: string;
   badge?: string;
 };
 
-// Mobile breakpoint: on narrow screens the sidebar collapses to a single
-// vertical column above the welcome pane (no overlay, no hamburger).
+// Mobile breakpoint: on narrow screens the dark sidebar stacks on top of
+// the main pane as a full-width vertical column.
 const MOBILE_BREAKPOINT = 768;
+
+// Theme colours for the dark editorial style modelled on the reference UI.
+const COLORS = {
+  sidebarBg: '#111827',     // charcoal — softer than pure black, icons stay readable
+  sidebarBgHover: '#1F2937',
+  sidebarText: '#E5E7EB',
+  sidebarIcon: '#9CA3AF',
+  activeBg: '#FFFFFF',
+  activeText: '#111827',
+  activeIcon: '#1E293B',
+  divider: '#1F2937',
+  mainBg: '#FFFFFF',
+  mainTextPrimary: '#111827',
+  mainTextSecondary: '#6B7280',
+  pillBg: '#F3F4F6',
+  pillText: '#374151',
+  hintBg: '#FFF7ED',
+  hintBorder: '#FED7AA',
+  hintText: '#7C2D12',
+  hintAccent: '#E65100',
+};
 
 export default function Dashboard() {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, refreshProfile } = useAuth();
   const { width } = useWindowDimensions();
   const isMobile = width < MOBILE_BREAKPOINT;
@@ -51,50 +71,30 @@ export default function Dashboard() {
   const freeLessonsRemaining = user?.freeLessonsRemaining ?? 0;
 
   const menuItems: MenuItem[] = [
-    {
-      title: 'Schemes of Work',
-      icon: 'calendar',
-      color: '#5C6BC0',
-      route: '/(teacher)/schemes',
-    },
-    {
-      title: 'My Schemes',
-      icon: 'albums',
-      color: '#5C6BC0',
-      route: '/(teacher)/my-schemes',
-    },
+    { title: 'Schemes of Work', icon: 'calendar-outline', route: '/(teacher)/schemes' },
+    { title: 'My Schemes', icon: 'albums-outline', route: '/(teacher)/my-schemes' },
     {
       title: 'Create Lesson Plan',
-      icon: 'document-text',
-      color: '#5C6BC0',
+      icon: 'document-text-outline',
       route: '/(teacher)/home',
-      badge: freeLessonsRemaining > 0 ? `${freeLessonsRemaining} Free` : undefined,
+      badge: freeLessonsRemaining > 0 ? `${freeLessonsRemaining}` : undefined,
     },
-    {
-      title: 'My Lesson Plans',
-      icon: 'folder-open',
-      color: '#F59E0B',
-      route: '/(teacher)/lessons',
-    },
-    {
-      title: 'Generate Notes',
-      icon: 'create',
-      color: '#10B981',
-      route: '/(teacher)/notes',
-    },
-    {
-      title: 'Revision Papers',
-      icon: 'school',
-      color: '#EF4444',
-      route: '/(teacher)/revision',
-    },
-    {
-      title: 'Profile',
-      icon: 'person-circle',
-      color: '#06B6D4',
-      route: '/(teacher)/profile',
-    },
+    { title: 'My Lesson Plans', icon: 'folder-open-outline', route: '/(teacher)/lessons' },
+    { title: 'Generate Notes', icon: 'create-outline', route: '/(teacher)/notes' },
+    { title: 'Revision Papers', icon: 'school-outline', route: '/(teacher)/revision' },
+    { title: 'Profile', icon: 'person-circle-outline', route: '/(teacher)/profile' },
   ];
+
+  // Active-route detection — if the user is browsing /(teacher)/schemes,
+  // the Schemes of Work row gets the white-pill treatment. Dashboard is
+  // not in the menu, so on /(teacher)/dashboard nothing is active.
+  const isActive = (route: string) => {
+    if (!pathname) return false;
+    // Strip the leading group "(teacher)" since expo-router resolves it
+    // away in the pathname. Compare on the trailing segment.
+    const normalize = (p: string) => p.replace('/(teacher)', '');
+    return normalize(pathname) === normalize(route);
+  };
 
   const SideMenu = (
     <View
@@ -104,45 +104,60 @@ export default function Dashboard() {
       ]}
       data-testid="dashboard-sidebar"
     >
-      <Text style={styles.sidebarHeading}>Workspace</Text>
-      {menuItems.map((item) => (
-        <TouchableOpacity
-          key={item.route}
-          style={styles.menuItem}
-          onPress={() => router.push(item.route as any)}
-          activeOpacity={0.7}
-          data-testid={`dashboard-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-          testID={`dashboard-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-        >
-          <View style={[styles.menuIcon, { backgroundColor: item.color + '18' }]}>
-            <Ionicons name={item.icon as any} size={18} color={item.color} />
-          </View>
-          <Text style={styles.menuLabel} numberOfLines={1}>
-            {item.title}
-          </Text>
-          {item.badge && (
-            <View style={[styles.menuBadge, { backgroundColor: item.color }]}>
-              <Text style={styles.menuBadgeText}>{item.badge}</Text>
-            </View>
-          )}
-          <Ionicons
-            name="chevron-forward"
-            size={16}
-            color="#94A3B8"
-            style={styles.menuChevron}
-          />
-        </TouchableOpacity>
-      ))}
+      {/* Brand header */}
+      <View style={styles.brandRow}>
+        <Ionicons name="menu" size={20} color={COLORS.sidebarText} />
+        <Text style={styles.brandText}>CBE Planner</Text>
+      </View>
+
+      <View style={styles.brandDivider} />
+
+      {/* Menu items */}
+      <View style={isMobile ? null : styles.menuList}>
+        {menuItems.map((item) => {
+          const active = isActive(item.route);
+          return (
+            <TouchableOpacity
+              key={item.route}
+              style={[styles.menuItem, active && styles.menuItemActive]}
+              onPress={() => router.push(item.route as any)}
+              activeOpacity={0.7}
+              data-testid={`dashboard-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+              testID={`dashboard-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+            >
+              <Ionicons
+                name={item.icon as any}
+                size={18}
+                color={active ? COLORS.activeIcon : COLORS.sidebarIcon}
+                style={styles.menuIcon}
+              />
+              <Text
+                style={[styles.menuLabel, active && styles.menuLabelActive]}
+                numberOfLines={1}
+              >
+                {item.title}
+              </Text>
+              {item.badge && (
+                <View style={[styles.menuBadge, active && styles.menuBadgeActive]}>
+                  <Text style={[styles.menuBadgeText, active && styles.menuBadgeTextActive]}>
+                    {item.badge}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
   );
 
   const WelcomePane = (
     <ScrollView
-      style={styles.welcomePane}
-      contentContainerStyle={styles.welcomeContent}
+      style={styles.mainPane}
+      contentContainerStyle={styles.mainContent}
       showsVerticalScrollIndicator={false}
     >
-      {/* Greeting */}
+      {/* Greeting block */}
       <View style={styles.greetingBlock}>
         <Text style={styles.greetingHello}>Welcome back,</Text>
         <Text style={styles.greetingName}>
@@ -150,21 +165,23 @@ export default function Dashboard() {
         </Text>
         {!!user?.schoolName && (
           <View style={styles.schoolPill}>
-            <Ionicons name="business" size={13} color="#5C6BC0" />
+            <Ionicons name="business-outline" size={13} color={COLORS.pillText} />
             <Text style={styles.schoolPillText}>{user.schoolName}</Text>
           </View>
         )}
       </View>
 
+      <View style={styles.thinDivider} />
+
       {/* Stats row */}
       <View style={styles.statsRow}>
         <View style={styles.statCard}>
-          <Ionicons name="wallet" size={20} color="#5C6BC0" />
+          <Ionicons name="wallet-outline" size={20} color={COLORS.mainTextPrimary} />
           <Text style={styles.statValue}>KES {user?.walletBalance ?? 0}</Text>
           <Text style={styles.statLabel}>Wallet Balance</Text>
         </View>
         <View style={styles.statCard}>
-          <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+          <Ionicons name="checkmark-circle-outline" size={20} color={COLORS.mainTextPrimary} />
           <Text style={styles.statValue}>
             {freeLessonsRemaining > 0 ? `${freeLessonsRemaining} Left` : 'Used'}
           </Text>
@@ -174,10 +191,9 @@ export default function Dashboard() {
 
       {/* Hint card */}
       <View style={styles.hintCard}>
-        <Ionicons name="bulb-outline" size={18} color="#E65100" />
+        <Ionicons name="bulb-outline" size={18} color={COLORS.hintAccent} />
         <Text style={styles.hintText}>
-          Pick a section from the menu to get started. Need help?
-          {'  '}
+          Pick a section from the menu to get started. Need help?{'  '}
           <Text
             style={styles.hintLink}
             onPress={() => router.push('/(teacher)/profile' as any)}
@@ -210,7 +226,7 @@ export default function Dashboard() {
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F4FF' },
+  container: { flex: 1, backgroundColor: COLORS.mainBg },
 
   // Layout shell
   layout: { flex: 1 },
@@ -219,126 +235,163 @@ const styles = StyleSheet.create({
 
   // Sidebar
   sidebar: {
-    backgroundColor: '#FFFFFF',
-    borderRightWidth: 1,
-    borderRightColor: '#E5E7EB',
-    paddingVertical: 16,
+    backgroundColor: COLORS.sidebarBg,
+    paddingVertical: 14,
     paddingHorizontal: 12,
   },
-  sidebarDesktop: { width: 260 },
-  sidebarMobile: {
-    width: '100%',
-    borderRightWidth: 0,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  sidebarHeading: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#64748B',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginBottom: 10,
-    marginLeft: 8,
-  },
-  menuItem: {
+  sidebarDesktop: { width: 260, minHeight: '100%' },
+  sidebarMobile: { width: '100%' },
+
+  // Brand header
+  brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
+  },
+  brandText: {
+    marginLeft: 12,
+    color: COLORS.sidebarText,
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  brandDivider: {
+    height: 1,
+    backgroundColor: COLORS.divider,
+    marginVertical: 10,
+  },
+
+  // Menu
+  menuList: {},
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 11,
+    paddingHorizontal: 14,
     borderRadius: 8,
-    marginBottom: 4,
+    marginBottom: 2,
     backgroundColor: 'transparent',
   },
-  menuIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
+  menuItemActive: {
+    backgroundColor: COLORS.activeBg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 2,
+    elevation: 1,
   },
+  menuIcon: { marginRight: 14 },
   menuLabel: {
     flex: 1,
     fontSize: 14,
-    fontWeight: '600',
-    color: '#1E293B',
+    fontWeight: '500',
+    color: COLORS.sidebarText,
   },
+  menuLabelActive: { color: COLORS.activeText, fontWeight: '700' },
   menuBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-    marginRight: 6,
+    paddingHorizontal: 7,
+    paddingVertical: 1,
+    borderRadius: 999,
+    backgroundColor: '#E65100',
+    minWidth: 20,
+    alignItems: 'center',
   },
-  menuBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  menuChevron: { marginLeft: 4 },
+  menuBadgeActive: { backgroundColor: '#FED7AA' },
+  menuBadgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '700' },
+  menuBadgeTextActive: { color: '#7C2D12' },
 
-  // Welcome pane
-  welcomePane: { flex: 1, backgroundColor: '#F3F4FF' },
-  welcomeContent: { padding: 20 },
-  greetingBlock: { marginBottom: 20 },
-  greetingHello: { fontSize: 14, color: '#64748B', marginBottom: 4 },
-  greetingName: { fontSize: 24, fontWeight: '800', color: '#1E293B' },
+  // Main pane
+  mainPane: { flex: 1, backgroundColor: COLORS.mainBg },
+  mainContent: { paddingHorizontal: 40, paddingVertical: 32, maxWidth: 880 },
+
+  // Greeting
+  greetingBlock: { marginBottom: 18 },
+  greetingHello: {
+    fontSize: 13,
+    color: COLORS.mainTextSecondary,
+    marginBottom: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  greetingName: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: COLORS.mainTextPrimary,
+    marginBottom: 8,
+  },
   schoolPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
-    paddingVertical: 4,
+    backgroundColor: COLORS.pillBg,
     paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 999,
-    backgroundColor: '#E0E7FF',
     alignSelf: 'flex-start',
   },
   schoolPillText: {
     marginLeft: 6,
     fontSize: 12,
     fontWeight: '600',
-    color: '#3730A3',
+    color: COLORS.pillText,
+  },
+
+  thinDivider: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
+    marginVertical: 24,
   },
 
   // Stats
   statsRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 20,
+    gap: 16,
+    marginBottom: 24,
     flexWrap: 'wrap',
   },
   statCard: {
     flex: 1,
-    minWidth: 140,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+    minWidth: 200,
+    backgroundColor: COLORS.mainBg,
+    borderRadius: 10,
+    padding: 18,
     alignItems: 'flex-start',
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
-  statValue: { fontSize: 18, fontWeight: '700', color: '#1E293B', marginTop: 6 },
-  statLabel: { fontSize: 12, color: '#64748B', marginTop: 2 },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.mainTextPrimary,
+    marginTop: 8,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: COLORS.mainTextSecondary,
+    marginTop: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
 
   // Hint card
   hintCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#FFF7ED',
-    borderColor: '#FED7AA',
+    backgroundColor: COLORS.hintBg,
+    borderColor: COLORS.hintBorder,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 10,
     padding: 14,
     gap: 10,
   },
   hintText: {
     flex: 1,
     fontSize: 13,
-    color: '#7C2D12',
-    lineHeight: 18,
+    color: COLORS.hintText,
+    lineHeight: 19,
   },
   hintLink: {
-    color: '#E65100',
+    color: COLORS.hintAccent,
     fontWeight: '700',
     textDecorationLine: 'underline',
   },
