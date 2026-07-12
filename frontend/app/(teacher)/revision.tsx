@@ -1,12 +1,10 @@
 /**
  * Revision Papers — teacher-facing screen.
  *
- * Pick Grade + Term → list of assessments stored in Cloudflare R2 → tap
- * "Download". Backend atomically charges the wallet (KES 10 per paper). If the
- * user lacks balance we show a polite top-up prompt that routes to the Profile
- * page where the M-Pesa top-up modal already exists.
+ * Three inline dropdowns: Grade → Term → Subject (subject controlled by grade+term).
+ * Papers list filters client-side by subject. Download charges wallet via backend.
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -47,6 +45,162 @@ function formatBytes(n: number): string {
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+// ─── Reusable inline dropdown ─────────────────────────────────────────────────
+
+interface DropdownProps {
+  label: string;
+  value: string;
+  options: { label: string; value: string }[];
+  onSelect: (value: string) => void;
+  disabled?: boolean;
+  placeholder?: string;
+  testID?: string;
+}
+
+const Dropdown: React.FC<DropdownProps> = ({
+  label, value, options, onSelect, disabled, placeholder = 'Select…', testID,
+}) => {
+  const [open, setOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0, width: 0 });
+  const triggerRef = useRef<View>(null);
+  const selected = options.find((o) => o.value === value);
+
+  // Measure the trigger button position so we can anchor the portal menu to it
+  const measureAndOpen = useCallback(() => {
+    if (disabled) return;
+    if (!open && triggerRef.current) {
+      triggerRef.current.measureInWindow((x, y, width, height) => {
+        setMenuPos({ top: y + height + 4, left: x, width });
+        setOpen(true);
+      });
+    } else {
+      setOpen(false);
+    }
+  }, [disabled, open]);
+
+  return (
+    <View style={dd.wrap}>
+      <Text style={dd.label}>{label}</Text>
+      <TouchableOpacity
+        ref={triggerRef}
+        style={[dd.trigger, open && dd.triggerOpen, disabled && dd.triggerDisabled]}
+        onPress={measureAndOpen}
+        activeOpacity={0.8}
+        testID={testID}
+        data-testid={testID}
+      >
+        <Text
+          style={[dd.triggerText, !selected && dd.placeholder]}
+          numberOfLines={1}
+        >
+          {selected ? selected.label : placeholder}
+        </Text>
+        <Ionicons
+          name={open ? 'chevron-up' : 'chevron-down'}
+          size={14}
+          color={disabled ? '#D1D5DB' : '#5C6BC0'}
+        />
+      </TouchableOpacity>
+
+      {/* Portal modal — renders at root level so it floats above all siblings */}
+      <Modal
+        visible={open}
+        transparent
+        animationType="none"
+        onRequestClose={() => setOpen(false)}
+        statusBarTranslucent
+      >
+        {/* Invisible full-screen backdrop captures outside taps to close */}
+        <TouchableOpacity
+          style={dd.backdrop}
+          activeOpacity={1}
+          onPress={() => setOpen(false)}
+        >
+          {/* Menu anchored to measured trigger position */}
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {}}
+            style={[
+              dd.menu,
+              {
+                position: 'absolute',
+                top: menuPos.top,
+                left: menuPos.left,
+                width: menuPos.width,
+              },
+            ]}
+          >
+            <ScrollView
+              style={{ maxHeight: 240 }}
+              nestedScrollEnabled
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {options.map((opt) => (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={[dd.option, opt.value === value && dd.optionActive]}
+                  onPress={() => { onSelect(opt.value); setOpen(false); }}
+                  testID={`${testID}-opt-${opt.value}`}
+                  data-testid={`${testID}-opt-${opt.value}`}
+                >
+                  <Text style={[dd.optionText, opt.value === value && dd.optionTextActive]}>
+                    {opt.label}
+                  </Text>
+                  {opt.value === value && (
+                    <Ionicons name="checkmark" size={14} color="#5C6BC0" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+    </View>
+  );
+};
+
+const dd = StyleSheet.create({
+  wrap: { flex: 1 },
+  label: {
+    fontSize: 10, fontWeight: '700', color: '#5A5A7A',
+    textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5,
+  },
+  trigger: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#DDDDF5',
+    borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, gap: 6,
+  },
+  triggerOpen: { borderColor: '#5C6BC0' },
+  triggerDisabled: { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' },
+  triggerText: { flex: 1, fontSize: 13, color: '#1A1A3A', fontWeight: '500' },
+  placeholder: { color: '#9CA3AF', fontWeight: '400' },
+  backdrop: {
+    flex: 1,
+    // Fully transparent — just captures outside taps
+    backgroundColor: 'transparent',
+  },
+  menu: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#DDDDF5',
+    borderRadius: 10,
+    // @ts-ignore web shadow
+    boxShadow: '0 4px 20px rgba(55,48,163,0.15)',
+    overflow: 'hidden',
+  },
+  option: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 14, paddingVertical: 10,
+    borderBottomWidth: 0.5, borderBottomColor: '#F3F4F6',
+  },
+  optionActive: { backgroundColor: '#F3F4FF' },
+  optionText: { fontSize: 13, color: '#374151' },
+  optionTextActive: { color: '#5C6BC0', fontWeight: '600' },
+});
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+
 export default function RevisionPapers() {
   const router = useRouter();
   const { firebaseUser, user } = useAuth();
@@ -54,9 +208,11 @@ export default function RevisionPapers() {
     if (!firebaseUser) throw new Error('Not authenticated');
     return firebaseUser.getIdToken();
   };
+
   const [grades, setGrades] = useState<Grade[]>([]);
   const [gradeId, setGradeId] = useState<string>('');
-  const [term, setTerm] = useState<number>(1);
+  const [term, setTerm] = useState<string>('');
+  const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [loadingGrades, setLoadingGrades] = useState(true);
   const [loadingList, setLoadingList] = useState(false);
   const [items, setItems] = useState<Assessment[]>([]);
@@ -66,13 +222,40 @@ export default function RevisionPapers() {
   const [topupMessage, setTopupMessage] = useState<string>('');
   const abortRef = useRef<AbortController | null>(null);
 
-  // Fetch grades once auth is ready. Depending on `firebaseUser` is
-  // critical: the screen often mounts before Firebase has restored the
-  // session, in which case `getIdToken()` would throw "Not authenticated"
-  // on first run, the catch block would clear the grades, and the chip
-  // row would render permanently empty (the bug a user reported as
-  // "grade selection is not active"). Re-running once auth resolves
-  // populates the chips correctly.
+  // ── Grade options ─────────────────────────────────────────────────────────
+
+  const gradeOptions = grades.map((g) => ({ label: g.name, value: g.id }));
+
+  // ── Term options — always fixed ───────────────────────────────────────────
+
+  const termOptions = [
+    { label: 'Term 1', value: '1' },
+    { label: 'Term 2', value: '2' },
+    { label: 'Term 3', value: '3' },
+  ];
+
+  // ── Subject options — derived from fetched items ──────────────────────────
+
+  const subjectOptions = [
+    ...Array.from(new Set(items.map((i) => i.subjectName)))
+      .sort()
+      .map((s) => ({
+        label: `${s} (${items.filter((i) => i.subjectName === s).length})`,
+        value: s,
+      })),
+  ];
+
+  // ── Visible papers — filtered by subject ─────────────────────────────────
+
+  // Papers are only displayed once teacher has chosen grade + term + a specific subject
+  const allSelected = Boolean(gradeId && term && selectedSubject && selectedSubject !== 'all');
+
+  const visibleItems = selectedSubject === 'all'
+    ? items
+    : items.filter((i) => i.subjectName === selectedSubject);
+
+  // ── Load grades once auth is ready ───────────────────────────────────────
+
   useEffect(() => {
     if (!firebaseUser) return;
     let alive = true;
@@ -84,8 +267,6 @@ export default function RevisionPapers() {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!alive) return;
-        // Backend shape: { success: true, grades: [...] } — fall back to a
-        // bare array for safety in case the contract ever flips back.
         const raw: any[] = Array.isArray(res.data)
           ? res.data
           : Array.isArray(res.data?.grades)
@@ -93,10 +274,8 @@ export default function RevisionPapers() {
           : [];
         const list: Grade[] = raw.map((g: any) => ({ id: g._id || g.id, name: g.name }));
         setGrades(list);
-        if (list.length && !gradeId) setGradeId(list[0].id);
+        // Don't auto-select — teacher must choose explicitly
       } catch (e) {
-        // surface the failure so we can diagnose the empty-chip case
-        // eslint-disable-next-line no-console
         console.warn('[revision] failed to load grades', e);
       } finally {
         if (alive) setLoadingGrades(false);
@@ -106,18 +285,23 @@ export default function RevisionPapers() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [firebaseUser]);
 
-  // Fetch list whenever grade or term changes
+  // ── Fetch papers when grade + term are both selected ─────────────────────
+  // Subject filtering is client-side. We fetch as soon as grade+term are set
+  // to populate the subject dropdown, but papers are only SHOWN once the
+  // teacher also picks a subject.
+
   useEffect(() => {
-    if (!gradeId) return;
+    if (!gradeId || !term) return;
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
     setLoadingList(true);
+    setSelectedSubject(''); // reset subject on grade/term change
     (async () => {
       try {
         const token = await getIdToken();
         const res = await axios.get(`${BACKEND_URL}/api/assessments`, {
-          params: { gradeId, term },
+          params: { gradeId, term: Number(term) },
           headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal as any,
         });
@@ -134,6 +318,8 @@ export default function RevisionPapers() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gradeId, term]);
 
+  // ── Download ──────────────────────────────────────────────────────────────
+
   const handleDownload = useDebouncedAction(async (item: Assessment) => {
     if (downloadingKey) return;
     setDownloadingKey(item.key);
@@ -146,8 +332,6 @@ export default function RevisionPapers() {
       );
       const { signedUrl, newBalance } = res.data || {};
       if (!signedUrl) throw new Error('No download URL returned');
-
-      // Trigger download in the browser
       if (Platform.OS === 'web') {
         const a = document.createElement('a');
         a.href = signedUrl;
@@ -161,7 +345,7 @@ export default function RevisionPapers() {
       }
       notify(
         'Download started',
-        `KES ${costPerDownload} charged. New wallet balance: KES ${Number(newBalance ?? 0).toFixed(2)}`,
+        `KES ${costPerDownload} charged. New balance: KES ${Number(newBalance ?? 0).toFixed(2)}`,
       );
     } catch (err: any) {
       const status = err?.response?.status;
@@ -169,7 +353,7 @@ export default function RevisionPapers() {
       if (status === 402) {
         const msg =
           (typeof detail === 'object' && detail?.message) ||
-          'Your wallet is running low. Top up to keep enjoying high-quality assessments.';
+          'Your wallet is running low. Top up to keep downloading assessments.';
         setTopupMessage(msg);
         setTopupOpen(true);
       } else {
@@ -185,11 +369,12 @@ export default function RevisionPapers() {
 
   const goTopUp = () => {
     setTopupOpen(false);
-    router.push('/(teacher)/profile');
+    // Pass returnTo=revision so profile redirects back here after a successful top-up.
+    // If the teacher abandons the top-up they stay on profile — they must navigate
+    // back to revision manually and start the download selection afresh.
+    router.push('/(teacher)/profile?returnTo=revision');
   };
 
-  // React Native's Alert is a silent no-op on web — use the real popup so the
-  // user sees "Download started" / "Download failed" messages.
   const notify = (title: string, body?: string) => {
     const msg = body ? `${title}\n\n${body}` : title;
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
@@ -199,9 +384,21 @@ export default function RevisionPapers() {
     }
   };
 
+  // ── Selected grade name (for section heading) ─────────────────────────────
+
+  const selectedGradeName = grades.find((g) => g.id === gradeId)?.name || '';
+  const selectedTermLabel = termOptions.find((t) => t.value === term)?.label || '';
+
+  // ─────────────────────────────────────────────────────────────────────────
+
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerIconWrap}>
             <Ionicons name="school" size={28} color="#5C6BC0" />
@@ -209,7 +406,7 @@ export default function RevisionPapers() {
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Revision Papers</Text>
             <Text style={styles.subtitle}>
-              Download past assessments per grade and term — KES {costPerDownload} per paper.
+              Download past assessments · KES {costPerDownload} per paper
             </Text>
           </View>
           <View style={styles.walletPill}>
@@ -218,64 +415,84 @@ export default function RevisionPapers() {
           </View>
         </View>
 
-        {/* Grade picker */}
-        <Text style={styles.sectionLabel}>Grade</Text>
-        {loadingGrades ? (
-          <ActivityIndicator color="#5C6BC0" />
-        ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-            {grades.map((g) => {
-              const active = g.id === gradeId;
-              return (
-                <TouchableOpacity
-                  key={g.id}
-                  onPress={() => setGradeId(g.id)}
-                  style={[styles.chip, active && styles.chipActive]}
-                  testID={`assessments-grade-${g.id}`}
-                  data-testid={`assessments-grade-${g.id}`}
-                >
-                  <Text style={[styles.chipText, active && styles.chipTextActive]}>{g.name}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        )}
+        {/* Three dropdowns in a single row */}
+        <View style={styles.filtersCard}>
+          {loadingGrades ? (
+            <View style={styles.loadingRow}>
+              <ActivityIndicator color="#5C6BC0" size="small" />
+              <Text style={styles.loadingText}>Loading grades…</Text>
+            </View>
+          ) : (
+            <View style={styles.dropdownRow}>
+              {/* Grade */}
+              <Dropdown
+                label="Grade"
+                value={gradeId}
+                options={gradeOptions}
+                onSelect={(v) => setGradeId(v)}
+                placeholder="Select grade"
+                testID="revision-grade-dropdown"
+              />
 
-        {/* Term picker */}
-        <Text style={[styles.sectionLabel, { marginTop: 14 }]}>Term</Text>
-        <View style={styles.chipRow}>
-          {[1, 2, 3].map((t) => {
-            const active = t === term;
-            return (
-              <TouchableOpacity
-                key={t}
-                onPress={() => setTerm(t)}
-                style={[styles.chip, active && styles.chipActive]}
-                testID={`assessments-term-${t}`}
-                data-testid={`assessments-term-${t}`}
-              >
-                <Text style={[styles.chipText, active && styles.chipTextActive]}>Term {t}</Text>
-              </TouchableOpacity>
-            );
-          })}
+              {/* Term */}
+              <Dropdown
+                label="Term"
+                value={term}
+                options={termOptions}
+                onSelect={(v) => setTerm(v)}
+                testID="revision-term-dropdown"
+              />
+
+              {/* Subject — disabled until papers loaded */}
+              <Dropdown
+                label="Subject"
+                value={selectedSubject}
+                options={subjectOptions}
+                onSelect={(v) => setSelectedSubject(v)}
+                disabled={loadingList || items.length === 0}
+                placeholder={loadingList ? 'Loading…' : 'All Subjects'}
+                testID="revision-subject-dropdown"
+              />
+            </View>
+          )}
         </View>
 
-        {/* List */}
-        <Text style={[styles.sectionLabel, { marginTop: 22 }]}>Available Papers</Text>
-
-        {loadingList ? (
-          <View style={styles.emptyWrap}>
-            <ActivityIndicator color="#5C6BC0" />
-          </View>
-        ) : items.length === 0 ? (
-          <View style={styles.emptyWrap}>
-            <Ionicons name="file-tray-outline" size={36} color="#9CA3AF" />
-            <Text style={styles.emptyText}>No papers uploaded yet for this grade & term.</Text>
-            <Text style={styles.emptyHint}>Check back soon — we add fresh assessments every term.</Text>
+        {/* Papers — only shown once grade + term + subject all selected */}
+        {!allSelected ? (
+          <View style={styles.promptWrap}>
+            <Ionicons name="filter-outline" size={36} color="#C7D2FE" />
+            <Text style={styles.promptText}>
+              {!gradeId
+                ? 'Select a grade to get started'
+                : !term
+                ? 'Now select a term'
+                : 'Now select a subject to see papers'}
+            </Text>
           </View>
         ) : (
-          items.map((item) => (
-            <View key={item.key} style={styles.paperRow} data-testid={`assessment-row-${item.key}`}>
+          <>
+            <Text style={styles.sectionLabel}>
+              {`${selectedSubject} — ${selectedGradeName} ${selectedTermLabel}`}
+            </Text>
+
+            {loadingList ? (
+              <View style={styles.emptyWrap}>
+                <ActivityIndicator color="#5C6BC0" />
+                <Text style={styles.loadingText}>Loading papers…</Text>
+              </View>
+            ) : visibleItems.length === 0 ? (
+              <View style={styles.emptyWrap}>
+                <Ionicons name="file-tray-outline" size={36} color="#9CA3AF" />
+                <Text style={styles.emptyText}>No {selectedSubject} papers for this selection.</Text>
+                <Text style={styles.emptyHint}>Check back soon — we add fresh assessments every term.</Text>
+              </View>
+            ) : (
+              visibleItems.map((item) => (
+            <View
+              key={item.key}
+              style={styles.paperRow}
+              data-testid={`assessment-row-${item.key}`}
+            >
               <View style={styles.paperIcon}>
                 <Ionicons
                   name={item.ext === '.pdf' ? 'document-text' : 'document'}
@@ -286,7 +503,7 @@ export default function RevisionPapers() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.paperTitle} numberOfLines={1}>{item.title}</Text>
                 <Text style={styles.paperMeta}>
-                  {item.ext.replace('.', '').toUpperCase()} · {formatBytes(item.sizeBytes)}
+                  {item.subjectName} · {item.ext.replace('.', '').toUpperCase()} · {formatBytes(item.sizeBytes)}
                 </Text>
               </View>
               <TouchableOpacity
@@ -306,12 +523,19 @@ export default function RevisionPapers() {
                 )}
               </TouchableOpacity>
             </View>
-          ))
+              ))
+            )}
+          </>
         )}
       </ScrollView>
 
-      {/* Insufficient-balance polite modal */}
-      <Modal visible={topupOpen} transparent animationType="fade" onRequestClose={() => setTopupOpen(false)}>
+      {/* Insufficient-balance modal — untouched */}
+      <Modal
+        visible={topupOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setTopupOpen(false)}
+      >
         <View style={styles.modalBackdrop}>
           <View style={styles.modalCard} data-testid="assessments-topup-modal">
             <View style={styles.modalIconWrap}>
@@ -345,21 +569,18 @@ export default function RevisionPapers() {
   );
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'transparent' },
   scroll: { flex: 1 },
   scrollContent: { padding: 16, paddingBottom: 48 },
 
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 18,
-    gap: 12,
-    borderWidth: 1,
-    borderColor: '#F3F4FF',
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#FFFFFF', borderRadius: 14,
+    padding: 14, marginBottom: 14, gap: 12,
+    borderWidth: 1, borderColor: '#F3F4FF',
   },
   headerIconWrap: {
     width: 44, height: 44, borderRadius: 22,
@@ -375,34 +596,48 @@ const styles = StyleSheet.create({
   },
   walletPillText: { fontSize: 11, fontWeight: '700', color: '#283593' },
 
-  sectionLabel: { fontSize: 12, fontWeight: '700', color: '#374151', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
-
-  chipRow: { flexDirection: 'row', gap: 8, paddingVertical: 2, flexWrap: 'wrap' },
-  chip: {
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999,
-    backgroundColor: '#FFFFFF',
+  filtersCard: {
+    backgroundColor: '#FFFFFF', borderRadius: 14,
     borderWidth: 1, borderColor: '#DDDDF5',
+    padding: 14, marginBottom: 16,
   },
-  chipActive: { backgroundColor: '#5C6BC0', borderColor: '#5C6BC0' },
-  chipText: { fontSize: 13, color: '#374151', fontWeight: '500' },
-  chipTextActive: { color: '#FFFFFF', fontWeight: '600' },
+  dropdownRow: {
+    flexDirection: 'row',
+    gap: 10,
+    // No zIndex needed — dropdown menus render via Modal portal at root level
+  },
+  loadingRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8,
+  },
+  loadingText: { fontSize: 13, color: '#9CA3AF' },
 
+  sectionLabel: {
+    fontSize: 12, fontWeight: '700', color: '#374151',
+    textTransform: 'uppercase', letterSpacing: 0.5,
+    marginBottom: 10,
+  },
+
+  promptWrap: {
+    alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 48, gap: 12,
+  },
+  promptText: {
+    fontSize: 14, color: '#9CA3AF', textAlign: 'center',
+    fontWeight: '500', maxWidth: 260,
+  },
   emptyWrap: {
     alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 40,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    borderWidth: 1, borderColor: '#F3F4F6',
+    paddingVertical: 40, backgroundColor: '#FFFFFF',
+    borderRadius: 14, borderWidth: 1, borderColor: '#F3F4F6',
+    gap: 8,
   },
-  emptyText: { fontSize: 14, color: '#374151', fontWeight: '600', marginTop: 12 },
-  emptyHint: { fontSize: 12, color: '#9CA3AF', marginTop: 4 },
+  emptyText: { fontSize: 14, color: '#374151', fontWeight: '600' },
+  emptyHint: { fontSize: 12, color: '#9CA3AF' },
 
   paperRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: '#FFFFFF',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 10,
+    backgroundColor: '#FFFFFF', padding: 12,
+    borderRadius: 12, marginBottom: 10,
     borderWidth: 1, borderColor: '#F3F4F6',
   },
   paperIcon: {
@@ -422,27 +657,26 @@ const styles = StyleSheet.create({
   downloadBtnText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
 
   modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(17, 24, 39, 0.55)',
-    alignItems: 'center', justifyContent: 'center',
-    padding: 20,
+    flex: 1, backgroundColor: 'rgba(17, 24, 39, 0.55)',
+    alignItems: 'center', justifyContent: 'center', padding: 20,
   },
   modalCard: {
     width: '100%', maxWidth: 400,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16, padding: 24,
-    alignItems: 'center',
+    backgroundColor: '#FFFFFF', borderRadius: 16,
+    padding: 24, alignItems: 'center',
   },
   modalIconWrap: {
     width: 64, height: 64, borderRadius: 32,
     backgroundColor: '#F3F4FF',
-    alignItems: 'center', justifyContent: 'center',
-    marginBottom: 12,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 12,
   },
   modalTitle: { fontSize: 18, fontWeight: '700', color: '#1A1A3A', marginBottom: 6 },
   modalBody: { fontSize: 13, color: '#4B5563', textAlign: 'center', lineHeight: 20, marginBottom: 18 },
   modalActions: { flexDirection: 'row', gap: 10, width: '100%' },
-  modalSecondary: { flex: 1, paddingVertical: 12, borderRadius: 10, borderWidth: 1, borderColor: '#DDDDF5', alignItems: 'center' },
+  modalSecondary: {
+    flex: 1, paddingVertical: 12, borderRadius: 10,
+    borderWidth: 1, borderColor: '#DDDDF5', alignItems: 'center',
+  },
   modalSecondaryText: { color: '#374151', fontWeight: '600', fontSize: 13 },
   modalPrimary: {
     flex: 1, paddingVertical: 12, borderRadius: 10,
