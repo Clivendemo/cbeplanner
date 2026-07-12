@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import { useCalendarData, DisplayEvent, DisplayTerm } from './useCalendarData';
+import { LoginShellWidgets } from './LoginShellWidgets';
 
 // ===== BREAKPOINTS =====
 const BP_DESKTOP = 1180;
@@ -697,6 +698,9 @@ export const FeatureTiles: React.FC = () => {
 // ===== MAIN LAYOUT =====
 interface Props {
   children: React.ReactNode;
+  /** When true, renders only the children with no sidebars or outer card.
+   *  Used by the auth shell (_layout) which provides its own container. */
+  inShell?: boolean;
 }
 
 // ===== SIDEBAR CONTENT (extracted so mobile can stack them below the main card) =====
@@ -722,11 +726,19 @@ const RightSidebarContent: React.FC = () => (
   </View>
 );
 
-export const LandingLayout: React.FC<Props> = ({ children }) => {
+export const LandingLayout: React.FC<Props> = ({ children, inShell = false }) => {
   const { width } = useWindowDimensions();
   const isDesktop = width >= BP_DESKTOP;
   const isTablet = width >= BP_TABLET && width < BP_DESKTOP;
   const isMobile = width < BP_TABLET;
+
+  // Inside the auth shell the outer layout (sidebar + card) is already
+  // provided by app/auth/_layout.tsx — just render the content directly.
+  if (inShell) {
+    // Auth shell delegates layout to LoginShellWidgets which places the
+    // login card next to the calendar and shows term / visitor widgets below.
+    return <LoginShellWidgets loginCard={children} />;
+  }
 
   // Previously the 728x90 ad lived below the middle bar. Moved to the left sidebar
   // and sized to the available viewport.

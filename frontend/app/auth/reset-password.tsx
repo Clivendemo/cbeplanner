@@ -16,6 +16,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
+  useWindowDimensions,
   Text,
   TouchableOpacity,
   StyleSheet,
@@ -32,7 +33,13 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useDebouncedAction } from '../../hooks/useDebouncedAction';
 import { PasswordInput } from '../../components/PasswordInput';
 
+const BP_DESKTOP = 1180;
+
+
+// width injected by hook below
 export default function ResetPassword() {
+  const { width } = useWindowDimensions();
+  const inShell = width >= BP_DESKTOP;
   const params = useLocalSearchParams<{ oobCode?: string; mode?: string }>();
   const router = useRouter();
   const { verifyResetCode, confirmReset } = useAuth();
@@ -111,7 +118,7 @@ export default function ResetPassword() {
   // Success screen
   if (done) {
     return (
-      <LandingLayout>
+      <LandingLayout inShell={inShell}>
         <View style={styles.header}>
           <Ionicons name="checkmark-circle" size={56} color="#10B981" />
           <Text style={styles.title}>Password Updated</Text>
@@ -134,7 +141,7 @@ export default function ResetPassword() {
   // Verifying oobCode
   if (verifyState === 'pending') {
     return (
-      <LandingLayout>
+      <LandingLayout inShell={inShell}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#5C6BC0" />
           <Text style={styles.subtitle}>Verifying reset link…</Text>
@@ -146,7 +153,7 @@ export default function ResetPassword() {
   // Invalid / expired link
   if (verifyState === 'error') {
     return (
-      <LandingLayout>
+      <LandingLayout inShell={inShell}>
         <View style={styles.header}>
           <Ionicons name="alert-circle" size={56} color="#EF4444" />
           <Text style={styles.title}>Reset Link Problem</Text>
@@ -165,7 +172,7 @@ export default function ResetPassword() {
   }
 
   return (
-    <LandingLayout>
+    <LandingLayout inShell={inShell}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}

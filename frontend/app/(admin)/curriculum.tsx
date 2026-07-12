@@ -55,8 +55,8 @@ const ENTITY_CONFIG: Record<EntityType, {
 }> = {
   grades: { title: 'Grades', singularTitle: 'Grade', icon: 'school', color: '#5C6BC0', fields: ['name', 'order'], apiPath: 'grades' },
   subjects: { title: 'Subjects', singularTitle: 'Subject', icon: 'book', color: '#10B981', fields: ['name'], parent: 'grades', apiPath: 'subjects' },
-  strands: { title: 'Strands', singularTitle: 'Strand', icon: 'git-branch', color: '#F59E0B', fields: ['name'], parent: 'subjects', apiPath: 'strands' },
-  substrands: { title: 'Sub-strands', singularTitle: 'Sub-strand', icon: 'git-merge', color: '#EF4444', fields: ['name', 'number_of_lessons'], parent: 'strands', apiPath: 'substrands' },
+  strands: { title: 'Strands', singularTitle: 'Strand', icon: 'git-branch', color: '#F59E0B', fields: ['name', 'order'], parent: 'subjects', apiPath: 'strands' },
+  substrands: { title: 'Sub-strands', singularTitle: 'Sub-strand', icon: 'git-merge', color: '#EF4444', fields: ['name', 'number_of_lessons', 'order'], parent: 'strands', apiPath: 'substrands' },
   slos: { title: 'SLOs', singularTitle: 'SLO', icon: 'checkmark-circle', color: '#5C6BC0', fields: ['name', 'description', 'key_inquiry_questions'], parent: 'substrands', apiPath: 'slos' },
   learning_activities: { title: 'Learning Activities', singularTitle: 'Learning Activities', icon: 'flash', color: '#84CC16', fields: ['introduction_activities', 'development_activities', 'conclusion_activities', 'extended_activities'], parent: 'substrands', apiPath: 'learning-activities' },
   competencies: { title: 'Competencies', singularTitle: 'Competency', icon: 'star', color: '#EC4899', fields: ['name', 'description'], apiPath: 'competencies' },

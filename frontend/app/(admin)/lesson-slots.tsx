@@ -246,29 +246,29 @@ export default function LessonSlotsScreen() {
 
   // ── Pickers ──
 
-  const Picker = ({ label, items, selected, onSelect, placeholder }: {
-    label: string; items: PickItem[]; selected: string;
-    onSelect: (id: string) => void; placeholder: string;
-  }) => (
-    <View style={S.pickerWrap}>
-      <Text style={S.pickerLabel}>{label}</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={S.pickerScroll}>
-        {items.map(item => (
-          <TouchableOpacity
-            key={item.id}
-            style={[S.chip, selected === item.id && S.chipActive]}
-            onPress={() => onSelect(item.id)}
-            data-testid={`pick-${label.toLowerCase()}-${item.id}`}
-          >
-            <Text style={[S.chipText, selected === item.id && S.chipTextActive]}>
-              {item.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
-        {items.length === 0 && <Text style={S.pickerEmpty}>{placeholder}</Text>}
-      </ScrollView>
+ const Picker = ({ label, items, selected, onSelect, placeholder }: {
+  label: string; items: PickItem[]; selected: string;
+  onSelect: (id: string) => void; placeholder: string;
+}) => (
+  <View style={S.pickerWrap}>
+    <Text style={S.pickerLabel}>{label}</Text>
+    <View style={S.pickerScroll}>
+      {items.map(item => (
+        <TouchableOpacity
+          key={item.id}
+          style={[S.chip, selected === item.id && S.chipActive]}
+          onPress={() => onSelect(item.id)}
+          data-testid={`pick-${label.toLowerCase()}-${item.id}`}
+        >
+          <Text style={[S.chipText, selected === item.id && S.chipTextActive]}>
+            {item.name}
+          </Text>
+        </TouchableOpacity>
+      ))}
+      {items.length === 0 && <Text style={S.pickerEmpty}>{placeholder}</Text>}
     </View>
-  );
+  </View>
+);
 
   // ── Render ──
 
@@ -520,8 +520,8 @@ const S = StyleSheet.create({
   // Pickers
   pickerWrap: { marginBottom: 12 },
   pickerLabel: { fontSize: 12, fontWeight: '600', color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
-  pickerScroll: { flexDirection: 'row' },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#fff', borderWidth: 1, borderColor: '#DDDDF5', marginRight: 8 },
+  pickerScroll: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+    chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#fff', borderWidth: 1, borderColor: '#DDDDF5' },
   chipActive: { backgroundColor: '#5C6BC0', borderColor: '#5C6BC0' },
   chipText: { fontSize: 13, color: '#374151' },
   chipTextActive: { color: '#fff', fontWeight: '600' },

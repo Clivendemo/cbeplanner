@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import {
   View,
+  useWindowDimensions,
   Text,
   TextInput,
   TouchableOpacity,
@@ -18,7 +19,13 @@ import { LandingLayout, FeatureTiles } from '../../components/LandingLayout';
 import { useDebouncedAction } from '../../hooks/useDebouncedAction';
 import { PasswordInput } from '../../components/PasswordInput';
 
+const BP_DESKTOP = 1180;
+
+
+// width injected by hook below
 export default function Login() {
+  const { width } = useWindowDimensions();
+  const inShell = width >= BP_DESKTOP;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -82,7 +89,7 @@ export default function Login() {
   };
 
   return (
-    <LandingLayout>
+    <LandingLayout inShell={inShell}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
@@ -159,13 +166,15 @@ export default function Login() {
           </TouchableOpacity>
         </View>
 
-        <FeatureTiles />
+        {!inShell && <FeatureTiles />}
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>KICD-Aligned Lesson Planning</Text>
-          <Text style={styles.footerText}>For Kenyan Teachers</Text>
-          <Text style={styles.developerText}>Developed by LEGIT LAB</Text>
-        </View>
+        {!inShell && (
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>KICD-Aligned Lesson Planning</Text>
+            <Text style={styles.footerText}>For Kenyan Teachers</Text>
+            <Text style={styles.developerText}>Developed by LEGIT LAB</Text>
+          </View>
+        )}
       </KeyboardAvoidingView>
 
       <Modal

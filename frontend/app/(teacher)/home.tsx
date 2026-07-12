@@ -6,15 +6,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  ActivityIndicator,
-  Modal
+  ActivityIndicator
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
-import { LessonPlanDisplay } from '../../components/LessonPlanDisplay';
 import { getErrorMessage, isPaymentError, isRateLimitError } from '../../utils/errorHandler';
 import { WalletCreditsPopup } from '../../components/WalletCreditsPopup';
 
@@ -43,8 +41,6 @@ export default function Home() {
   
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [lessonPlan, setLessonPlan] = useState<any>(null);
-  const [showPlan, setShowPlan] = useState(false);
   
   // Wallet popup state
   const [showWalletPopup, setShowWalletPopup] = useState(false);
@@ -262,10 +258,8 @@ export default function Home() {
       );
 
       if (response.data.success) {
-        setLessonPlan(response.data.lessonPlan);
-        setShowPlan(true);
         await refreshProfile();
-        Alert.alert('Success', 'Lesson plan generated successfully!');
+        router.push('/(teacher)/lessons');
       }
     } catch (error: any) {
       const errorMessage = getErrorMessage(error);
@@ -463,128 +457,6 @@ export default function Home() {
           )}
         </View>
       </ScrollView>
-
-      {/* Lesson Plan Modal */}
-      <Modal
-        visible={showPlan}
-        animationType="slide"
-        onRequestClose={() => setShowPlan(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Lesson Plan</Text>
-            <TouchableOpacity onPress={() => setShowPlan(false)}>
-              <Ionicons name="close" size={24} color="#5A5A7A" />
-            </TouchableOpacity>
-          </View>
-          
-          <ScrollView style={styles.modalContent}>
-            {lessonPlan && (
-              <>
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Lesson Information</Text>
-                  <Text style={styles.sectionText}>Teacher: {lessonPlan.teacherName}</Text>
-                  <Text style={styles.sectionText}>School: {lessonPlan.schoolName}</Text>
-                  <Text style={styles.sectionText}>Duration: {lessonPlan.duration} minutes</Text>
-                  <Text style={styles.sectionText}>Grade: {lessonPlan.gradeName}</Text>
-                  <Text style={styles.sectionText}>Subject: {lessonPlan.subjectName}</Text>
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Topic</Text>
-                  <Text style={styles.sectionText}>{lessonPlan.strandName} / {lessonPlan.substrandName}</Text>
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Specific Learning Outcome</Text>
-                  <Text style={styles.sectionText}>{lessonPlan.sloName}</Text>
-                  <Text style={styles.sectionDescription}>{lessonPlan.sloDescription}</Text>
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>SLOs by Domain</Text>
-                  <Text style={styles.domainTitle}>Knowledge:</Text>
-                  {lessonPlan.knowledge?.map((k: string, i: number) => (
-                    <Text key={i} style={styles.listText}>• {k}</Text>
-                  ))}
-                  <Text style={styles.domainTitle}>Skills:</Text>
-                  {lessonPlan.skills?.map((s: string, i: number) => (
-                    <Text key={i} style={styles.listText}>• {s}</Text>
-                  ))}
-                  <Text style={styles.domainTitle}>Attitudes:</Text>
-                  {lessonPlan.attitudes?.map((a: string, i: number) => (
-                    <Text key={i} style={styles.listText}>• {a}</Text>
-                  ))}
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Learning Resources</Text>
-                  {lessonPlan.learningResources?.map((resource: string, i: number) => (
-                    <Text key={i} style={styles.listText}>• {resource}</Text>
-                  ))}
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Core Competencies</Text>
-                  {lessonPlan.competencies?.map((comp: any, i: number) => (
-                    <View key={i} style={styles.itemCard}>
-                      <Text style={styles.itemName}>{comp.name}</Text>
-                      <Text style={styles.itemDescription}>{comp.description}</Text>
-                    </View>
-                  ))}
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Core Values</Text>
-                  {lessonPlan.values?.map((value: any, i: number) => (
-                    <View key={i} style={styles.itemCard}>
-                      <Text style={styles.itemName}>{value.name}</Text>
-                      <Text style={styles.itemDescription}>{value.description}</Text>
-                    </View>
-                  ))}
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Pertinent and Contemporary Issues (PCIs)</Text>
-                  {lessonPlan.pcis?.map((pci: any, i: number) => (
-                    <View key={i} style={styles.itemCard}>
-                      <Text style={styles.itemName}>{pci.name}</Text>
-                      <Text style={styles.itemDescription}>{pci.description}</Text>
-                    </View>
-                  ))}
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Lesson Body</Text>
-                  <View style={styles.lessonStep}>
-                    <Text style={styles.stepTitle}>1. Introduction</Text>
-                    <Text style={styles.stepText}>{lessonPlan.introduction}</Text>
-                  </View>
-                  <View style={styles.lessonStep}>
-                    <Text style={styles.stepTitle}>2. Lesson Development</Text>
-                    <Text style={styles.stepText}>{lessonPlan.lessonDevelopment}</Text>
-                  </View>
-                  {lessonPlan.extendedActivity && (
-                    <View style={styles.lessonStep}>
-                      <Text style={styles.stepTitle}>3. Extended Activity</Text>
-                      <Text style={styles.stepText}>{lessonPlan.extendedActivity}</Text>
-                    </View>
-                  )}
-                  <View style={styles.lessonStep}>
-                    <Text style={styles.stepTitle}>{lessonPlan.extendedActivity ? '4' : '3'}. Conclusion</Text>
-                    <Text style={styles.stepText}>{lessonPlan.conclusion}</Text>
-                  </View>
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Assessment</Text>
-                  <Text style={styles.sectionText}>{lessonPlan.assessment}</Text>
-                </View>
-              </>
-            )}
-          </ScrollView>
-        </View>
-      </Modal>
 
       {/* Wallet Credits Popup */}
       <WalletCreditsPopup

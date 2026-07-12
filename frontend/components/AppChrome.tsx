@@ -11,42 +11,11 @@ import React, { useEffect, useState } from 'react';
 import { Platform, View, StyleSheet } from 'react-native';
 import axios from 'axios';
 import { getCalendarEvents } from './useCalendarData';
+import { loadNews, DEFAULT_NEWS } from './useNewsData';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
-// Module-level news cache so AppChrome re-mounts (which happen on every
-// route change) don't re-hit /api/news. 5-minute TTL matches the calendar.
-const NEWS_TTL_MS = 5 * 60 * 1000;
-let _newsCache: { data: { tag: string; text: string }[]; at: number } | null = null;
-let _newsInFlight: Promise<{ tag: string; text: string }[]> | null = null;
-
-async function loadNews(): Promise<{ tag: string; text: string }[]> {
-  if (_newsCache && Date.now() - _newsCache.at < NEWS_TTL_MS) return _newsCache.data;
-  if (_newsInFlight) return _newsInFlight;
-  _newsInFlight = axios.get(`${BACKEND_URL}/api/news`)
-    .then((r) => {
-      const data = (r.data?.news || []).map((n: any) => ({ tag: n.tag, text: n.text }));
-      _newsCache = { data, at: Date.now() };
-      _newsInFlight = null;
-      return data;
-    })
-    .catch(() => {
-      _newsInFlight = null;
-      return [];
-    });
-  return _newsInFlight;
-}
-
-// ===== Default news items (used if API returns none) =====
-
-const DEFAULT_NEWS: { tag: string; text: string }[] = [
-  { tag: 'MoE', text: 'CBC reforms update released by the Ministry of Education' },
-  { tag: 'KNEC', text: 'KCSE 2026 timetable now available on the KNEC portal' },
-  { tag: 'KICD', text: 'New teacher training guidelines announced for Grades 7–9' },
-  { tag: 'TSC', text: 'TSC Online portal enhanced with faster payslip access' },
-  { tag: 'Update', text: 'Junior School grade-level assessments go digital in 2026' },
-  { tag: 'Tip', text: 'Kenyan teachers: try starting each lesson with a real-life example' },
-];
+// News loading + defaults moved to useNewsData.ts
 
 // ===== NewsStrip =====
 

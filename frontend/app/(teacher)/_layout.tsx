@@ -9,8 +9,6 @@ import { TeacherSideNav } from '../../components/TeacherSideNav';
 // LEFT_SIDEBAR_W is the dark TeacherSideNav (formerly the AppLeftSidebar
 // at 180 px) — wider now so menu labels never truncate.
 const LEFT_SIDEBAR_W = 240;
-const MAIN_W = 950;
-const RIGHT_SIDEBAR_W = 180;
 const GAP = 16;
 const SHELL_BREAKPOINT = 1180; // Below this we hide sidebars and show full-width app
 
@@ -266,7 +264,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'stretch',
-    justifyContent: 'center',
     gap: GAP,
     paddingHorizontal: GAP,
     paddingVertical: GAP,
@@ -277,7 +274,6 @@ const styles = StyleSheet.create({
   },
   mainCol: {
     flex: 1,
-    maxWidth: MAIN_W,
     minWidth: 0, // allow the flex child to shrink below its content width
     backgroundColor: '#FFFFFF',
     borderRadius: 14,

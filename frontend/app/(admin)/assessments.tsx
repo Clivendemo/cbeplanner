@@ -66,7 +66,7 @@ export default function AdminAssessments() {
 
   // Native file picker (web only — admin is web-only anyway)
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [pickedFile, setPickedFile] = useState<File | null>(null);
+  const [pickedFiles, setPickedFiles] = useState<File[]>([]);
 
   // React Native's Alert is a silent no-op on web. Use the real window.alert
   // so admins actually see validation feedback when clicking "Upload to R2".
@@ -129,7 +129,8 @@ export default function AdminAssessments() {
   useEffect(() => { refreshList(); /* eslint-disable-line react-hooks/exhaustive-deps */ }, [filterGradeId, filterTerm]);
 
   const handleUpload = useDebouncedAction(async () => {
-    if (!pickedFile) { notify('Pick a file', 'Please choose a PDF or Word document first.'); return; }
+    if (pickedFiles.length === 0) { notify('Pick a file', 'Please choose at least one PDF or Word document.'); return; }
+    if (pickedFiles.length > 5) { notify('Too many files', 'Maximum 5 files per upload session.'); return; }
     if (!gradeId) { notify('Missing grade', 'Please pick a grade.'); return; }
     if (!subject.trim()) { notify('Missing subject', 'Please type a subject name.'); return; }
     const y = parseInt(year, 10);
@@ -139,7 +140,7 @@ export default function AdminAssessments() {
     try {
       const token = await getIdToken();
       const fd = new FormData();
-      fd.append('file', pickedFile);
+      pickedFiles.forEach((f) => fd.append('files', f));
       fd.append('gradeId', gradeId);
       fd.append('term', String(term));
       fd.append('subject', subject.trim());
@@ -147,8 +148,14 @@ export default function AdminAssessments() {
       const res = await axios.post(`${BACKEND_URL}/api/admin/assessments/upload`, fd, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
       });
-      notify('Uploaded', `Stored as ${res.data.key}`);
-      setPickedFile(null);
+      const uploaded = (res.data.results || []).filter((r: any) => r.success);
+      const failed = (res.data.results || []).filter((r: any) => !r.success);
+      let msg = `${uploaded.length} of ${res.data.totalSubmitted} file(s) uploaded successfully.`;
+      if (failed.length) {
+        msg += '\n\nFailed:\n' + failed.map((r: any) => `• ${r.filename}: ${r.error}`).join('\n');
+      }
+      notify('Upload complete', msg);
+      setPickedFiles([]);
       setSubject('');
       if (fileInputRef.current) fileInputRef.current.value = '';
       refreshList();
@@ -180,12 +187,12 @@ export default function AdminAssessments() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <Text style={styles.pageTitle}>Past Papers (Assessments)</Text>
         <Text style={styles.pageSub}>
-          Upload .pdf / .doc / .docx to Cloudflare R2. Teachers pay KES 10 per download.
+          Upload up to 5 .pdf / .doc / .docx files at once to Cloudflare R2. Teachers pay KES 10 per download.
         </Text>
 
         {/* ---- Upload card ---- */}
         <View style={styles.card} data-testid="admin-assessments-upload-card">
-          <Text style={styles.cardTitle}>Upload a new paper</Text>
+          <Text style={styles.cardTitle}>Upload papers (up to 5 at once)</Text>
 
           <Text style={styles.label}>Grade</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
@@ -252,7 +259,7 @@ export default function AdminAssessments() {
             </View>
           </View>
 
-          <Text style={[styles.label, { marginTop: 14 }]}>File (.pdf, .doc, .docx)</Text>
+          <Text style={[styles.label, { marginTop: 14 }]}>Files (.pdf, .doc, .docx — up to 5)</Text>
           {Platform.OS === 'web' ? (
             // Plain DOM label → input: RN Web passes these through to real
             // HTML. TouchableOpacity + hidden input is flaky on RN Web because
@@ -277,14 +284,21 @@ export default function AdminAssessments() {
               data-testid="admin-upload-pick-file"
             >
               <Ionicons name="document-attach" size={18} color="#5C6BC0" />
-              <span>{pickedFile ? `${pickedFile.name} · ${bytes(pickedFile.size)}` : 'Choose file…'}</span>
+              <span>
+                {pickedFiles.length === 0
+                  ? 'Choose up to 5 files…'
+                  : pickedFiles.length === 1
+                  ? `${pickedFiles[0].name} · ${bytes(pickedFiles[0].size)}`
+                  : `${pickedFiles.length} files selected · ${bytes(pickedFiles.reduce((s, f) => s + f.size, 0))} total`}
+              </span>
               {/* @ts-ignore */}
               <input
                 id="admin-upload-file-input"
                 ref={fileInputRef}
                 type="file"
                 accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                onChange={(e: any) => setPickedFile(e.target.files?.[0] || null)}
+                multiple
+                onChange={(e: any) => setPickedFiles(Array.from(e.target.files || []))}
                 style={{ display: 'none' }}
                 data-testid="admin-upload-file-input"
               />

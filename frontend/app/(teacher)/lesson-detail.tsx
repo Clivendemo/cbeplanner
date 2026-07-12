@@ -164,64 +164,50 @@ export default function LessonDetail() {
     return text;
   };
 
-  // Share lesson plan as PDF
-  const handleSharePdf = async () => {
+  // Download/share lesson plan as PDF
+  const handleDownloadPdf = async () => {
     if (!id || !firebaseUser) return;
-    
+
     try {
       setGeneratingPdf(true);
-      
-      // Get auth token
       const token = await firebaseUser.getIdToken();
-      
-      // Generate filename
+      const url = `${BACKEND_URL}/api/lesson-plans/${id}/pdf`;
       const subject = lessonPlan?.subjectName || 'Lesson';
       const grade = lessonPlan?.gradeName || 'Plan';
       const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
       const filename = `LessonPlan_${subject}_${grade}_${dateStr}.pdf`.replace(/\s+/g, '_');
-      const fileUri = `${FileSystem.cacheDirectory}${filename}`;
-      
-      // Download PDF from backend
-      const downloadResult = await FileSystem.downloadAsync(
-        `${BACKEND_URL}/api/lesson-plans/${id}/pdf`,
-        fileUri,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-      
-      if (downloadResult.status !== 200) {
-        throw new Error('Failed to generate PDF');
-      }
-      
-      // Check if sharing is available
-      const isAvailable = await Sharing.isAvailableAsync();
-      
-      if (isAvailable) {
-        // Share the PDF file
+
+      if (Platform.OS === 'web') {
+        // Web: fetch and trigger browser download via a blob URL
+        const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+        if (!response.ok) throw new Error(`Server returned ${response.status}`);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = blobUrl;
+        anchor.download = filename;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        URL.revokeObjectURL(blobUrl);
+      } else {
+        // Native: download to cache then open share sheet
+        const fileUri = `${FileSystem.cacheDirectory}${filename}`;
+        const downloadResult = await FileSystem.downloadAsync(url, fileUri, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (downloadResult.status !== 200) throw new Error(`Server returned ${downloadResult.status}`);
         await Sharing.shareAsync(downloadResult.uri, {
           mimeType: 'application/pdf',
-          dialogTitle: 'Share Lesson Plan PDF',
+          dialogTitle: 'Save or Share Lesson Plan PDF',
           UTI: 'com.adobe.pdf'
         });
-      } else {
-        // Fallback to text sharing if PDF sharing not available
-        Alert.alert(
-          'Sharing Unavailable',
-          'PDF sharing is not available on this device. Would you like to share as text instead?',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Share as Text', onPress: handleShareText }
-          ]
-        );
       }
     } catch (error: any) {
-      
+      console.error('PDF download error:', error?.message || error);
       Alert.alert(
-        'Error',
-        'Failed to generate PDF. Would you like to share as text instead?',
+        'Download Failed',
+        'Could not download the PDF. Would you like to share as text instead?',
         [
           { text: 'Cancel', style: 'cancel' },
           { text: 'Share as Text', onPress: handleShareText }
@@ -307,7 +293,7 @@ export default function LessonDetail() {
       <View style={styles.actionBar}>
         <TouchableOpacity
           style={[styles.shareButton, generatingPdf && styles.shareButtonDisabled]}
-          onPress={handleSharePdf}
+          onPress={handleDownloadPdf}
           disabled={generatingPdf}
           data-testid="share-lesson-plan-pdf-btn"
         >
@@ -318,8 +304,8 @@ export default function LessonDetail() {
             </>
           ) : (
             <>
-              <Ionicons name="document-text-outline" size={16} color="#5C6BC0" />
-              <Text style={styles.shareButtonText}>Share PDF</Text>
+              <Ionicons name="download-outline" size={16} color="#5C6BC0" />
+              <Text style={styles.shareButtonText}>Download PDF</Text>
             </>
           )}
         </TouchableOpacity>

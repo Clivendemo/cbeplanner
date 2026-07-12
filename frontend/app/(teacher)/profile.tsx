@@ -16,7 +16,7 @@ import {
   Linking
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { getErrorMessage, isRateLimitError } from '../../utils/errorHandler';
@@ -39,6 +39,8 @@ interface Transaction {
 export default function Profile() {
   const { user, firebaseUser, signOut, refreshProfile, isAdmin } = useAuth();
   const router = useRouter();
+  const params = useLocalSearchParams<{ returnTo?: string }>();
+  const returnTo = params.returnTo || null;
   
   // About modal state
   const [showAboutModal, setShowAboutModal] = useState(false);
@@ -164,16 +166,25 @@ export default function Profile() {
 
         if (response.data.status === 'successful') {
           await refreshProfile();
-          Alert.alert(
-            'Payment Successful! 🎉',
-            `KES ${response.data.amount} has been added to your wallet.`,
-            [{ text: 'OK' }]
-          );
           setPendingCheckoutId(null);
           setCheckingStatus(false);
           setPhoneNumber('');
           setAmount('');
           fetchTransactions();
+          if (returnTo === 'revision') {
+            // Redirect back to revision so the teacher can continue downloading
+            Alert.alert(
+              'Top Up Successful! 🎉',
+              `KES ${response.data.amount} added to your wallet. Taking you back to Revision Papers.`,
+              [{ text: 'Continue', onPress: () => router.replace('/(teacher)/revision') }]
+            );
+          } else {
+            Alert.alert(
+              'Payment Successful! 🎉',
+              `KES ${response.data.amount} has been added to your wallet.`,
+              [{ text: 'OK' }]
+            );
+          }
           return true;
         } else if (response.data.status === 'failed' || response.data.status === 'cancelled') {
           Alert.alert(

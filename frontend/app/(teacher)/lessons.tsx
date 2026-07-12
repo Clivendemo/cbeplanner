@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   RefreshControl
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -36,6 +36,12 @@ export default function Lessons() {
   useEffect(() => {
     loadLessons();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadLessons();
+    }, [])
+  );
 
   const loadLessons = async () => {
     try {

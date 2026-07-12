@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import {
   View,
+  useWindowDimensions,
   Text,
   TextInput,
   TouchableOpacity,
@@ -16,7 +17,13 @@ import { LandingLayout, FeatureTiles } from '../../components/LandingLayout';
 import { useDebouncedAction } from '../../hooks/useDebouncedAction';
 import { PasswordInput } from '../../components/PasswordInput';
 
+const BP_DESKTOP = 1180;
+
+
+// width injected by hook below
 export default function SignUp() {
+  const { width } = useWindowDimensions();
+  const inShell = width >= BP_DESKTOP;
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [schoolName, setSchoolName] = useState('');
@@ -65,7 +72,7 @@ export default function SignUp() {
   });
 
   return (
-    <LandingLayout>
+    <LandingLayout inShell={inShell}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
@@ -207,7 +214,7 @@ export default function SignUp() {
             </TouchableOpacity>
           </View>
 
-        <FeatureTiles />
+        {!inShell && <FeatureTiles />}
       </KeyboardAvoidingView>
     </LandingLayout>
   );
