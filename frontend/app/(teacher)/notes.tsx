@@ -10,6 +10,7 @@ import {
   Modal,
   Platform,
   Linking,
+  useWindowDimensions,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../../contexts/AuthContext';
@@ -18,6 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const MOBILE_BREAKPOINT = 768;
 
 interface Grade { id: string; name: string; }
 interface Subject { id: string; name: string; }
@@ -52,6 +54,8 @@ interface NotesData {
 
 export default function Notes() {
   const { user, firebaseUser, refreshProfile } = useAuth();
+  const { width } = useWindowDimensions();
+  const isMobile = width < MOBILE_BREAKPOINT;
 
   // Form state
   const [grades, setGrades] = useState<Grade[]>([]);
@@ -220,7 +224,7 @@ export default function Notes() {
     const c = generatedNotes.generatedContent;
     return (
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, isMobile && styles.scrollContentMobile]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="always"
       >
@@ -335,7 +339,7 @@ export default function Notes() {
   // ── Form ──
   const renderForm = () => (
     <ScrollView
-      contentContainerStyle={styles.scrollContent}
+      contentContainerStyle={[styles.scrollContent, isMobile && styles.scrollContentMobile]}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="always"
     >
@@ -488,7 +492,14 @@ export default function Notes() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'transparent' },
-  scrollContent: { padding: 16 },
+  scrollContent: {
+    paddingHorizontal: 32,
+    paddingVertical: 24,
+    maxWidth: 1280,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  scrollContentMobile: { paddingHorizontal: 16, paddingVertical: 16 },
 
   // ── Form Card ──
   card: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 20, marginBottom: 16 },

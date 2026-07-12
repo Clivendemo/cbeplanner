@@ -13,7 +13,8 @@ import {
   Platform,
   RefreshControl,
   Share,
-  Linking
+  Linking,
+  useWindowDimensions
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -24,6 +25,7 @@ import { useDebouncedAction } from '../../hooks/useDebouncedAction';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.legitlab.cbeplanner';
+const MOBILE_BREAKPOINT = 768;
 
 interface Transaction {
   id: string;
@@ -41,6 +43,8 @@ export default function Profile() {
   const router = useRouter();
   const params = useLocalSearchParams<{ returnTo?: string }>();
   const returnTo = params.returnTo || null;
+  const { width } = useWindowDimensions();
+  const isMobile = width < MOBILE_BREAKPOINT;
   
   // About modal state
   const [showAboutModal, setShowAboutModal] = useState(false);
@@ -346,7 +350,7 @@ export default function Profile() {
   return (
     <ScrollView 
       style={styles.container} 
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, isMobile && styles.contentMobile]}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#5C6BC0']} />
       }
@@ -862,7 +866,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent'
   },
   content: {
-    padding: 16
+    paddingHorizontal: 32,
+    paddingVertical: 24,
+    maxWidth: 1280,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  contentMobile: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   header: {
     alignItems: 'center',

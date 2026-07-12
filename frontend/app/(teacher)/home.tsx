@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  useWindowDimensions
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../../contexts/AuthContext';
@@ -17,12 +18,15 @@ import { getErrorMessage, isPaymentError, isRateLimitError } from '../../utils/e
 import { WalletCreditsPopup } from '../../components/WalletCreditsPopup';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const MOBILE_BREAKPOINT = 768;
 
 const DURATIONS = [25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80];
 
 export default function Home() {
   const { firebaseUser, user, refreshProfile, isNewUser, clearNewUserFlag } = useAuth();
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isMobile = width < MOBILE_BREAKPOINT;
   
   const [grades, setGrades] = useState<any[]>([]);
   const [allSubjects, setAllSubjects] = useState<any[]>([]); // All subjects from DB
@@ -280,7 +284,7 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={[styles.scrollContent, isMobile && styles.scrollContentMobile]}>
         <View style={styles.header}>
           <Text style={styles.welcomeText}>
             {isNewUser ? 'Welcome' : 'Welcome back'}, {user?.firstName}!
@@ -479,7 +483,15 @@ const styles = StyleSheet.create({
     flex: 1
   },
   scrollContent: {
-    padding: 16
+    paddingHorizontal: 32,
+    paddingVertical: 24,
+    maxWidth: 1280,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  scrollContentMobile: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   header: {
     marginBottom: 24

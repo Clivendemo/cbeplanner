@@ -10,7 +10,8 @@ import {
   Modal,
   FlatList,
   TextInput,
-  Dimensions
+  Dimensions,
+  useWindowDimensions
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../../contexts/AuthContext';
@@ -22,6 +23,7 @@ import { useDebouncedAction } from '../../hooks/useDebouncedAction';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const MOBILE_BREAKPOINT = 768;
 
 interface Grade { id: string; name: string; }
 interface Subject { id: string; name: string; }
@@ -47,6 +49,8 @@ export default function SchemesOfWork() {
   const { user, firebaseUser, refreshProfile } = useAuth();
   const router = useRouter();
   const { editId } = useLocalSearchParams<{ editId?: string }>();
+  const { width: winWidth } = useWindowDimensions();
+  const isMobile = winWidth < MOBILE_BREAKPOINT;
   
   // Step management
   const [currentStep, setCurrentStep] = useState<Step>('select');
@@ -896,8 +900,9 @@ export default function SchemesOfWork() {
   // PDF Preview Modal (in-app viewer)
 
   return (
-    <View style={styles.container}>
-      {/* Step indicator */}
+    <View style={styles.outer}>
+      <View style={[styles.container, isMobile && styles.containerMobile]}>
+        {/* Step indicator */}
       <View style={styles.stepIndicator}>
         {(['select', 'topics', 'breaks'] as Step[]).map((step, index) => (
           <View key={step} style={styles.stepItem}>
@@ -958,14 +963,28 @@ export default function SchemesOfWork() {
       </View>
       
       {renderBreakModal()}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  outer: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+  },
   container: {
     flex: 1,
-    backgroundColor: 'transparent'
+    backgroundColor: 'transparent',
+    maxWidth: 1280,
+    width: '100%',
+    paddingHorizontal: 32,
+    paddingVertical: 24,
+  },
+  containerMobile: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   stepIndicator: {
     flexDirection: 'row',

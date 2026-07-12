@@ -1,9 +1,16 @@
 # Test Credentials
 
-## Test Teacher Account
+## Test Teacher Account (Primary)
+- Email: visualtest2026@example.com
+- Password: Visual@2026
+- Role: teacher
+- Note: Created fresh 2026-02-12 for E2E visual layout testing.
+
+## Legacy Test Teacher Account (may be invalid)
 - Email: testteacher2026@gmail.com
 - Password: TestPass123!
 - Role: teacher
+- Note: Returned INVALID_LOGIN_CREDENTIALS as of 2026-02-12 — use `visualtest2026@example.com` above.
 
 ## Admin Account (Primary)
 - Email: mail2clive@gmail.com
@@ -24,5 +31,9 @@
 
 ## Getting Firebase ID Token (for API testing)
 POST https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBalkTy90NBRs7Qky_VPTlikVP6UD69-p8
-Body: {"email":"testteacher2026@gmail.com","password":"TestPass123!","returnSecureToken":true}
+Body: {"email":"visualtest2026@example.com","password":"Visual@2026","returnSecureToken":true}
 Use: Authorization: Bearer {idToken}
+
+## Creating fresh Firebase test accounts (curl)
+POST https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBalkTy90NBRs7Qky_VPTlikVP6UD69-p8
+Body: {"email":"anytest@example.com","password":"YourPassword!","returnSecureToken":true}

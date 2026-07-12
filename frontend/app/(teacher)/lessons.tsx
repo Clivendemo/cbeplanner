@@ -6,7 +6,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  RefreshControl
+  RefreshControl,
+  useWindowDimensions,
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -14,6 +15,7 @@ import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const MOBILE_BREAKPOINT = 768;
 
 interface LessonPlan {
   id: string;
@@ -29,6 +31,8 @@ interface LessonPlan {
 export default function Lessons() {
   const { firebaseUser } = useAuth();
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isMobile = width < MOBILE_BREAKPOINT;
   const [lessons, setLessons] = useState<LessonPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -114,7 +118,7 @@ export default function Lessons() {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, isMobile && styles.contentMobile]}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#5C6BC0']} />
       }
@@ -192,7 +196,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent'
   },
   content: {
-    padding: 16
+    paddingHorizontal: 32,
+    paddingVertical: 24,
+    maxWidth: 1280,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  contentMobile: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   centerContainer: {
     flex: 1,

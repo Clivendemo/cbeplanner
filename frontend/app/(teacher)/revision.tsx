@@ -16,6 +16,7 @@ import {
   Platform,
   Modal,
   Linking,
+  useWindowDimensions,
 } from 'react-native';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,6 +26,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useDebouncedAction } from '../../hooks/useDebouncedAction';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const MOBILE_BREAKPOINT = 768;
 
 interface Grade { id: string; name: string }
 interface Assessment {
@@ -204,6 +206,8 @@ const dd = StyleSheet.create({
 export default function RevisionPapers() {
   const router = useRouter();
   const { firebaseUser, user } = useAuth();
+  const { width } = useWindowDimensions();
+  const isMobile = width < MOBILE_BREAKPOINT;
   const getIdToken = async () => {
     if (!firebaseUser) throw new Error('Not authenticated');
     return firebaseUser.getIdToken();
@@ -395,7 +399,7 @@ export default function RevisionPapers() {
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, isMobile && styles.scrollContentMobile]}
         keyboardShouldPersistTaps="handled"
       >
         {/* Header */}
@@ -574,7 +578,15 @@ export default function RevisionPapers() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'transparent' },
   scroll: { flex: 1 },
-  scrollContent: { padding: 16, paddingBottom: 48 },
+  scrollContent: {
+    paddingHorizontal: 32,
+    paddingVertical: 24,
+    paddingBottom: 48,
+    maxWidth: 1280,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  scrollContentMobile: { paddingHorizontal: 16, paddingVertical: 16 },
 
   header: {
     flexDirection: 'row', alignItems: 'center',

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  useWindowDimensions,
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
@@ -15,6 +16,7 @@ import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const MOBILE_BREAKPOINT = 768;
 
 interface SchemeListItem {
   id: string;
@@ -33,6 +35,8 @@ interface SchemeListItem {
 export default function MySchemes() {
   const { firebaseUser } = useAuth();
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isMobile = width < MOBILE_BREAKPOINT;
   const [schemes, setSchemes] = useState<SchemeListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -88,7 +92,7 @@ export default function MySchemes() {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, isMobile && styles.contentMobile]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#5C6BC0']} />}
     >
       <View style={styles.header}>
@@ -184,7 +188,14 @@ export default function MySchemes() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'transparent' },
-  content: { padding: 16 },
+  content: {
+    paddingHorizontal: 32,
+    paddingVertical: 24,
+    maxWidth: 1280,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  contentMobile: { paddingHorizontal: 16, paddingVertical: 16 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: { marginBottom: 16 },
   headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#1A1A3A', marginBottom: 4 },

@@ -418,6 +418,30 @@ After repeated KIQ correctness issues (Kiswahili language mixing, English filter
 - Each SLO row already exists per-lesson in the canonical language of its subject. Storing KIQs on the SLO row means: no language detection, no positional cycling, no English-into-Kiswahili leakage. The scheme generator literally returns the string from the DB.
 - Re-running the migration is safe; rolling back is trivial (just stop reading `key_inquiry_questions` — `learning_activities.inquiry_questions[]` is preserved).
 
+## Uniform Centered Layout Rollout (Feb 2026)
+
+Extended dashboard's centered content pattern to all remaining teacher screens so the entire teacher portal has consistent side-spacing and a max content width.
+
+**Pattern applied** (identical to `dashboard.tsx`):
+```js
+scrollContent: { paddingHorizontal: 32, paddingVertical: 24, maxWidth: 1280, width: '100%', alignSelf: 'center' }
+scrollContentMobile: { paddingHorizontal: 16, paddingVertical: 16 }  // when width < 768
+```
+Applied via `useWindowDimensions()` + `contentContainerStyle={[base, isMobile && mobile]}`.
+
+**Files updated** (7 pages):
+- `frontend/app/(teacher)/my-schemes.tsx`
+- `frontend/app/(teacher)/lessons.tsx` (My Lesson Plans)
+- `frontend/app/(teacher)/notes.tsx` (Generate Notes — applied to both `renderForm` and `renderPreview` ScrollViews)
+- `frontend/app/(teacher)/revision.tsx` (Revision Papers)
+- `frontend/app/(teacher)/profile.tsx` (My Profile)
+- `frontend/app/(teacher)/schemes.tsx` (Schemes of Work — outer wrapper `outer` + centered `container`)
+- `frontend/app/(teacher)/home.tsx` (Create Lesson Plan)
+
+Also normalised these 7 files to LF line endings (were CRLF from the user's local RAR sync) to keep future search_replace edits reliable.
+
+**Verified via screenshot on Expo Web (1920×900)** — each page's content bounds match the dashboard exactly (~528px–~1272px on desktop) with the dark sidebar to the left.
+
 ## Next Tasks
 1. Continue `server.py` modularization (extract `/auth`, `/wallet`, `/admin`, `/lesson_plans` into `routes/`)
 2. Firebase Admin SDK integration
