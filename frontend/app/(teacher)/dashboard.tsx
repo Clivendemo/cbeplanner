@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,19 @@ import {
   useWindowDimensions,
   Linking,
   Pressable,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+
+const CLASSROOM_IMG = require('../../assets/images/classroom.webp');
+const NOTEBOOK_IMG = require('../../assets/images/notebook.webp');
 
 // ---------------------------------------------------------------------------
 // Dashboard layout (WordPress-style)
@@ -61,18 +68,96 @@ const QUOTES = [
   { t: 'A good teacher can inspire hope and ignite the imagination.', a: 'Brad Henry' },
 ];
 
+const ONBOARDING_STEPS = [
+  {
+    n: 1,
+    title: 'Pick Grade & Subject',
+    body: 'Choose the class you\u2019re planning for and the learning area you\u2019ll cover.',
+    icon: 'school-outline' as const,
+  },
+  {
+    n: 2,
+    title: 'Select Topics & Breaks',
+    body: 'Tick the sub-strands you\u2019ll teach and add any term breaks or CATs.',
+    icon: 'list-outline' as const,
+  },
+  {
+    n: 3,
+    title: 'Preview & Download',
+    body: 'Preview the scheme for free, then export the KICD-aligned PDF.',
+    icon: 'cloud-download-outline' as const,
+  },
+];
+
+interface RecentScheme {
+  id: string;
+  gradeName?: string;
+  subjectName?: string;
+  term?: number;
+  year?: number;
+  createdAt?: string;
+}
+
+interface RecentLesson {
+  id: string;
+  gradeName?: string;
+  subjectName?: string;
+  substrandName?: string;
+  createdAt?: string;
+}
+
 export default function Dashboard() {
   const router = useRouter();
-  const { user, refreshProfile } = useAuth();
+  const { user, refreshProfile, firebaseUser } = useAuth();
   const { width } = useWindowDimensions();
   const isMobile = width < MOBILE_BREAKPOINT;
   const isNarrow = width < NARROW_BREAKPOINT;
 
+  const [recentSchemes, setRecentSchemes] = useState<RecentScheme[]>([]);
+  const [recentLessons, setRecentLessons] = useState<RecentLesson[]>([]);
+  const [loadingRecent, setLoadingRecent] = useState(true);
+
+  const loadRecent = useCallback(async () => {
+    if (!firebaseUser) return;
+    try {
+      const token = await firebaseUser.getIdToken();
+      const headers = { Authorization: `Bearer ${token}` };
+      const [sRes, lRes] = await Promise.all([
+        axios.get(`${BACKEND_URL}/api/schemes`, { headers }).catch(() => null),
+        axios.get(`${BACKEND_URL}/api/lesson-plans`, { headers }).catch(() => null),
+      ]);
+      const schemes: RecentScheme[] = sRes?.data?.schemes || sRes?.data?.data || [];
+      const lessons: RecentLesson[] =
+        lRes?.data?.lessonPlans || lRes?.data?.lesson_plans || lRes?.data?.data || [];
+      const byDateDesc = (a: any, b: any) =>
+        String(b?.createdAt || '').localeCompare(String(a?.createdAt || ''));
+      setRecentSchemes([...schemes].sort(byDateDesc).slice(0, 3));
+      setRecentLessons([...lessons].sort(byDateDesc).slice(0, 3));
+    } catch {
+      /* silently keep empty state */
+    } finally {
+      setLoadingRecent(false);
+    }
+  }, [firebaseUser]);
+
   useFocusEffect(
     useCallback(() => {
       refreshProfile();
-    }, []),
+      loadRecent();
+    }, [loadRecent]),
   );
+
+  const totalRecent = recentSchemes.length + recentLessons.length;
+  const showOnboarding = !loadingRecent && totalRecent === 0;
+
+  const formatDate = (iso?: string) => {
+    if (!iso) return '';
+    try {
+      return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+    } catch {
+      return '';
+    }
+  };
 
   // Pick a fresh quote each visit — no auto-rotation needed inline.
   const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
@@ -80,16 +165,36 @@ export default function Dashboard() {
   const go = (route: string) => () => router.push(route as any);
 
   // -------------------------------------------------------------------------
-  // Welcome banner — Get Started / Next Steps / More Actions
+  // Welcome banner — hero row (headline + text + shortcuts) with editorial image
   // -------------------------------------------------------------------------
   const WelcomeBanner = (
     <View style={styles.welcomeCard} data-testid="dashboard-welcome-banner">
-      <Text style={styles.welcomeTitle}>
-        Welcome back, {user?.firstName || 'Teacher'}!
-      </Text>
-      <Text style={styles.welcomeSub}>
-        We&apos;ve assembled some shortcuts to get you started:
-      </Text>
+      <View style={[styles.heroRow, isNarrow && styles.heroRowStacked]}>
+        <View style={styles.heroText}>
+          <Text style={styles.heroEyebrow}>YOUR TEACHING WORKSPACE</Text>
+          <Text style={styles.welcomeTitle}>
+            Welcome back, {user?.firstName || 'Teacher'}!
+          </Text>
+          <Text style={styles.welcomeSub}>
+            We&apos;ve assembled some shortcuts to get you started:
+          </Text>
+        </View>
+        {!isNarrow && (
+          <View style={styles.heroImageWrap} data-testid="dashboard-hero-image">
+            <Image
+              source={CLASSROOM_IMG}
+              style={styles.heroImage}
+              resizeMode="cover"
+              accessibilityLabel="Classroom whiteboard with a diagram"
+            />
+            <View style={styles.heroImageOverlay} pointerEvents="none" />
+            <View style={styles.heroImageBadge} pointerEvents="none">
+              <Ionicons name="sparkles" size={12} color="#FFFFFF" />
+              <Text style={styles.heroImageBadgeText}>KICD Aligned</Text>
+            </View>
+          </View>
+        )}
+      </View>
 
       <View style={[styles.row3, isNarrow && styles.row3Stacked]}>
         {/* Get Started — large indigo CTA */}
@@ -272,6 +377,167 @@ export default function Dashboard() {
 
         {WelcomeBanner}
 
+        {showOnboarding && (
+          <View style={styles.onboardingCard} data-testid="dashboard-onboarding-card">
+            <View style={styles.onboardingHeader}>
+              <View style={styles.onboardingHeaderLeft}>
+                <View style={styles.onboardingIconWrap}>
+                  <Ionicons name="rocket-outline" size={16} color="#FFFFFF" />
+                </View>
+                <View>
+                  <Text style={styles.onboardingTitle}>
+                    3 easy steps to your first Scheme of Work
+                  </Text>
+                  <Text style={styles.onboardingSub}>
+                    Follow along &mdash; you&apos;ll have a KICD-aligned PDF in a few minutes.
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                style={styles.onboardingCta}
+                onPress={go('/(teacher)/schemes')}
+                activeOpacity={0.85}
+                data-testid="dashboard-onboarding-start-btn"
+              >
+                <Text style={styles.onboardingCtaText}>Start now</Text>
+                <Ionicons name="arrow-forward" size={14} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+            <View style={[styles.stepRow, isNarrow && styles.stepRowStacked]}>
+              {ONBOARDING_STEPS.map((step, idx) => (
+                <View key={step.n} style={styles.stepItem}>
+                  <View style={styles.stepNumWrap}>
+                    <View style={styles.stepNum}>
+                      <Text style={styles.stepNumText}>{step.n}</Text>
+                    </View>
+                    {idx < ONBOARDING_STEPS.length - 1 && !isNarrow && (
+                      <View style={styles.stepConnector} />
+                    )}
+                  </View>
+                  <View style={styles.stepBody}>
+                    <View style={styles.stepTitleRow}>
+                      <Ionicons name={step.icon} size={14} color={COLORS.accent} />
+                      <Text style={styles.stepTitle}>{step.title}</Text>
+                    </View>
+                    <Text style={styles.stepDesc}>{step.body}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {(recentSchemes.length > 0 || recentLessons.length > 0) && (
+          <View
+            style={[styles.recentGrid, isNarrow && styles.recentGridStacked]}
+            data-testid="dashboard-recent-activity"
+          >
+            <View style={styles.recentCol}>
+              <View style={styles.recentHeader}>
+                <View style={styles.recentHeaderLeft}>
+                  <Ionicons name="albums-outline" size={16} color={COLORS.accent} />
+                  <Text style={styles.recentTitle}>Recent Schemes</Text>
+                </View>
+                <Pressable
+                  onPress={go('/(teacher)/my-schemes')}
+                  data-testid="dashboard-recent-schemes-viewall"
+                >
+                  <Text style={styles.recentViewAll}>View all</Text>
+                </Pressable>
+              </View>
+              {recentSchemes.length === 0 ? (
+                <View style={styles.recentEmpty}>
+                  <Image source={NOTEBOOK_IMG} style={styles.recentEmptyImg} resizeMode="cover" />
+                  <Text style={styles.recentEmptyTitle}>No schemes yet</Text>
+                  <Text style={styles.recentEmptyBody}>
+                    Generate one in under 3 minutes.
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.recentList}>
+                  {recentSchemes.map((s) => (
+                    <Pressable
+                      key={s.id}
+                      style={styles.recentItem}
+                      onPress={() =>
+                        router.push(`/(teacher)/scheme-detail?id=${s.id}` as any)
+                      }
+                      data-testid={`dashboard-recent-scheme-${s.id}`}
+                    >
+                      <View style={styles.recentItemIcon}>
+                        <Ionicons name="calendar" size={16} color={COLORS.accent} />
+                      </View>
+                      <View style={styles.recentItemText}>
+                        <Text style={styles.recentItemTitle} numberOfLines={1}>
+                          {s.subjectName || 'Scheme'}
+                        </Text>
+                        <Text style={styles.recentItemSub} numberOfLines={1}>
+                          {[s.gradeName, s.term ? `Term ${s.term}` : null, s.year]
+                            .filter(Boolean)
+                            .join(' \u00b7 ')}
+                        </Text>
+                      </View>
+                      <Text style={styles.recentItemDate}>{formatDate(s.createdAt)}</Text>
+                      <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            </View>
+
+            <View style={styles.recentCol}>
+              <View style={styles.recentHeader}>
+                <View style={styles.recentHeaderLeft}>
+                  <Ionicons name="folder-open-outline" size={16} color={COLORS.accent} />
+                  <Text style={styles.recentTitle}>Recent Lesson Plans</Text>
+                </View>
+                <Pressable
+                  onPress={go('/(teacher)/lessons')}
+                  data-testid="dashboard-recent-lessons-viewall"
+                >
+                  <Text style={styles.recentViewAll}>View all</Text>
+                </Pressable>
+              </View>
+              {recentLessons.length === 0 ? (
+                <View style={styles.recentEmpty}>
+                  <Image source={NOTEBOOK_IMG} style={styles.recentEmptyImg} resizeMode="cover" />
+                  <Text style={styles.recentEmptyTitle}>No lesson plans yet</Text>
+                  <Text style={styles.recentEmptyBody}>
+                    Create your first plan from a scheme.
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.recentList}>
+                  {recentLessons.map((l) => (
+                    <Pressable
+                      key={l.id}
+                      style={styles.recentItem}
+                      onPress={() =>
+                        router.push(`/(teacher)/lesson-detail?id=${l.id}` as any)
+                      }
+                      data-testid={`dashboard-recent-lesson-${l.id}`}
+                    >
+                      <View style={styles.recentItemIcon}>
+                        <Ionicons name="book" size={16} color={COLORS.accent} />
+                      </View>
+                      <View style={styles.recentItemText}>
+                        <Text style={styles.recentItemTitle} numberOfLines={1}>
+                          {l.substrandName || l.subjectName || 'Lesson'}
+                        </Text>
+                        <Text style={styles.recentItemSub} numberOfLines={1}>
+                          {[l.gradeName, l.subjectName].filter(Boolean).join(' \u00b7 ')}
+                        </Text>
+                      </View>
+                      <Text style={styles.recentItemDate}>{formatDate(l.createdAt)}</Text>
+                      <Ionicons name="chevron-forward" size={14} color={COLORS.textSecondary} />
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            </View>
+          </View>
+        )}
+
         <View style={[styles.widgetGrid, isNarrow && styles.widgetGridStacked]}>
           <View style={styles.widgetCol}>
             {UsefulLinksCard}
@@ -437,4 +703,194 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   supportBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+
+  // ── Hero row (welcome banner) ────────────────────────────────────
+  heroRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 24,
+    marginBottom: 20,
+  },
+  heroRowStacked: { flexDirection: 'column', alignItems: 'stretch', gap: 12 },
+  heroText: { flex: 1 },
+  heroEyebrow: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.accent,
+    letterSpacing: 1.4,
+    marginBottom: 6,
+  },
+  heroImageWrap: {
+    width: 300,
+    height: 172,
+    borderRadius: 10,
+    overflow: 'hidden',
+    position: 'relative',
+    // @ts-ignore web-only shadow
+    boxShadow: '0 10px 30px rgba(40,53,147,0.18)',
+    borderWidth: 1,
+    borderColor: COLORS.accentBorder,
+  },
+  heroImage: { width: '100%', height: '100%' },
+  heroImageOverlay: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    // @ts-ignore web-only gradient overlay
+    backgroundImage:
+      'linear-gradient(160deg, rgba(40,53,147,0.55) 0%, rgba(40,53,147,0.05) 45%, rgba(255,255,255,0) 100%)',
+  },
+  heroImageBadge: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(40,53,147,0.85)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  heroImageBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+
+  // ── Onboarding checklist card ────────────────────────────────────
+  onboardingCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 22,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: COLORS.accentBorder,
+    // @ts-ignore web-only
+    backgroundImage:
+      'linear-gradient(135deg, #FFFFFF 0%, #F5F6FF 65%, #EEF2FF 100%)',
+  },
+  onboardingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 18,
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  onboardingHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 240 },
+  onboardingIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: COLORS.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  onboardingTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    marginBottom: 2,
+  },
+  onboardingSub: { fontSize: 13, color: COLORS.textSecondary },
+  onboardingCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  onboardingCtaText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
+
+  stepRow: { flexDirection: 'row', gap: 24 },
+  stepRowStacked: { flexDirection: 'column', gap: 14 },
+  stepItem: { flex: 1, flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  stepNumWrap: { alignItems: 'center' },
+  stepNum: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepNumText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  stepConnector: {
+    position: 'absolute',
+    top: 14,
+    left: 34,
+    width: 999,
+    height: 1,
+    backgroundColor: COLORS.accentBorder,
+  },
+  stepBody: { flex: 1 },
+  stepTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
+  stepTitle: { fontSize: 14, fontWeight: '700', color: COLORS.textPrimary },
+  stepDesc: { fontSize: 13, color: COLORS.textSecondary, lineHeight: 19 },
+
+  // ── Recent Activity grid ────────────────────────────────────────
+  recentGrid: { flexDirection: 'row', gap: 20, marginBottom: 20 },
+  recentGridStacked: { flexDirection: 'column' },
+  recentCol: {
+    flex: 1,
+    backgroundColor: COLORS.card,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder,
+    overflow: 'hidden',
+  },
+  recentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.cardBorder,
+    backgroundColor: '#FAFAFF',
+  },
+  recentHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  recentTitle: { fontSize: 14, fontWeight: '700', color: COLORS.textPrimary },
+  recentViewAll: { fontSize: 12, fontWeight: '600', color: COLORS.accent },
+  recentList: { paddingVertical: 6 },
+  recentItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  recentItemIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    backgroundColor: COLORS.accentSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recentItemText: { flex: 1 },
+  recentItemTitle: { fontSize: 14, fontWeight: '600', color: COLORS.textPrimary },
+  recentItemSub: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
+  recentItemDate: { fontSize: 11, color: COLORS.textSecondary, fontWeight: '600' },
+
+  recentEmpty: {
+    alignItems: 'center',
+    paddingVertical: 22,
+    paddingHorizontal: 20,
+    gap: 8,
+  },
+  recentEmptyImg: {
+    width: '100%',
+    height: 120,
+    borderRadius: 8,
+    marginBottom: 4,
+    opacity: 0.9,
+  },
+  recentEmptyTitle: { fontSize: 14, fontWeight: '700', color: COLORS.textPrimary },
+  recentEmptyBody: { fontSize: 12, color: COLORS.textSecondary, textAlign: 'center' },
 });
