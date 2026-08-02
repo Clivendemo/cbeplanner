@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -106,6 +106,69 @@ interface RecentLesson {
   createdAt?: string;
 }
 
+interface SchemeLesson {
+  week: number;
+  lesson: number | string;
+  isBreak?: boolean;
+  strand?: string;
+  substrand?: string;
+  slo?: string;
+}
+
+interface NextLessonInfo {
+  schemeId: string;
+  subjectName?: string;
+  gradeName?: string;
+  substrand: string;
+  strand: string;
+  week: number;
+  lessonNum: number | string;
+  slo: string;
+}
+
+interface TermInfo {
+  name: string;
+  status: string;
+  currentWeek: number;
+  totalWeeks: number;
+  startDate: Date;
+  endDate: Date;
+}
+
+// Parse "Apr 29 – Aug 1" (or "Jan 6 – Apr 4") into start/end Date objects.
+// Year is passed in from the API. Falls back to null if parsing fails.
+const MONTH_MAP: Record<string, number> = {
+  Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+  Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+};
+function parseTermPeriod(period: string, year: number): { start: Date; end: Date } | null {
+  try {
+    const parts = period.split(/[\u2013\u2014-]/).map((s) => s.trim());
+    if (parts.length !== 2) return null;
+    const parseOne = (str: string, fallbackMonth?: number): Date | null => {
+      const m = str.match(/([A-Za-z]{3,})\s+(\d{1,2})/) || str.match(/(\d{1,2})/);
+      if (!m) return null;
+      if (m.length === 3) {
+        const mon = MONTH_MAP[m[1].slice(0, 3)];
+        const day = parseInt(m[2], 10);
+        if (mon === undefined || !day) return null;
+        return new Date(year, mon, day);
+      }
+      // day-only: reuse fallbackMonth
+      if (fallbackMonth === undefined) return null;
+      return new Date(year, fallbackMonth, parseInt(m[1], 10));
+    };
+    const start = parseOne(parts[0]);
+    if (!start) return null;
+    const end = parseOne(parts[1], start.getMonth()) ||
+                parseOne(parts[1] + ' ' + parts[0].split(' ')[0]); // rare fallback
+    if (!end) return null;
+    return { start, end };
+  } catch {
+    return null;
+  }
+}
+
 export default function Dashboard() {
   const router = useRouter();
   const { user, refreshProfile, firebaseUser } = useAuth();
@@ -116,6 +179,36 @@ export default function Dashboard() {
   const [recentSchemes, setRecentSchemes] = useState<RecentScheme[]>([]);
   const [recentLessons, setRecentLessons] = useState<RecentLesson[]>([]);
   const [loadingRecent, setLoadingRecent] = useState(true);
+  const [termInfo, setTermInfo] = useState<TermInfo | null>(null);
+  const [nextLesson, setNextLesson] = useState<NextLessonInfo | null>(null);
+  const termInfoRef = useRef<TermInfo | null>(null);
+  useEffect(() => { termInfoRef.current = termInfo; }, [termInfo]);
+
+  const loadTermInfo = useCallback(async () => {
+    try {
+      const res = await axios.get(`${BACKEND_URL}/api/calendar/terms`);
+      const terms: any[] = res?.data?.terms || [];
+      const current = terms.find((t) => t?.status === 'current') || terms[0];
+      if (!current) return;
+      const range = parseTermPeriod(current.period, current.year || new Date().getFullYear());
+      if (!range) return;
+      const now = new Date();
+      const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+      const totalWeeks = Math.max(1, Math.round((range.end.getTime() - range.start.getTime()) / msPerWeek));
+      const rawWeek = Math.floor((now.getTime() - range.start.getTime()) / msPerWeek) + 1;
+      const currentWeek = Math.max(1, Math.min(totalWeeks, rawWeek));
+      setTermInfo({
+        name: current.name || 'Term',
+        status: current.status || 'current',
+        currentWeek,
+        totalWeeks,
+        startDate: range.start,
+        endDate: range.end,
+      });
+    } catch {
+      /* silent */
+    }
+  }, []);
 
   const loadRecent = useCallback(async () => {
     if (!firebaseUser) return;
@@ -133,6 +226,38 @@ export default function Dashboard() {
         String(b?.createdAt || '').localeCompare(String(a?.createdAt || ''));
       setRecentSchemes([...schemes].sort(byDateDesc).slice(0, 3));
       setRecentLessons([...lessons].sort(byDateDesc).slice(0, 3));
+
+      // Fetch detail of the most recent scheme so we can suggest the next SLO.
+      const latest = [...schemes].sort(byDateDesc)[0];
+      if (latest?.id) {
+        try {
+          const dRes = await axios.get(`${BACKEND_URL}/api/schemes/${latest.id}`, { headers });
+          const schemeDoc = dRes?.data?.scheme || {};
+          const schemeLessons: SchemeLesson[] = (schemeDoc.lessons || []).filter(
+            (l: SchemeLesson) => !l.isBreak && l.slo,
+          );
+          if (schemeLessons.length > 0) {
+            // Pick the first lesson at or after the current week; otherwise the first lesson.
+            const nowWeek = termInfoRef.current?.currentWeek ?? 1;
+            const upcoming =
+              schemeLessons.find((l) => (l.week || 0) >= nowWeek) || schemeLessons[0];
+            setNextLesson({
+              schemeId: latest.id,
+              subjectName: latest.subjectName || schemeDoc.subjectName,
+              gradeName: latest.gradeName || schemeDoc.gradeName,
+              substrand: upcoming.substrand || 'Next lesson',
+              strand: upcoming.strand || '',
+              week: upcoming.week || 1,
+              lessonNum: upcoming.lesson,
+              slo: String(upcoming.slo || '').replace(/^By the end of the (lesson|sub-strand)[^,]*,\s*/i, ''),
+            });
+          }
+        } catch {
+          /* silent */
+        }
+      } else {
+        setNextLesson(null);
+      }
     } catch {
       /* silently keep empty state */
     } finally {
@@ -143,8 +268,9 @@ export default function Dashboard() {
   useFocusEffect(
     useCallback(() => {
       refreshProfile();
+      loadTermInfo();
       loadRecent();
-    }, [loadRecent]),
+    }, [loadRecent, loadTermInfo]),
   );
 
   const totalRecent = recentSchemes.length + recentLessons.length;
@@ -178,6 +304,31 @@ export default function Dashboard() {
           <Text style={styles.welcomeSub}>
             We&apos;ve assembled some shortcuts to get you started:
           </Text>
+          {termInfo && (
+            <View style={styles.termProgressWrap} data-testid="dashboard-term-progress">
+              <View style={styles.termProgressHeader}>
+                <View style={styles.termProgressLabelRow}>
+                  <Ionicons name="calendar-outline" size={13} color={COLORS.accent} />
+                  <Text style={styles.termProgressLabel}>
+                    Week {termInfo.currentWeek} of {termInfo.totalWeeks}
+                    <Text style={styles.termProgressDot}> &middot; </Text>
+                    <Text style={styles.termProgressName}>{termInfo.name}</Text>
+                  </Text>
+                </View>
+                <Text style={styles.termProgressPct}>
+                  {Math.round((termInfo.currentWeek / termInfo.totalWeeks) * 100)}%
+                </Text>
+              </View>
+              <View style={styles.termProgressTrack}>
+                <View
+                  style={[
+                    styles.termProgressFill,
+                    { width: `${Math.min(100, (termInfo.currentWeek / termInfo.totalWeeks) * 100)}%` as any },
+                  ]}
+                />
+              </View>
+            </View>
+          )}
         </View>
         {!isNarrow && (
           <View style={styles.heroImageWrap} data-testid="dashboard-hero-image">
@@ -425,6 +576,38 @@ export default function Dashboard() {
               ))}
             </View>
           </View>
+        )}
+
+        {nextLesson && (
+          <Pressable
+            style={styles.nextLessonCard}
+            onPress={() => router.push(`/(teacher)/scheme-detail?id=${nextLesson.schemeId}` as any)}
+            data-testid="dashboard-next-lesson-card"
+          >
+            <View style={styles.nextLessonIconWrap}>
+              <Ionicons name="play-circle" size={28} color="#FFFFFF" />
+            </View>
+            <View style={styles.nextLessonBody}>
+              <Text style={styles.nextLessonEyebrow}>PICK UP WHERE YOU LEFT OFF</Text>
+              <Text style={styles.nextLessonTitle} numberOfLines={1}>
+                {nextLesson.substrand}
+              </Text>
+              <Text style={styles.nextLessonMeta} numberOfLines={1}>
+                {[nextLesson.subjectName, nextLesson.gradeName, `Week ${nextLesson.week} \u00b7 Lesson ${nextLesson.lessonNum}`]
+                  .filter(Boolean)
+                  .join(' \u00b7 ')}
+              </Text>
+              {!!nextLesson.slo && (
+                <Text style={styles.nextLessonSlo} numberOfLines={2}>
+                  {nextLesson.slo}
+                </Text>
+              )}
+            </View>
+            <View style={styles.nextLessonAction}>
+              <Text style={styles.nextLessonActionText}>Open</Text>
+              <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+            </View>
+          </Pressable>
         )}
 
         {(recentSchemes.length > 0 || recentLessons.length > 0) && (
@@ -893,4 +1076,113 @@ const styles = StyleSheet.create({
   },
   recentEmptyTitle: { fontSize: 14, fontWeight: '700', color: COLORS.textPrimary },
   recentEmptyBody: { fontSize: 12, color: COLORS.textSecondary, textAlign: 'center' },
+
+  // ── Term progress bar (inside hero) ─────────────────────────────
+  termProgressWrap: {
+    marginTop: 14,
+    maxWidth: 460,
+  },
+  termProgressHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  termProgressLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  termProgressLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    letterSpacing: 0.2,
+  },
+  termProgressDot: { color: COLORS.textSecondary, fontWeight: '400' },
+  termProgressName: {
+    color: COLORS.accent,
+    fontWeight: '700',
+  },
+  termProgressPct: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.accent,
+    letterSpacing: 0.5,
+  },
+  termProgressTrack: {
+    height: 6,
+    borderRadius: 999,
+    backgroundColor: COLORS.accentSoft,
+    overflow: 'hidden',
+  },
+  termProgressFill: {
+    height: '100%',
+    borderRadius: 999,
+    backgroundColor: COLORS.accent,
+    // @ts-ignore web-only smooth transitions
+    transition: 'width 300ms ease',
+  },
+
+  // ── Pick up where you left off ──────────────────────────────────
+  nextLessonCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    padding: 18,
+    borderRadius: 12,
+    marginBottom: 20,
+    backgroundColor: COLORS.accent,
+    // @ts-ignore web-only gradient
+    backgroundImage:
+      'linear-gradient(135deg, #3F4C9F 0%, #5C6BC0 55%, #7986CB 100%)',
+    // @ts-ignore
+    boxShadow: '0 10px 25px rgba(63,76,159,0.25)',
+  },
+  nextLessonIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nextLessonBody: { flex: 1, minWidth: 0 },
+  nextLessonEyebrow: {
+    color: 'rgba(255,255,255,0.75)',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1.4,
+    marginBottom: 4,
+  },
+  nextLessonTitle: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  nextLessonMeta: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  nextLessonSlo: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  nextLessonAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
+  },
+  nextLessonActionText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
 });
