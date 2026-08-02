@@ -18,6 +18,7 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -28,6 +29,8 @@ import { useDebouncedAction } from '../../hooks/useDebouncedAction';
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 interface Grade { id: string; name: string }
+interface CurriculumSubject { id: string; name: string }
+interface CurriculumStrand { id: string; name: string }
 interface AdminPaper {
   key: string;
   grade: string;
@@ -36,7 +39,13 @@ interface AdminPaper {
   year: number | null;
   sizeBytes: number;
   uploadedAt: string | null;
+  subjectId: string | null;
+  strandIds: string[];
+  strandNames: string[];
 }
+
+// Mirrors backend `_grade_slug`: grade.name lowercased, spaces → hyphens.
+const gradeSlug = (name: string) => name.trim().toLowerCase().replace(/\s+/g, '-');
 
 function bytes(n: number): string {
   if (!n) return '—';
@@ -63,6 +72,17 @@ export default function AdminAssessments() {
   const [loadingList, setLoadingList] = useState(false);
   const [filterGradeId, setFilterGradeId] = useState('');
   const [filterTerm, setFilterTerm] = useState<string>('all');
+
+  // ── Strand tagging modal ───────────────────────────────────────────────
+  const [tagModalOpen, setTagModalOpen] = useState(false);
+  const [tagTargetPaper, setTagTargetPaper] = useState<AdminPaper | null>(null);
+  const [tagSubjects, setTagSubjects] = useState<CurriculumSubject[]>([]);
+  const [tagSubjectId, setTagSubjectId] = useState<string>('');
+  const [tagStrands, setTagStrands] = useState<CurriculumStrand[]>([]);
+  const [tagSelectedStrandIds, setTagSelectedStrandIds] = useState<string[]>([]);
+  const [tagLoadingSubjects, setTagLoadingSubjects] = useState(false);
+  const [tagLoadingStrands, setTagLoadingStrands] = useState(false);
+  const [tagSaving, setTagSaving] = useState(false);
 
   // Native file picker (web only — admin is web-only anyway)
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -113,7 +133,7 @@ export default function AdminAssessments() {
       const params: any = {};
       if (filterGradeId) params.gradeId = filterGradeId;
       if (filterTerm !== 'all') params.term = Number(filterTerm);
-      const res = await axios.get(`${BACKEND_URL}/api/admin/assessments`, {
+      const res = await axios.get(`${BACKEND_URL}/api/admin/papers`, {
         params,
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -145,7 +165,7 @@ export default function AdminAssessments() {
       fd.append('term', String(term));
       fd.append('subject', subject.trim());
       fd.append('year', String(y));
-      const res = await axios.post(`${BACKEND_URL}/api/admin/assessments/upload`, fd, {
+      const res = await axios.post(`${BACKEND_URL}/api/admin/papers/upload`, fd, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
       });
       const uploaded = (res.data.results || []).filter((r: any) => r.success);
@@ -171,7 +191,7 @@ export default function AdminAssessments() {
     if (typeof window !== 'undefined' && !window.confirm(`Delete this paper?\n\n${key}`)) return;
     try {
       const token = await getIdToken();
-      await axios.delete(`${BACKEND_URL}/api/admin/assessments`, {
+      await axios.delete(`${BACKEND_URL}/api/admin/papers`, {
         data: { key },
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -179,6 +199,112 @@ export default function AdminAssessments() {
     } catch (e: any) {
       const detail = e?.response?.data?.detail || e?.message;
       notify('Delete failed', typeof detail === 'string' ? detail : 'Please try again.');
+    }
+  });
+
+  // Paper only carries a grade *slug* (e.g. "grade-10"); resolve it back to
+  // the curriculum gradeId so we can look up real subjects/strands for it.
+  const resolveGradeId = (slug: string): string | undefined =>
+    grades.find((g) => gradeSlug(g.name) === slug)?.id;
+
+  const openTagModal = async (paper: AdminPaper) => {
+    setTagTargetPaper(paper);
+    setTagModalOpen(true);
+    setTagSubjects([]);
+    setTagStrands([]);
+    setTagSubjectId(paper.subjectId || '');
+    setTagSelectedStrandIds(paper.strandIds || []);
+
+    const gId = resolveGradeId(paper.grade);
+    if (!gId) {
+      notify('Unable to resolve grade', 'Could not match this paper to a curriculum grade.');
+      return;
+    }
+    setTagLoadingSubjects(true);
+    try {
+      const token = await getIdToken();
+      const res = await axios.get(`${BACKEND_URL}/api/admin/subjects`, {
+        params: { gradeId: gId },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const list: CurriculumSubject[] = (res.data?.subjects || []).map((s: any) => ({
+        id: s._id || s.id,
+        name: s.name,
+      }));
+      setTagSubjects(list);
+      // If the paper already has a subjectId tagged, load its strands right away.
+      if (paper.subjectId) {
+        loadTagStrands(paper.subjectId);
+      }
+    } catch (e) {
+      notify('Unable to load subjects', 'Please try again.');
+    } finally {
+      setTagLoadingSubjects(false);
+    }
+  };
+
+  const loadTagStrands = async (subjectId: string) => {
+    setTagLoadingStrands(true);
+    setTagStrands([]);
+    try {
+      const token = await getIdToken();
+      const res = await axios.get(`${BACKEND_URL}/api/admin/strands`, {
+        params: { subjectId },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const list: CurriculumStrand[] = (res.data?.strands || []).map((s: any) => ({
+        id: s._id || s.id,
+        name: s.name,
+      }));
+      setTagStrands(list);
+    } catch (e) {
+      notify('Unable to load strands', 'Please try again.');
+    } finally {
+      setTagLoadingStrands(false);
+    }
+  };
+
+  const handleTagSubjectSelect = (subjectId: string) => {
+    setTagSubjectId(subjectId);
+    // Changing subject invalidates any previously selected strands from a
+    // different subject — start the strand selection fresh.
+    setTagSelectedStrandIds([]);
+    if (subjectId) loadTagStrands(subjectId);
+    else setTagStrands([]);
+  };
+
+  const toggleTagStrand = (strandId: string) => {
+    setTagSelectedStrandIds((prev) =>
+      prev.includes(strandId) ? prev.filter((id) => id !== strandId) : [...prev, strandId]
+    );
+  };
+
+  const closeTagModal = () => {
+    setTagModalOpen(false);
+    setTagTargetPaper(null);
+  };
+
+  const saveTagStrands = useDebouncedAction(async () => {
+    if (!tagTargetPaper) return;
+    if (!tagSubjectId) { notify('Pick a subject', 'Choose which curriculum subject this paper belongs to.'); return; }
+    setTagSaving(true);
+    try {
+      const token = await getIdToken();
+      const res = await axios.put(
+        `${BACKEND_URL}/api/admin/papers/strands`,
+        { key: tagTargetPaper.key, subjectId: tagSubjectId, strandIds: tagSelectedStrandIds },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      const { subjectId, strandIds, strandNames } = res.data || {};
+      setPapers((prev) =>
+        prev.map((p) => (p.key === tagTargetPaper.key ? { ...p, subjectId, strandIds, strandNames } : p))
+      );
+      closeTagModal();
+    } catch (e: any) {
+      const detail = e?.response?.data?.detail || e?.message;
+      notify('Save failed', typeof detail === 'string' ? detail : 'Please try again.');
+    } finally {
+      setTagSaving(false);
     }
   });
 
@@ -397,7 +523,26 @@ export default function AdminAssessments() {
                       {p.grade} · {p.term} · {bytes(p.sizeBytes)}
                     </Text>
                     <Text style={styles.paperKey} numberOfLines={1}>{p.key}</Text>
+                    {p.strandNames && p.strandNames.length > 0 ? (
+                      <View style={styles.strandChipRow}>
+                        {p.strandNames.map((s) => (
+                          <View key={s} style={styles.strandChip}>
+                            <Text style={styles.strandChipText}>{s}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    ) : (
+                      <Text style={styles.strandsPending}>No strands tagged yet</Text>
+                    )}
                   </View>
+                  <TouchableOpacity
+                    onPress={() => openTagModal(p)}
+                    style={styles.tagBtn}
+                    testID={`admin-tag-strands-${p.key}`}
+                    data-testid={`admin-tag-strands-${p.key}`}
+                  >
+                    <Ionicons name="pricetag-outline" size={16} color="#283593" />
+                  </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => handleDelete(p.key)}
                     style={styles.deleteBtn}
@@ -412,6 +557,98 @@ export default function AdminAssessments() {
           </View>
         </View>
       </ScrollView>
+
+      {/* ---- Strand tagging modal ---- */}
+      <Modal
+        visible={tagModalOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={closeTagModal}
+      >
+        <View style={styles.tagModalBackdrop}>
+          <View style={styles.tagModalCard} data-testid="admin-tag-strands-modal">
+            <Text style={styles.modalTitle}>Tag strands covered</Text>
+            {tagTargetPaper && (
+              <Text style={styles.modalSub} numberOfLines={2}>
+                {tagTargetPaper.subjectName}{tagTargetPaper.year ? ` — ${tagTargetPaper.year}` : ''} · {tagTargetPaper.grade} · {tagTargetPaper.term}
+              </Text>
+            )}
+
+            <Text style={[styles.label, { marginTop: 14 }]}>Curriculum subject</Text>
+            {tagLoadingSubjects ? (
+              <ActivityIndicator color="#5C6BC0" style={{ marginTop: 8 }} />
+            ) : tagSubjects.length === 0 ? (
+              <Text style={styles.emptyText}>No curriculum subjects found for this grade.</Text>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+                {tagSubjects.map((s) => {
+                  const active = s.id === tagSubjectId;
+                  return (
+                    <TouchableOpacity
+                      key={s.id}
+                      style={[styles.chip, active && styles.chipActive]}
+                      onPress={() => handleTagSubjectSelect(s.id)}
+                      testID={`admin-tag-subject-${s.id}`}
+                      data-testid={`admin-tag-subject-${s.id}`}
+                    >
+                      <Text style={[styles.chipText, active && styles.chipTextActive]}>{s.name}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            )}
+
+            <Text style={[styles.label, { marginTop: 14 }]}>Strands covered by this paper</Text>
+            {tagLoadingStrands ? (
+              <ActivityIndicator color="#5C6BC0" style={{ marginTop: 8 }} />
+            ) : !tagSubjectId ? (
+              <Text style={styles.emptyText}>Pick a subject first.</Text>
+            ) : tagStrands.length === 0 ? (
+              <Text style={styles.emptyText}>No strands found for this subject.</Text>
+            ) : (
+              <ScrollView style={styles.strandListScroll} nestedScrollEnabled>
+                {tagStrands.map((s) => {
+                  const checked = tagSelectedStrandIds.includes(s.id);
+                  return (
+                    <TouchableOpacity
+                      key={s.id}
+                      style={styles.strandOption}
+                      onPress={() => toggleTagStrand(s.id)}
+                      testID={`admin-tag-strand-${s.id}`}
+                      data-testid={`admin-tag-strand-${s.id}`}
+                    >
+                      <Ionicons
+                        name={checked ? 'checkbox' : 'square-outline'}
+                        size={18}
+                        color={checked ? '#5C6BC0' : '#9CA3AF'}
+                      />
+                      <Text style={styles.strandOptionText}>{s.name}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            )}
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity onPress={closeTagModal} style={styles.modalSecondary} data-testid="admin-tag-cancel">
+                <Text style={styles.modalSecondaryText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={saveTagStrands}
+                disabled={tagSaving}
+                style={[styles.modalPrimary, tagSaving && { opacity: 0.6 }]}
+                data-testid="admin-tag-save"
+              >
+                {tagSaving ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <Text style={styles.modalPrimaryText}>Save</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -472,7 +709,7 @@ const styles = StyleSheet.create({
   refreshText: { color: '#5C6BC0', fontSize: 12, fontWeight: '600' },
 
   paperRow: {
-    flexDirection: 'row', alignItems: 'center',
+    flexDirection: 'row', alignItems: 'flex-start',
     paddingVertical: 10, gap: 10,
     borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
   },
@@ -480,6 +717,50 @@ const styles = StyleSheet.create({
   paperMeta: { fontSize: 11, color: '#5A5A7A', marginTop: 2 },
   paperKey: { fontSize: 10, color: '#9CA3AF', marginTop: 2 },
   deleteBtn: { padding: 8, borderRadius: 8, backgroundColor: '#FEE2E2' },
+  tagBtn: { padding: 8, borderRadius: 8, backgroundColor: '#F3F4FF' },
+
+  strandChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 },
+  strandChip: {
+    backgroundColor: '#F3F4FF',
+    borderWidth: 1, borderColor: '#DDDDF5',
+    borderRadius: 999,
+    paddingHorizontal: 9, paddingVertical: 4,
+  },
+  strandChipText: { fontSize: 10.5, color: '#283593', fontWeight: '600' },
+  strandsPending: { fontSize: 11, color: '#9CA3AF', fontStyle: 'italic', marginTop: 4 },
+
+  tagModalBackdrop: {
+    flex: 1, backgroundColor: 'rgba(17, 24, 39, 0.55)',
+    alignItems: 'center', justifyContent: 'center', padding: 20,
+  },
+  tagModalCard: {
+    width: '100%', maxWidth: 480,
+    backgroundColor: '#FFFFFF', borderRadius: 16,
+    padding: 20,
+  },
+  modalTitle: { fontSize: 17, fontWeight: '700', color: '#1A1A3A' },
+  modalSub: { fontSize: 12, color: '#5A5A7A', marginTop: 4 },
+  strandListScroll: {
+    maxHeight: 220, marginTop: 8,
+    borderWidth: 1, borderColor: '#F3F4F6', borderRadius: 10,
+  },
+  strandOption: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingHorizontal: 12, paddingVertical: 10,
+    borderBottomWidth: 0.5, borderBottomColor: '#F3F4F6',
+  },
+  strandOptionText: { fontSize: 13, color: '#374151', flex: 1 },
+  modalActions: { flexDirection: 'row', gap: 10, marginTop: 18 },
+  modalSecondary: {
+    flex: 1, paddingVertical: 12, borderRadius: 10,
+    borderWidth: 1, borderColor: '#DDDDF5', alignItems: 'center',
+  },
+  modalSecondaryText: { color: '#374151', fontWeight: '600', fontSize: 13 },
+  modalPrimary: {
+    flex: 1, paddingVertical: 12, borderRadius: 10,
+    backgroundColor: '#5C6BC0', alignItems: 'center', justifyContent: 'center',
+  },
+  modalPrimaryText: { color: '#FFFFFF', fontWeight: '700', fontSize: 13 },
 
   emptyText: { fontSize: 13, color: '#9CA3AF', paddingVertical: 12, textAlign: 'center' },
 });

@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   scrollContentMobile: { paddingHorizontal: 16 },
 
   pageTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
     color: COLORS.textPrimary,
     marginBottom: 16,
@@ -306,13 +306,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   welcomeTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '600',
     color: COLORS.textPrimary,
     marginBottom: 6,
   },
   welcomeSub: {
-    fontSize: 14,
+    fontSize: 15,
     color: COLORS.textSecondary,
     marginBottom: 20,
   },
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
 
   actionCol: { flex: 1, minWidth: 200 },
   actionColHeading: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
     color: COLORS.textPrimary,
     marginBottom: 12,
@@ -335,8 +335,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  primaryCtaText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
-  actionColCaption: { fontSize: 12, color: COLORS.textSecondary, lineHeight: 18 },
+  primaryCtaText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
+  actionColCaption: { fontSize: 13, color: COLORS.textSecondary, lineHeight: 19 },
   inlineLink: { color: COLORS.link, textDecorationLine: 'underline' },
 
   linkRow: {
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     gap: 8,
   },
-  linkText: { fontSize: 13, color: COLORS.link },
+  linkText: { fontSize: 14, color: COLORS.link },
 
   // Widget grid
   widgetGrid: { flexDirection: 'row', gap: 20 },
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.cardBorder,
   },
-  widgetTitle: { fontSize: 13, fontWeight: '700', color: COLORS.textPrimary },
+  widgetTitle: { fontSize: 14, fontWeight: '700', color: COLORS.textPrimary },
   widgetBody: { padding: 14 },
 
   // Useful links rows
@@ -392,26 +392,26 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: COLORS.accent,
   },
-  usefulLinkText: { flex: 1, fontSize: 13, color: COLORS.textPrimary },
+  usefulLinkText: { flex: 1, fontSize: 14, color: COLORS.textPrimary },
   itemSep: { height: 1, backgroundColor: '#F3F4F6' },
 
   // Quote
   quoteText: {
-    fontSize: 14,
+    fontSize: 15,
     fontStyle: 'italic',
     color: COLORS.textPrimary,
-    lineHeight: 21,
+    lineHeight: 22,
   },
   quoteAuthor: {
-    fontSize: 12,
+    fontSize: 13,
     color: COLORS.textSecondary,
     marginTop: 8,
     textAlign: 'right',
   },
 
   // Tip & support
-  tipText: { fontSize: 13, color: COLORS.warningText, lineHeight: 19 },
-  supportText: { fontSize: 13, color: COLORS.success, lineHeight: 19, marginBottom: 12 },
+  tipText: { fontSize: 14, color: COLORS.warningText, lineHeight: 20 },
+  supportText: { fontSize: 14, color: COLORS.success, lineHeight: 20, marginBottom: 12 },
   supportBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -422,5 +422,5 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     alignSelf: 'flex-start',
   },
-  supportBtnText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
+  supportBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
 });

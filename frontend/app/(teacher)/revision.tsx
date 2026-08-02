@@ -16,7 +16,6 @@ import {
   Platform,
   Modal,
   Linking,
-  useWindowDimensions,
 } from 'react-native';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,7 +25,20 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useDebouncedAction } from '../../hooks/useDebouncedAction';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-const MOBILE_BREAKPOINT = 768;
+
+// Same token set as (teacher)/dashboard.tsx — adopting its flatter,
+// WordPress-admin-inspired palette here as a test case before rolling it
+// out to the rest of the teacher screens.
+const COLORS = {
+  bg: '#F3F4F6',
+  card: '#FFFFFF',
+  cardBorder: '#E5E7EB',
+  textPrimary: '#111827',
+  textSecondary: '#6B7280',
+  accent: '#5C6BC0',
+  accentSoft: '#EEF2FF',
+  accentBorder: '#C7D2FE',
+};
 
 interface Grade { id: string; name: string }
 interface Assessment {
@@ -38,6 +50,7 @@ interface Assessment {
   ext: string;
   sizeBytes: number;
   uploadedAt: string | null;
+  strands: string[];
 }
 
 function formatBytes(n: number): string {
@@ -165,40 +178,40 @@ const Dropdown: React.FC<DropdownProps> = ({
 const dd = StyleSheet.create({
   wrap: { flex: 1 },
   label: {
-    fontSize: 10, fontWeight: '700', color: '#5A5A7A',
+    fontSize: 10, fontWeight: '700', color: COLORS.textSecondary,
     textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5,
   },
   trigger: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#DDDDF5',
-    borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, gap: 6,
+    backgroundColor: COLORS.card, borderWidth: 1, borderColor: COLORS.cardBorder,
+    borderRadius: 4, paddingHorizontal: 12, paddingVertical: 10, gap: 6,
   },
-  triggerOpen: { borderColor: '#5C6BC0' },
-  triggerDisabled: { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' },
-  triggerText: { flex: 1, fontSize: 13, color: '#1A1A3A', fontWeight: '500' },
-  placeholder: { color: '#9CA3AF', fontWeight: '400' },
+  triggerOpen: { borderColor: COLORS.accent },
+  triggerDisabled: { backgroundColor: COLORS.bg, borderColor: COLORS.cardBorder },
+  triggerText: { flex: 1, fontSize: 13, color: COLORS.textPrimary, fontWeight: '500' },
+  placeholder: { color: COLORS.textSecondary, fontWeight: '400' },
   backdrop: {
     flex: 1,
     // Fully transparent — just captures outside taps
     backgroundColor: 'transparent',
   },
   menu: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.card,
     borderWidth: 1,
-    borderColor: '#DDDDF5',
-    borderRadius: 10,
+    borderColor: COLORS.cardBorder,
+    borderRadius: 4,
     // @ts-ignore web shadow
-    boxShadow: '0 4px 20px rgba(55,48,163,0.15)',
+    boxShadow: '0 4px 20px rgba(17,24,39,0.12)',
     overflow: 'hidden',
   },
   option: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 14, paddingVertical: 10,
-    borderBottomWidth: 0.5, borderBottomColor: '#F3F4F6',
+    borderBottomWidth: 0.5, borderBottomColor: COLORS.cardBorder,
   },
-  optionActive: { backgroundColor: '#F3F4FF' },
-  optionText: { fontSize: 13, color: '#374151' },
-  optionTextActive: { color: '#5C6BC0', fontWeight: '600' },
+  optionActive: { backgroundColor: COLORS.accentSoft },
+  optionText: { fontSize: 13, color: COLORS.textPrimary },
+  optionTextActive: { color: COLORS.accent, fontWeight: '600' },
 });
 
 // ─── Main page ────────────────────────────────────────────────────────────────
@@ -206,8 +219,6 @@ const dd = StyleSheet.create({
 export default function RevisionPapers() {
   const router = useRouter();
   const { firebaseUser, user } = useAuth();
-  const { width } = useWindowDimensions();
-  const isMobile = width < MOBILE_BREAKPOINT;
   const getIdToken = async () => {
     if (!firebaseUser) throw new Error('Not authenticated');
     return firebaseUser.getIdToken();
@@ -399,7 +410,7 @@ export default function RevisionPapers() {
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={[styles.scrollContent, isMobile && styles.scrollContentMobile]}
+        contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
         {/* Header */}
@@ -414,7 +425,7 @@ export default function RevisionPapers() {
             </Text>
           </View>
           <View style={styles.walletPill}>
-            <Ionicons name="wallet-outline" size={14} color="#283593" />
+            <Ionicons name="wallet-outline" size={14} color={COLORS.accent} />
             <Text style={styles.walletPillText}>KES {user?.walletBalance ?? 0}</Text>
           </View>
         </View>
@@ -491,43 +502,71 @@ export default function RevisionPapers() {
                 <Text style={styles.emptyHint}>Check back soon — we add fresh assessments every term.</Text>
               </View>
             ) : (
-              visibleItems.map((item) => (
-            <View
-              key={item.key}
-              style={styles.paperRow}
-              data-testid={`assessment-row-${item.key}`}
-            >
-              <View style={styles.paperIcon}>
-                <Ionicons
-                  name={item.ext === '.pdf' ? 'document-text' : 'document'}
-                  size={22}
-                  color={item.ext === '.pdf' ? '#EF4444' : '#2563EB'}
-                />
+              <View style={styles.table}>
+                {/* Header row */}
+                <View style={[styles.tableRow, styles.tableHeaderRow]}>
+                  <Text style={[styles.tableHeaderText, styles.colPaper]}>Paper</Text>
+                  <Text style={[styles.tableHeaderText, styles.colStrands]}>Strands Covered</Text>
+                  <Text style={[styles.tableHeaderText, styles.colDownload]}>Download</Text>
+                </View>
+
+                {visibleItems.map((item) => (
+                  <View
+                    key={item.key}
+                    style={styles.tableRow}
+                    data-testid={`assessment-row-${item.key}`}
+                  >
+                    <View style={[styles.colPaper, styles.paperCell]}>
+                      <View style={styles.paperIcon}>
+                        <Ionicons
+                          name={item.ext === '.pdf' ? 'document-text' : 'document'}
+                          size={20}
+                          color={item.ext === '.pdf' ? '#EF4444' : '#2563EB'}
+                        />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.paperTitle} numberOfLines={1}>{item.title}</Text>
+                        <Text style={styles.paperMeta}>
+                          {item.subjectName} · {item.ext.replace('.', '').toUpperCase()} · {formatBytes(item.sizeBytes)}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={[styles.colStrands, styles.strandsCell]}>
+                      {item.strands && item.strands.length > 0 ? (
+                        <View style={styles.strandChipRow}>
+                          {item.strands.map((s) => (
+                            <View key={s} style={styles.strandChip}>
+                              <Text style={styles.strandChipText}>{s}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      ) : (
+                        <Text style={styles.strandsPending}>Not tagged yet</Text>
+                      )}
+                    </View>
+
+                    <View style={[styles.colDownload, styles.downloadCell]}>
+                      <TouchableOpacity
+                        onPress={() => handleDownload(item)}
+                        disabled={downloadingKey === item.key}
+                        style={[styles.downloadBtn, downloadingKey === item.key && styles.downloadBtnBusy]}
+                        testID={`assessment-download-${item.key}`}
+                        data-testid={`assessment-download-${item.key}`}
+                      >
+                        {downloadingKey === item.key ? (
+                          <ActivityIndicator color="#FFFFFF" size="small" />
+                        ) : (
+                          <>
+                            <Ionicons name="download-outline" size={14} color="#FFFFFF" />
+                            <Text style={styles.downloadBtnText}>KES {costPerDownload}</Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.paperTitle} numberOfLines={1}>{item.title}</Text>
-                <Text style={styles.paperMeta}>
-                  {item.subjectName} · {item.ext.replace('.', '').toUpperCase()} · {formatBytes(item.sizeBytes)}
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => handleDownload(item)}
-                disabled={downloadingKey === item.key}
-                style={[styles.downloadBtn, downloadingKey === item.key && styles.downloadBtnBusy]}
-                testID={`assessment-download-${item.key}`}
-                data-testid={`assessment-download-${item.key}`}
-              >
-                {downloadingKey === item.key ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <>
-                    <Ionicons name="download-outline" size={14} color="#FFFFFF" />
-                    <Text style={styles.downloadBtnText}>KES {costPerDownload}</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </View>
-              ))
             )}
           </>
         )}
@@ -576,41 +615,33 @@ export default function RevisionPapers() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'transparent' },
+  container: { flex: 1, backgroundColor: COLORS.bg },
   scroll: { flex: 1 },
-  scrollContent: {
-    paddingHorizontal: 32,
-    paddingVertical: 24,
-    paddingBottom: 48,
-    maxWidth: 1280,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  scrollContentMobile: { paddingHorizontal: 16, paddingVertical: 16 },
+  scrollContent: { padding: 16, paddingBottom: 48 },
 
   header: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#FFFFFF', borderRadius: 14,
+    backgroundColor: COLORS.card, borderRadius: 8,
     padding: 14, marginBottom: 14, gap: 12,
-    borderWidth: 1, borderColor: '#F3F4FF',
+    borderWidth: 1, borderColor: COLORS.cardBorder,
   },
   headerIconWrap: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: '#F3F4FF',
+    backgroundColor: COLORS.accentSoft,
     alignItems: 'center', justifyContent: 'center',
   },
-  title: { fontSize: 18, fontWeight: '700', color: '#1A1A3A' },
-  subtitle: { fontSize: 12, color: '#5A5A7A', marginTop: 2 },
+  title: { fontSize: 18, fontWeight: '700', color: COLORS.textPrimary },
+  subtitle: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
   walletPill: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#F3E8FF',
-    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12,
+    backgroundColor: COLORS.accentSoft,
+    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4,
   },
-  walletPillText: { fontSize: 11, fontWeight: '700', color: '#283593' },
+  walletPillText: { fontSize: 11, fontWeight: '700', color: COLORS.accent },
 
   filtersCard: {
-    backgroundColor: '#FFFFFF', borderRadius: 14,
-    borderWidth: 1, borderColor: '#DDDDF5',
+    backgroundColor: COLORS.card, borderRadius: 8,
+    borderWidth: 1, borderColor: COLORS.cardBorder,
     padding: 14, marginBottom: 16,
   },
   dropdownRow: {
@@ -621,10 +652,10 @@ const styles = StyleSheet.create({
   loadingRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8,
   },
-  loadingText: { fontSize: 13, color: '#9CA3AF' },
+  loadingText: { fontSize: 13, color: COLORS.textSecondary },
 
   sectionLabel: {
-    fontSize: 12, fontWeight: '700', color: '#374151',
+    fontSize: 12, fontWeight: '700', color: COLORS.textPrimary,
     textTransform: 'uppercase', letterSpacing: 0.5,
     marginBottom: 10,
   },
@@ -634,35 +665,63 @@ const styles = StyleSheet.create({
     paddingVertical: 48, gap: 12,
   },
   promptText: {
-    fontSize: 14, color: '#9CA3AF', textAlign: 'center',
+    fontSize: 14, color: COLORS.textSecondary, textAlign: 'center',
     fontWeight: '500', maxWidth: 260,
   },
   emptyWrap: {
     alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 40, backgroundColor: '#FFFFFF',
-    borderRadius: 14, borderWidth: 1, borderColor: '#F3F4F6',
+    paddingVertical: 40, backgroundColor: COLORS.card,
+    borderRadius: 8, borderWidth: 1, borderColor: COLORS.cardBorder,
     gap: 8,
   },
-  emptyText: { fontSize: 14, color: '#374151', fontWeight: '600' },
-  emptyHint: { fontSize: 12, color: '#9CA3AF' },
+  emptyText: { fontSize: 14, color: COLORS.textPrimary, fontWeight: '600' },
+  emptyHint: { fontSize: 12, color: COLORS.textSecondary },
 
-  paperRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: '#FFFFFF', padding: 12,
-    borderRadius: 12, marginBottom: 10,
-    borderWidth: 1, borderColor: '#F3F4F6',
+  table: {
+    backgroundColor: COLORS.card,
+    borderRadius: 6,
+    borderWidth: 1, borderColor: COLORS.cardBorder,
+    overflow: 'hidden',
   },
+  tableRow: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingVertical: 10, paddingHorizontal: 12, gap: 10,
+    borderBottomWidth: 1, borderBottomColor: COLORS.cardBorder,
+  },
+  tableHeaderRow: {
+    backgroundColor: COLORS.bg,
+    paddingVertical: 8,
+  },
+  tableHeaderText: {
+    fontSize: 10, fontWeight: '700', color: COLORS.textSecondary,
+    textTransform: 'uppercase', letterSpacing: 0.4,
+  },
+  colPaper: { flex: 2.2 },
+  colStrands: { flex: 2.4 },
+  colDownload: { flex: 1.1, alignItems: 'flex-end' },
+  paperCell: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  strandsCell: { paddingRight: 4 },
+  downloadCell: { alignItems: 'flex-end' },
   paperIcon: {
-    width: 40, height: 40, borderRadius: 10,
-    backgroundColor: '#F9FAFB',
+    width: 36, height: 36, borderRadius: 6,
+    backgroundColor: COLORS.bg,
     alignItems: 'center', justifyContent: 'center',
   },
-  paperTitle: { fontSize: 14, fontWeight: '600', color: '#1A1A3A' },
-  paperMeta: { fontSize: 11, color: '#5A5A7A', marginTop: 2 },
+  paperTitle: { fontSize: 13, fontWeight: '600', color: COLORS.textPrimary },
+  paperMeta: { fontSize: 11, color: COLORS.textSecondary, marginTop: 2 },
+  strandChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  strandChip: {
+    backgroundColor: COLORS.accentSoft,
+    borderWidth: 1, borderColor: COLORS.accentBorder,
+    borderRadius: 4,
+    paddingHorizontal: 9, paddingVertical: 4,
+  },
+  strandChipText: { fontSize: 10.5, color: COLORS.accent, fontWeight: '600' },
+  strandsPending: { fontSize: 11.5, color: COLORS.textSecondary, fontStyle: 'italic' },
   downloadBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#5C6BC0',
-    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8,
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 4,
     minWidth: 90, justifyContent: 'center',
   },
   downloadBtnBusy: { opacity: 0.7 },
@@ -674,25 +733,25 @@ const styles = StyleSheet.create({
   },
   modalCard: {
     width: '100%', maxWidth: 400,
-    backgroundColor: '#FFFFFF', borderRadius: 16,
+    backgroundColor: COLORS.card, borderRadius: 8,
     padding: 24, alignItems: 'center',
   },
   modalIconWrap: {
     width: 64, height: 64, borderRadius: 32,
-    backgroundColor: '#F3F4FF',
+    backgroundColor: COLORS.accentSoft,
     alignItems: 'center', justifyContent: 'center', marginBottom: 12,
   },
-  modalTitle: { fontSize: 18, fontWeight: '700', color: '#1A1A3A', marginBottom: 6 },
-  modalBody: { fontSize: 13, color: '#4B5563', textAlign: 'center', lineHeight: 20, marginBottom: 18 },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 6 },
+  modalBody: { fontSize: 13, color: COLORS.textSecondary, textAlign: 'center', lineHeight: 20, marginBottom: 18 },
   modalActions: { flexDirection: 'row', gap: 10, width: '100%' },
   modalSecondary: {
-    flex: 1, paddingVertical: 12, borderRadius: 10,
-    borderWidth: 1, borderColor: '#DDDDF5', alignItems: 'center',
+    flex: 1, paddingVertical: 12, borderRadius: 4,
+    borderWidth: 1, borderColor: COLORS.cardBorder, alignItems: 'center',
   },
-  modalSecondaryText: { color: '#374151', fontWeight: '600', fontSize: 13 },
+  modalSecondaryText: { color: COLORS.textPrimary, fontWeight: '600', fontSize: 13 },
   modalPrimary: {
-    flex: 1, paddingVertical: 12, borderRadius: 10,
-    backgroundColor: '#5C6BC0',
+    flex: 1, paddingVertical: 12, borderRadius: 4,
+    backgroundColor: COLORS.accent,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
   },
   modalPrimaryText: { color: '#FFFFFF', fontWeight: '700', fontSize: 13 },

@@ -333,12 +333,14 @@ class Strand(BaseModel):
     id: Optional[str] = None
     name: str
     subjectId: str
+    order: Optional[int] = None
 
 class SubStrand(BaseModel):
     id: Optional[str] = None
     name: str
     strandId: str
     number_of_lessons: Optional[int] = None
+    order: Optional[int] = None
 
 class SubstrandLesson(BaseModel):
     id: Optional[str] = None
@@ -4599,6 +4601,9 @@ async def _create_indexes():
         await db.strands.create_index([("subjectId", 1), ("order", 1)])
         await db.substrands.create_index([("strandId", 1), ("order", 1)])
         await db.slos.create_index([("substrandId", 1), ("order", 1)])
+
+        # Assessment strand tags — one doc per R2 key, admin-maintained
+        await db.assessment_strands.create_index("key", unique=True)
         
         # Lesson plans - TTL index for auto-deletion of expired plans
         await db.lesson_plans.create_index("expiresAt", expireAfterSeconds=0)
