@@ -103,50 +103,64 @@ export default function Dashboard() {
           >
             <Text style={styles.primaryCtaText}>Generate Scheme of Work</Text>
           </TouchableOpacity>
-          <Text style={styles.actionColCaption}>
-            …or{' '}
-            <Text
-              style={styles.inlineLink}
-              onPress={go('/(teacher)/home')}
-            >
-              create a lesson plan
-            </Text>{' '}
-            instead.
-          </Text>
+          <TouchableOpacity
+            style={styles.primaryCta}
+            onPress={go('/(teacher)/home')}
+            activeOpacity={0.85}
+            data-testid="dashboard-cta-create-lesson"
+          >
+            <Text style={styles.primaryCtaText}>Create a Lesson Plan</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Next Steps — link list */}
+        {/* Next Steps — matching CTA buttons */}
         <View style={styles.actionCol}>
           <Text style={styles.actionColHeading}>Next Steps</Text>
-          <Pressable style={styles.linkRow} onPress={go('/(teacher)/home')}>
-            <Ionicons name="document-text-outline" size={14} color={COLORS.link} />
-            <Text style={styles.linkText}>Create a lesson plan</Text>
-          </Pressable>
-          <Pressable style={styles.linkRow} onPress={go('/(teacher)/notes')}>
-            <Ionicons name="create-outline" size={14} color={COLORS.link} />
-            <Text style={styles.linkText}>Generate lesson notes</Text>
-          </Pressable>
-          <Pressable style={styles.linkRow} onPress={go('/(teacher)/revision')}>
-            <Ionicons name="school-outline" size={14} color={COLORS.link} />
-            <Text style={styles.linkText}>Download revision papers</Text>
-          </Pressable>
+          <TouchableOpacity
+            style={styles.primaryCta}
+            onPress={go('/(teacher)/notes')}
+            activeOpacity={0.85}
+            data-testid="dashboard-cta-notes"
+          >
+            <Text style={styles.primaryCtaText}>Generate Lesson Notes</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.primaryCta}
+            onPress={go('/(teacher)/revision')}
+            activeOpacity={0.85}
+            data-testid="dashboard-cta-revision"
+          >
+            <Text style={styles.primaryCtaText}>Download Revision Papers</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* More Actions — secondary nav */}
+        {/* More Actions — matching CTA buttons */}
         <View style={styles.actionCol}>
           <Text style={styles.actionColHeading}>More Actions</Text>
-          <Pressable style={styles.linkRow} onPress={go('/(teacher)/my-schemes')}>
-            <Ionicons name="albums-outline" size={14} color={COLORS.link} />
-            <Text style={styles.linkText}>Review my schemes</Text>
-          </Pressable>
-          <Pressable style={styles.linkRow} onPress={go('/(teacher)/lessons')}>
-            <Ionicons name="folder-open-outline" size={14} color={COLORS.link} />
-            <Text style={styles.linkText}>My lesson plans</Text>
-          </Pressable>
-          <Pressable style={styles.linkRow} onPress={go('/(teacher)/profile')}>
-            <Ionicons name="person-circle-outline" size={14} color={COLORS.link} />
-            <Text style={styles.linkText}>Profile & support</Text>
-          </Pressable>
+          <TouchableOpacity
+            style={styles.primaryCta}
+            onPress={go('/(teacher)/my-schemes')}
+            activeOpacity={0.85}
+            data-testid="dashboard-cta-my-schemes"
+          >
+            <Text style={styles.primaryCtaText}>Review My Schemes</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.primaryCta}
+            onPress={go('/(teacher)/lessons')}
+            activeOpacity={0.85}
+            data-testid="dashboard-cta-my-lessons"
+          >
+            <Text style={styles.primaryCtaText}>My Lesson Plans</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.primaryCta}
+            onPress={go('/(teacher)/profile')}
+            activeOpacity={0.85}
+            data-testid="dashboard-cta-profile"
+          >
+            <Text style={styles.primaryCtaText}>Profile &amp; Support</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
