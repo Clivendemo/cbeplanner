@@ -25,6 +25,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useNewsData, type NewsItem } from '../components/useNewsData';
+import { useCalendarData, type DisplayEvent, type DisplayTerm } from '../components/useCalendarData';
 
 const CLASSROOM_IMG = require('../assets/images/classroom.webp');
 const NOTEBOOK_IMG = require('../assets/images/notebook.webp');
@@ -92,11 +93,36 @@ const TRUST_ITEMS = [
 ];
 
 // Nav links only include real routes/sections that exist on this page.
-const NAV_LINKS: { label: string; anchor: 'features' | 'howitworks' | 'showcase' | 'updates' }[] = [
+const NAV_LINKS: { label: string; anchor: 'features' | 'howitworks' | 'showcase' | 'updates' | 'calendar' }[] = [
   { label: 'Features', anchor: 'features' },
   { label: 'How It Works', anchor: 'howitworks' },
   { label: 'Showcase', anchor: 'showcase' },
   { label: 'Updates', anchor: 'updates' },
+  { label: 'Calendar', anchor: 'calendar' },
+];
+
+// Teaching tips — mirrors the palette-neutral copy used inside the app's
+// existing LoginShellWidgets so the landing page stays consistent with what
+// signed-in users already see.
+const TEACHING_TIPS = [
+  'Start each lesson with a real-life scenario relevant to learners\u2019 environment to boost engagement.',
+  'Use differentiated tasks \u2014 a guided example, paired practice, then an independent challenge.',
+  'Align your learning outcomes to KICD strand competencies before writing your lesson plan.',
+  'Group work boosts competency development \u2014 assign roles so every learner participates actively.',
+  'Formative assessment doesn\u2019t need to be formal \u2014 exit slips or a quick Q&A work just as well.',
+  'Celebrate small wins in class \u2014 positive reinforcement improves learner confidence and attendance.',
+  'CBC emphasises values, skills and competencies over rote memorization \u2014 plan accordingly.',
+  'Review your scheme of work weekly and align it with KICD guidelines to stay on track.',
+];
+
+// Kenyan classroom labels — every one of these is a real capability of the
+// live app (CBC/CBE grades, KICD alignment, Senior School Grade 10 support).
+const KENYA_LABELS = [
+  { icon: 'flag-outline' as const, text: 'Kenyan Teachers' },
+  { icon: 'school-outline' as const, text: 'CBC / CBE' },
+  { icon: 'library-outline' as const, text: 'KICD-Aligned' },
+  { icon: 'ribbon-outline' as const, text: 'Grades 1 \u2013 12' },
+  { icon: 'trophy-outline' as const, text: 'Senior School' },
 ];
 
 export default function Landing() {
@@ -391,6 +417,15 @@ export default function Landing() {
       {/* ─────────────── Latest Education Updates ─────────────── */}
       <LatestUpdates isMobile={isMobile} isNarrow={isNarrow} />
 
+      {/* ─────────────── Academic Calendar ─────────────── */}
+      <AcademicCalendar isMobile={isMobile} isNarrow={isNarrow} />
+
+      {/* ─────────────── Built for the Kenyan Classroom ─────────────── */}
+      <KenyaIdentity isMobile={isMobile} />
+
+      {/* ─────────────── Teaching Tip of the Day ─────────────── */}
+      <TeachingTip isMobile={isMobile} />
+
       {/* ─────────────── Workspace CTA strip (anchor target) ─────────────── */}
       <View
         style={[styles.workspaceStrip, isMobile && styles.workspaceStripMobile]}
@@ -622,6 +657,214 @@ function UpdateCard({
       <View style={styles.updateFooter}>
         <Ionicons name="calendar-clear-outline" size={13} color={COLORS.textMuted} />
         <Text style={styles.updateDate}>Latest</Text>
+      </View>
+    </View>
+  );
+}
+
+// ─────────────── AcademicCalendar ───────────────
+// Compact summary using the app's real /api/calendar data. Left column shows
+// the current term, right column shows up to 4 upcoming events. No large empty
+// month grid — the goal is scannable value, not calendar dominance.
+const EVENT_CATEGORY_STYLE: Record<string, { bg: string; fg: string; label: string }> = {
+  academic:     { bg: '#EEF2FF', fg: '#3730A3', label: 'ACADEMIC' },
+  cocurricular: { bg: '#FEF3C7', fg: '#92400E', label: 'CO-CURRICULAR' },
+  exam:         { bg: '#FEE2E2', fg: '#991B1B', label: 'EXAMS' },
+};
+
+function AcademicCalendar({ isMobile, isNarrow }: { isMobile: boolean; isNarrow: boolean }) {
+  const { events, terms, loading } = useCalendarData();
+  const currentTerm: DisplayTerm | undefined = useMemo(
+    () => terms.find((t) => t.status === 'current') || terms[0],
+    [terms],
+  );
+  const upcoming = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return events
+      .filter((e) => {
+        try {
+          return new Date(e.isoDate).getTime() >= today.getTime();
+        } catch {
+          return false;
+        }
+      })
+      .slice(0, 4);
+  }, [events]);
+
+  return (
+    <View
+      style={styles.section}
+      // @ts-ignore
+      nativeID="calendar"
+      data-testid="landing-calendar-section"
+    >
+      <Text style={styles.sectionEyebrow}>ACADEMIC CALENDAR</Text>
+      <Text style={[styles.sectionHeadline, isMobile && styles.sectionHeadlineMobile]}>
+        Important Dates This Term
+      </Text>
+      <Text style={styles.sectionLead}>
+        Keep track of important dates throughout the school term.
+      </Text>
+
+      <View style={[styles.calendarRow, isNarrow && styles.calendarRowStacked]}>
+        <View style={styles.calendarTermCard} data-testid="landing-calendar-term">
+          <Text style={styles.calendarTermEyebrow}>
+            {currentTerm ? currentTerm.year : new Date().getFullYear()} {'\u00b7'} {currentTerm?.name || 'Term'}
+          </Text>
+          <Text style={styles.calendarTermPeriod}>
+            {currentTerm?.period || (loading ? 'Loading term dates\u2026' : 'No term data available')}
+          </Text>
+          {!!currentTerm?.academic?.length && (
+            <View style={styles.calendarTermActivities}>
+              <Text style={styles.calendarTermSubhead}>Key Term Activities</Text>
+              {currentTerm.academic.slice(0, 3).map((a) => (
+                <View key={a.label} style={styles.calendarTermActRow}>
+                  <View style={styles.calendarTermDot} />
+                  <Text style={styles.calendarTermActLabel}>{a.label}</Text>
+                  <Text style={styles.calendarTermActDate}>{a.date}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+
+        <View style={styles.calendarUpcomingCard} data-testid="landing-calendar-upcoming">
+          <Text style={styles.calendarUpcomingHead}>Upcoming Important Dates</Text>
+          {upcoming.length === 0 ? (
+            <Text style={styles.calendarEmpty}>
+              {loading ? 'Loading events\u2026' : 'No upcoming dates scheduled.'}
+            </Text>
+          ) : (
+            <View style={styles.calendarEventList}>
+              {upcoming.map((e) => {
+                const cat = EVENT_CATEGORY_STYLE[e.category] || EVENT_CATEGORY_STYLE.academic;
+                return (
+                  <View key={e.id} style={styles.calendarEventRow} data-testid={`landing-calendar-event-${e.id}`}>
+                    <View style={styles.calendarEventDate}>
+                      <Text style={styles.calendarEventDay}>{e.date.split(' ')[1] || e.day}</Text>
+                      <Text style={styles.calendarEventMon}>{e.date.split(' ')[0]}</Text>
+                    </View>
+                    <View style={styles.calendarEventBody}>
+                      <Text style={styles.calendarEventTitle} numberOfLines={2}>{e.title}</Text>
+                      <View style={[styles.calendarEventTag, { backgroundColor: cat.bg }]}>
+                        <Text style={[styles.calendarEventTagText, { color: cat.fg }]}>{cat.label}</Text>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// ─────────────── KenyaIdentity ───────────────
+function KenyaIdentity({ isMobile }: { isMobile: boolean }) {
+  return (
+    <View
+      style={[styles.section, styles.sectionAlt]}
+      // @ts-ignore
+      nativeID="kenya"
+      data-testid="landing-kenya-section"
+    >
+      <View style={styles.kenyaBand}>
+        <View style={styles.kenyaFlagAccent} pointerEvents="none">
+          <View style={[styles.kenyaFlagBar, { backgroundColor: '#000000' }]} />
+          <View style={[styles.kenyaFlagBar, { backgroundColor: '#B71C1C' }]} />
+          <View style={[styles.kenyaFlagBar, { backgroundColor: '#2E7D32' }]} />
+        </View>
+        <View style={styles.kenyaBody}>
+          <View style={styles.kenyaEyebrowRow}>
+            <Text style={styles.kenyaFlag}>🇰🇪</Text>
+            <Text style={styles.kenyaEyebrow}>MADE FOR KENYAN TEACHERS</Text>
+          </View>
+          <Text style={[styles.sectionHeadline, isMobile && styles.sectionHeadlineMobile, styles.kenyaHeadline]}>
+            Built for the Kenyan Classroom
+          </Text>
+          <Text style={[styles.sectionLead, styles.kenyaLead]}>
+            CBE Planner is designed to support teachers navigating Kenya&apos;s curriculum,
+            lesson planning and day-to-day classroom preparation.
+          </Text>
+          <View style={[styles.kenyaLabelRow, isMobile && styles.kenyaLabelRowMobile]}>
+            {KENYA_LABELS.map((l) => (
+              <View
+                key={l.text}
+                style={styles.kenyaLabel}
+                data-testid={`landing-kenya-label-${l.text.toLowerCase().replace(/[^a-z]+/g, '-')}`}
+              >
+                <Ionicons name={l.icon} size={14} color={COLORS.accent} />
+                <Text style={styles.kenyaLabelText}>{l.text}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// ─────────────── TeachingTip ───────────────
+function TeachingTip({ isMobile }: { isMobile: boolean }) {
+  const [idx, setIdx] = useState(() => Math.floor(Math.random() * TEACHING_TIPS.length));
+  const total = TEACHING_TIPS.length;
+  const go = (delta: number) => setIdx((i) => (i + delta + total) % total);
+  const tip = TEACHING_TIPS[idx];
+  return (
+    <View
+      style={styles.section}
+      // @ts-ignore
+      nativeID="tip"
+      data-testid="landing-tip-section"
+    >
+      <View style={styles.tipCard}>
+        <View style={styles.tipHeader}>
+          <View style={styles.tipHeaderLeft}>
+            <View style={styles.tipIconWrap}>
+              <Ionicons name="bulb" size={20} color="#FFFFFF" />
+            </View>
+            <View>
+              <Text style={styles.tipEyebrow}>TEACHING TIP</Text>
+              <Text style={styles.tipTitle}>Teacher&apos;s Tip of the Day</Text>
+            </View>
+          </View>
+          <Text style={styles.tipCounter} data-testid="landing-tip-counter">
+            {idx + 1} / {total}
+          </Text>
+        </View>
+        <Text style={styles.tipQuoteMark} accessibilityElementsHidden>&ldquo;</Text>
+        <Text style={styles.tipBody} data-testid="landing-tip-body">{tip}</Text>
+        <View style={[styles.tipNav, isMobile && styles.tipNavMobile]}>
+          <TouchableOpacity
+            style={styles.tipNavBtn}
+            onPress={() => go(-1)}
+            accessibilityLabel="Previous tip"
+            data-testid="landing-tip-prev"
+          >
+            <Ionicons name="arrow-back" size={15} color={COLORS.textPrimary} />
+            <Text style={styles.tipNavText}>Previous</Text>
+          </TouchableOpacity>
+          <View style={styles.tipDots}>
+            {TEACHING_TIPS.map((_, i) => (
+              <View
+                key={i}
+                style={[styles.tipDot, i === idx && styles.tipDotActive]}
+              />
+            ))}
+          </View>
+          <TouchableOpacity
+            style={[styles.tipNavBtn, styles.tipNavBtnPrimary]}
+            onPress={() => go(1)}
+            accessibilityLabel="Next tip"
+            data-testid="landing-tip-next"
+          >
+            <Text style={[styles.tipNavText, styles.tipNavTextPrimary]}>Next</Text>
+            <Ionicons name="arrow-forward" size={15} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -1085,6 +1328,263 @@ const styles = StyleSheet.create({
     marginTop: 'auto' as any,
   },
   updateDate: { fontSize: 12, color: COLORS.textMuted, fontWeight: '600' },
+
+  // ── Academic Calendar (compact) ──
+  calendarRow: { flexDirection: 'row', gap: 20 },
+  calendarRowStacked: { flexDirection: 'column' },
+  calendarTermCard: {
+    flex: 1,
+    padding: 24,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.accentBorder,
+    backgroundColor: COLORS.accentSoft,
+    // @ts-ignore
+    backgroundImage: 'linear-gradient(135deg, #EEF2FF 0%, #F7F8FC 65%)',
+    minWidth: 240,
+  },
+  calendarTermEyebrow: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1.4,
+    color: COLORS.accentDark,
+    marginBottom: 6,
+  },
+  calendarTermPeriod: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: COLORS.textPrimary,
+    letterSpacing: -0.3,
+    marginBottom: 18,
+  },
+  calendarTermActivities: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(63,76,159,0.15)',
+    paddingTop: 14,
+  },
+  calendarTermSubhead: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    letterSpacing: 0.4,
+    marginBottom: 10,
+  },
+  calendarTermActRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 4,
+  },
+  calendarTermDot: {
+    width: 6, height: 6, borderRadius: 3,
+    backgroundColor: COLORS.accent,
+  },
+  calendarTermActLabel: { flex: 1, fontSize: 13, color: COLORS.textPrimary, fontWeight: '600' },
+  calendarTermActDate: { fontSize: 12, color: COLORS.textMuted, fontWeight: '600' },
+
+  calendarUpcomingCard: {
+    flex: 1.35,
+    padding: 24,
+    backgroundColor: COLORS.surface,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    minWidth: 260,
+  },
+  calendarUpcomingHead: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    letterSpacing: 0.4,
+    marginBottom: 14,
+    textTransform: 'uppercase' as any,
+  },
+  calendarEmpty: { fontSize: 13, color: COLORS.textMuted, paddingVertical: 12 },
+  calendarEventList: { gap: 4 },
+  calendarEventRow: {
+    flexDirection: 'row',
+    gap: 14,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    alignItems: 'center',
+  },
+  calendarEventDate: {
+    width: 52,
+    alignItems: 'center',
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: COLORS.accentSoft,
+    borderWidth: 1,
+    borderColor: COLORS.accentBorder,
+  },
+  calendarEventDay: { fontSize: 16, fontWeight: '800', color: COLORS.textPrimary, lineHeight: 18 },
+  calendarEventMon: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase' as any,
+    letterSpacing: 0.6,
+    marginTop: 2,
+  },
+  calendarEventBody: { flex: 1, gap: 4 },
+  calendarEventTitle: { fontSize: 14, fontWeight: '600', color: COLORS.textPrimary, lineHeight: 20 },
+  calendarEventTag: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+  },
+  calendarEventTagText: {
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+
+  // ── Kenyan Identity ──
+  kenyaBand: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    position: 'relative' as any,
+    padding: 40,
+    // @ts-ignore
+    backgroundImage:
+      'linear-gradient(135deg, #FFFFFF 0%, #F7F8FC 60%, #EEF2FF 100%)',
+  },
+  kenyaFlagAccent: {
+    position: 'absolute',
+    top: 0, bottom: 0, right: 0,
+    width: 8,
+    flexDirection: 'column',
+  },
+  kenyaFlagBar: { flex: 1 },
+  kenyaBody: { maxWidth: 780 },
+  kenyaEyebrowRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  kenyaFlag: { fontSize: 18 },
+  kenyaEyebrow: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 1.6,
+    color: COLORS.accent,
+  },
+  kenyaHeadline: { marginBottom: 12 },
+  kenyaLead: { marginBottom: 24, maxWidth: 640 },
+  kenyaLabelRow: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
+  kenyaLabelRowMobile: { gap: 8 },
+  kenyaLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.accentBorder,
+  },
+  kenyaLabelText: { fontSize: 12, fontWeight: '700', color: COLORS.textPrimary },
+
+  // ── Teaching Tip ──
+  tipCard: {
+    padding: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    // @ts-ignore
+    boxShadow: '0 12px 32px rgba(17,24,39,0.06)',
+    position: 'relative' as any,
+    overflow: 'hidden',
+  },
+  tipHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    gap: 12,
+  },
+  tipHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  tipIconWrap: {
+    width: 44, height: 44, borderRadius: 12,
+    backgroundColor: COLORS.accent,
+    alignItems: 'center', justifyContent: 'center',
+    // @ts-ignore
+    boxShadow: '0 6px 16px rgba(92,107,192,0.32)',
+  },
+  tipEyebrow: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1.6,
+    color: COLORS.accent,
+    marginBottom: 2,
+  },
+  tipTitle: { fontSize: 17, fontWeight: '800', color: COLORS.textPrimary, letterSpacing: -0.2 },
+  tipCounter: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: COLORS.textMuted,
+    letterSpacing: 0.6,
+    // @ts-ignore
+    fontVariantNumeric: 'tabular-nums',
+  },
+  tipQuoteMark: {
+    position: 'absolute',
+    top: 20,
+    right: 26,
+    fontSize: 110,
+    lineHeight: 90,
+    color: COLORS.accentSoft,
+    fontWeight: '800' as any,
+    // @ts-ignore
+    userSelect: 'none',
+  },
+  tipBody: {
+    fontSize: 20,
+    lineHeight: 30,
+    color: COLORS.textPrimary,
+    fontWeight: '500',
+    marginBottom: 32,
+    maxWidth: 720,
+  },
+  tipNav: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  tipNavMobile: { flexDirection: 'column' },
+  tipNavBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 11,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.surface,
+    minHeight: 44,
+  },
+  tipNavBtnPrimary: {
+    backgroundColor: COLORS.accent,
+    borderColor: COLORS.accent,
+    // @ts-ignore
+    boxShadow: '0 6px 18px rgba(92,107,192,0.28)',
+  },
+  tipNavText: { fontSize: 13, fontWeight: '700', color: COLORS.textPrimary },
+  tipNavTextPrimary: { color: '#FFFFFF' },
+  tipDots: { flexDirection: 'row', gap: 6 },
+  tipDot: {
+    width: 7, height: 7, borderRadius: 999,
+    backgroundColor: COLORS.accentBorder,
+  },
+  tipDotActive: {
+    backgroundColor: COLORS.accent,
+    width: 20,
+  },
 
   // Workspace strip
   workspaceStrip: {
