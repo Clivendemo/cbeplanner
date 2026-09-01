@@ -28,8 +28,12 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     const currentUserKey = user?.id || null;
     const userChanged = currentUserKey !== lastUserRef.current;
 
+    // Logged-out visitors are allowed on the public landing page (/) and any
+    // /auth/* route. Only redirect them if they land on a protected route.
+    const inPublicArea = isIndex || inAuthGroup;
+
     // Only navigate when: user state actually changed, or on initial load, or wrong route group
-    const needsRedirect = userChanged || (!user && !inAuthGroup) || (user && (inAuthGroup || isIndex)) || (inAdminGroup && !isAdmin);
+    const needsRedirect = userChanged || (!user && !inPublicArea) || (user && (inAuthGroup || isIndex)) || (inAdminGroup && !isAdmin);
     if (!needsRedirect) return;
 
     // Small delay for web to ensure router is ready
@@ -39,7 +43,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
       lastUserRef.current = currentUserKey;
 
       if (!user) {
-        if (!inAuthGroup) {
+        if (!inPublicArea) {
           router.replace('/auth/login');
         }
       } else {
