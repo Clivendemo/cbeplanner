@@ -22,6 +22,7 @@ from pydantic import BaseModel
 from app.deps import (
     api_router, db, logger,
     SCHEME_DOWNLOAD_COST, to_int, validate_object_id, verify_token, serialize_doc,
+    ADMIN_EMAILS,
 )
 from scheme_generator import (
     generate_scheme_pdf, get_lessons_per_week, get_assessment_for_slo,
@@ -52,23 +53,322 @@ def _format_slo_for_scheme(raw_slo: str, is_kiswahili: bool = False) -> str:
 
     if is_kiswahili:
         patterns = [
-            r"^(?:Kufikia\s+mwisho\s+wa\s+somo,?\s*mwanafunzi\s+aweze\s+(?:kuweza\s+)?(?:ku)?)",
-            r"^(?:Mwanafunzi\s+aweze\s+(?:kuweza\s+)?(?:ku)?)",
-            r"^(?:Aweze\s+(?:kuweza\s+)?(?:ku)?)",
+            r"^(?:Kufikia\s+mwisho\s+wa\s+somo,?\s*mwanafunzi\s+aweze\s+(?:kuweza\s+)?(?:ku)?\s*:?\s*)",
+            r"^(?:Mwanafunzi\s+aweze\s+(?:kuweza\s+)?(?:ku)?\s*:?\s*)",
+            r"^(?:Aweze\s+(?:kuweza\s+)?(?:ku)?\s*:?\s*)",
         ]
         for p in patterns:
             text = re.sub(p, "", text, flags=re.IGNORECASE).strip()
         return text
 
+    # NOTE: every pattern below ends in \s*:?\s* rather than a bare \s+.
+    # Curriculum data isn't consistently punctuated — some SLO records
+    # store "the learner should be able to " (trailing space, no colon),
+    # others store "the learner should be able to:" (trailing colon, no
+    # space) as its own line with the actual outcomes on following lines.
+    # The old \s+-only patterns only matched the first form, so the second
+    # silently failed to strip at all and the raw "the learner should be
+    # able to:" text leaked straight into the rendered scheme as if it
+    # were itself an outcome. \s*:?\s* matches both forms, and also
+    # collapses a line that is *purely* this phrase down to "" (correctly
+    # signalling "nothing left here, drop this line") rather than leaving
+    # a dangling, half-stripped fragment.
     patterns = [
-        r"^(?:By\s+the\s+end\s+of\s+the\s+(?:lesson|sub-?strand|topic),?\s*)",
-        r"^(?:the\s+learner\s+should\s+be\s+able\s+to\s+)",
-        r"^(?:learners?\s+(?:should|will)\s+be\s+able\s+to\s+)",
-        r"^(?:by\s+the\s+end,?\s*)",
+        r"^(?:By\s+the\s+end\s+of\s+the\s+(?:lesson|sub-?strand|topic),?\s*(?:the\s+learner\s+should\s+be\s+able\s+to)?\s*:?\s*)",
+        r"^(?:the\s+learner\s+should\s+be\s+able\s+to\s*:?\s*)",
+        r"^(?:learners?\s+(?:should|will)\s+be\s+able\s+to\s*:?\s*)",
+        r"^(?:by\s+the\s+end,?\s*:?\s*)",
     ]
     for p in patterns:
         text = re.sub(p, "", text, flags=re.IGNORECASE).strip()
     return text
+
+
+def _slo_outcome_lines(raw_slo: str, is_kiswahili: bool = False) -> List[str]:
+    """Break a raw SLO outcome statement into one or more clean bullet lines.
+
+    Curriculum data isn't uniformly clean. Some SLO `name` fields hold a
+    single sentence ("Define the term business transaction"); others hold a
+    multi-line blob that already contains its own "the learner should be
+    able to:" sub-heading plus several outcome lines crammed into the same
+    field (an authoring/extraction artifact from whichever pipeline the
+    substrand originally came through). Rendering the second kind as a
+    single bullet produces a broken-looking cell — one bullet reading just
+    "- the learner should be able to:" with the *real* outcomes dangling
+    underneath, unbulleted.
+
+    This always returns a flat list of individually-cleaned outcome lines
+    — never a single line still carrying an embedded preamble or a raw
+    newline — so every call site that bullets SLO text gets the same
+    guarantee regardless of how messy the source record is.
+    """
+    import re
+    if not raw_slo:
+        return []
+
+    raw_lines = str(raw_slo).replace("\r\n", "\n").split("\n")
+    lines: List[str] = []
+    for ln in raw_lines:
+        ln = ln.strip()
+        if not ln:
+            continue
+        cleaned = _format_slo_for_scheme(ln, is_kiswahili)
+        if not cleaned:
+            # A line that was *entirely* a preamble phrase (with or without
+            # a trailing colon) reduces to "" once genuinely stripped —
+            # drop it rather than keep a bare fragment or the untouched
+            # original.
+            continue
+        # Strip any bullet marker the raw data may already carry so we
+        # never end up with a doubled "- - Define the term…" once our own
+        # leading dash is added by the caller.
+        cleaned = re.sub(r"^[-•*]\s*", "", cleaned).strip()
+        if cleaned:
+            lines.append(cleaned)
+    return lines
+
+
+def _dedupe_lines(lines: List[str]) -> List[str]:
+    """Drop exact duplicate outcome lines, keeping the first occurrence.
+
+    Duplicate SLO records do exist in the curriculum data (the same
+    substrand occasionally has two near-identical SLO rows), and merging
+    that into one row would otherwise print the same bullet twice with no
+    legitimate reason for it. Comparison is case/whitespace-insensitive so
+    trivial formatting differences ("Define the term." vs "define the
+    term.") still count as the same outcome.
+    """
+    seen = set()
+    out: List[str] = []
+    for ln in lines:
+        key = " ".join(ln.lower().split())
+        if key and key not in seen:
+            seen.add(key)
+            out.append(ln)
+    return out
+
+
+def _resolve_content_kiq(content: Dict[str, Any]) -> str:
+    """Priority-resolve a single content item's Key Inquiry Question.
+
+    1. lesson_slo_slots.key_inquiry_question — admin's per-lesson override.
+    2. slos.key_inquiry_questions[0] — the canonical, KICD-extracted value.
+    3. "" — never algorithmically generate.
+    """
+    slot_inquiry = content.get("_slotInquiry")
+    slo_inquiries = content.get("_sloInquiries") or []
+    if slot_inquiry:
+        return slot_inquiry
+    if slo_inquiries:
+        return slo_inquiries[0]
+    return ""
+
+
+_REVISION_ACTIVITIES_EN = [
+    "Class discussion recapping key concepts covered",
+    "Learners work through past-paper/revision questions",
+    "Question-and-answer session on the topics covered",
+]
+_REVISION_ACTIVITIES_SW = [
+    "Majadiliano darasani ya kuimarisha dhana zilizofunzwa",
+    "Wanafunzi kufanya maswali ya marudio/karatasi za zamani",
+    "Kipindi cha maswali na majibu kuhusu mada zilizofunzwa",
+]
+_REVISION_RESOURCES_EN = ["Past papers", "Revision questions", "Learner's notes"]
+_REVISION_RESOURCES_SW = ["Karatasi za zamani", "Maswali ya marudio", "Daftari la mwanafunzi"]
+_REVISION_ASSESSMENT_EN = ["Oral questions", "Written revision exercise"]
+_REVISION_ASSESSMENT_SW = ["Maswali ya mdomo", "Zoezi la maandishi la marudio"]
+
+
+def _build_revision_content(strand_name: str, is_kiswahili: bool) -> Dict[str, Any]:
+    """A pseudo curriculum-content item representing a revision/consolidation
+    lesson for a strand, rather than a specific SLO.
+
+    Used to fill genuinely spare time (when selected content is shorter than
+    the term) instead of the old behaviour of either repeating earlier
+    lessons verbatim or leaving trailing weeks blank. Deliberately generic —
+    no fabricated Key Inquiry Question, no invented SLO outcome — this is
+    revision time, not new curriculum content, and should never be
+    mistaken for either.
+    """
+    return {"isRevision": True, "strand": strand_name}
+
+
+def _build_lesson_fields(content: Dict[str, Any], is_kiswahili: bool) -> Dict[str, Any]:
+    """Build the display field-set for ONE curriculum content item.
+
+    Returns everything a lesson row needs except week/lesson/isDouble, which
+    the grid-building loop attaches afterward. Used both for ordinary
+    (unmerged) rows and as the per-item building block inside
+    _merge_lesson_items below, so a merged row with exactly one item behaves
+    identically to the original unmerged code path.
+    """
+    if content.get("isRevision"):
+        strand_name = content.get("strand", "")
+        return {
+            "strand": strand_name,
+            "substrand": "Marudio" if is_kiswahili else "Revision",
+            "slo": (
+                f"Marudio ya {strand_name}" if is_kiswahili
+                else f"Revision of {strand_name}"
+            ),
+            "lessonInSubstrand": 1,
+            "totalLessonsInSubstrand": 1,
+            "keyInquiryQuestions": "",
+            "learningExperiences": (_REVISION_ACTIVITIES_SW if is_kiswahili else _REVISION_ACTIVITIES_EN)[:4],
+            "learningResources": (_REVISION_RESOURCES_SW if is_kiswahili else _REVISION_RESOURCES_EN)[:4],
+            "assessmentMethods": (_REVISION_ASSESSMENT_SW if is_kiswahili else _REVISION_ASSESSMENT_EN)[:2],
+            "competencies": [],
+            "values": [],
+            "pcis": [],
+        }
+
+    inquiry_qs = _resolve_content_kiq(content)
+
+    experiences = content.get("learningActivities", [])
+    if not experiences:
+        experiences = generate_learning_experiences(
+            content["strand"], content["substrand"], content["slo"], is_kiswahili,
+        )
+
+    resources = content.get("resources", [])
+    if not resources:
+        resources = generate_learning_resources(content["strand"], content["substrand"], is_kiswahili)
+
+    assessment = content.get("assessmentMethods", [])
+    if not assessment:
+        assessment = get_assessment_for_slo(content["slo"], is_kiswahili)
+
+    return {
+        "strand": content["strand"],
+        "substrand": content["substrand"],
+        "slo": (
+            content["slo"]
+            if content.get("sloPreFormatted")
+            else format_slo_with_prefix(
+                _format_slo_for_scheme(content["slo"], is_kiswahili),
+                is_kiswahili,
+            )
+        ),
+        "lessonInSubstrand": content.get("lessonInSubstrand", 1),
+        "totalLessonsInSubstrand": content.get("totalLessonsInSubstrand", 1),
+        "keyInquiryQuestions": inquiry_qs,
+        "learningExperiences": experiences[:4] if isinstance(experiences, list) else [experiences],
+        "learningResources": resources[:4] if isinstance(resources, list) else [resources],
+        "assessmentMethods": assessment[:2] if isinstance(assessment, list) else [assessment],
+        "competencies": content["competencies"],
+        "values": content["values"],
+        "pcis": content.get("pcis", []),
+    }
+
+
+def _merge_lesson_items(items: List[Dict[str, Any]], is_kiswahili: bool) -> Dict[str, Any]:
+    """Combine 1+ curriculum content items into a single lesson row.
+
+    Used for:
+      - a double lesson merging two adjacent items into one extended session
+      - a compression group merging however many items were assigned to one
+        row when the term doesn't have enough slots for one-item-per-row
+
+    With exactly one item this must produce the same output as the plain
+    (unmerged) path, so single-item schemes are byte-for-byte unaffected.
+    """
+    if len(items) == 1:
+        return _build_lesson_fields(items[0], is_kiswahili)
+
+    built = [_build_lesson_fields(c, is_kiswahili) for c in items]
+
+    # Strand: still joined inline with " / " when a row spans more than one
+    # (rare — only when a double lesson straddles a strand boundary, since
+    # compression segments are already grouped by strand). Sub-strand: each
+    # distinct name on its own line with a blank line between them, per
+    # request — a merged row combining two sub-strands reads as two clearly
+    # separate names stacked vertically, not one run-together line.
+    def _dedupe_join(values, sep=" / "):
+        seen = []
+        for v in values:
+            if v and v not in seen:
+                seen.append(v)
+        return sep.join(seen)
+
+    strand = _dedupe_join([b["strand"] for b in built])
+    substrand = _dedupe_join([b["substrand"] for b in built], sep="\n\n")
+
+    # SLO text: one shared "By the end of the lesson…" preamble with every
+    # item's own outcome statement bulleted underneath. Each item's `slo`
+    # field may already be a pre-formatted multi-bullet block (if it was
+    # itself a combine_all_slos group) — in that case take only the bullet
+    # lines, dropping its own preamble, so we never nest one "By the end of
+    # the lesson…" inside another.
+    bullets: List[str] = []
+    for c, b in zip(items, built):
+        raw = b["slo"]
+        if c.get("isRevision"):
+            # b["slo"] is already the final "Revision of <strand>" text —
+            # no preamble to strip, no "By the end of the lesson…" body to
+            # derive it from (there is no raw content['slo'] on a revision
+            # placeholder at all).
+            bullets.append(raw)
+        elif c.get("sloPreFormatted"):
+            # Existing bulleted block: strip the first (preamble) line and
+            # the leading "- " each bullet already carries, so it can be
+            # deduped/re-bulleted on the same footing as the other branches.
+            lines = raw.split("\n")
+            bullets.extend(
+                line[1:].strip() if line.strip().startswith("-") else line.strip()
+                for line in lines[1:] if line.strip()
+            )
+        else:
+            # Rare fallback path (content-building couldn't produce any
+            # clean outcome lines for this item at all — see the "else"
+            # branch above). Still fan out through the same helper rather
+            # than assuming c["slo"] is a single clean sentence: if it's
+            # genuinely a raw, uncleaned multi-line blob, this is what
+            # prevents it turning into one bullet containing an embedded
+            # "the learner should be able to:" line and several unbulleted
+            # outcomes underneath it.
+            bullets.extend(_slo_outcome_lines(c["slo"], is_kiswahili))
+    # A double lesson or a compressed row can combine items whose SLOs
+    # happen to be identical (duplicate curriculum records, or the same
+    # substrand legitimately repeating a sub-point) — never print the same
+    # outcome twice just because it arrived from two different items.
+    bullets = [f"- {line}" for line in _dedupe_lines(bullets)]
+    if is_kiswahili:
+        slo_text = "Kufikia mwisho wa somo, mwanafunzi aweze:\n" + "\n".join(bullets)
+    else:
+        slo_text = "By the end of the lesson the learner should be able to:\n" + "\n".join(bullets)
+
+    # KIQs: dedupe across items, keep as a list so the PDF/web renderer can
+    # show every distinct question bulleted rather than only the first.
+    kiq_list: List[str] = []
+    for b in built:
+        q = b["keyInquiryQuestions"]
+        if q and q not in kiq_list:
+            kiq_list.append(q)
+
+    def _merge_field_lists(field: str, cap: int) -> List[str]:
+        out: List[str] = []
+        for b in built:
+            vals = b[field] if isinstance(b[field], list) else [b[field]]
+            for v in vals:
+                if v and v not in out:
+                    out.append(v)
+        return out[:cap]
+
+    return {
+        "strand": strand,
+        "substrand": substrand,
+        "slo": slo_text,
+        "lessonInSubstrand": built[0]["lessonInSubstrand"],
+        "totalLessonsInSubstrand": built[0]["totalLessonsInSubstrand"],
+        "keyInquiryQuestions": kiq_list,
+        "learningExperiences": _merge_field_lists("learningExperiences", 4),
+        "learningResources": _merge_field_lists("learningResources", 4),
+        "assessmentMethods": _merge_field_lists("assessmentMethods", 2),
+        "competencies": _merge_field_lists("competencies", 6),
+        "values": _merge_field_lists("values", 6),
+        "pcis": _merge_field_lists("pcis", 6),
+    }
 
 
 def generate_assessment_methods(slo: str, is_kiswahili: bool = False) -> str:
@@ -144,6 +444,11 @@ class SchemeGenerateRequest(BaseModel):
     totalWeeks: int = 12
     lessonsPerWeek: Optional[int] = None
     selectedTopics: List[str]
+    # Substrand IDs (a subset of selectedTopics) that are carried over from a
+    # previous term and weren't fully covered. These are scheduled first, in
+    # the order given, ahead of the term's own new content — see the
+    # compression/ordering logic in generate_scheme_v2.
+    carryOverTopics: List[str] = []
     breaks: List[Dict[str, Any]] = []
     doubleLesson: Optional[Dict[str, Any]] = None
     includeCarryOver: bool = False
@@ -193,12 +498,18 @@ async def get_lessons_per_week_config(
 @api_router.get("/schemes/topics/{subjectId}")
 async def get_scheme_topics(subjectId: str, user: dict = Depends(verify_token)):
     """Get all topics (strands/substrands) for topic selection UI."""
-    strands = await db.strands.find({"subjectId": subjectId}).sort("order", 1).to_list(100)
+    # Capped at 2000, matching /admin/strands and /admin/substrands — this
+    # was previously capped at 100, which silently dropped every strand past
+    # the 100th for a subject like English with 195 strands (one substrand
+    # each). Those strands weren't broken or missing data; they just never
+    # made it into this response, so they could never be selected here even
+    # though they showed up fine in the admin curriculum panel.
+    strands = await db.strands.find({"subjectId": subjectId}).sort("order", 1).to_list(2000)
 
     topics = []
     for strand in strands:
         strand_id = str(strand["_id"])
-        substrands = await db.substrands.find({"strandId": strand_id}).sort("order", 1).to_list(100)
+        substrands = await db.substrands.find({"strandId": strand_id}).sort("order", 1).to_list(2000)
 
         substrand_items = []
         for ss in substrands:
@@ -208,6 +519,7 @@ async def get_scheme_topics(subjectId: str, user: dict = Depends(verify_token)):
                 "id": ss_id,
                 "name": ss["name"],
                 "sloCount": slo_count,
+                "term": ss.get("term"),
             })
 
         topics.append({
@@ -252,6 +564,21 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
         if not grade or not subject:
             raise HTTPException(status_code=404, detail="Invalid grade or subject")
 
+        # Hidden grades/subjects (admin still finishing curriculum updates)
+        # are already excluded from the teacher-facing dropdown, but that's
+        # a client-side convenience, not enforcement — this is the actual
+        # gate, closing off direct API calls for anything the dropdown
+        # wouldn't have offered. Admins are exempt so they can generate
+        # against unfinished/hidden content themselves to check it before
+        # making it visible.
+        is_admin = user.get("email", "").lower().strip() in ADMIN_EMAILS
+        if not is_admin:
+            if not grade.get("isVisible", True) or not subject.get("isVisible", True):
+                raise HTTPException(
+                    status_code=403,
+                    detail="This grade or subject isn't available yet. Please check back later.",
+                )
+
         total_weeks = to_int(request.totalWeeks, 12)
         lessons_per_week = to_int(request.lessonsPerWeek) if request.lessonsPerWeek else get_lessons_per_week(grade["name"], subject["name"])
 
@@ -262,7 +589,76 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
 
         curriculum_content = []
 
-        for substrand_id in request.selectedTopics:
+        # Carry-over substrands (content not fully covered in a previous
+        # term) are scheduled first, since they're already overdue. Within
+        # each group (carry-over, then the rest), topics are placed in the
+        # SAME order they appear in the topic-picker list — i.e. by
+        # (strand.order, substrand.order), the exact sort GET
+        # /schemes/topics/{subjectId} uses to build that list — rather than
+        # the order the teacher happened to tap them in. selectedTopics
+        # arrives from the frontend as Array.from(a JS Set), which preserves
+        # insertion/click order, not curriculum order, so without this
+        # re-sort a scheme could teach topic 12 before topic 3 just because
+        # it was clicked first.
+        selected_oids = []
+        for ss_id in request.selectedTopics:
+            try:
+                selected_oids.append(ObjectId(ss_id))
+            except Exception:
+                continue
+
+        substrand_order_docs = await db.substrands.find(
+            {"_id": {"$in": selected_oids}}
+        ).to_list(len(selected_oids) or 1)
+        substrand_order_by_id = {str(d["_id"]): d for d in substrand_order_docs}
+
+        strand_ids_needed = {
+            d["strandId"] for d in substrand_order_docs if d.get("strandId")
+        }
+        strand_oids_needed = []
+        for sid in strand_ids_needed:
+            try:
+                strand_oids_needed.append(ObjectId(sid))
+            except Exception:
+                continue
+        strand_order_docs = await db.strands.find(
+            {"_id": {"$in": strand_oids_needed}}
+        ).to_list(len(strand_oids_needed) or 1)
+        strand_order_by_id = {str(d["_id"]): d for d in strand_order_docs}
+
+        def _sort_key(ss_id: str):
+            ss_doc = substrand_order_by_id.get(ss_id)
+            if not ss_doc:
+                # Selected topic doesn't resolve to a real substrand (bad ID,
+                # deleted since selection, etc.) — push it to the very end
+                # deterministically rather than crashing the sort.
+                return (float('inf'), float('inf'))
+            strand_doc = strand_order_by_id.get(str(ss_doc.get("strandId", "")))
+            strand_order = strand_doc.get("order") if strand_doc else None
+            substrand_order = ss_doc.get("order")
+            return (
+                strand_order if strand_order is not None else float('inf'),
+                substrand_order if substrand_order is not None else float('inf'),
+            )
+
+        carry_over_ids = [
+            ss_id for ss_id in request.selectedTopics
+            if ss_id in (request.carryOverTopics or [])
+        ]
+        rest_ids = [
+            ss_id for ss_id in request.selectedTopics
+            if ss_id not in (request.carryOverTopics or [])
+        ]
+        # Dedupe while preserving whichever bucket a repeated ID landed in
+        # first (carry-over takes priority over "rest" for duplicates).
+        seen_topics = set()
+        ordered_topics: List[str] = []
+        for ss_id in sorted(carry_over_ids, key=_sort_key) + sorted(rest_ids, key=_sort_key):
+            if ss_id not in seen_topics:
+                ordered_topics.append(ss_id)
+                seen_topics.add(ss_id)
+
+        for substrand_id in ordered_topics:
             try:
                 ss_oid = ObjectId(substrand_id)
             except Exception:
@@ -283,7 +679,12 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
 
             parent_slos = await db.slos.find(
                 {"substrandId": substrand_id}
-            ).sort("order", 1).to_list(100)
+            # Same cap-too-low bug as the topics endpoint above, but worse
+            # here: a substrand with more than 100 SLOs would silently lose
+            # the rest from every generated scheme forever (not just hidden
+            # from a picker — actually dropped from the round-robin pool
+            # below), with no error anywhere to reveal it happened.
+            ).sort("order", 1).to_list(2000)
             if not parent_slos:
                 continue
 
@@ -308,18 +709,21 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                 combine_all_slos = num_lessons == 1 and len(parent_slos) > 1
 
                 if combine_all_slos:
-                    # Build "By the end of the lesson the learner should be
-                    # able to:\n- …\n- …" with bodies stripped of any
-                    # existing preamble. We let format_slo_with_prefix
-                    # append the preamble later from the merged body, but
-                    # because we want bullets we pre-format here and bypass
-                    # the prefix step in the lessons.append() call below
-                    # (signalled via the leading newline in the body).
+                    # Fan each SLO's raw `name` out into 1+ clean bullet
+                    # lines rather than assuming one SLO == one bullet.
+                    # Some curriculum records store a single clean sentence
+                    # ("Define the term business transaction") and fan out
+                    # to exactly one bullet; others store a multi-line blob
+                    # that already contains its own "the learner should be
+                    # able to:" sub-heading plus several outcomes crammed
+                    # into the same field — _slo_outcome_lines strips that
+                    # sub-heading and splits the rest into one bullet per
+                    # real outcome, however many a given record holds.
                     bullets = []
                     for s in parent_slos:
-                        body = _format_slo_for_scheme(s.get("name", ""), is_kiswahili)
-                        if body:
-                            bullets.append(f"- {body}")
+                        for line in _slo_outcome_lines(s.get("name", ""), is_kiswahili):
+                            bullets.append(line)
+                    bullets = [f"- {line}" for line in _dedupe_lines(bullets)]
                     if is_kiswahili:
                         slo_text = (
                             "Kufikia mwisho wa somo, mwanafunzi aweze:\n"
@@ -335,8 +739,32 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                     # fully formatted.
                     slo_text_pre_formatted = True
                 else:
-                    slo_text = slot["outcome"] if (slot and slot.get("outcome")) else parent_slo["name"]
-                    slo_text_pre_formatted = False
+                    # Even a single SLO can carry the same messy multi-line
+                    # blob (raw record already containing "the learner
+                    # should be able to:" plus several outcomes crammed
+                    # into one field) — route it through the same
+                    # fan-out/bullet path as the combined case so every row
+                    # in the scheme, single-outcome or multi-outcome, reads
+                    # the same way: one preamble line, one bullet per real
+                    # outcome, never a dangling half-stripped preamble
+                    # fragment.
+                    raw_text = slot["outcome"] if (slot and slot.get("outcome")) else parent_slo["name"]
+                    outcome_lines = _slo_outcome_lines(raw_text, is_kiswahili)
+                    if not outcome_lines:
+                        # Nothing survived cleaning (a genuinely blank or
+                        # pure-preamble record) — fall back to whatever raw
+                        # text existed rather than silently emitting an
+                        # empty cell, and let the downstream prefix logic
+                        # handle it as before.
+                        slo_text = raw_text
+                        slo_text_pre_formatted = False
+                    else:
+                        bullets = [f"- {line}" for line in outcome_lines]
+                        if is_kiswahili:
+                            slo_text = "Kufikia mwisho wa somo, mwanafunzi aweze:\n" + "\n".join(bullets)
+                        else:
+                            slo_text = "By the end of the lesson the learner should be able to:\n" + "\n".join(bullets)
+                        slo_text_pre_formatted = True
 
                 inquiry_q = ""
                 if slot and slot.get("key_inquiry_question"):
@@ -479,10 +907,15 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
         double_enabled = bool(double_lesson.get("enabled"))
         double_position = str(double_lesson.get("position", "")) if double_enabled else ""
 
-        # Build scheme lessons grid
-        lessons = []
-        content_index = 0
-
+        # ---- Pass 1: build the ordered grid of slots (breaks + content) ----
+        # This mirrors the exact week/lesson/double/break detection that
+        # existed before compression was introduced — nothing about how
+        # breaks or double-lesson positions are found has changed. We split
+        # "figure out the grid" from "fill the grid with content" into two
+        # passes so real capacity (in rows, and in content-items once
+        # doubles are accounted for) is known before deciding whether
+        # compression is needed.
+        grid_slots = []  # each: {week, lesson_display, is_double, is_break, break_type}
         for week in range(1, total_weeks + 1):
             lesson_num = 1
             while lesson_num <= lessons_per_week:
@@ -504,96 +937,163 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
                 break_key = (week, lesson_num)
                 break_key2 = (week, lesson_num + 1) if is_double else None
                 if break_key in breaks_map or (break_key2 and break_key2 in breaks_map):
-                    lessons.append({
+                    grid_slots.append({
                         "week": week,
-                        "lesson": lesson_display,
-                        "isBreak": True,
-                        "isDouble": is_double,
-                        "breakType": breaks_map.get(break_key) or breaks_map.get(break_key2),
+                        "lesson_display": lesson_display,
+                        "is_double": is_double,
+                        "is_break": True,
+                        "break_type": breaks_map.get(break_key) or breaks_map.get(break_key2),
                     })
                     lesson_num += 2 if is_double else 1
                     continue
 
-                if content_index < len(curriculum_content):
-                    content = curriculum_content[content_index]
-                    slot_inquiry = content.get("_slotInquiry")
-                    slo_inquiries = content.get("_sloInquiries") or []
+                grid_slots.append({
+                    "week": week,
+                    "lesson_display": lesson_display,
+                    "is_double": is_double,
+                    "is_break": False,
+                    "break_type": None,
+                })
+                lesson_num += 2 if is_double else 1
 
-                    # Single source of truth: the curriculum extractor seeds
-                    # Key Inquiry Questions onto slos.key_inquiry_questions[].
-                    # Priority:
-                    #   1. lesson_slo_slots.key_inquiry_question — admin's
-                    #      per-lesson override.
-                    #   2. slos.key_inquiry_questions[0] — the canonical,
-                    #      KICD-extracted value stored on the SLO row.
-                    #   3. Blank string — never algorithmically generate. If
-                    #      the curriculum extractor didn't capture a KIQ for
-                    #      this SLO, the lesson stays blank until an admin
-                    #      backfills it via the curriculum editor.
-                    if slot_inquiry:
-                        inquiry_qs = slot_inquiry
-                    elif slo_inquiries:
-                        inquiry_qs = slo_inquiries[0]
-                    else:
-                        inquiry_qs = ""
+        content_slots = [s for s in grid_slots if not s["is_break"]]
+        if not content_slots:
+            raise HTTPException(
+                status_code=400,
+                detail="No teaching lessons available in this term — check total weeks, "
+                       "lessons per week, and the breaks you've selected.",
+            )
 
-                    experiences = content.get("learningActivities", [])
-                    if not experiences:
-                        experiences = generate_learning_experiences(
-                            content["strand"],
-                            content["substrand"],
-                            content["slo"],
-                        )
+        total_items = len(curriculum_content)
+        # Capacity counts a double slot as worth 2 items, since a double
+        # lesson merges two lessons' worth of content into one extended
+        # session rather than stretching one lesson's content across the
+        # extra time.
+        capacity_items = sum(2 if s["is_double"] else 1 for s in content_slots)
 
-                    resources = content.get("resources", [])
-                    if not resources:
-                        resources = generate_learning_resources(
-                            content["strand"],
-                            content["substrand"],
-                        )
+        # A duplicate lesson (round-robin pacing repeating an SLO, or a
+        # genuine duplicate curriculum record) is shown as itself, twice,
+        # with its real content — never collapsed and replaced with a
+        # generic Marudio placeholder. Marudio only ever fills time that
+        # has no selected content at all (see the deficit calculation in
+        # MODE A below); it never stands in for content that does exist,
+        # duplicated or not.
+        working_content = curriculum_content
 
-                    assessment = content.get("assessmentMethods", [])
-                    if not assessment:
-                        assessment = get_assessment_for_slo(content["slo"], is_kiswahili)
+        # ---- Pass 2: assign curriculum_content items to content_slots ----
+        # item_groups[i] = the list of content items rendered as row i.
+        # len(item_groups) always equals len(content_slots).
+        item_groups: List[List[Dict[str, Any]]] = []
 
-                    lessons.append({
-                        "week": week,
-                        "lesson": lesson_display,
-                        "isDouble": is_double,
-                        "strand": content["strand"],
-                        "substrand": content["substrand"],
-                        # If the route already pre-formatted the SLO into a
-                        # bulleted list (single-lesson substrand with
-                        # multiple SLOs), pass it through unchanged so the
-                        # bullets and preamble render as-built. Otherwise
-                        # apply the standard "By the end of the lesson…"
-                        # prefix.
-                        "slo": (
-                            content["slo"]
-                            if content.get("sloPreFormatted")
-                            else format_slo_with_prefix(
-                                _format_slo_for_scheme(content["slo"], is_kiswahili),
-                                is_kiswahili,
-                            )
-                        ),
-                        "lessonInSubstrand": content.get("lessonInSubstrand", 1),
-                        "totalLessonsInSubstrand": content.get("totalLessonsInSubstrand", 1),
-                        "keyInquiryQuestions": inquiry_qs,
-                        "learningExperiences": experiences[:4] if isinstance(experiences, list) else [experiences],
-                        "learningResources": resources[:4] if isinstance(resources, list) else [resources],
-                        "assessmentMethods": assessment[:2] if isinstance(assessment, list) else [assessment],
-                        "competencies": content["competencies"],
-                        "values": content["values"],
-                        "pcis": content.get("pcis", []),
-                    })
+        if total_items <= capacity_items:
+            # MODE A — fits without compression (possibly only after
+            # dropping duplicates above). Each single slot takes one item;
+            # each double slot takes two (a genuine merge of two lessons'
+            # content, not just a wider label on one lesson's content). If
+            # content is SHORTER than capacity, the leftover time is filled
+            # with revision/consolidation rows rather than repeating
+            # earlier lessons verbatim or leaving trailing weeks blank —
+            # spread out (inserted right after each strand finishes) rather
+            # than dumped in one block at the end, since that's closer to
+            # how revision actually gets used in a classroom.
+            deficit = capacity_items - total_items
 
-                    content_index += 1
-                    lesson_num += 2 if is_double else 1
+            # Group working_content into contiguous runs sharing the same
+            # strand. Carry-over topics are scheduled as their own block
+            # ahead of the term's own content (see the ordering above), so a
+            # strand that has both carry-over and this-term substrands can
+            # legitimately appear as two separate segments here — that's
+            # correct, not a bug: each run gets its own revision top-up when
+            # it finishes.
+            segments: List[List[Dict[str, Any]]] = []
+            for c in working_content:
+                if segments and segments[-1][0]["strand"] == c["strand"]:
+                    segments[-1].append(c)
                 else:
-                    if request.includeCarryOver:
-                        break
-                    content_index = 0
-                    lesson_num += 1
+                    segments.append([c])
+
+            augmented_items: List[Dict[str, Any]]
+            if deficit <= 0 or not segments:
+                augmented_items = list(working_content)
+            else:
+                # Largest-remainder apportionment of `deficit` revision slots
+                # across segments, weighted by each segment's own size, so a
+                # substantial strand gets proportionally more revision time
+                # than a one-lesson strand rather than an equal split.
+                quotas = [deficit * len(seg) / total_items for seg in segments]
+                floors = [int(q) for q in quotas]
+                remaining = deficit - sum(floors)
+                remainder_order = sorted(
+                    range(len(segments)),
+                    key=lambda i: quotas[i] - floors[i],
+                    reverse=True,
+                )
+                revision_counts = list(floors)
+                for i in remainder_order[:remaining]:
+                    revision_counts[i] += 1
+
+                augmented_items = []
+                for seg, rev_count in zip(segments, revision_counts):
+                    augmented_items.extend(seg)
+                    strand_name = seg[0]["strand"]
+                    for _ in range(rev_count):
+                        augmented_items.append(_build_revision_content(strand_name, is_kiswahili))
+
+            # augmented_items now has exactly capacity_items entries (real
+            # content plus however many revision rows were apportioned), so
+            # a straightforward single/double walk exhausts it exactly —
+            # no wraparound or stop-early branch needed any more.
+            content_index = 0
+            for slot in content_slots:
+                want = 2 if slot["is_double"] else 1
+                group = augmented_items[content_index: content_index + want]
+                content_index += len(group)
+                item_groups.append(group)
+        else:
+            # MODE B — compression. More content than the term can hold
+            # even after dropping duplicates and with doubles merging two
+            # lessons each. Nothing gets dropped from here on: the
+            # single/double distinction is set aside for grouping purposes
+            # and the full (deduped) content list is split evenly,
+            # largest-remainder first, across the actual number of rows
+            # available (content_slots) so the term fills exactly with no
+            # row left empty and no item left unscheduled.
+            n_slots = len(content_slots)
+            base, remainder = divmod(total_items, n_slots)
+            idx = 0
+            for i in range(n_slots):
+                size = base + (1 if i < remainder else 0)
+                item_groups.append(working_content[idx: idx + size])
+                idx += size
+
+        # ---- Assemble the final lessons list: breaks in their original
+        # grid position, content rows built (and merged, where a row holds
+        # more than one item) from item_groups ----
+        lessons = []
+        content_slot_idx = 0
+        for slot in grid_slots:
+            if slot["is_break"]:
+                lessons.append({
+                    "week": slot["week"],
+                    "lesson": slot["lesson_display"],
+                    "isBreak": True,
+                    "isDouble": slot["is_double"],
+                    "breakType": slot["break_type"],
+                })
+                continue
+
+            items = item_groups[content_slot_idx]
+            content_slot_idx += 1
+            if not items:
+                continue
+
+            fields = _merge_lesson_items(items, is_kiswahili)
+            lessons.append({
+                "week": slot["week"],
+                "lesson": slot["lesson_display"],
+                "isDouble": slot["is_double"],
+                **fields,
+            })
 
         scheme_data = {
             "teacherId": user.get("id", ""),
@@ -610,7 +1110,7 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
             "lessons": lessons,
             "breaks": validated_breaks,
             "doubleLesson": request.doubleLesson,
-            "includeCarryOver": request.includeCarryOver,
+            "carryOverTopics": request.carryOverTopics,
             "createdAt": datetime.utcnow(),
         }
 
@@ -626,7 +1126,7 @@ async def generate_scheme_v2(request: SchemeGenerateRequest, user: dict = Depend
             "selectedTopics": request.selectedTopics,
             "breaks": validated_breaks,
             "doubleLesson": request.doubleLesson,
-            "includeCarryOver": request.includeCarryOver,
+            "carryOverTopics": request.carryOverTopics,
         }
         scheme_record["isPaid"] = False
         scheme_record["downloadCount"] = 0

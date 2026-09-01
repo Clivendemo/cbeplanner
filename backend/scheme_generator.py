@@ -12,6 +12,30 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
 from io import BytesIO
 from datetime import datetime
 from typing import Dict, Any, List
+from xml.sax.saxutils import escape as _xml_escape
+
+
+def _pdf_text(value: Any) -> str:
+    """XML-escape any raw text before it reaches a ReportLab Paragraph.
+
+    ReportLab's Paragraph markup is a restricted XML dialect — it looks for
+    tags like <br/>, <b>, <font>. Any raw curriculum or admin-entered text
+    (a strand/substrand name, an SLO outcome, a resource, a break label,
+    a school name) can legitimately contain '<', '>', or '&' with no
+    relation to markup at all — a Math SLO reading "compare values using <
+    and >", a subject called "Business & Entrepreneurship", a school name
+    with an ampersand, a break label someone typed with a stray angle
+    bracket. Passed through unescaped, ReportLab's parser tries to read
+    the '<' as the start of a tag and fails with "parse ended with N
+    unclosed tags" — which aborts the whole PDF and (per the download
+    flow) refunds the user for a document that should have generated
+    fine. Escaping first means our own deliberately-added tags (<br/>,
+    <b>, etc.) must always be added AFTER this call, never text that's
+    then run through it, or they'd be escaped into visible text too.
+    """
+    if value is None:
+        return ''
+    return _xml_escape(str(value))
 
 
 # ---------------------------------------------------------------------------
@@ -144,19 +168,19 @@ LESSONS_PER_WEEK_CONFIG = {
     "senior_secondary": {
         "Mathematics": 5,
         "English": 5,
-        "Kiswahili": 4,
-        "Biology": 4,
-        "Chemistry": 4,
-        "Physics": 4,
-        "Geography": 3,
-        "History": 3,
-        "Business Studies": 3,
-        "Computer Science": 3,
-        "French": 3,
-        "German": 3,
-        "Mandarin": 3,
-        "Arabic": 3,
-        "default": 4
+        "Kiswahili": 5,
+        "Biology": 5,
+        "Chemistry": 5,
+        "Physics": 5,
+        "Geography": 5,
+        "History": 5,
+        "Business Studies": 5,
+        "Computer Science": 5,
+        "French": 5,
+        "German": 5,
+        "Mandarin": 5,
+        "Arabic": 5,
+        "default": 5
     }
 }
 
@@ -286,49 +310,66 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
     )
 
     elements.append(Spacer(1, 4.5*cm))
-    elements.append(Paragraph(school_name.upper(), cover_school))
+    elements.append(Paragraph(_pdf_text(school_name).upper(), cover_school))
     elements.append(Spacer(1, 0.7*cm))
     if is_kiswahili:
         elements.append(Paragraph('MPANGO WA KAZI', cover_title))
     else:
         elements.append(Paragraph('SCHEME OF WORK', cover_title))
     elements.append(Spacer(1, 0.7*cm))
-    elements.append(Paragraph(subject.upper() if subject else '', cover_subtitle))
+    elements.append(Paragraph(_pdf_text(subject).upper() if subject else '', cover_subtitle))
     elements.append(Spacer(1, 0.4*cm))
     if is_kiswahili:
-        elements.append(Paragraph(f'MUHULA WA {term} &middot; {year}', cover_meta))
+        elements.append(Paragraph(f'MUHULA WA {_pdf_text(term)} &middot; {_pdf_text(year)}', cover_meta))
     else:
-        elements.append(Paragraph(f'TERM {term} &middot; {year}', cover_meta))
+        elements.append(Paragraph(f'TERM {_pdf_text(term)} &middot; {_pdf_text(year)}', cover_meta))
     if grade:
         elements.append(Spacer(1, 0.2*cm))
-        elements.append(Paragraph(grade.upper(), cover_meta))
+        elements.append(Paragraph(_pdf_text(grade).upper(), cover_meta))
     elements.append(PageBreak())
 
     # ===== CONTENT PAGE HEADER =====
-    elements.append(Paragraph(school_name.upper(), styles['SchoolName']))
+    elements.append(Paragraph(_pdf_text(school_name).upper(), styles['SchoolName']))
     if is_kiswahili:
-        elements.append(Paragraph(f"MPANGO WA KAZI – MUHULA WA {term}", styles['SchemeTitle']))
+        elements.append(Paragraph(f"MPANGO WA KAZI – MUHULA WA {_pdf_text(term)}", styles['SchemeTitle']))
     else:
-        elements.append(Paragraph(f"SCHEME OF WORK – TERM {term}", styles['SchemeTitle']))
+        elements.append(Paragraph(f"SCHEME OF WORK – TERM {_pdf_text(term)}", styles['SchemeTitle']))
 
     if is_kiswahili:
-        info_text = f"<b>Darasa:</b> {grade}  |  <b>Somo:</b> {subject}  |  <b>Mwaka:</b> {year}"
+        info_text = f"<b>Darasa:</b> {_pdf_text(grade)}  |  <b>Somo:</b> {_pdf_text(subject)}  |  <b>Mwaka:</b> {_pdf_text(year)}"
     else:
-        info_text = f"<b>Grade:</b> {grade}  |  <b>Subject:</b> {subject}  |  <b>Year:</b> {year}"
+        info_text = f"<b>Grade:</b> {_pdf_text(grade)}  |  <b>Subject:</b> {_pdf_text(subject)}  |  <b>Year:</b> {_pdf_text(year)}"
     elements.append(Paragraph(info_text, styles['InfoText']))
     
     # Table headers - Kiswahili or English
     if is_kiswahili:
         headers = ['WIKI', 'SOM', 'MADA KUU', 'MADA NDOGO', 'MATOKEO MAALUM YA UJIFUNZAJI', 
                    'SWALI IBUKA', 'SHUGHULI ZA UJIFUNZAJI', 'NYENZO ZA KUJIFUNZA', 
-                   'TATHMINI', 'TAFAK']
+                   'TATHMINI', 'TAFAKARI']
     else:
         headers = ['WK', 'LSN', 'STRAND', 'SUB-STRAND', 'SPECIFIC LEARNING OUTCOMES', 
                    'KEY INQUIRY QUESTION', 'LEARNING EXPERIENCES', 'LEARNING RESOURCES', 
-                   'ASSESSMENT', 'REFL']
+                   'ASSESSMENT', 'REFLECTION']
     
-    # Column widths optimized for 10pt font (landscape A4 = ~29.7cm, minus margins = ~27.7cm)
-    col_widths = [0.9*cm, 0.9*cm, 2.4*cm, 2.4*cm, 4.3*cm, 3.4*cm, 4.3*cm, 3*cm, 3*cm, 1.5*cm]
+    # Column widths, redistributed to match how much text each column
+    # actually needs to hold — not evenly split, and not the same
+    # allocation as before. Two things changed since these were last set:
+    # (1) Strand/Sub-strand now print on every row instead of only when
+    # they change, so they need to stay comfortably wide rather than
+    # shrink; (2) Specific Learning Outcomes has no bullet cap (unlike
+    # every other column, which is capped at 2-4 items) — a merged row
+    # combining two sub-strands' SLOs routinely carries 6+ bullets, and at
+    # the old 4.3cm width each one wrapped across 2-3 lines, which was the
+    # single biggest driver of rows tall enough that only one fit per
+    # page. Widening it (and Learning Experiences and Key Inquiry
+    # Question, the other bulleted columns) means the same bullets wrap
+    # across fewer lines — shorter rows with zero content removed, not a
+    # font/padding trick. The previous widths also only summed to 26.1cm
+    # against a 27.7cm usable page width (1cm margins each side) — that
+    # 1.6cm of dead space is reclaimed here too, on top of trimming the
+    # columns that hold short, already-capped content (Week, Lesson,
+    # Assessment, Resources).
+    col_widths = [0.8*cm, 0.8*cm, 2.8*cm, 2.4*cm, 5.2*cm, 3.6*cm, 4.7*cm, 2.8*cm, 2.6*cm, 1.5*cm]
     
     # Build table data
     table_data = []
@@ -337,25 +378,33 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
     header_row = [Paragraph(h, styles['TableHeader']) for h in headers]
     table_data.append(header_row)
     
-    # Helper: pick first inquiry question from list/string.
-    # KIQs may arrive as either a list (preferred — one entry per question)
-    # or a single string. We must NOT split a single-string KIQ on newlines:
-    # KICD designs often wrap a question across two lines in the source PDF,
-    # so a Kiswahili KIQ like "Je,\nKwa nini fasihi ni muhimu?" must render
-    # as the full question — not just "Je," (the bug a user reported as a
-    # bare "Je" appearing in the Swali Ibuka column). If the upstream array
-    # is empty we still return '' so the cell stays blank.
-    def _single_inquiry(val) -> str:
+    # Resolve the KEY INQUIRY QUESTION cell value.
+    #
+    # Two distinct shapes can arrive here:
+    #  - A single string: the ordinary case, one lesson = one resolved KIQ.
+    #    Never split on newlines — KICD designs often wrap a question across
+    #    two source lines (e.g. "Je,\nKwa nini fasihi ni muhimu?"), and a
+    #    naive split previously showed just the bare "Je," in this column.
+    #    Collapse whitespace instead so the wrapped question renders whole.
+    #  - A list of 2+ distinct questions: only ever produced when a row
+    #    merges more than one lesson's content together (a double lesson, or
+    #    a compressed row covering several subtopics at once). Each item was
+    #    already independently resolved to a single clean question upstream,
+    #    so here we just filter/dedupe and hand the whole list to `_cell()`
+    #    to render as bullets — unlike the legacy single-string list case
+    #    below, we deliberately do NOT collapse to just the first one.
+    def _resolve_inquiry_cell(val):
         if not val:
             return ''
         if isinstance(val, list):
+            cleaned_list = []
             for q in val:
-                cleaned = str(q).strip()
-                if _is_meaningful_kiq(cleaned):
-                    # Collapse internal whitespace so wrapped source lines
-                    # render as one continuous question in the PDF cell.
-                    return ' '.join(cleaned.split())
-            return ''
+                cleaned = ' '.join(str(q).strip().split())
+                if _is_meaningful_kiq(cleaned) and cleaned not in cleaned_list:
+                    cleaned_list.append(cleaned)
+            if len(cleaned_list) > 1:
+                return cleaned_list
+            return cleaned_list[0] if cleaned_list else ''
         cleaned = str(val).strip()
         if not _is_meaningful_kiq(cleaned):
             return ''
@@ -377,14 +426,29 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
             items = [str(v).strip() for v in value if v is not None and str(v).strip()]
             if max_items is not None:
                 items = items[:max_items]
-            text = '<br/>'.join(items)
+            raw_text = '\n'.join(items)
         else:
-            text = str(value)
-        # Replace literal newlines with HTML breaks so they render but
-        # don't force ReportLab to treat them as separate Flowables.
-        text = text.replace('\r\n', '\n').replace('\r', '\n').replace('\n', '<br/>')
-        if len(text) > max_chars:
-            text = text[: max_chars - 1].rstrip() + '…'
+            raw_text = str(value)
+        raw_text = raw_text.replace('\r\n', '\n').replace('\r', '\n')
+
+        # Truncate BEFORE escaping and BEFORE inserting <br/> tags — this
+        # order is load-bearing. Once escaped ('&' -> '&amp;', '<' ->
+        # '&lt;') and once '\n' has become the literal 4-character string
+        # '<br/>', a plain len()-based character slice can land in the
+        # middle of either one (e.g. cutting "<br/>" down to "<br", or
+        # "&amp;" down to "&am"). ReportLab's paraparser then reads that
+        # dangling fragment as the start of a tag/entity with no closing
+        # counterpart and aborts the whole PDF with "parse ended with N
+        # unclosed tags" — deterministically, for that exact content,
+        # every time it's rendered. Truncating the raw plain text first
+        # means the cut can only ever fall on an ordinary character.
+        if len(raw_text) > max_chars:
+            raw_text = raw_text[: max_chars - 1].rstrip() + '…'
+
+        # Escape each line independently, THEN join with our own <br/>
+        # tags — escaping the already-joined text would also escape those
+        # tags into literal "&lt;br/&gt;" text instead of line breaks.
+        text = '<br/>'.join(_pdf_text(line) for line in raw_text.split('\n'))
         return Paragraph(text, styles['TableCell'])
 
     # Content rows with week / strand / substrand deduplication
@@ -392,8 +456,6 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
     # keep the week column visible, span columns 2-10 for the break name.
     lessons = scheme_data.get('lessons', [])
     prev_week = None
-    prev_strand = None
-    prev_substrand = None
 
     # Merge consecutive break lessons of the same type
     def _merge_breaks(items):
@@ -426,15 +488,16 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
             wk_from = lesson.get('week', '')
             wk_to = lesson.get('endWeek', wk_from)
             week_cell = str(wk_from) if wk_from == wk_to else f"{wk_from}-{wk_to}"
-            # Week cell visible; rest of the row spans as the break label
+            # Week cell visible; rest of the row spans as the break label.
+            # break_name is admin-typed free text (a holiday/break label) —
+            # escape it like any other free-text field before it reaches
+            # Paragraph.
             break_row = [
-                Paragraph(week_cell, styles['TableCell']),
-                Paragraph(break_name, styles['BreakCell']),
+                Paragraph(_pdf_text(week_cell), styles['TableCell']),
+                Paragraph(_pdf_text(break_name), styles['BreakCell']),
             ] + [''] * 8
             table_data.append(break_row)
             prev_week = None
-            prev_strand = None
-            prev_substrand = None
             continue
 
         week = lesson.get('week', '')
@@ -447,24 +510,27 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
         resources = lesson.get('learningResources', '')
         assessment = lesson.get('assessmentMethods', '')
 
-        # Dedupe: only show week / strand / sub-strand if they differ from prev row
+        # Week keeps the "only show if it changed" convention — a week
+        # genuinely spans several lesson rows and grouping it visually is a
+        # deliberate, separate choice. Strand and Sub-strand are always
+        # printed on every row now (not deduped against the previous row),
+        # so each row reads as complete on its own rather than depending on
+        # scanning upward to see which topic it belongs to.
         week_display = str(week) if week != prev_week else ''
-        strand_display = strand if strand != prev_strand else ''
-        substrand_display = substrand if (substrand != prev_substrand or strand != prev_strand) else ''
+        strand_display = strand
+        substrand_display = substrand
 
         prev_week = week
-        prev_strand = strand
-        prev_substrand = substrand
 
         # Single inquiry question per lesson
-        inquiry = _single_inquiry(inquiry_raw)
+        inquiry = _resolve_inquiry_cell(inquiry_raw)
 
         # Lesson label: strip "(Dbl)" and similar double-lesson suffixes
         lsn_display = str(lsn)
 
         row = [
-            Paragraph(week_display, styles['TableCell']),
-            Paragraph(lsn_display, styles['TableCell']),
+            Paragraph(_pdf_text(week_display), styles['TableCell']),
+            Paragraph(_pdf_text(lsn_display), styles['TableCell']),
             _cell(strand_display, max_chars=120),
             _cell(substrand_display, max_chars=120),
             # SLO can be a multi-bullet list when a single-lesson substrand
@@ -472,7 +538,11 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
             # "- bullets"). Allow more room than the other cells so a
             # 4-bullet list still fits cleanly without truncation.
             _cell(slo, max_chars=600),
-            _cell(inquiry, max_chars=240),
+            # A merged row (double lesson, or a compressed row covering
+            # several subtopics) can carry more than one KIQ, bulleted — give
+            # it more room than the single-question case so the second/third
+            # question isn't cut off mid-sentence.
+            _cell(inquiry, max_chars=240 if isinstance(inquiry, str) else 480, max_items=3),
             _cell(experiences, max_chars=320, max_items=3),
             _cell(resources, max_chars=200, max_items=4),
             _cell(assessment, max_chars=160, max_items=2),
@@ -538,9 +608,9 @@ def generate_scheme_pdf(scheme_data: Dict[str, Any]) -> bytes:
     # Footer
     elements.append(Spacer(1, 0.5*cm))
     if is_kiswahili:
-        footer_text = f"Imetengenezwa na CBE Lesson Planner | {datetime.now().strftime('%d %B %Y')}"
+        footer_text = f""
     else:
-        footer_text = f"Generated by CBE Lesson Planner | {datetime.now().strftime('%d %B %Y')}"
+        footer_text = f""
     elements.append(Paragraph(footer_text, styles['InfoText']))
     
     # Build PDF
@@ -614,17 +684,37 @@ def format_slo_with_prefix(slo: str, is_kiswahili: bool = False) -> str:
     return f'By the end of the lesson, the learner should be able to: {text}'
 
 
-def generate_learning_experiences(strand: str, substrand: str, slo: str) -> List[str]:
+def generate_learning_experiences(strand: str, substrand: str, slo: str, is_kiswahili: bool = False) -> List[str]:
     """Generate learning experiences"""
     import re
     clean = re.sub(r'^[\d]+(?:\.[\d]+)*\.?\s*', '', substrand).strip()
     if not clean:
         clean = substrand
-    
+
     experiences = []
-    
+
+    if is_kiswahili:
+        # SLO text for a Kiswahili subject is itself in Kiswahili, so the
+        # English keyword checks below ('identify', 'describe', 'explain')
+        # never matched — every Kiswahili lesson fell through to the
+        # English default regardless of what the SLO actually asked for.
+        # Kiswahili SLOs use their own verb set (bainisha/eleza/fafanua),
+        # matched here the same way.
+        slo_lower = slo.lower()
+        if 'bainisha' in slo_lower or 'tambua' in slo_lower:
+            experiences.append(f"Mwanafunzi anaongozwa kubainisha sifa za {clean.lower()}")
+        elif 'eleza' in slo_lower:
+            experiences.append(f"Mwanafunzi anaongozwa kueleza {clean.lower()} kwa mifano")
+        elif 'fafanua' in slo_lower:
+            experiences.append(f"Mwanafunzi anaongozwa kufafanua dhana zinazohusiana na {clean.lower()}")
+        else:
+            experiences.append(f"Mwanafunzi anaongozwa kuchunguza {clean.lower()}")
+        experiences.append("Majadiliano ya kikundi na mawasilisho")
+        experiences.append("Shughuli za vitendo na maonyesho")
+        return experiences
+
     slo_lower = slo.lower()
-    
+
     if 'identify' in slo_lower:
         experiences.append(f"The learner is guided to identify characteristics of {clean.lower()}")
     elif 'describe' in slo_lower:
@@ -640,8 +730,15 @@ def generate_learning_experiences(strand: str, substrand: str, slo: str) -> List
     return experiences
 
 
-def generate_learning_resources(strand: str, substrand: str) -> List[str]:
+def generate_learning_resources(strand: str, substrand: str, is_kiswahili: bool = False) -> List[str]:
     """Generate learning resources"""
+    if is_kiswahili:
+        return [
+            "Vitabu vya kiada",
+            "Chati na michoro",
+            "Nyenzo za kidijitali",
+            "Vifaa halisi/Mifano",
+        ]
     return [
         "Textbooks",
         "Charts and diagrams",

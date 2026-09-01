@@ -12,7 +12,8 @@ import {
   FlatList,
   Platform,
   RefreshControl,
-  Pressable
+  Pressable,
+  Switch
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
@@ -36,6 +37,9 @@ interface Entity {
   development_activities?: string[];
   conclusion_activities?: string[];
   extended_activities?: string[];
+  number_of_lessons?: number;
+  term?: number | null;
+  isVisible?: boolean;
 }
 
 interface Breadcrumb {
@@ -56,7 +60,7 @@ const ENTITY_CONFIG: Record<EntityType, {
   grades: { title: 'Grades', singularTitle: 'Grade', icon: 'school', color: '#5C6BC0', fields: ['name', 'order'], apiPath: 'grades' },
   subjects: { title: 'Subjects', singularTitle: 'Subject', icon: 'book', color: '#10B981', fields: ['name'], parent: 'grades', apiPath: 'subjects' },
   strands: { title: 'Strands', singularTitle: 'Strand', icon: 'git-branch', color: '#F59E0B', fields: ['name', 'order'], parent: 'subjects', apiPath: 'strands' },
-  substrands: { title: 'Sub-strands', singularTitle: 'Sub-strand', icon: 'git-merge', color: '#EF4444', fields: ['name', 'number_of_lessons', 'order'], parent: 'strands', apiPath: 'substrands' },
+  substrands: { title: 'Sub-strands', singularTitle: 'Sub-strand', icon: 'git-merge', color: '#EF4444', fields: ['name', 'number_of_lessons', 'order', 'term'], parent: 'strands', apiPath: 'substrands' },
   slos: { title: 'SLOs', singularTitle: 'SLO', icon: 'checkmark-circle', color: '#5C6BC0', fields: ['name', 'description', 'key_inquiry_questions'], parent: 'substrands', apiPath: 'slos' },
   learning_activities: { title: 'Learning Activities', singularTitle: 'Learning Activities', icon: 'flash', color: '#84CC16', fields: ['introduction_activities', 'development_activities', 'conclusion_activities', 'extended_activities'], parent: 'substrands', apiPath: 'learning-activities' },
   competencies: { title: 'Competencies', singularTitle: 'Competency', icon: 'star', color: '#EC4899', fields: ['name', 'description'], apiPath: 'competencies' },
@@ -85,6 +89,11 @@ export default function Curriculum() {
   const [currentView, setCurrentView] = useState<'main' | 'hierarchy'>('main');
   const [selectedEntity, setSelectedEntity] = useState<EntityType>('grades');
   const [data, setData] = useState<Entity[]>([]);
+  // Term filter for the sub-strands list only — 'all' shows everything
+  // (identical to today's behaviour everywhere else in the app), the
+  // others narrow the list so tagging a long sub-strand list with `term`
+  // doesn't mean scrolling through everything at once.
+  const [termFilter, setTermFilter] = useState<'all' | 1 | 2 | 3 | 'unset'>('all');
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingItem, setEditingItem] = useState<Entity | null>(null);
@@ -191,6 +200,22 @@ export default function Curriculum() {
       loadData();
     }
   }, [selectedEntity, currentView]);
+
+  // Term filter only applies to sub-strands — reset it when navigating away
+  // so it doesn't sit stale and silently narrow the list next time you're
+  // back on sub-strands.
+  useEffect(() => {
+    if (selectedEntity !== 'substrands' && termFilter !== 'all') {
+      setTermFilter('all');
+    }
+  }, [selectedEntity]);
+
+  // Changing the filter can hide items that were selected under a
+  // different filter — clear the selection so a bulk edit never silently
+  // touches something that's no longer even visible on screen.
+  useEffect(() => {
+    setSelectedItems(new Set());
+  }, [termFilter]);
 
   // Auto-refresh when screen comes into focus (detects external DB changes)
   useFocusEffect(
@@ -707,6 +732,34 @@ export default function Curriculum() {
     }
   };
 
+  const handleToggleVisibility = async (item: Entity) => {
+    // Quick single-tap flip, deliberately separate from the full Edit
+    // modal — this is meant to be something you do often (finish a
+    // subject, flip it on, move to the next) without an open/close round
+    // trip each time. Uses a dedicated /visibility endpoint that only
+    // ever touches isVisible — NOT the general PUT, which requires a
+    // full valid record (name, order/gradeIds) and previously 422'd for
+    // any grade/subject with malformed data in those other fields, a
+    // record this toggle has nothing to do with and no way to fix.
+    const config = ENTITY_CONFIG[selectedEntity];
+    const newVisible = item.isVisible === false;
+    // Optimistic update so the switch responds immediately.
+    setData(prev => prev.map(d => d.id === item.id ? { ...d, isVisible: newVisible } : d));
+    try {
+      const headers = await getHeaders();
+      await axios.put(
+        `${BACKEND_URL}/api/admin/${config.apiPath}/${item.id}/visibility`,
+        { isVisible: newVisible },
+        { headers }
+      );
+    } catch (error) {
+      // Revert on failure rather than leaving the switch showing a state
+      // that didn't actually save.
+      setData(prev => prev.map(d => d.id === item.id ? { ...d, isVisible: item.isVisible } : d));
+      showAlert('Error', 'Failed to update visibility');
+    }
+  };
+
   const handleSave = async () => {
     try {
       const headers = await getHeaders();
@@ -723,6 +776,14 @@ export default function Curriculum() {
         payload.strandId = selectedParentId || currentParentId;
         if (payload.number_of_lessons) {
           payload.number_of_lessons = parseInt(payload.number_of_lessons);
+        }
+        // term arrives as a string ('1'/'2'/'3') from the picker, or '' if
+        // cleared/never set — coerce to an int, or drop it entirely rather
+        // than send an empty string the backend's Optional[int] can't parse.
+        if (payload.term) {
+          payload.term = parseInt(payload.term, 10);
+        } else {
+          delete payload.term;
         }
       } else if (selectedEntity === 'slos' && (selectedParentId || currentParentId)) {
         payload.substrandId = selectedParentId || currentParentId;
@@ -1316,12 +1377,22 @@ export default function Curriculum() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedItems.size === data.length) {
+    if (selectedItems.size === visibleData.length) {
       setSelectedItems(new Set());
     } else {
-      setSelectedItems(new Set(data.map(item => item.id)));
+      setSelectedItems(new Set(visibleData.map(item => item.id)));
     }
   };
+
+  // Only sub-strands carry `term`; every other entity type (and 'all')
+  // behaves exactly as before this feature existed.
+  const visibleData = (selectedEntity === 'substrands' && termFilter !== 'all')
+    ? data.filter(item =>
+        termFilter === 'unset'
+          ? item.term === undefined || item.term === null
+          : item.term === termFilter
+      )
+    : data;
 
   const handleBulkDelete = async () => {
     if (selectedItems.size === 0) return;
@@ -1503,6 +1574,22 @@ export default function Curriculum() {
             {item.order !== undefined && (
               <Text style={styles.itemMeta}>Order: {item.order}</Text>
             )}
+            {/* Term badge — lets an admin scan a long sub-strand list and
+                see at a glance what's tagged and what still needs it,
+                without opening the edit modal for each one. */}
+            {selectedEntity === 'substrands' && (
+              <View style={[
+                styles.termRowBadge,
+                item.term ? styles.termRowBadgeSet : styles.termRowBadgeUnset,
+              ]}>
+                <Text style={[
+                  styles.termRowBadgeText,
+                  item.term ? styles.termRowBadgeTextSet : styles.termRowBadgeTextUnset,
+                ]}>
+                  {item.term ? `Term ${item.term}` : 'No term set'}
+                </Text>
+              </View>
+            )}
             {/* Substrand KIQ-coverage badge — red when at least one of
                 the substrand's SLOs is missing Key Inquiry Questions, so
                 admins can spot weak substrands without drilling all the
@@ -1558,6 +1645,25 @@ export default function Curriculum() {
         
         {!bulkEditMode && (
           <View style={styles.itemActions}>
+            {/* Visibility toggle — Grades and Subjects only. Hides/shows
+                this grade or subject in the teacher-facing Scheme of Work
+                and Lesson Plan creation dropdowns. Admins always see
+                everything regardless of this flag; existing schemes/lesson
+                plans already generated are completely unaffected either
+                way — this only changes what's offered going forward. */}
+            {(selectedEntity === 'grades' || selectedEntity === 'subjects') && (
+              <View style={styles.visibilityToggleWrap}>
+                <Text style={styles.visibilityToggleLabel}>
+                  {item.isVisible === false ? 'Hidden' : 'Visible'}
+                </Text>
+                <Switch
+                  value={item.isVisible !== false}
+                  onValueChange={() => handleToggleVisibility(item)}
+                  trackColor={{ false: '#E5E7EB', true: '#A7F3D0' }}
+                  thumbColor={item.isVisible === false ? '#9CA3AF' : '#10B981'}
+                />
+              </View>
+            )}
             {/* Mapping Button - Only for SLOs */}
             {canEditMapping && (
               <TouchableOpacity style={styles.mappingButton} onPress={() => handleOpenMappingModal(item)}>
@@ -1730,7 +1836,11 @@ export default function Curriculum() {
         )}
         
         <Text style={styles.headerTitle}>{ENTITY_CONFIG[selectedEntity].title}</Text>
-        <Text style={styles.headerCount}>{data.length} items</Text>
+        <Text style={styles.headerCount}>
+          {selectedEntity === 'substrands' && termFilter !== 'all'
+            ? `${visibleData.length} of ${data.length} items`
+            : `${data.length} items`}
+        </Text>
         
         {/* Refresh Button */}
         <TouchableOpacity 
@@ -1776,17 +1886,46 @@ export default function Curriculum() {
         )}
       </View>
 
+      {/* Term Filter — sub-strands only, narrows the (potentially very
+          long) list down to one term at a time, or to whatever hasn't been
+          tagged yet, so bulk-tagging doesn't mean scrolling past everything
+          else to find what needs attention. */}
+      {selectedEntity === 'substrands' && (
+        <View style={styles.termFilterRow}>
+          {(['all', 1, 2, 3, 'unset'] as const).map((f) => (
+            <TouchableOpacity
+              key={String(f)}
+              style={[
+                styles.termFilterChip,
+                termFilter === f && styles.termFilterChipActive,
+              ]}
+              onPress={() => setTermFilter(f)}
+              testID={`term-filter-${f}`}
+            >
+              <Text
+                style={[
+                  styles.termFilterChipText,
+                  termFilter === f && styles.termFilterChipTextActive,
+                ]}
+              >
+                {f === 'all' ? 'All' : f === 'unset' ? 'Unset' : `Term ${f}`}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
       {/* Bulk Edit Action Bar */}
       {bulkEditMode && selectedItems.size > 0 && (
         <View style={styles.bulkActionBar}>
           <TouchableOpacity style={styles.selectAllBtn} onPress={toggleSelectAll}>
             <Ionicons 
-              name={selectedItems.size === data.length ? "checkbox" : "square-outline"} 
+              name={selectedItems.size === visibleData.length ? "checkbox" : "square-outline"} 
               size={20} 
               color="#5C6BC0" 
             />
             <Text style={styles.selectAllText}>
-              {selectedItems.size === data.length ? 'Deselect All' : 'Select All'}
+              {selectedItems.size === visibleData.length ? 'Deselect All' : 'Select All'}
             </Text>
           </TouchableOpacity>
           
@@ -1865,7 +2004,7 @@ export default function Curriculum() {
         </View>
       ) : (
         <FlatList
-          data={data}
+          data={visibleData}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
@@ -1976,6 +2115,57 @@ export default function Curriculum() {
               {ENTITY_CONFIG[selectedEntity].fields
                 .filter(f => !f.includes('activities') && f !== 'key_inquiry_questions') // Filter out activity fields and KIQ (rendered above)
                 .map((field) => {
+                  if (field === 'term') {
+                    // Term is a soft categorization used by scheme
+                    // generation (pre-ticking "this term's topics" and
+                    // grouping carry-over candidates) — not a hard
+                    // constraint, so it's optional and clearable rather
+                    // than a required numeric field.
+                    const currentTerm = formData.term ? parseInt(formData.term, 10) : null;
+                    return (
+                      <View key={field} style={styles.inputGroup}>
+                        <Text style={styles.inputLabel}>Term</Text>
+                        <Text style={styles.inputHint}>
+                          Which term this topic is normally taught in. Used to pre-select
+                          it when generating that term's scheme, and to suggest it as a
+                          carry-over candidate the term after. Leave unset if unsure.
+                        </Text>
+                        <View style={styles.termPickerRow}>
+                          {[1, 2, 3].map((t) => (
+                            <TouchableOpacity
+                              key={t}
+                              style={[
+                                styles.termPickerBtn,
+                                currentTerm === t && styles.termPickerBtnActive,
+                              ]}
+                              onPress={() =>
+                                setFormData({ ...formData, term: currentTerm === t ? '' : String(t) })
+                              }
+                              testID={`admin-substrand-term-${t}`}
+                            >
+                              <Text
+                                style={[
+                                  styles.termPickerBtnText,
+                                  currentTerm === t && styles.termPickerBtnTextActive,
+                                ]}
+                              >
+                                Term {t}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                          {currentTerm !== null && (
+                            <TouchableOpacity
+                              style={styles.termPickerClearBtn}
+                              onPress={() => setFormData({ ...formData, term: '' })}
+                              testID="admin-substrand-term-clear"
+                            >
+                              <Text style={styles.termPickerClearBtnText}>Clear</Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      </View>
+                    );
+                  }
                   return (
                     <View key={field} style={styles.inputGroup}>
                       <Text style={styles.inputLabel}>
@@ -2724,6 +2914,80 @@ export default function Curriculum() {
                   />
                 </View>
               )}
+
+              {/* Term field - substrands only. Three real states, unlike a
+                  text field's natural "empty = don't touch": untouched
+                  (term key absent from bulkEditFormData, the default),
+                  set-to-N, or explicitly cleared (term: null). Tapping an
+                  already-active option reverts to "don't touch" rather
+                  than toggling between two set values. */}
+              {selectedEntity === 'substrands' && (
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Term</Text>
+                  <Text style={styles.inputHint}>
+                    {bulkEditFormData.term === undefined
+                      ? "Not changing — leave as-is for every selected sub-strand."
+                      : bulkEditFormData.term === null
+                      ? `Will clear the term on all ${selectedItems.size} selected sub-strands.`
+                      : `Will set all ${selectedItems.size} selected sub-strands to Term ${bulkEditFormData.term}.`}
+                  </Text>
+                  <View style={styles.termPickerRow}>
+                    {[1, 2, 3].map((t) => (
+                      <TouchableOpacity
+                        key={t}
+                        style={[
+                          styles.termPickerBtn,
+                          bulkEditFormData.term === t && styles.termPickerBtnActive,
+                        ]}
+                        onPress={() => {
+                          const next = { ...bulkEditFormData };
+                          if (next.term === t) {
+                            delete next.term;
+                          } else {
+                            next.term = t;
+                          }
+                          setBulkEditFormData(next);
+                        }}
+                        testID={`bulk-edit-term-${t}`}
+                      >
+                        <Text
+                          style={[
+                            styles.termPickerBtnText,
+                            bulkEditFormData.term === t && styles.termPickerBtnTextActive,
+                          ]}
+                        >
+                          Term {t}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                    <TouchableOpacity
+                      style={[
+                        styles.termPickerBtn,
+                        bulkEditFormData.term === null && styles.termPickerBtnActive,
+                      ]}
+                      onPress={() => {
+                        const next = { ...bulkEditFormData };
+                        if (next.term === null) {
+                          delete next.term;
+                        } else {
+                          next.term = null;
+                        }
+                        setBulkEditFormData(next);
+                      }}
+                      testID="bulk-edit-term-clear"
+                    >
+                      <Text
+                        style={[
+                          styles.termPickerBtnText,
+                          bulkEditFormData.term === null && styles.termPickerBtnTextActive,
+                        ]}
+                      >
+                        Clear
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
               
               {/* Description field - for SLOs */}
               {selectedEntity === 'slos' && (
@@ -3062,6 +3326,19 @@ const styles = StyleSheet.create({
     borderTopColor: '#F3F4F6',
     backgroundColor: '#FAFAFA'
   },
+  visibilityToggleWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    borderRightWidth: 1,
+    borderRightColor: '#F3F4F6',
+    gap: 6,
+  },
+  visibilityToggleLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
   moveButton: {
     flex: 1,
     padding: 10,
@@ -3156,6 +3433,97 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#374151',
     marginBottom: 8
+  },
+  inputHint: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 10,
+    lineHeight: 16,
+  },
+  termPickerRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  termPickerBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#DDDDF5',
+    backgroundColor: '#F9FAFB',
+  },
+  termPickerBtnActive: {
+    backgroundColor: '#EF4444',
+    borderColor: '#EF4444',
+  },
+  termPickerBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  termPickerBtnTextActive: {
+    color: '#FFFFFF',
+  },
+  termPickerClearBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    justifyContent: 'center',
+  },
+  termPickerClearBtnText: {
+    fontSize: 13,
+    color: '#9CA3AF',
+    textDecorationLine: 'underline',
+  },
+  termFilterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+  },
+  termFilterChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  termFilterChipActive: {
+    backgroundColor: '#EF4444',
+    borderColor: '#EF4444',
+  },
+  termFilterChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  termFilterChipTextActive: {
+    color: '#FFFFFF',
+  },
+  termRowBadge: {
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  termRowBadgeSet: {
+    backgroundColor: '#EEF2FF',
+  },
+  termRowBadgeUnset: {
+    backgroundColor: '#F9FAFB',
+  },
+  termRowBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  termRowBadgeTextSet: {
+    color: '#5C6BC0',
+  },
+  termRowBadgeTextUnset: {
+    color: '#9CA3AF',
   },
   input: {
     backgroundColor: '#F9FAFB',

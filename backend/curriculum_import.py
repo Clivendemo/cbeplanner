@@ -13,6 +13,16 @@ from pydantic import BaseModel
 import fitz  # PyMuPDF
 from docx import Document  # python-docx for Word document support
 
+# Shared with scheme_generator.py so a KIQ that survives extraction can
+# never be silently dropped later at render time by a stricter/different
+# threshold. Previously this module had its own inline `len(p) < 10` check
+# while scheme_generator.py enforced `len(collapsed) < 12` *and* a 3-word
+# minimum — a KIQ between those two bounds (or under 3 words) would import
+# cleanly, sit in the database looking "captured", and then vanish from
+# every generated scheme with no error anywhere. Importing the same
+# predicate here closes that gap.
+from scheme_generator import _is_meaningful_kiq
+
 router = APIRouter()
 
 # ==================== DATA MODELS ====================
@@ -638,8 +648,13 @@ def extract_inquiry_questions_from_text(text: str) -> List[str]:
         parts = re.findall(r'[^?]+\?|[^?]+$', item)
         for p in parts:
             p = re.sub(r'\s+', ' ', p).strip().strip('.,;: ')
-            # Quality filter: must be a plausible question
-            if len(p) < 10 or len(p) > 300:
+            # Quality filter: must be a plausible question. Upper bound
+            # (300) still guards against a mis-parsed run of paragraph
+            # text; the lower bound now defers to the exact same
+            # `_is_meaningful_kiq` predicate scheme_generator.py uses at
+            # render time, so nothing that passes here can later fail
+            # there.
+            if len(p) > 300 or not _is_meaningful_kiq(p):
                 continue
             # Drop fragments that don't end with ? AND don't start with a question word
             if not p.endswith('?'):
@@ -932,4 +947,3 @@ def extract_from_tables(doc: Document) -> tuple:
             rows.append(curriculum_row)
     
     return rows, errors
-

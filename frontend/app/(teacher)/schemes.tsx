@@ -10,8 +10,7 @@ import {
   Modal,
   FlatList,
   TextInput,
-  Dimensions,
-  useWindowDimensions
+  Dimensions
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../../contexts/AuthContext';
@@ -23,11 +22,10 @@ import { useDebouncedAction } from '../../hooks/useDebouncedAction';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const MOBILE_BREAKPOINT = 768;
 
 interface Grade { id: string; name: string; }
 interface Subject { id: string; name: string; }
-interface Substrand { id: string; name: string; sloCount: number; }
+interface Substrand { id: string; name: string; sloCount: number; term?: number | null; }
 interface Topic { id: string; name: string; substrands: Substrand[]; totalSlos: number; }
 interface Break {
   breakType: string;
@@ -49,8 +47,6 @@ export default function SchemesOfWork() {
   const { user, firebaseUser, refreshProfile } = useAuth();
   const router = useRouter();
   const { editId } = useLocalSearchParams<{ editId?: string }>();
-  const { width: winWidth } = useWindowDimensions();
-  const isMobile = winWidth < MOBILE_BREAKPOINT;
   
   // Step management
   const [currentStep, setCurrentStep] = useState<Step>('select');
@@ -69,8 +65,14 @@ export default function SchemesOfWork() {
   // Double lesson support
   const [doubleLesson, setDoubleLesson] = useState<DoubleLesson>({ enabled: false, position: '2-3' });
   
-  // Carry-over/compression mode
-  const [includeCarryOver, setIncludeCarryOver] = useState(false);
+  // Carry-over topics: whether the teacher has any to bring forward from
+  // the previous term, and which selected topics are actually flagged as
+  // such. hasCarryOverTopics is purely a local UI gate (show/hide the
+  // "Carried over from Term X" section) — it's never sent to the backend,
+  // since carryOverTopics itself already tells the server everything it
+  // needs.
+  const [hasCarryOverTopics, setHasCarryOverTopics] = useState(false);
+  const [carryOverTopics, setCarryOverTopics] = useState<Set<string>>(new Set());
   
   // Step 2: Topic selection
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -133,7 +135,10 @@ export default function SchemesOfWork() {
           if (inputs.doubleLesson) {
             setDoubleLesson(inputs.doubleLesson);
           }
-          setIncludeCarryOver(!!inputs.includeCarryOver);
+          if (Array.isArray(inputs.carryOverTopics) && inputs.carryOverTopics.length) {
+            setCarryOverTopics(new Set(inputs.carryOverTopics));
+            setHasCarryOverTopics(true);
+          }
         }
       } catch {
         // If preload fails, silently fall back to empty form
@@ -144,7 +149,7 @@ export default function SchemesOfWork() {
   const loadGrades = async () => {
     try {
       const headers = await getHeaders();
-      const response = await axios.get(`${BACKEND_URL}/api/grades`, { headers });
+      const response = await axios.get(`${BACKEND_URL}/api/grades?context=creation`, { headers });
       if (response.data.success) {
         setGrades(response.data.grades);
       }
@@ -167,7 +172,7 @@ export default function SchemesOfWork() {
   const loadSubjects = async () => {
     try {
       const headers = await getHeaders();
-      const response = await axios.get(`${BACKEND_URL}/api/subjects?gradeId=${selectedGrade}`, { headers });
+      const response = await axios.get(`${BACKEND_URL}/api/subjects?gradeId=${selectedGrade}&context=creation`, { headers });
       if (response.data.success) {
         setSubjects(response.data.subjects);
       }
@@ -214,6 +219,19 @@ export default function SchemesOfWork() {
         if (response.data.topics.length > 0) {
           setExpandedStrands(new Set([response.data.topics[0].id]));
         }
+        // Pre-tick every substrand tagged for the term being generated.
+        // Only when nothing is selected yet, so this never clobbers a
+        // restored selection when editing an existing scheme.
+        setSelectedTopics(prev => {
+          if (prev.size > 0) return prev;
+          const preticked = new Set<string>();
+          (response.data.topics as Topic[]).forEach(strand => {
+            strand.substrands.forEach(ss => {
+              if (ss.term === term) preticked.add(ss.id);
+            });
+          });
+          return preticked;
+        });
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to load topics');
@@ -301,6 +319,37 @@ export default function SchemesOfWork() {
       }
       return next;
     });
+    // Defensive sync: if this topic was somehow flagged carry-over and is
+    // now being toggled off through the ordinary list, don't leave a
+    // stale carry-over flag behind.
+    setCarryOverTopics(prev => {
+      if (!prev.has(substrandId)) return prev;
+      const next = new Set(prev);
+      next.delete(substrandId);
+      return next;
+    });
+  };
+
+  // Term 1's "previous term" wraps to Term 3 — curriculum content is the
+  // same every year, so this is a simple wraparound, not a cross-year
+  // lookup.
+  const previousTerm = term === 1 ? 3 : term - 1;
+
+  // Toggling a topic in the "Carried over from Term X" section selects it
+  // and flags it as carry-over in the same tap — that section IS the flag,
+  // there's no separate marking step.
+  const toggleCarryOverTopic = (substrandId: string) => {
+    const isSelected = selectedTopics.has(substrandId);
+    setSelectedTopics(prev => {
+      const next = new Set(prev);
+      if (isSelected) next.delete(substrandId); else next.add(substrandId);
+      return next;
+    });
+    setCarryOverTopics(prev => {
+      const next = new Set(prev);
+      if (isSelected) next.delete(substrandId); else next.add(substrandId);
+      return next;
+    });
   };
 
   const selectAllTopics = () => {
@@ -313,6 +362,7 @@ export default function SchemesOfWork() {
 
   const deselectAllTopics = () => {
     setSelectedTopics(new Set());
+    setCarryOverTopics(new Set());
   };
 
   const isStrandFullySelected = (strand: Topic) => {
@@ -349,6 +399,7 @@ export default function SchemesOfWork() {
           totalWeeks,
           lessonsPerWeek: lessonsPerWeek || 5,
           selectedTopics: Array.from(selectedTopics),
+          carryOverTopics: Array.from(carryOverTopics),
           breaks: breaks.map(b => ({
             breakType: b.breakType,
             startWeek: b.startWeek,
@@ -356,8 +407,7 @@ export default function SchemesOfWork() {
             endWeek: b.endWeek,
             endLesson: b.endLesson
           })),
-          doubleLesson: doubleLesson.enabled ? doubleLesson : null,
-          includeCarryOver
+          doubleLesson: doubleLesson.enabled ? doubleLesson : null
         },
         { headers }
       );
@@ -366,6 +416,8 @@ export default function SchemesOfWork() {
         const newSchemeId = response.data.schemeId;
         // Reset form state so returning to generator starts fresh
         setSelectedTopics(new Set());
+        setCarryOverTopics(new Set());
+        setHasCarryOverTopics(false);
         setCurrentStep('select');
         if (newSchemeId) {
           // Route straight to My Schemes (aligned with Lesson Plans flow)
@@ -542,22 +594,22 @@ export default function SchemesOfWork() {
           )}
         </View>
         
-        {/* Carry-over Content Option */}
+        {/* Carry-over Topics Option */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Include Previous Term Uncovered Content?</Text>
-          <Text style={styles.subHint}>Compresses scheduling to fit more topics</Text>
+          <Text style={styles.label}>Carrying over topics from a previous term?</Text>
+          <Text style={styles.subHint}>Topics you flag as carried over will be taught first.</Text>
           <View style={styles.doubleLessonRow}>
             <TouchableOpacity
-              style={[styles.toggleBtn, !includeCarryOver && styles.toggleBtnActive]}
-              onPress={() => setIncludeCarryOver(false)}
+              style={[styles.toggleBtn, !hasCarryOverTopics && styles.toggleBtnActive]}
+              onPress={() => setHasCarryOverTopics(false)}
             >
-              <Text style={[styles.toggleBtnText, !includeCarryOver && styles.toggleBtnTextActive]}>No</Text>
+              <Text style={[styles.toggleBtnText, !hasCarryOverTopics && styles.toggleBtnTextActive]}>No</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.toggleBtn, includeCarryOver && styles.toggleBtnActive]}
-              onPress={() => setIncludeCarryOver(true)}
+              style={[styles.toggleBtn, hasCarryOverTopics && styles.toggleBtnActive]}
+              onPress={() => setHasCarryOverTopics(true)}
             >
-              <Text style={[styles.toggleBtnText, includeCarryOver && styles.toggleBtnTextActive]}>Yes</Text>
+              <Text style={[styles.toggleBtnText, hasCarryOverTopics && styles.toggleBtnTextActive]}>Yes</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -566,7 +618,21 @@ export default function SchemesOfWork() {
   );
 
   // Render Step 2: Topic Selection
-  const renderTopicsStep = () => (
+  const renderTopicsStep = () => {
+    // Substrands tagged for the immediately preceding term (wrapping
+    // Term 1 -> Term 3) are pulled out into their own section rather than
+    // shown twice — once as the dedicated carry-over list, once again
+    // under their normal strand entry.
+    const carryOverCandidates: (Substrand & { strandName: string })[] = [];
+    topics.forEach(strand => {
+      strand.substrands.forEach(ss => {
+        if (ss.term === previousTerm) {
+          carryOverCandidates.push({ ...ss, strandName: strand.name });
+        }
+      });
+    });
+
+    return (
     <View style={styles.stepContent}>
       {loadingTopics ? (
         <View style={styles.loadingContainer}>
@@ -589,12 +655,62 @@ export default function SchemesOfWork() {
               </TouchableOpacity>
             </View>
           </View>
-          
+
+          {hasCarryOverTopics && (
+            <View style={styles.carryOverSection}>
+              <Text style={styles.carryOverSectionTitle}>
+                Carried over from Term {previousTerm}
+              </Text>
+              <Text style={styles.carryOverSectionHint}>
+                Not fully covered last term? Tick to teach it first this term.
+              </Text>
+              {carryOverCandidates.length === 0 ? (
+                <Text style={styles.carryOverEmptyText}>
+                  No Term {previousTerm} topics are tagged yet for this subject.
+                </Text>
+              ) : (
+                carryOverCandidates.map(ss => (
+                  <TouchableOpacity
+                    key={ss.id}
+                    style={styles.substrandItem}
+                    onPress={() => toggleCarryOverTopic(ss.id)}
+                  >
+                    <Ionicons
+                      name={selectedTopics.has(ss.id) ? "checkbox" : "square-outline"}
+                      size={20}
+                      color={selectedTopics.has(ss.id) ? "#5C6BC0" : "#D1D5DB"}
+                    />
+                    <View style={{ flex: 1 }}>
+                      <Text style={[
+                        styles.substrandName,
+                        selectedTopics.has(ss.id) && styles.substrandNameSelected
+                      ]}>
+                        {ss.name}
+                      </Text>
+                      <Text style={styles.carryOverStrandLabel}>{ss.strandName}</Text>
+                    </View>
+                    <Text style={styles.sloCount}>{ss.sloCount} SLOs</Text>
+                  </TouchableOpacity>
+                ))
+              )}
+            </View>
+          )}
+
           {/* Topics list */}
           <FlatList
             data={topics}
             keyExtractor={(item) => item.id}
-            renderItem={({ item: strand }) => (
+            renderItem={({ item: strand }) => {
+              // When the carry-over section is showing, its topics are
+              // already listed there — hide them here so nothing appears
+              // twice.
+              const visibleSubstrands = hasCarryOverTopics
+                ? strand.substrands.filter(ss => ss.term !== previousTerm)
+                : strand.substrands;
+              if (hasCarryOverTopics && visibleSubstrands.length === 0) {
+                return null;
+              }
+              return (
               <View style={styles.strandContainer}>
                 {/* Strand header */}
                 <TouchableOpacity
@@ -628,7 +744,7 @@ export default function SchemesOfWork() {
                 {/* Substrands */}
                 {expandedStrands.has(strand.id) && (
                   <View style={styles.substrandsContainer}>
-                    {strand.substrands.map(ss => (
+                    {visibleSubstrands.map(ss => (
                       <TouchableOpacity
                         key={ss.id}
                         style={styles.substrandItem}
@@ -645,19 +761,26 @@ export default function SchemesOfWork() {
                         ]}>
                           {ss.name}
                         </Text>
+                        {ss.term === term && (
+                          <View style={styles.thisTermBadge}>
+                            <Text style={styles.thisTermBadgeText}>This term</Text>
+                          </View>
+                        )}
                         <Text style={styles.sloCount}>{ss.sloCount} SLOs</Text>
                       </TouchableOpacity>
                     ))}
                   </View>
                 )}
               </View>
-            )}
+              );
+            }}
             contentContainerStyle={styles.topicsList}
           />
         </>
       )}
     </View>
-  );
+    );
+  };
 
   // Render Step 3: Breaks
   const renderBreaksStep = () => (
@@ -900,9 +1023,8 @@ export default function SchemesOfWork() {
   // PDF Preview Modal (in-app viewer)
 
   return (
-    <View style={styles.outer}>
-      <View style={[styles.container, isMobile && styles.containerMobile]}>
-        {/* Step indicator */}
+    <View style={styles.container}>
+      {/* Step indicator */}
       <View style={styles.stepIndicator}>
         {(['select', 'topics', 'breaks'] as Step[]).map((step, index) => (
           <View key={step} style={styles.stepItem}>
@@ -963,28 +1085,14 @@ export default function SchemesOfWork() {
       </View>
       
       {renderBreakModal()}
-      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  outer: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    alignItems: 'center',
-  },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
-    maxWidth: 1280,
-    width: '100%',
-    paddingHorizontal: 32,
-    paddingVertical: 24,
-  },
-  containerMobile: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    backgroundColor: 'transparent'
   },
   stepIndicator: {
     flexDirection: 'row',
@@ -1276,6 +1384,50 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10
+  },
+  carryOverSection: {
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+    borderRadius: 10,
+    padding: 12,
+    marginHorizontal: 14,
+    marginBottom: 12,
+  },
+  carryOverSectionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#9A3412',
+  },
+  carryOverSectionHint: {
+    fontSize: 12,
+    color: '#C2410C',
+    marginTop: 2,
+    marginBottom: 8,
+  },
+  carryOverEmptyText: {
+    fontSize: 12,
+    color: '#9A6B4F',
+    fontStyle: 'italic',
+    paddingVertical: 6,
+  },
+  carryOverStrandLabel: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginLeft: 10,
+    marginTop: 1,
+  },
+  thisTermBadge: {
+    backgroundColor: '#EEF2FF',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginRight: 8,
+  },
+  thisTermBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#5C6BC0',
   },
   breakCard: {
     flexDirection: 'row',

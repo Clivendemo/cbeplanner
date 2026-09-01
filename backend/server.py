@@ -323,11 +323,22 @@ class Grade(BaseModel):
     id: Optional[str] = None
     name: str
     order: int
+    # Visible to teachers by default. When False, hidden from the
+    # teacher-facing grade dropdown for Scheme of Work and Lesson Plan
+    # creation only — admins always see every grade regardless of this
+    # flag, and anything already generated under a since-hidden grade
+    # remains fully accessible. See get_grades()'s `context` param.
+    isVisible: bool = True
 
 class Subject(BaseModel):
     id: Optional[str] = None
     name: str
     gradeIds: List[str]
+    # Same semantics as Grade.isVisible, scoped to this subject.
+    isVisible: bool = True
+
+class VisibilityUpdateRequest(BaseModel):
+    isVisible: bool
 
 class Strand(BaseModel):
     id: Optional[str] = None
@@ -341,6 +352,11 @@ class SubStrand(BaseModel):
     strandId: str
     number_of_lessons: Optional[int] = None
     order: Optional[int] = None
+    # Which term (1, 2, or 3) this substrand is normally taught in, per the
+    # curriculum's own pacing. Optional and non-binding — a hint used to
+    # pre-tick "this term's topics" and group carry-over candidates when
+    # generating a scheme, never a hard constraint on topic selection.
+    term: Optional[int] = None
 
 class SubstrandLesson(BaseModel):
     id: Optional[str] = None
@@ -1277,14 +1293,41 @@ async def admin_reconciliation(
 
 
 @api_router.get("/grades")
-async def get_grades(user: dict = Depends(verify_token)):
+async def get_grades(context: Optional[str] = None, user: dict = Depends(verify_token)):
+    """List grades for the teacher-facing grade dropdown.
+
+    `context` is opt-in and defaults to unset, which preserves the exact
+    existing behaviour (every grade, unfiltered) for every caller that
+    doesn't pass it — Revision Papers, Generate Notes, and the dashboard
+    all call this endpoint too and must stay completely unaffected.
+    Only Scheme of Work and Lesson Plan creation pass
+    context="creation", which hides grades with isVisible=False from
+    teachers while an admin (checked by email, same rule verify_admin
+    uses) still sees everything regardless.
+    """
     grades = await db.grades.find().sort("order", 1).to_list(100)
+    if context == "creation":
+        is_admin = user.get("email", "").lower().strip() in ADMIN_EMAILS
+        if not is_admin:
+            grades = [g for g in grades if g.get("isVisible", True)]
     return {"success": True, "grades": [serialize_doc(g) for g in grades]}
 
 @api_router.get("/subjects")
-async def get_subjects(gradeId: str, user: dict = Depends(verify_token)):
+async def get_subjects(gradeId: str, context: Optional[str] = None, user: dict = Depends(verify_token)):
     # Sort subjects alphabetically by name for user convenience
     subjects = await db.subjects.find({"gradeIds": gradeId}).sort("name", 1).to_list(100)
+    if context == "creation":
+        is_admin = user.get("email", "").lower().strip() in ADMIN_EMAILS
+        if not is_admin:
+            # A hidden grade acts as a master switch: its subjects are
+            # hidden regardless of their own isVisible flag. This mainly
+            # guards a direct API call bypassing the grade dropdown, since
+            # the dropdown itself already excludes hidden grades.
+            grade_doc = await db.grades.find_one({"_id": ObjectId(gradeId)}) if ObjectId.is_valid(gradeId) else None
+            if grade_doc and not grade_doc.get("isVisible", True):
+                subjects = []
+            else:
+                subjects = [s for s in subjects if s.get("isVisible", True)]
     return {"success": True, "subjects": [serialize_doc(s) for s in subjects]}
 
 @api_router.get("/strands")
@@ -1395,6 +1438,25 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
         )
     
     try:
+        # Hidden grades/subjects (admin still finishing curriculum updates)
+        # are already excluded from the teacher-facing dropdown, but that's
+        # a client-side convenience, not enforcement — this is the actual
+        # gate. Checked here, before any wallet/free-lesson charge happens,
+        # so a rejected request never costs the teacher anything. Admins
+        # are exempt so they can generate against unfinished/hidden content
+        # themselves to check it before making it visible.
+        is_admin = user.get("email", "").lower().strip() in ADMIN_EMAILS
+        if not is_admin:
+            grade_check = await db.grades.find_one({"_id": ObjectId(request.gradeId)})
+            subject_check = await db.subjects.find_one({"_id": ObjectId(request.subjectId)})
+            if not grade_check or not subject_check:
+                raise HTTPException(status_code=404, detail="Invalid grade or subject")
+            if not grade_check.get("isVisible", True) or not subject_check.get("isVisible", True):
+                raise HTTPException(
+                    status_code=403,
+                    detail="This grade or subject isn't available yet. Please check back later.",
+                )
+
         free_remaining = user.get("freeLessonsRemaining", 0)
         wallet_balance = user.get("walletBalance", 0.0)
     
@@ -1532,14 +1594,14 @@ async def generate_lesson_plan(request: GenerateLessonRequest, user: dict = Depe
         if not learning_activities_doc:
             try:
                 learning_activities_doc = await db.learning_activities.find_one({"substrandId": ObjectId(request.substrandId)})
-            except:
+            except Exception:
                 pass
         
         # Try by sloId (ObjectId) if not found
         if not learning_activities_doc:
             try:
                 learning_activities_doc = await db.learning_activities.find_one({"sloId": ObjectId(request.sloId)})
-            except:
+            except Exception:
                 pass
         
         # Extract specific activities or use defaults
@@ -2185,6 +2247,25 @@ async def admin_update_grade(grade_id: str, grade: Grade, user: dict = Depends(v
     await db.grades.update_one({"_id": ObjectId(grade_id)}, {"$set": grade.dict(exclude={"id"})})
     return {"success": True}
 
+@api_router.put("/admin/grades/{grade_id}/visibility")
+async def admin_set_grade_visibility(grade_id: str, request: VisibilityUpdateRequest, user: dict = Depends(verify_admin)):
+    """Toggle only isVisible, independent of the rest of the record.
+
+    The general PUT /admin/grades/{id} above requires a full, valid Grade
+    (name + order) — fine for the edit form, which always has clean data to
+    resend, but the visibility Switch in the list row only ever means to
+    change one boolean. Reusing the full-replace endpoint there meant
+    resending whatever `name`/`order` the client already had in memory,
+    which 422'd for any record with malformed/missing data in those fields
+    — a record the toggle itself had nothing to do with and no way to fix.
+    This endpoint can't fail for that reason: it only ever touches
+    isVisible.
+    """
+    result = await db.grades.update_one({"_id": ObjectId(grade_id)}, {"$set": {"isVisible": request.isVisible}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Grade not found")
+    return {"success": True}
+
 @api_router.delete("/admin/grades/{grade_id}")
 async def admin_delete_grade(grade_id: str, user: dict = Depends(verify_admin)):
     await db.grades.delete_one({"_id": ObjectId(grade_id)})
@@ -2209,6 +2290,16 @@ async def admin_create_subject(subject: Subject, user: dict = Depends(verify_adm
 @api_router.put("/admin/subjects/{subject_id}")
 async def admin_update_subject(subject_id: str, subject: Subject, user: dict = Depends(verify_admin)):
     await db.subjects.update_one({"_id": ObjectId(subject_id)}, {"$set": subject.dict(exclude={"id"})})
+    return {"success": True}
+
+@api_router.put("/admin/subjects/{subject_id}/visibility")
+async def admin_set_subject_visibility(subject_id: str, request: VisibilityUpdateRequest, user: dict = Depends(verify_admin)):
+    """Toggle only isVisible — see admin_set_grade_visibility for why this
+    exists as a separate endpoint rather than reusing the full-replace
+    PUT /admin/subjects/{id} above."""
+    result = await db.subjects.update_one({"_id": ObjectId(subject_id)}, {"$set": {"isVisible": request.isVisible}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Subject not found")
     return {"success": True}
 
 @api_router.delete("/admin/subjects/{subject_id}")
@@ -2253,9 +2344,14 @@ async def admin_get_substrands(strandId: Optional[str] = None, user: dict = Depe
 async def admin_create_substrand(substrand: SubStrand, user: dict = Depends(verify_admin)):
     result = await db.substrands.insert_one(substrand.dict(exclude={"id"}))
     new_id = str(result.inserted_id)
-    # Auto-sync lesson SLOs if number_of_lessons was set
-    if substrand.number_of_lessons and substrand.number_of_lessons >= 1:
-        await sync_lesson_slos_for_substrand(db, new_id)
+    # NOTE: this used to eagerly call sync_lesson_slos_for_substrand() here,
+    # which writes into the `lesson_slos` collection. That collection has no
+    # frontend consumer and is never read by Scheme-of-Work or Lesson-Plan
+    # generation (only `lesson_slo_slots`, a different collection, is).
+    # GET /admin/lesson-slos/{substrand_id} already auto-syncs on read
+    # (see below) whenever number_of_lessons is set, so removing the eager
+    # call here changes nothing observable — it just stops writing rows
+    # nobody currently reads until/unless that admin screen is opened.
     return {"success": True, "id": new_id}
 
 @api_router.put("/admin/substrands/{substrand_id}")
@@ -2268,9 +2364,9 @@ async def admin_update_substrand(substrand_id: str, substrand: SubStrand, user: 
         {"_id": ObjectId(substrand_id)},
         {"$set": update_data}
     )
-    # Auto-sync lesson SLOs if number_of_lessons changed
-    if "number_of_lessons" in update_data:
-        await sync_lesson_slos_for_substrand(db, substrand_id)
+    # NOTE: eager lesson_slos sync removed here — see comment in
+    # admin_create_substrand above. GET /admin/lesson-slos/{substrand_id}
+    # still auto-syncs on demand, so nothing observable changes.
     return {"success": True}
 
 @api_router.delete("/admin/substrands/{substrand_id}")
@@ -2793,6 +2889,50 @@ async def admin_create_pci(pci: PCI, user: dict = Depends(verify_admin)):
     return {"success": True, "id": str(result.inserted_id)}
 
 # SLO Mappings (link SLOs to competencies, values, PCIs)
+class BulkSloMappingRequest(BaseModel):
+    sloIds: List[str]
+    competencyIds: List[str]
+    valueIds: List[str]
+    pciIds: List[str]
+
+@api_router.put("/admin/slo-mappings/bulk")
+async def admin_bulk_update_slo_mappings(request: BulkSloMappingRequest, user: dict = Depends(verify_admin)):
+    """Update mappings for multiple SLOs at once"""
+    updated_count = 0
+    created_count = 0
+
+    for slo_id in request.sloIds:
+        # Check if SLO exists
+        slo = await db.slos.find_one({"_id": ObjectId(slo_id)})
+        if not slo:
+            continue
+
+        mapping_data = {
+            "sloId": slo_id,
+            "competencyIds": request.competencyIds,
+            "valueIds": request.valueIds,
+            "pciIds": request.pciIds,
+            "assessmentIds": []
+        }
+
+        existing = await db.slo_mappings.find_one({"sloId": slo_id})
+        if existing:
+            await db.slo_mappings.update_one(
+                {"sloId": slo_id},
+                {"$set": mapping_data}
+            )
+            updated_count += 1
+        else:
+            await db.slo_mappings.insert_one(mapping_data)
+            created_count += 1
+
+    return {
+        "success": True,
+        "message": f"Updated {updated_count} mappings, created {created_count} new mappings",
+        "updated": updated_count,
+        "created": created_count
+    }
+
 @api_router.get("/admin/slo-mappings/{slo_id}")
 async def admin_get_slo_mapping(slo_id: str, user: dict = Depends(verify_admin)):
     """Get the mapping for a specific SLO"""
@@ -2897,52 +3037,6 @@ async def admin_get_reference_data(user: dict = Depends(verify_admin)):
         "competencies": [serialize_doc(c) for c in competencies],
         "values": [serialize_doc(v) for v in values],
         "pcis": [serialize_doc(p) for p in pcis]
-    }
-
-# ==================== BULK SLO MAPPING UPDATE ====================
-
-class BulkSloMappingRequest(BaseModel):
-    sloIds: List[str]
-    competencyIds: List[str]
-    valueIds: List[str]
-    pciIds: List[str]
-
-@api_router.put("/admin/slo-mappings/bulk")
-async def admin_bulk_update_slo_mappings(request: BulkSloMappingRequest, user: dict = Depends(verify_admin)):
-    """Update mappings for multiple SLOs at once"""
-    updated_count = 0
-    created_count = 0
-    
-    for slo_id in request.sloIds:
-        # Check if SLO exists
-        slo = await db.slos.find_one({"_id": ObjectId(slo_id)})
-        if not slo:
-            continue
-        
-        mapping_data = {
-            "sloId": slo_id,
-            "competencyIds": request.competencyIds,
-            "valueIds": request.valueIds,
-            "pciIds": request.pciIds,
-            "assessmentIds": []
-        }
-        
-        existing = await db.slo_mappings.find_one({"sloId": slo_id})
-        if existing:
-            await db.slo_mappings.update_one(
-                {"sloId": slo_id},
-                {"$set": mapping_data}
-            )
-            updated_count += 1
-        else:
-            await db.slo_mappings.insert_one(mapping_data)
-            created_count += 1
-    
-    return {
-        "success": True,
-        "message": f"Updated {updated_count} mappings, created {created_count} new mappings",
-        "updated": updated_count,
-        "created": created_count
     }
 
 # ==================== MOVE/REASSIGN ENDPOINTS (with CASCADE) ====================
@@ -3458,7 +3552,7 @@ async def preview_csv_import(file: UploadFile = File(...), user: dict = Depends(
     except UnicodeDecodeError:
         try:
             text_content = content.decode('latin-1')
-        except:
+        except Exception:
             raise HTTPException(status_code=400, detail="Unable to decode file. Please ensure it's a valid CSV.")
     
     result = parse_csv_content(text_content)
@@ -3582,6 +3676,16 @@ async def save_imported_data(request: ImportSaveRequest, user: dict = Depends(ve
 
                 # If the imported row carries inquiry questions, merge them into
                 # the existing learning_activities doc (de-duplicated, keep order).
+                #
+                # IMPORTANT (kept as-is, do not remove): this is NOT dead code.
+                # It looked redundant with slos.key_inquiry_questions at first
+                # read, but POST /lesson-plans/generate (the individual Lesson
+                # Plan feature, ~line 1595) reads inquiry questions EXCLUSIVELY
+                # from learning_activities.inquiry_questions and never falls
+                # back to slos.key_inquiry_questions. Removing this write would
+                # silently break KIQs on individual lesson plans for re-imported
+                # existing substrands. Scheme-of-Work generation is unaffected
+                # either way since it only reads slos.key_inquiry_questions.
                 row_iqs = row.get("inquiry_questions") or []
                 if row_iqs:
                     existing_la = await db.learning_activities.find_one({
@@ -3604,9 +3708,11 @@ async def save_imported_data(request: ImportSaveRequest, user: dict = Depends(ve
                                 {"$set": {"inquiry_questions": merged}},
                             )
                     else:
-                        # No learning_activities doc yet for this existing substrand
-                        # — create one with the inquiry questions so the scheme
-                        # generator can use them immediately.
+                        # No learning_activities doc yet for this existing
+                        # substrand — create one with the inquiry questions so
+                        # both the scheme generator's resource/activity
+                        # fallbacks AND individual lesson plan generation have
+                        # what they need immediately.
                         await db.learning_activities.insert_one({
                             "substrandId": existing_substrand["_id"],
                             "introduction_activities": row.get("introduction_activities", []),
@@ -3636,6 +3742,10 @@ async def save_imported_data(request: ImportSaveRequest, user: dict = Depends(ve
                     "extended_activities": row.get("extended_activities", []),
                     "learning_resources": row.get("learning_resources", []),
                     "assessment_methods": row.get("assessment_methods", []),
+                    # Required by POST /lesson-plans/generate, which reads
+                    # KIQs exclusively from here (see note above) — do not
+                    # remove even though the scheme generator itself gets its
+                    # copy from slos.key_inquiry_questions below.
                     "inquiry_questions": row.get("inquiry_questions", [])
                 }
                 await db.learning_activities.insert_one(activities_data)
@@ -4472,10 +4582,22 @@ async def upload_curriculum_pdf(
         raise HTTPException(status_code=400, detail="File size exceeds 10MB limit")
 
     safe_filename = file.filename.replace(" ", "_").replace("/", "_")
-    file_path = PDF_DIR / safe_filename
-
-    with open(file_path, "wb") as f:
-        f.write(file_content)
+    # Ephemeral: write to /tmp for the background job only. The extractor reads
+    # this file, persists the parsed curriculum to MongoDB, and the temp file is
+    # unlinked in the job finaliser. Pod-local storage is fine here because the
+    # blob is transient (< 5 min lifetime) and never served back to clients.
+    import tempfile
+    tmp_fd, tmp_path_str = tempfile.mkstemp(suffix=f"_{safe_filename}", prefix="curriculum_", dir="/tmp")
+    file_path = Path(tmp_path_str)
+    try:
+        with os.fdopen(tmp_fd, "wb") as f:
+            f.write(file_content)
+    except Exception:
+        try:
+            file_path.unlink(missing_ok=True)
+        except Exception:
+            pass
+        raise
 
     logger.info(f"Saved PDF: {safe_filename} ({len(file_content)} bytes)")
 

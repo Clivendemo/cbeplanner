@@ -184,11 +184,9 @@ export const SchemeDisplay: React.FC<SchemeDisplayProps> = ({ scheme }) => {
             }
 
             let prevWeek: number | null = null;
-            let prevStrand: string | null = null;
-            let prevSub: string | null = null;
             return merged.map((l, idx) => {
               if (l._mergedBreak) {
-                prevWeek = null; prevStrand = null; prevSub = null;
+                prevWeek = null;
                 const wkFrom = l.week;
                 const wkTo = l.endWeek ?? wkFrom;
                 const weekCell = wkFrom === wkTo ? String(wkFrom) : `${wkFrom}-${wkTo}`;
@@ -208,14 +206,25 @@ export const SchemeDisplay: React.FC<SchemeDisplayProps> = ({ scheme }) => {
               const strandVal = l.strand || '';
               const subVal = l.substrand || '';
               const weekDisplay = weekVal !== prevWeek ? String(weekVal) : '';
-              const strandDisplay = strandVal !== prevStrand ? strandVal : '';
-              const subDisplay = (subVal !== prevSub || strandVal !== prevStrand) ? subVal : '';
+              // Strand and Sub-strand are always shown on every row now
+              // (not deduped against the previous row like Week still is)
+              // so each row reads as complete on its own.
+              const strandDisplay = strandVal;
+              const subDisplay = subVal;
               prevWeek = weekVal;
-              prevStrand = strandVal;
-              prevSub = subVal;
 
               const inquiryItems = toList(l.keyInquiryQuestions);
-              const singleInquiry = inquiryItems.length > 0 ? inquiryItems[0] : '—';
+              // A merged row (double lesson, or a compressed row covering
+              // several subtopics) can carry more than one KIQ. Show all of
+              // them, bulleted, rather than only the first — the ordinary
+              // single-question case stays as plain unbulleted text so most
+              // rows look exactly as they always have.
+              const inquiryDisplay =
+                inquiryItems.length === 0
+                  ? '—'
+                  : inquiryItems.length === 1
+                  ? inquiryItems[0]
+                  : inquiryItems.map((q) => `• ${q}`).join('\n');
 
               return (
                 <View key={idx} style={[styles.row, idx % 2 === 1 && styles.zebraRow]}>
@@ -235,7 +244,7 @@ export const SchemeDisplay: React.FC<SchemeDisplayProps> = ({ scheme }) => {
                     <Text style={styles.cellText}>{formatSlo(l.slo)}</Text>
                   </View>
                   <View style={[styles.cell, styles.colInquiry]}>
-                    <Text style={styles.cellText}>{singleInquiry}</Text>
+                    <Text style={styles.cellText}>{inquiryDisplay}</Text>
                   </View>
                   <View style={[styles.cell, styles.colExp]}>
                     <Text style={styles.cellText}>{renderList(l.learningExperiences)}</Text>

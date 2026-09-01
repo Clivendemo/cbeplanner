@@ -419,9 +419,9 @@ export default function RevisionPapers() {
             <Ionicons name="school" size={28} color="#5C6BC0" />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.title}>Revision Papers</Text>
+            <Text style={styles.title}>Assessment & Revision Papers</Text>
             <Text style={styles.subtitle}>
-              Download past assessments · KES {costPerDownload} per paper
+              Download assessments with Marking Schemes at· KES {costPerDownload} per paper
             </Text>
           </View>
           <View style={styles.walletPill}>
