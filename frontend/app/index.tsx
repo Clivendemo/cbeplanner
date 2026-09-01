@@ -10,7 +10,7 @@
  *  - existing colour tokens from (teacher)/dashboard.tsx
  *  - existing hero asset (assets/images/classroom.webp)
  */
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -24,9 +24,14 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
+import { useNewsData, type NewsItem } from '../components/useNewsData';
 
 const CLASSROOM_IMG = require('../assets/images/classroom.webp');
 const NOTEBOOK_IMG = require('../assets/images/notebook.webp');
+const PREVIEW_DASHBOARD = require('../assets/images/preview-dashboard.jpg');
+const PREVIEW_SCHEMES = require('../assets/images/preview-schemes.jpg');
+const PREVIEW_NOTES = require('../assets/images/preview-notes.jpg');
+const PREVIEW_REVISION = require('../assets/images/preview-revision.jpg');
 
 const MOBILE_BREAKPOINT = 768;
 const NARROW_BREAKPOINT = 1024;
@@ -87,10 +92,11 @@ const TRUST_ITEMS = [
 ];
 
 // Nav links only include real routes/sections that exist on this page.
-const NAV_LINKS: { label: string; anchor: 'features' | 'howitworks' | 'workspace' }[] = [
+const NAV_LINKS: { label: string; anchor: 'features' | 'howitworks' | 'showcase' | 'updates' }[] = [
   { label: 'Features', anchor: 'features' },
   { label: 'How It Works', anchor: 'howitworks' },
-  { label: 'Workspace', anchor: 'workspace' },
+  { label: 'Showcase', anchor: 'showcase' },
+  { label: 'Updates', anchor: 'updates' },
 ];
 
 export default function Landing() {
@@ -333,7 +339,7 @@ export default function Landing() {
         </View>
       </View>
 
-      {/* ─────────────── How It Works (anchor target) ─────────────── */}
+      {/* ─────────────── How It Works ─────────────── */}
       <View
         style={[styles.section, styles.sectionAlt]}
         // @ts-ignore
@@ -342,14 +348,48 @@ export default function Landing() {
       >
         <Text style={styles.sectionEyebrow}>HOW IT WORKS</Text>
         <Text style={[styles.sectionHeadline, isMobile && styles.sectionHeadlineMobile]}>
-          A Scheme of Work in 3 Steps
+          How CBE Planner Works
+        </Text>
+        <Text style={styles.sectionLead}>
+          Get from curriculum requirements to a ready-to-use lesson plan in just a few simple steps.
         </Text>
         <View style={[styles.stepsRow, isMobile && styles.stepsRowMobile]}>
-          <StepCard n={1} title="Pick Grade & Subject" body="Choose the class you're planning for and the learning area you'll cover." icon="school-outline" />
-          <StepCard n={2} title="Select Topics & Breaks" body="Tick the sub-strands you'll teach and add any term breaks or CATs." icon="list-outline" />
-          <StepCard n={3} title="Preview & Download" body="Preview the scheme for free, then export the KICD-aligned PDF." icon="cloud-download-outline" />
+          <StepCard
+            n="01"
+            title="Create Your Account"
+            body="Sign up for your CBE Planner account and access your personal teaching workspace."
+            icon="person-add-outline"
+            connector={!isMobile}
+          />
+          <StepCard
+            n="02"
+            title="Choose What You're Teaching"
+            body="Select the appropriate grade, subject, strand, sub-strand and lesson details."
+            icon="school-outline"
+            connector={!isMobile}
+          />
+          <StepCard
+            n="03"
+            title="Create Your Plan"
+            body="Generate and customise a structured lesson plan using the available planning tools."
+            icon="create-outline"
+            connector={!isMobile}
+          />
+          <StepCard
+            n="04"
+            title="Save & Teach"
+            body="Save your work, access it whenever you need it and use it to support your classroom teaching."
+            icon="cloud-done-outline"
+            connector={false}
+          />
         </View>
       </View>
+
+      {/* ─────────────── Product Showcase ─────────────── */}
+      <ProductShowcase isMobile={isMobile} isNarrow={isNarrow} />
+
+      {/* ─────────────── Latest Education Updates ─────────────── */}
+      <LatestUpdates isMobile={isMobile} isNarrow={isNarrow} />
 
       {/* ─────────────── Workspace CTA strip (anchor target) ─────────────── */}
       <View
@@ -398,8 +438,14 @@ export default function Landing() {
 
 // ─────────────── StepCard ───────────────
 function StepCard({
-  n, title, body, icon,
-}: { n: number; title: string; body: string; icon: keyof typeof Ionicons.glyphMap }) {
+  n, title, body, icon, connector = false,
+}: {
+  n: string | number;
+  title: string;
+  body: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  connector?: boolean;
+}) {
   return (
     <View style={styles.stepCard} data-testid={`landing-step-${n}`}>
       <View style={styles.stepNumRow}>
@@ -407,9 +453,176 @@ function StepCard({
         <View style={styles.stepIconWrap}>
           <Ionicons name={icon} size={18} color={COLORS.accent} />
         </View>
+        {connector && <View style={styles.stepConnector} />}
       </View>
       <Text style={styles.stepTitle}>{title}</Text>
       <Text style={styles.stepBody}>{body}</Text>
+    </View>
+  );
+}
+
+// ─────────────── ProductShowcase ───────────────
+const PRODUCT_TABS = [
+  { id: 'dashboard', label: 'Dashboard', img: PREVIEW_DASHBOARD, icon: 'grid-outline' as const,
+    caption: 'Your personal teaching workspace — pick up where you left off with recent schemes, lesson plans and term progress.' },
+  { id: 'schemes', label: 'Schemes of Work', img: PREVIEW_SCHEMES, icon: 'calendar-outline' as const,
+    caption: 'Build a KICD-aligned scheme of work in three guided steps — Basic Info, Topics, and Breaks.' },
+  { id: 'notes', label: 'Teaching Notes', img: PREVIEW_NOTES, icon: 'book-outline' as const,
+    caption: 'Generate structured study notes for any strand — preview free, download PDF from just KES 1.' },
+  { id: 'revision', label: 'Revision Papers', img: PREVIEW_REVISION, icon: 'clipboard-outline' as const,
+    caption: 'Access ready-to-print past-paper style revision papers with marking schemes for every grade and term.' },
+];
+
+function ProductShowcase({ isMobile, isNarrow }: { isMobile: boolean; isNarrow: boolean }) {
+  const [tab, setTab] = useState<string>('dashboard');
+  const current = PRODUCT_TABS.find((t) => t.id === tab) || PRODUCT_TABS[0];
+  return (
+    <View
+      style={styles.section}
+      // @ts-ignore
+      nativeID="showcase"
+      data-testid="landing-showcase-section"
+    >
+      <Text style={styles.sectionEyebrow}>SEE IT IN ACTION</Text>
+      <Text style={[styles.sectionHeadline, isMobile && styles.sectionHeadlineMobile]}>
+        Everything You Need to Plan Better
+      </Text>
+      <Text style={styles.sectionLead}>
+        Powerful planning tools designed around the needs of Kenyan teachers.
+      </Text>
+
+      <View style={[styles.tabRow, isMobile && styles.tabRowMobile]} data-testid="landing-showcase-tabs">
+        {PRODUCT_TABS.map((t) => {
+          const active = t.id === tab;
+          return (
+            <TouchableOpacity
+              key={t.id}
+              style={[styles.tab, active && styles.tabActive]}
+              onPress={() => setTab(t.id)}
+              activeOpacity={0.85}
+              data-testid={`landing-showcase-tab-${t.id}`}
+            >
+              <Ionicons name={t.icon} size={15} color={active ? '#FFFFFF' : COLORS.textSecondary} />
+              <Text style={[styles.tabText, active && styles.tabTextActive]}>{t.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      <View style={styles.browserFrame} data-testid="landing-showcase-frame">
+        <View style={styles.browserBar}>
+          <View style={styles.browserDots}>
+            <View style={[styles.browserDot, { backgroundColor: '#FF5F57' }]} />
+            <View style={[styles.browserDot, { backgroundColor: '#FEBC2E' }]} />
+            <View style={[styles.browserDot, { backgroundColor: '#28C840' }]} />
+          </View>
+          <View style={styles.browserUrl}>
+            <Ionicons name="lock-closed" size={11} color={COLORS.textMuted} />
+            <Text style={styles.browserUrlText}>
+              cbeplanner.co.ke/{current.id === 'dashboard' ? 'dashboard' : current.id}
+            </Text>
+          </View>
+          <Text style={styles.browserBrand}>CBE Planner</Text>
+        </View>
+        <Image
+          source={current.img}
+          style={styles.browserImg}
+          resizeMode="cover"
+          accessibilityLabel={`CBE Planner ${current.label} screen preview`}
+        />
+      </View>
+
+      <Text style={styles.showcaseCaption}>{current.caption}</Text>
+
+      <View style={[styles.featureLabelRow, isMobile && styles.featureLabelRowMobile]}>
+        <FeatureLabel icon="document-text-outline" label="Lesson Plans" />
+        <FeatureLabel icon="calendar-outline" label="Schemes of Work" />
+        <FeatureLabel icon="book-outline" label="Teaching Resources" />
+        <FeatureLabel icon="today-outline" label="Academic Planning" />
+      </View>
+    </View>
+  );
+}
+
+function FeatureLabel({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label: string }) {
+  return (
+    <View style={styles.featureLabel} data-testid={`landing-showcase-label-${label.toLowerCase().replace(/[^a-z]+/g, '-')}`}>
+      <Ionicons name={icon} size={14} color={COLORS.accent} />
+      <Text style={styles.featureLabelText}>{label}</Text>
+    </View>
+  );
+}
+
+// ─────────────── LatestUpdates ───────────────
+// Tag → badge color mapping. Reuses the app's existing tag conventions.
+const TAG_COLORS: Record<string, { bg: string; fg: string }> = {
+  MoE:    { bg: '#DBEAFE', fg: '#1E40AF' },
+  KNEC:   { bg: '#EEF2FF', fg: '#3730A3' },
+  KICD:   { bg: '#FFEDD5', fg: '#9A3412' },
+  TSC:    { bg: '#DCFCE7', fg: '#166534' },
+  Update: { bg: '#EDE9FE', fg: '#5B21B6' },
+  Tip:    { bg: '#FEF3C7', fg: '#92400E' },
+};
+
+function LatestUpdates({ isMobile, isNarrow }: { isMobile: boolean; isNarrow: boolean }) {
+  const { items, loading } = useNewsData();
+  // Cap at 4 for the grid; the first item is highlighted as the "featured" card.
+  const capped = useMemo<NewsItem[]>(() => items.slice(0, 4), [items]);
+  const [featured, ...rest] = capped;
+
+  return (
+    <View
+      style={[styles.section, styles.sectionAlt]}
+      // @ts-ignore
+      nativeID="updates"
+      data-testid="landing-updates-section"
+    >
+      <Text style={styles.sectionEyebrow}>NEWS & DEADLINES</Text>
+      <Text style={[styles.sectionHeadline, isMobile && styles.sectionHeadlineMobile]}>
+        Latest Education Updates
+      </Text>
+      <Text style={styles.sectionLead}>
+        Stay informed about important education news, curriculum updates and teacher deadlines.
+      </Text>
+
+      {loading && capped.length === 0 ? (
+        <View style={styles.updatesEmpty}>
+          <Text style={styles.updatesEmptyText}>Loading latest updates…</Text>
+        </View>
+      ) : (
+        <View style={[styles.updatesGrid, isNarrow && styles.updatesGridTablet, isMobile && styles.updatesGridMobile]}>
+          {featured && (
+            <UpdateCard item={featured} featured data-testid-suffix="0" />
+          )}
+          {rest.map((it, idx) => (
+            <UpdateCard key={`${it.tag}-${idx}`} item={it} data-testid-suffix={String(idx + 1)} />
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+function UpdateCard({
+  item, featured = false, ...rest
+}: { item: NewsItem; featured?: boolean; 'data-testid-suffix'?: string }) {
+  const color = TAG_COLORS[item.tag] || { bg: COLORS.accentSoft, fg: COLORS.accent };
+  const testId = `landing-update-card-${rest['data-testid-suffix'] ?? '0'}`;
+  return (
+    <View
+      style={[styles.updateCard, featured && styles.updateCardFeatured]}
+      data-testid={testId}
+    >
+      <View style={[styles.updateBadge, { backgroundColor: color.bg }]}>
+        <Text style={[styles.updateBadgeText, { color: color.fg }]}>{item.tag.toUpperCase()}</Text>
+      </View>
+      <Text style={[styles.updateTitle, featured && styles.updateTitleFeatured]} numberOfLines={featured ? 3 : 4}>
+        {item.text}
+      </Text>
+      <View style={styles.updateFooter}>
+        <Ionicons name="calendar-clear-outline" size={13} color={COLORS.textMuted} />
+        <Text style={styles.updateDate}>Latest</Text>
+      </View>
     </View>
   );
 }
@@ -685,6 +898,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     minWidth: 220,
+    position: 'relative' as any,
+    overflow: 'visible' as any,
   },
   stepNumRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 },
   stepNum: {
@@ -701,6 +916,175 @@ const styles = StyleSheet.create({
   },
   stepTitle: { fontSize: 15, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 6 },
   stepBody: { fontSize: 13, color: COLORS.textSecondary, lineHeight: 20 },
+  stepConnector: {
+    position: 'absolute',
+    top: 14,
+    left: 74,
+    right: -22,
+    height: 1,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.accentBorder,
+    borderStyle: 'dashed' as any,
+    zIndex: -1,
+  },
+
+  // ── Product Showcase ──
+  tabRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 24,
+    flexWrap: 'wrap',
+  },
+  tabRowMobile: { gap: 6 },
+  tab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 999,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    // @ts-ignore
+    transition: 'all 180ms ease',
+  },
+  tabActive: {
+    backgroundColor: COLORS.accent,
+    borderColor: COLORS.accent,
+    // @ts-ignore
+    boxShadow: '0 4px 14px rgba(92,107,192,0.28)',
+  },
+  tabText: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary },
+  tabTextActive: { color: '#FFFFFF' },
+  browserFrame: {
+    borderRadius: 14,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.surface,
+    // @ts-ignore
+    boxShadow: '0 22px 60px rgba(17,24,39,0.14)',
+    marginBottom: 20,
+  },
+  browserBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: '#F3F4F6',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  browserDots: { flexDirection: 'row', gap: 6 },
+  browserDot: { width: 11, height: 11, borderRadius: 999 },
+  browserUrl: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    maxWidth: 480,
+  },
+  browserUrlText: { fontSize: 12, color: COLORS.textMuted, fontWeight: '500' },
+  browserBrand: { fontSize: 11, fontWeight: '700', color: COLORS.textMuted, letterSpacing: 0.4 },
+  browserImg: {
+    width: '100%',
+    aspectRatio: 16 / 10,
+    backgroundColor: '#F7F8FC',
+  },
+  showcaseCaption: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    lineHeight: 22,
+    marginBottom: 28,
+    maxWidth: 720,
+  },
+  featureLabelRow: {
+    flexDirection: 'row',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+  featureLabelRowMobile: { gap: 8 },
+  featureLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: COLORS.accentSoft,
+    borderWidth: 1,
+    borderColor: COLORS.accentBorder,
+  },
+  featureLabelText: { fontSize: 12, fontWeight: '600', color: COLORS.textPrimary },
+
+  // ── Latest Updates ──
+  updatesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 20,
+  },
+  updatesGridTablet: {},
+  updatesGridMobile: { gap: 14 },
+  updatesEmpty: { paddingVertical: 32, alignItems: 'center' },
+  updatesEmptyText: { fontSize: 14, color: COLORS.textMuted, fontWeight: '500' },
+  updateCard: {
+    // Standard: 3 cards per row on desktop (after featured takes full width)
+    // @ts-ignore
+    width: 'calc((100% - 40px) / 3)',
+    minWidth: 240,
+    padding: 22,
+    backgroundColor: COLORS.surface,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    // @ts-ignore
+    transition: 'transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease',
+  },
+  updateCardFeatured: {
+    // Featured card spans full width on desktop and tablet
+    width: '100%',
+    padding: 28,
+    borderColor: COLORS.accentBorder,
+    backgroundColor: COLORS.accentSoft,
+    // @ts-ignore
+    backgroundImage:
+      'linear-gradient(135deg, #EEF2FF 0%, #F7F8FC 60%)',
+  },
+  updateBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    marginBottom: 14,
+  },
+  updateBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  updateTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    lineHeight: 22,
+    marginBottom: 14,
+  },
+  updateTitleFeatured: { fontSize: 20, lineHeight: 28 },
+  updateFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 'auto' as any,
+  },
+  updateDate: { fontSize: 12, color: COLORS.textMuted, fontWeight: '600' },
 
   // Workspace strip
   workspaceStrip: {
