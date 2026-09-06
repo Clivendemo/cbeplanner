@@ -14,8 +14,12 @@
  * the space without competing with the auth form for attention.
  */
 import React, { useRef, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Animated, Image, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
+// Same classroom photo used in the homepage hero — keeps the auth shell
+// visually continuous with the page the user just came from.
+const CLASSROOM_IMG = require('../assets/images/classroom.webp');
 
 // Mirrors app/index.tsx's COLORS so the auth shell matches the homepage.
 // Kept as a local copy rather than a shared import to keep this change
@@ -116,6 +120,28 @@ export const AuthSidePanel: React.FC = () => {
         <Text style={s.brandName}>CBE Planner</Text>
       </View>
 
+      {/* Visual anchor — mirrors the homepage hero's image card + floating
+          stat badge so the panel doesn't open on a wall of plain text. */}
+      <View style={s.visualWrap}>
+        <View style={s.imageCard}>
+          <Image source={CLASSROOM_IMG} style={s.image} resizeMode="cover" />
+          <View style={s.imageOverlay} pointerEvents="none" />
+          <View style={s.imageBadge}>
+            <Ionicons name="checkmark-circle" size={13} color="#FFFFFF" />
+            <Text style={s.imageBadgeText}>KICD-Aligned</Text>
+          </View>
+        </View>
+        <View style={s.statCard}>
+          <View style={s.statIconWrap}>
+            <Ionicons name="flash-outline" size={16} color="#FFFFFF" />
+          </View>
+          <View>
+            <Text style={s.statNum}>3 min</Text>
+            <Text style={s.statLabel}>Average scheme build time</Text>
+          </View>
+        </View>
+      </View>
+
       <Text style={s.headline}>Curriculum planning built for the Kenyan classroom.</Text>
       <Text style={s.lead}>
         Schemes of work, lesson plans, teaching notes and revision resources — aligned to CBC/CBE and ready in
@@ -155,6 +181,70 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   brandName: { fontSize: 16, fontWeight: '700', color: COLORS.textPrimary },
+
+  // Visual anchor — image card + floating stat chip, same language as the
+  // homepage hero (app/index.tsx: heroImageCard / heroStatCard).
+  visualWrap: { marginBottom: 40 },
+  imageCard: {
+    width: '100%',
+    aspectRatio: 16 / 8,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: COLORS.accentBorder,
+    // @ts-ignore web-only
+    boxShadow: '0 18px 48px rgba(63,76,159,0.18)',
+    position: 'relative',
+  },
+  image: { width: '100%', height: '100%' },
+  imageOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    // @ts-ignore web-only gradient
+    backgroundImage: 'linear-gradient(150deg, rgba(63,76,159,0.35) 0%, rgba(63,76,159,0.05) 45%, rgba(255,255,255,0) 100%)',
+  },
+  imageBadge: {
+    position: 'absolute',
+    top: 14,
+    left: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(63,76,159,0.9)',
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  imageBadgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700', letterSpacing: 0.4 },
+  statCard: {
+    position: 'absolute',
+    bottom: -18,
+    left: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    // @ts-ignore web-only
+    boxShadow: '0 8px 22px rgba(17,24,39,0.08)',
+  },
+  statIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: COLORS.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statNum: { fontSize: 14, fontWeight: '800', color: COLORS.textPrimary },
+  statLabel: { fontSize: 10, color: COLORS.textMuted, fontWeight: '500' },
 
   headline: {
     fontSize: 26,
