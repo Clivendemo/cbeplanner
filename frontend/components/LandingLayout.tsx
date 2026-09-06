@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import { useCalendarData, DisplayEvent, DisplayTerm } from './useCalendarData';
-import { LoginShellWidgets } from './LoginShellWidgets';
+import { AuthSidePanel } from './AuthSidePanel';
 
 // ===== BREAKPOINTS =====
 const BP_DESKTOP = 1180;
@@ -735,9 +735,22 @@ export const LandingLayout: React.FC<Props> = ({ children, inShell = false }) =>
   // Inside the auth shell the outer layout (sidebar + card) is already
   // provided by app/auth/_layout.tsx — just render the content directly.
   if (inShell) {
-    // Auth shell delegates layout to LoginShellWidgets which places the
-    // login card next to the calendar and shows term / visitor widgets below.
-    return <LoginShellWidgets loginCard={children} />;
+    // Auth shell: the auth card sits next to a brand panel (headline, trust
+    // labels, one rotating teaching tip) that mirrors the homepage's own
+    // look, instead of a separate widget grid.
+    return (
+      <ScrollView
+        style={styles.page}
+        contentContainerStyle={styles.authShellScrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.authShellRow}>
+          <View style={styles.authCardWrap}>{children}</View>
+          <AuthSidePanel />
+        </View>
+      </ScrollView>
+    );
   }
 
   // Previously the 728x90 ad lived below the middle bar. Moved to the left sidebar
@@ -797,6 +810,29 @@ export const LandingLayout: React.FC<Props> = ({ children, inShell = false }) =>
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: 'transparent' },
   pageContent: { flexGrow: 1 },
+  authShellScrollContent: { flexGrow: 1, alignItems: 'center', justifyContent: 'center' },
+  authShellRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 64,
+    maxWidth: 1180,
+    width: '100%',
+    alignSelf: 'center',
+    paddingHorizontal: 40,
+    paddingVertical: 40,
+  },
+  authCardWrap: {
+    width: 400,
+    flexShrink: 0,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#DDDDF5',
+    padding: 32,
+    // @ts-ignore web-only
+    boxShadow: '0 12px 40px rgba(76, 29, 149, 0.08)',
+  },
   grid: {
     flexDirection: 'row',
     alignItems: 'flex-start',
